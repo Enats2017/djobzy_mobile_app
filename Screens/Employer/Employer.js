@@ -316,7 +316,7 @@ const Employer = () => {
         <TouchableOpacity
           style={styles.viewProfileButton}
           onPress={() =>
-            navigation.navigate("Profile", { gid: job.request_slug })
+            navigation.navigate("JobProfile", { gid: job.request_slug })
           }
         >
           <Text style={styles.viewText}>View</Text>

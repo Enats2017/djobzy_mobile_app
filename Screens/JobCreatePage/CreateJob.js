@@ -22,7 +22,6 @@ import SetPrice from "./SetPrice";
 import ReviewPage from "./ReviewPage";
 import Footer from "../../components/Footer";
 import { SafeAreaView } from "react-native-safe-area-context";
-import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 
 const CreateJob = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -79,12 +78,12 @@ const CreateJob = () => {
         })) || [];
       formData.append("subservices", JSON.stringify(subservices));
       formData.append("requirements", JSON.stringify(contractData?.requirements?.map((r) => r.value) || []));
-      formData.append( "languages", JSON.stringify(
-          contractData?.languages?.map((l) => ({
-            language: l.lang || "",
-            level: l.level || 2,
-          })) || []
-        )
+      formData.append("languages", JSON.stringify(
+        contractData?.languages?.map((l) => ({
+          language: l.lang || "",
+          level: l.level || 2,
+        })) || []
+      )
       );
 
       if (contractData?.address) formData.append("address", contractData.address);
@@ -112,10 +111,10 @@ const CreateJob = () => {
       console.log(data);
       if (data.status === 200) {
         // Alert.alert("Success", "Job submitted successfully!");
-        navigation.navigate("JobPublishedPage", { gig : data.gig });
+        navigation.navigate("JobPublishedPage", { gig: data.gig });
       } else {
         console.log(data.message);
-        
+
         Alert.alert("Error", data.message || "Failed to submit job");
       }
     } catch (error) {
@@ -182,7 +181,17 @@ const CreateJob = () => {
       <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
         <View style={styles.container}>
           {/* Back Button and Title */}
-          <PageNameHeaderBar navigation={navigation} title="Post a Job" />
+          <View style={styles.dashboardHeader}>
+            <TouchableOpacity onPress={handleBack}>
+              <Ionicons
+                name="chevron-back"
+                size={30}
+                color="#fff"
+                style={styles.arrow}
+              />
+            </TouchableOpacity>
+            <Text style={styles.title}>Post a Job</Text>
+          </View>
           <View>
             <ScrollView
               horizontal={true}
@@ -327,6 +336,29 @@ const CreateJob = () => {
   );
 };
 const styles = StyleSheet.create({
+  dashboardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingTop: 20,
+    gap: 10,
+  },
+  arrow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#313131",
+    width: 40,
+    height: 40,
+    borderRadius: 100,
+    padding: 5,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '600',
+    fontStyle: 'DegularDisplay_600SemiBold', // ensure this font is available in your project
+    color: '#ffffff',
+  },
   container: {
     paddingHorizontal: 15,
     flex: 1,

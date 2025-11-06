@@ -3,7 +3,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import MapView from "react-native-maps";
+// import MapView from "react-native-maps";
 import {
   ScrollView,
   StyleSheet,
@@ -128,7 +128,7 @@ const AddressSection = ({ contractData, setContractData }) => {
               onChangeText={setAddress}
               placeholderTextColor="#c3c3c3"
             />
-            <View style={styles.mapscetion}>
+            {/* <View style={styles.mapscetion}>
               <MapView
                 style={styles.map}
                 initialRegion={{
@@ -138,7 +138,7 @@ const AddressSection = ({ contractData, setContractData }) => {
                   longitudeDelta: 100,
                 }}
               />
-            </View>
+            </View> */}
           </View>
         </ScrollView>
       </KeyboardAwareScrollView>

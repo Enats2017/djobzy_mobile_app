@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -6,313 +6,324 @@ import {
   Text,
   TouchableOpacity,
   View,
+  FlatList,
 } from "react-native";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-
-import {
-  Montserrat_400Regular,
-  Montserrat_500Medium,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
-  useFonts,
-} from "@expo-google-fonts/montserrat";
-import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { Feather, FontAwesome } from "@expo/vector-icons";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import Entypo from "@expo/vector-icons/Entypo";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { API_URL } from "../../api/ApiUrl";
+import { truncateWords } from "../../api/TruncateWords";
+import Loading  from "../../components/Loading";
 
 export default function FindJobs() {
-  const [expanded1, setExpanded1] = useState(false);
-  const [liked1, setLiked1] = useState(false);
-  const [liked2, setLiked2] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  const [fontsLoaded] = useFonts({
-    Montserrat_400Regular,
-    Montserrat_500Medium,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
-  });
+  const fetchJobs = async (pageNum = 1) => {
+    try {
+      if (pageNum === 1) setLoading(true);
+      else setIsFetchingMore(true);
+      const res = await fetch(`${API_URL}/best-matches?page=${pageNum}`);
+      const data = await res.json();
+      if (!data?.gigs) {
+        setHasMore(false);
+        return;
+      }
+      const newJobs = data.gigs.filter(
+        (job) => !jobs.some((j) => j.gid === job.gid)
+      );
 
-  if (!fontsLoaded) return <View />;
+      if (newJobs.length > 0) {
+        setJobs((prev) => [...prev, ...newJobs]);
+        setPage(pageNum);
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.log("Error fetching jobs:", err);
+    } finally {
+      setLoading(false);
+      setIsFetchingMore(false);
+    }
+  };
+  useEffect(() => {
+    if (jobs.length === 0) {
+      fetchJobs();
+    }
+  }, []);
 
-  return (
-    
-     
-      <ScrollView contentContainerStyle={{ paddingTop: 0, paddingBottom: 140 }}>
-        <View style={styles.jobCard}>
-          <Text style={styles.uploadTextAbove}>Uploaded 20 minutes ago</Text>
+  if (loading) return <Loading />;
 
+  const renderJobCard = ({ item }) => {
+    const servicesCount = item.gigServices ? item.gigServices.length : 0;
+    const maxVisibleServices = 2;
+
+    return (
+      <>
+        <View style={[styles.jobCard]}>
+          <Text style={[styles.uploadTextAbove, { marginBottom: 8 }]}>
+            Uploaded at {item.created}
+          </Text>
           <View style={styles.userRow}>
             <Image
               source={{
-                uri: "https://randomuser.me/api/portraits/women/1.jpg",
+                uri: item.photo || "../assets/images/djobzy-logo.png",
               }}
               style={styles.avatar}
             />
             <View style={{ flex: 1 }}>
-              <View style={styles.nameRow}>
-                <Text style={styles.userName}>Jessie James</Text>
-                <View style={{ flexDirection: "row", marginLeft: 6 , gap: 3 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: 3,
+                }}
+              >
+                <Text style={styles.userName}>{item.full_name}</Text>
+                <View style={{ flexDirection: "row", marginLeft: 6 }}>
                   {[...Array(5)].map((_, i) => (
                     <FontAwesome
                       key={i}
                       name="star"
-                      size={15}
-                      color="#EBBE56"
+                      size={12}
+                      color="#f5c242"
                     />
                   ))}
                 </View>
               </View>
               <View style={styles.paymentRow}>
-                <MaterialIcons name="verified" size={16} color="#40b68e"  />
+                <MaterialIcons name="verified" size={16} color="#39A881" />
                 <Text style={styles.paymentVerified}>Payment verified</Text>
               </View>
             </View>
-            <TouchableOpacity
-              onPress={() => setLiked1(!liked1)}
-              style={styles.heartTouchable}
-            >
-              <FontAwesome
-                name={liked1 ? "heart" : "heart-o"}
-                size={20}
-                color={liked1 ? "#ff0000" : "#fff"}
-              />
+            <TouchableOpacity>
+              <Feather name="heart" size={22} color="#fff" />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.jobTitle}>UI/UX Designer</Text>
+          <Text style={styles.jobTitle}>{item.title}</Text>
           <Text style={styles.jobDesc}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            {truncateWords(item.description, 20)}
           </Text>
 
           <View style={styles.skillRow}>
-            {["Website design", "Wireframing", "Prototyping"].map(
-              (skill, i) => (
-                <View key={i} style={styles.skillTag}>
-                  <Text style={styles.skillText}>{skill}</Text>
-                </View>
-              )
+            {servicesCount > 0 ? (
+              <>
+                {item.gigServices
+                  .slice(0, maxVisibleServices)
+                  .map((service, index) => (
+                    <View key={index}>
+                      <View style={styles.skillTag}>
+                        <Text style={styles.skillText}>
+                          {service.sub_services.subname || "No Subcategory"}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+
+                {servicesCount > maxVisibleServices && (
+                  <View style={styles.skillTag}>
+                    <Text style={styles.skillText}>
+                      +{servicesCount - maxVisibleServices} More
+                    </Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <Text style={styles.noData}>No Data Found</Text>
             )}
           </View>
-
           <View style={styles.jobFooter}>
-            <Ionicons
-              name="cash-outline"
+            <AntDesign
+              name="dollar"
               size={16}
-              color="#eb8676"
-              style={styles.icon}
+              color="#CB7767"
+              style={styles.locationIcon}
             />
             <Text style={styles.hourly}>Hourly: </Text>
-            <Text style={styles.hourlyRange}>$15-$35</Text>
-            <View style={styles.locationRow1}>
-            <FontAwesome6
-              name="location-dot"
-              size={14}
-              color="#eb8676"
-              style={styles.locationIcon1}
-            />
-              <Text style={styles.locationText1}>Remote</Text>
+            <Text style={styles.hourlyRange}>{item.hour_minimum}</Text>
+            <View style={styles.locationRow}>
+              {item.preferred_location && (
+                <>
+                  <Feather
+                    name="map-pin"
+                    size={16}
+                    color="#eb8676"
+                    style={styles.locationIcon}
+                  />
+
+                  <Text style={styles.locationText}>
+                    {item.preferred_location}
+                  </Text>
+                </>
+              )}
             </View>
           </View>
 
-          <TouchableOpacity style={styles.viewBtn}>
+          <TouchableOpacity
+            style={styles.viewBtn}
+            onPress={() =>
+              navigation.navigate("JobProfile", { gid: item.request_slug })
+            }
+          >
             <Text style={styles.viewBtnText}>View</Text>
           </TouchableOpacity>
-
           <View style={styles.dividerLine} />
         </View>
+      </>
+    );
+  };
 
-        {/* Job Card 2 */}
-        <View style={styles.jobCard}>
-          <Text style={styles.uploadTextAbove}>Uploaded 20 minutes ago</Text>
-
-          <View style={styles.userRow}>
-            <Image
-              source={{
-                uri: "https://randomuser.me/api/portraits/women/1.jpg",
-              }}
-              style={styles.avatar}
-            />
-            <View style={{ flex: 1 }}>
-              <View style={styles.nameRow}>
-                <Text style={styles.userName}>Jessie James</Text>
-                <View style={{ flexDirection: "row", marginLeft: 6 , gap: 3 }}>
-                  {[...Array(5)].map((_, i) => (
-                    <FontAwesome
-                      key={i}
-                      name="star"
-                      size={15}
-                      color="#EBBE56"
-                    />
-                  ))}
-                </View>
-              </View>
-              <View style={styles.paymentRow}>
-                <MaterialIcons name="verified" size={16} color="#40b68e"  />
-                <Text style={styles.paymentVerified}>Payment verified</Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              onPress={() => setLiked2(!liked2)}
-              style={styles.heartTouchable}
-            >
-              <FontAwesome
-                name={liked2 ? "heart" : "heart-o"}
-                size={20}
-                color={liked2 ? "#ff0000" : "#fff"}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <Text style={styles.jobTitle}>UI/UX Designer</Text>
-          <Text style={styles.jobDesc}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque
-            interdum sapien nec lectus vulputate, at facilisis justo laoreet.
-          </Text>
-
-          <View style={styles.skillRow}>
-            {["Website design", "Wireframing", "Prototyping"].map(
-              (skill, i) => (
-                <View key={i} style={styles.skillTag}>
-                  <Text style={styles.skillText}>{skill}</Text>
-                </View>
-              )
-            )}
-          </View>
-
-          <View style={styles.jobFooter}>
-            <Ionicons
-              name="cash-outline"
-              size={16}
-              color="#eb8676"
-              style={styles.icon}
-            />
-            <Text style={styles.hourly}>Hourly: </Text>
-            <Text style={styles.hourlyRange}>$15-$35</Text>
-            <View style={styles.locationRow2}>
-            <FontAwesome6
-              name="location-dot"
-              size={14}
-              color="#eb8676"
-              style={styles.locationIcon2}
-            />
-              <Text style={styles.locationText2}>Remote</Text>
-            </View>
-          </View>
-
-          <TouchableOpacity style={styles.viewBtn}>
-            <Text style={styles.viewBtnText}>View</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-      
-  
+  return (
+    <View style={styles.findJobContainer}>
+      <FlatList
+        data={jobs}
+        renderItem={renderJobCard}
+        keyExtractor={(item) => item.gid.toString()}
+        onEndReached={() => {
+          if (!isFetchingMore && hasMore) fetchJobs(page + 1);
+        }}
+        onEndReachedThreshold={0.5}
+        style={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={false}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  
-
-  jobCard: {
-    backgroundColor: "Transparent",
+  dividerLine: {
+    height: 1,
+    backgroundColor: "rgba(200,200,200,0.4)",
+    marginHorizontal: 1,
+    marginVertical: 15,
   },
-
+  scrollView: {
+    paddingBottom: 100,
+  },
+  findJobContainer: {
+    flex: 1,
+  },
   uploadTextAbove: {
-    color: "#b3b3b3",
+    color: "#c3c3c3",
     fontSize: 12,
+    marginBottom: 8,
     fontFamily: "Montserrat_400Regular",
-    marginBottom: 10,
   },
-
   userRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 7,
+    gap: 10,
+    width: "100%"
   },
-
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 3,
-  },
-
   avatar: {
     width: 55,
     height: 55,
     borderRadius: 100,
     borderWidth: 2,
     borderColor: "#fff",
-    marginRight: 12,
   },
-
+  userInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "#fff",
+    flex: 1
+  },
+  nameRow: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 5,
+  },
+  userNameSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
   userName: {
     color: "#fff",
-    fontWeight: "500",
-    fontSize: 15,
-    marginRight: 7,
+    fontSize: 16,
     fontFamily: "Montserrat_500Medium",
   },
-
+  starRow: {
+    flexDirection: "row",
+    gap: 3,
+  },
+  starIcon: {
+    fontSize: 13,
+    color: "#EBBE56",
+  },
   paymentRow: {
     flexDirection: "row",
     alignItems: "center",
   },
-
-  paymentVerified: {
-    color: "#fff",
-    fontSize: 12,
-    marginBottom: 4,
-    marginLeft: 4,
-    fontFamily: "Montserrat_500Medium",
+  paymentIcon: {
+    fontSize: 16,
+    color: "#39A881",
   },
-
+  paymentVerified: {
+    color: "#ffffff",
+    fontSize: 13,
+    marginLeft: 4,
+    fontFamily: "Montserrat_400Regular",
+  },
   jobTitle: {
-    color: "#fff",
-    fontSize: 15,
+    color: "#ffffff",
+    fontSize: 16,
     marginBottom: 5,
+    marginTop: 6,
     fontFamily: "Montserrat_600SemiBold",
   },
-
   jobDesc: {
     fontSize: 15,
-    marginBottom: 5,
+    color: "#fff",
+    lineHeight: 23,
     fontFamily: "Montserrat_400Regular",
-    color: "#ffffff",
-    lineHeight: 18,
-    padding: 4,
   },
-
+  readMore: {
+    color: "#eb8676",
+    fontWeight: "600",
+    fontFamily: "Montserrat_600SemiBold",
+  },
   skillRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginVertical: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    borderRadius: 30,
+    gap: 6,
+    fontFamily: "Montserrat_500Medium",
   },
-
   skillTag: {
-    backgroundColor: "#484141",
-    borderRadius: 20,
+    backgroundColor: "#514f4f",
+    borderRadius: 30,
     paddingVertical: 11,
-    paddingHorizontal: 15,
-    marginRight: 8,
-    marginBottom: 8,
+    paddingHorizontal: 14,
   },
-
   skillText: {
-    color: "#e3e3e3",
+    color: "#fff",
     fontSize: 10,
     fontFamily: "Montserrat_500Medium",
-    textAlign: "center",
   },
-
   jobFooter: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: 10,
+    marginTop: 5,
   },
-
-  icon: {
-    marginRight: 5,
+  cashIcon: {
+    fontSize: 16,
+    color: "#eb8676",
+    marginRight: 6,
   },
-
   hourly: {
     fontFamily: "Montserrat_600SemiBold",
     color: "#fff",
@@ -326,70 +337,36 @@ const styles = StyleSheet.create({
     marginRight: 12,
     fontFamily: "Montserrat_400Regular",
   },
-
- locationRow1: {
+  locationRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    flex: 1,
+    alignItems: "center",
+    marginLeft: 15,
   },
-  locationIcon1: {
-    marginRight: 5,
-    marginTop: 2,
+  locationIcon: {
+    fontSize: 16,
+    color: "#eb8676",
+    marginRight: 4,
   },
-  locationText1: {
-    flex: 1,
-    fontSize: 12,
-    lineHeight: 16,
+  locationText: {
     color: "#fff",
-    marginLeft: 5,
+    fontSize: 12,
     fontFamily: "Montserrat_400Regular",
   },
-
-  locationRow2: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    flex: 1,
-  },
-  locationIcon2: {
-    marginRight: 5,
-    marginTop: 2,
-  },
-  locationText2: {
-    flex: 1,
-    fontSize: 12,
-    lineHeight: 16,
-    color: "#fff",
-    marginLeft: 5,
-    fontFamily: "Montserrat_400Regular",
-  },
-
-  heartTouchable: {
-    alignSelf: "flex-start",
-    marginLeft: 8,
-    marginTop: 2,
-  },
-
-
   viewBtn: {
     backgroundColor: "#eb8676",
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: "center",
     paddingVertical: 10,
     marginTop: 10,
   },
-
   viewBtnText: {
     color: "#fff",
+    fontFamily: "Montserrat_700Bold",
     fontSize: 20,
     letterSpacing: 1,
-    fontFamily: "Montserrat_700Bold",
   },
-
-  dividerLine: {
-    height: 1,
-    backgroundColor: "rgba(200,200,200,0.4)",
-    marginHorizontal: 1,
-    marginTop: 30,
-    marginBottom: 16,
-  },
+  heartTouchable: {
+    alignItems: "flex-end",
+    width: "100%"
+  }
 });

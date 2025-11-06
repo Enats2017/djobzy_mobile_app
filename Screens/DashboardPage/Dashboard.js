@@ -435,11 +435,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     paddingVertical: 10,
+    justifyContent: "space-between"
   },
 
   chip: {
     backgroundColor: "#ffffff1a",
-    justifyContent: "space-between",
     flex: 1,
     alignItems: "center",
     borderRadius: 60,

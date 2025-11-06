@@ -11,12 +11,14 @@ import {
   View,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
+import Loading from "../../components/Loading";
 
 export default function AllCategories() {
   const [categories, setCategories] = useState({});
   const [searchText, setSearchText] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchCategories = async () => {
     try {
@@ -31,8 +33,11 @@ export default function AllCategories() {
       setCategories(formatted);
     } catch (error) {
       console.error("Error fetching categories:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -56,13 +61,15 @@ export default function AllCategories() {
     setShowSuggestions(false);
   };
 
+  if (loading) return <Loading />;
+
   return (
-    <View style={styles.container}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140 }}
-      >
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 100 }}
+    >
+      <View style={styles.categoryContainer}>
         <Text style={styles.sectionHeader}>Choose the Categories</Text>
 
         <View style={styles.searchBar}>
@@ -136,23 +143,20 @@ export default function AllCategories() {
             <View style={styles.dividerLine} />
           </React.Fragment>
         ))}
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  categoryContainer: {
     flex: 1,
-    width: "100%",
-    backgroundColor: "transparent",
   },
   sectionHeader: {
     color: "#fff",
     fontSize: 16,
     fontFamily: "Montserrat_600SemiBold",
     letterSpacing: 0.2,
-    marginTop: 20,
     marginBottom: 10,
   },
   searchBar: {
@@ -212,8 +216,8 @@ const styles = StyleSheet.create({
   },
 
   activeBarText: {
-    color: "#000000",
-    fontFamily: "Montserrat_700Bold",
+    color: "#303030",
+    fontFamily: "Montserrat_600SemiBold",
   },
   barsContainer: {
     flexDirection: "row",
@@ -226,7 +230,6 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 15,
     borderRadius: 40,
-    marginBottom: 12,
   },
   barText: {
     color: "#dee2e6",

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -202,9 +201,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(200,200,200,0.4)",
     marginHorizontal: 1,
     marginVertical: 15,
-  },
-  scrollView: {
-    paddingBottom: 100,
   },
   findJobContainer: {
     flex: 1,

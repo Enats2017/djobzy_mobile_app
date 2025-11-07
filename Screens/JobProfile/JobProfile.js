@@ -152,7 +152,9 @@ const JobProfile = () => {
                 </Text>
                 <Text style={styles.priceText}>
                   Expected Hours:{" "}
-                  <Text style={styles.boldText}>{job.details.expected_hour}</Text>
+                  <Text style={styles.boldText}>
+                    {job.details.expected_hour}
+                  </Text>
                 </Text>
               </View>
             </View>
@@ -182,9 +184,15 @@ const JobProfile = () => {
             </View>
           </ScrollView>
           <View>
-            {job.proposal_count > 0 && job.details.request_status < 2 ? (
+            {job.details.request_status < 2 && job?.award != null ? (
               <TouchableOpacity
                 style={styles.button}
+                onPress={() =>
+                  navigation.navigate("MyCurrentBiddingProfile", {
+                    myOffer: job.my_offer || [],
+                    current_user: job.current_user || [],
+                  })
+                }
               >
                 <Text style={[styles.buttonText, { color: "#fff" }]}>
                   See My Offer
@@ -364,7 +372,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     backgroundColor: "#cb7767",
-
   },
   buttonText: {
     color: "#f7f3f3ff",

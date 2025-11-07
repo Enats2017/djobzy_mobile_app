@@ -26,13 +26,13 @@ import MyJobPage from "./Screens/EmployeeJobs/MyJobPage";
 import MyFindJobs from "./Screens/FindJobs/MyFindJobs";
 import JobPublishedPage from "./Screens/JobCreatePage/JobPublishedPage";
 import JobBoostPaymentSection from "./Screens/JobCreatePage/JobBoostPaymentSection";
-
+import MyCurrentBiddingProfile from "./Screens/EmployeeJobs/MyCurrentBiddingProfile";
+import ChangeMyOffer from "./Screens/EmployeeJobs/ChangeMyOffer";
 
 const Stack = createStackNavigator();
 
 const App = () => {
   const [appIsReady, setAppIsReady] = useState(false);
-
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular,
     Montserrat_600SemiBold,

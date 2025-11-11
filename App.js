@@ -26,19 +26,22 @@ import MyJobPage from "./Screens/EmployeeJobs/MyJobPage";
 import MyFindJobs from "./Screens/FindJobs/MyFindJobs";
 import JobPublishedPage from "./Screens/JobCreatePage/JobPublishedPage";
 import JobBoostPaymentSection from "./Screens/JobCreatePage/JobBoostPaymentSection";
-import Offer from "./components/Offer";
 import EmployerDashboard from "./Screens/EmployerDashboardPage/EmployerDashboard";
 import EmployerContracts from "./Screens/EmployerJobs/EmployerContracts";
 import MyJobPost from "./Screens/EmployerJobs/MyJobPost";
 import DeactivatedJobs from "./Screens/EmployerJobs/DeactivatedJobs";
 import Wallet from "./Screens/Wallet/Wallet";
-
+import MyCurrentBiddingProfile from "./Screens/EmployeeJobs/MyCurrentBiddingProfile";
+import ChangeMyOffer from "./Screens/EmployeeJobs/ChangeMyOffer";
+import ViewCompletedJobPost from "./Screens/EmployeeJobs/ViewCompletedJobPost";
+import CompletedJobPaymentPage from "./Screens/EmployeeJobs/CompletedJobPaymentPage";
+import ViewReceivedOffer from "./Screens/EmployeeJobs/ViewReceivedOffer";
+import MyNewReceiveOfferPage from "./Screens/EmployeeJobs/MyNewReceiveOfferPage";
+import AcceptReceivedOfferPage from "./Screens/EmployeeJobs/AcceptReceivedOfferPage";
 
 const Stack = createStackNavigator();
-
 const App = () => {
   const [appIsReady, setAppIsReady] = useState(false);
-
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular,
     Montserrat_600SemiBold,
@@ -79,9 +82,27 @@ const App = () => {
           <Stack.Screen name="JobProfile" component={JobProfile} />
           <Stack.Screen name="JobApply" component={JobApplyPage} />
           <Stack.Screen name="MyJobPage" component={MyJobPage} />
-          <Stack.Screen name ="MyFindJobs" component={MyFindJobs} />
-          <Stack.Screen name ="JobPublishedPage" component={JobPublishedPage} />
-          <Stack.Screen name ="JobBoostPaymentSection" component={JobBoostPaymentSection} />
+          <Stack.Screen name ="EmployerDashboard" component={EmployerDashboard}/>
+          <Stack.Screen name ="EmployerContracts" component={EmployerContracts}/>
+          <Stack.Screen name ="MyJobPost" component={MyJobPost}/>
+          <Stack.Screen name ="DeactivatedJobs" component={DeactivatedJobs}/>
+          <Stack.Screen name ="Wallet" component={Wallet}/>
+          <Stack.Screen name="MyFindJobs" component={MyFindJobs} />
+          <Stack.Screen name="JobPublishedPage" component={JobPublishedPage} />
+          <Stack.Screen
+            name="JobBoostPaymentSection"
+            component={JobBoostPaymentSection}
+          />
+          <Stack.Screen
+            name="MyCurrentBiddingProfile"
+            component={MyCurrentBiddingProfile}
+          />
+          <Stack.Screen name ="ChangeMyOffer" component={ChangeMyOffer} />
+          <Stack.Screen name ="ViewCompletedJobPost" component={ViewCompletedJobPost}/>
+          <Stack.Screen name ="CompletedJobPaymentPage" component={CompletedJobPaymentPage} />
+          <Stack.Screen name ="ViewReceivedOffer" component={ViewReceivedOffer} />
+          <Stack.Screen name = "MyNewReceiveOfferPage" component={MyNewReceiveOfferPage}/>
+          <Stack.Screen name = "AcceptReceivedOfferPage" component={AcceptReceivedOfferPage}/>
         </Stack.Navigator>
       </NavigationContainer>
     </View>

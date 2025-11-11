@@ -4,6 +4,8 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import React, { useState } from "react";
+import GradientButton from "../../components/GradientButton";
+import Loading from "../../components/Loading";
 import {
   ActivityIndicator,
   Alert,
@@ -17,13 +19,11 @@ import {
 import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
-import GradientButton from "../../components/GradientButton";
-import BorderButton from "../../components/BorderButton";
 
-const ChangeMyOffer = () => {
+const MyNewReceiveOfferPage = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { gig, award } = route?.params || {};
+  const { offerID, seeOffer } = route.params || [];
   const [agree, setAgree] = useState(false);
   const [myTotalPrice, setMyTotalPrice] = useState("");
   const [myHourlyRate, setMyHourlyRate] = useState("");
@@ -45,14 +45,16 @@ const ChangeMyOffer = () => {
         return;
       }
       const payload = {
-      id: award?.prp_id,
-      bid: myTotalPrice,
-      desc: introLetter,
-      hourly_rate: myHourlyRate,
-      total_hour: expectedTime,
-    };
-    
-      const response = await fetch(`${API_URL}/save-change-apply`, {
+        oid: offerID,
+        gid: seeOffer.gid,
+        price: myTotalPrice,
+        hourly_rate: myHourlyRate,
+        total_hour: expectedTime,
+        desc: introLetter,
+      };
+      console.log(payload);
+
+      const response = await fetch(`${API_URL}/save-job-new-offer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +68,6 @@ const ChangeMyOffer = () => {
         setMyHourlyRate("");
         setIntroLetter("");
         Alert.alert("Success", "Application submitted");
-        navigation.navigate("Dashboard");
       } else {
         alert(result.message || "Failed to submit proposal");
       }
@@ -126,11 +127,12 @@ const ChangeMyOffer = () => {
     <>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
         <View style={styles.container}>
-          <PageNameHeaderBar navigation={navigation} title="Change My Offer" />
+          <PageNameHeaderBar navigation={navigation} title="My New Offer" />
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.titleheader}>
-              <Text style={styles.title}>{award.subject}</Text>
+              <Text style={styles.title}>{seeOffer.subject}</Text>
             </View>
+
             <Text style={styles.sectionTitle}>Employer's offered price</Text>
             <View style={styles.row}>
               <View style={styles.box}>
@@ -138,22 +140,26 @@ const ChangeMyOffer = () => {
                 <View style={styles.valueBox}>
                   <Text style={styles.currency}>CAD</Text>
                   <View style={styles.divider} />
-                  <Text style={styles.value}>{award.fixed_minimum}</Text>
+                  <Text style={styles.value}>{seeOffer.fixed_minimum}</Text>
                 </View>
               </View>
+
               <View style={styles.box}>
                 <Text style={styles.label}>Hourly Rate</Text>
                 <View style={styles.valueBox}>
                   <Text style={styles.currency}>CAD</Text>
                   <View style={styles.divider} />
-                  <Text style={styles.value}>{award.hour_minimum}</Text>
+                  <Text style={styles.value}>{seeOffer.hour_minimum}</Text>
                 </View>
               </View>
             </View>
+
             <Text style={styles.note}>
-              <Text style={styles.bold}>10 Hours </Text>
+              <Text style={styles.bold}>{seeOffer.expected_hour} </Text>
               is expected for the job to be done.
             </Text>
+
+            {/* My Offer */}
             <View style={styles.offerHeader}>
               <Text style={styles.sectionTitle}>My Offer</Text>
               <FontAwesome
@@ -163,6 +169,7 @@ const ChangeMyOffer = () => {
                 style={{ marginTop: 2 }}
               />
             </View>
+
             <View style={styles.offerRow}>
               <View style={styles.offerBox}>
                 <Text style={styles.label}>Total Price</Text>
@@ -183,6 +190,7 @@ const ChangeMyOffer = () => {
                   />
                 </View>
               </View>
+
               <View style={styles.offerBox}>
                 <Text style={styles.label}>Hourly Rate</Text>
                 <View style={styles.inputContainer}>
@@ -203,30 +211,10 @@ const ChangeMyOffer = () => {
               </View>
             </View>
             <Text style={styles.note}>
-              <Text style={styles.bold}>90 Hours </Text>
+              <Text style={styles.bold}>{expectedTime} Hours </Text>
               is expected for the job to be done.
             </Text>
-            <Text style={styles.sectionTitle}>Previous bids</Text>
-            <View style={styles.row}>
-              <View style={styles.box}>
-                <Text style={styles.label}>Total Price</Text>
-                <View style={styles.perviousBox}>
-                  <Text style={styles.currency}>CAD</Text>
-                  <View style={styles.divider} />
-                  <Text style={styles.perviousvalue}>{award.bid_price}</Text>
-                </View>
-              </View>
-              <View style={styles.box}>
-                <Text style={styles.label}>Hourly Rate</Text>
-                <View style={styles.perviousBox}>
-                  <Text style={styles.currency}>CAD</Text>
-                  <View style={styles.divider} />
-                  <Text style={styles.perviousvalue}>
-                    {award.prop_hourly_rate}/hr
-                  </Text>
-                </View>
-              </View>
-            </View>
+            {/* Introduction Letter */}
             <Text style={styles.sectionTitle}>
               Introduction Letter (Required)
             </Text>
@@ -255,12 +243,17 @@ const ChangeMyOffer = () => {
                 DJobzy.com
               </Text>
             </TouchableOpacity>
+
+            <View style={styles.footerbtn}>
+              <GradientButton
+                title={submitting ? "Send My New Offer" : <Loading />}
+                onPress={handleSubmitOffer}
+                disabled={submitting}
+              ></GradientButton>
+            </View>
           </ScrollView>
-          <View style={styles.footerbtn}>
-            <GradientButton title="send" onPress={handleSubmitOffer} />
-            <BorderButton title="Revoke My Bid" />
-          </View>
         </View>
+
         <Footer />
       </SafeAreaView>
     </>
@@ -275,7 +268,6 @@ const styles = StyleSheet.create({
   titleheader: {
     paddingBottom: 10,
   },
-
   title: {
     color: "#ffffff",
     fontSize: 22,
@@ -314,7 +306,6 @@ const styles = StyleSheet.create({
   box: {
     flex: 1,
   },
-
   label: {
     color: "#FFFFFF",
     fontSize: 12,
@@ -356,7 +347,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Montserrat_500Medium",
   },
-
   perviousvalue: {
     color: "#ffffff",
     fontSize: 16,
@@ -424,12 +414,18 @@ const styles = StyleSheet.create({
     color: "#C57B63",
     textDecorationLine: "underline",
   },
-  footerbtn: {
-    flexDirection: "column",
-    gap: 7,
-    paddingBottom: 90,
-    paddingTop: 10,
+  sendButton: {
+    backgroundColor: "#C96B59",
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 30,
+  },
+  sendButtonText: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontFamily: "Montserrat_700Bold",
   },
 });
 
-export default ChangeMyOffer;
+export default MyNewReceiveOfferPage;

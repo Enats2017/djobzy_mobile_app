@@ -1,14 +1,8 @@
-import Footer from "../../components/Footer";
+import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import PageNameHeaderBar from "../../components/PageNameHeaderBar";
-
 import {
-  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -16,208 +10,166 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Footer from "../../components/Footer";
+import PageNameHeaderBar from "../../components/PageNameHeaderBar";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../api/ApiUrl";
+import Loading from "../../components/Loading";
 
-const JobProfile = () => {
-  const route = useRoute();
+const ViewCompletedJobPost = () => {
   const navigation = useNavigation();
-  const jobId = route.params?.gid;
-
-  const [job, setJob] = useState(null);
+  const route = useRoute();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { gid } = route.params || [];
+  const [job, setJob] = useState([]);
+  const [category, setCategory] = useState([]);
 
-  const fetchJob = async () => {
+  const fetchData = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
       console.log(token);
-      const response = await fetch(`${API_URL}/employee-job-details/${jobId}`, {
+
+      const response = await fetch(`${API_URL}/closed-job-details/${gid}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
-      if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
-      setJob(data);
-    } catch (err) {
-      setError(err.message);
+      setJob(data.gigs);
+      console.log(job);
+      
+      setCategory(data.category);
+    } catch (error) {
+      console.log("API Error:", error);
     } finally {
       setLoading(false);
     }
   };
   useEffect(() => {
-    fetchJob();
+    fetchData();
   }, []);
-
-  if (loading)
-    return (
-      <ActivityIndicator
-        size="large"
-        color="#fff"
-        style={styles.loaderOverlay}
-      />
-    );
-  if (error) return <Text style={{ color: "#fff" }}>Error: {error}</Text>;
-  if (!job) return <Text style={{ color: "#fff" }}>No job found</Text>;
-
+  console.log(job.gid);
+  
+    if (loading) return <Loading />;
   return (
     <>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
         <View style={styles.container}>
-          <PageNameHeaderBar navigation={navigation} title="Job Details" />
-
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Header Section */}
+          <PageNameHeaderBar
+            navigation={navigation}
+            title="My Completed Jobs"
+          />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={{ paddingBottom: 100 }}
+          >
+            <View style={styles.statsRow}>
+              <View style={styles.statsBox}>
+                <Text style={styles.statsLabel}>Hourly Rate</Text>
+                <Text style={styles.statsValue}>20.00 CAD</Text>
+              </View>
+              <View style={styles.vertDivider} />
+              <View style={styles.statsBox}>
+                <Text style={styles.statsLabel}>Total Hour</Text>
+                <Text style={styles.statsValue}>1</Text>
+              </View>
+              <View style={styles.vertDivider} />
+              <View style={styles.statsBox}>
+                <Text style={styles.statsLabel}>Total Earn</Text>
+                <Text style={styles.statsValue}>20.00 CAD</Text>
+              </View>
+            </View>
             <View style={styles.userInfoRow}>
-              <Image
-                source={{
-                  uri:
-                    job.details.photo ||
-                    "https://randomuser.me/api/portraits/women/82.jpg",
-                }}
-                style={styles.avatar}
-              />
-
+              <Image source={{ uri: job?.photo }} style={styles.avatar} />
               <View style={styles.userDetails}>
                 <View style={styles.headerRow}>
-                  <Text style={styles.userName}>{job.details.full_name}</Text>
+                  <Text style={styles.userName}>{job.full_name}</Text>
                   <TouchableOpacity style={styles.menuButton}>
                     <Entypo name="dots-three-vertical" size={20} color="#bbb" />
                   </TouchableOpacity>
                 </View>
-
-                <View style={styles.verifyRow}>
-                  <MaterialIcons name="verified" size={16} color="#c3c3c3" />
-                  <Text style={styles.verifyText}>
-                    Verification Level: {job.details.verification_count}/7
-                  </Text>
-                </View>
-
                 <View style={styles.locationRow}>
                   <Ionicons name="location-outline" size={16} color="#c3c3c3" />
                   <Text style={styles.locationText}>
-                    {job.details.preferred_location || "Unknown"}
+                    {job.preferred_location}
                   </Text>
                 </View>
               </View>
             </View>
-             {job.details.request_status < 2 && job?.award != null && (
-            <View style={styles.msgBox}>
-              <Text style={styles.msgtext}>The journey starts now. Applied for the Job role.</Text>
-            </View>
-             )}
-
-            {/* Job Title */}
             <View style={styles.section}>
               <View style={styles.rowBetween}>
-                <Text style={styles.uploadTime}>
-                  Uploaded on {job.details.created}
-                </Text>
-                <Text style={styles.jobTitle}>
-                  {job.details.subject || "Untitled Job"}
-                </Text>
+                <Text style={styles.uploadTime}>Uploaded on {job.created}</Text>
+                <Text style={styles.jobTitle}>{job.subject}</Text>
               </View>
             </View>
+
             <View
               style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
             />
-
-            {/* Categories */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Categories</Text>
               <View style={styles.tagContainer}>
-                {job.category.map((cat, i) => (
+                {category.map((cat, i) => (
                   <View key={i} style={styles.tag}>
                     <Text style={styles.tagText}>{cat.subname}</Text>
                   </View>
                 ))}
               </View>
             </View>
+
             <View
               style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
             />
-
-            {/* Pricing */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Pricing</Text>
               <View style={styles.priceRow}>
                 <Text style={styles.priceText}>
                   Total Price:{" "}
-                  <Text style={styles.boldText}>
-                    CAD {job.details.fixed_minimum}
-                  </Text>
+                  <Text style={styles.boldText}>CAD {job.fixed_minimum}</Text>
                 </Text>
                 <Text style={styles.priceText}>
                   Hourly Rate:{" "}
-                  <Text style={styles.boldText}>
-                    CAD {job.details.hour_minimum}
-                  </Text>
+                  <Text style={styles.boldText}>CAD {job.hour_minimum}</Text>
                 </Text>
                 <Text style={styles.priceText}>
                   Expected Hours:{" "}
-                  <Text style={styles.boldText}>
-                    {job.details.expected_hour}
-                  </Text>
+                  <Text style={styles.boldText}>{job.expected_hour}</Text>
                 </Text>
               </View>
             </View>
+
             <View
               style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
             />
-
-            {/* Bidding */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Bidding</Text>
               <Text style={styles.priceText}>
                 Total bidding:{" "}
-                <Text style={styles.boldText}>{job.proposal_count || 0}</Text>
+                <Text style={styles.boldText}>{job.proposal_count}</Text>
               </Text>
             </View>
 
             <View
               style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
             />
-
-            {/* Description */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.descriptionText}>
-                {job.details.description || "No description provided."}
-              </Text>
+              <Text style={styles.descriptionText}>{job.description}</Text>
             </View>
           </ScrollView>
-          <View>
-            {job.details.request_status < 2 && job?.award != null ? (
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
-                  navigation.navigate("MyCurrentBiddingProfile", {
-                    myOffer: job.my_offer || [],
-                    current_user: job.current_user || [],
-                    gig: job.details,
-                    award: job.award || [],                    
-                  })
-                }
-              >
-                <Text style={[styles.buttonText, { color: "#fff" }]}>
-                  See My Offer
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
-                  navigation.navigate("JobApply", {
-                    gig: job.details,
-                    award: job.award || [],
-                  })
-                }
-              >
-                <Text style={styles.buttonText}>Apply</Text>
-              </TouchableOpacity>
-            )}
+          <View style={styles.btnRow}>
+            <TouchableOpacity style={styles.chatBtn}>
+              <Text style={styles.btnText}>Chat</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.payBtn}
+              onPress={() => navigation.navigate("CompletedJobPaymentPage",{gid:job.gid})}
+            >
+              <Text style={styles.btnText}>Payment Details</Text>
+            </TouchableOpacity>
           </View>
         </View>
         <Footer />
@@ -237,12 +189,42 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#161616",
   },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 18,
+    borderColor: "#FFFFFF33",
+    borderWidth: 2,
+    borderRadius: 15,
+    padding: 14,
+  },
+  statsBox: {
+    alignItems: "center",
+    width: "30%",
+  },
+  statsLabel: {
+    color: "#ffffff",
+    fontSize: 12,
+    marginBottom: 2,
+    fontFamily: "Montserrat_400Regular",
+  },
+  statsValue: {
+    color: "#fff",
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 15,
+  },
   headerCard: {
     backgroundColor: "#222",
     borderRadius: 12,
     padding: 16,
     marginTop: 15,
     marginBottom: 12,
+  },
+  vertDivider: {
+    borderLeftWidth: 2,
+    borderRadius: 5,
+    height: 40,
+    borderLeftColor: "#FFFFFF33",
   },
   userInfoRow: {
     flexDirection: "row",
@@ -307,22 +289,6 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Medium",
     fontSize: 16,
   },
-   msgBox:{
-    borderColor:"#46A282",
-    borderWidth:2,
-    backgroundColor:"#46A2821A",
-    borderRadius:10,
-     paddingVertical:10,
-    justifyContent:"center",
-    alignItems:"center",
-    marginBottom:5,
-   },
-   msgtext:{
-    color:"#46A282",
-    fontFamily:"Montserrat_700Bold",
-    fontSize:14,
-
-   },
   section: {
     paddingVertical: 11,
     marginBottom: 8,
@@ -384,20 +350,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
   },
-  button: {
-    marginBottom: "25%",
-    marginTop: 7,
-    marginHorizontal: 5,
-    paddingVertical: 16,
-    borderRadius: 10,
-    alignItems: "center",
-    backgroundColor: "#cb7767",
+  btnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+    paddingBottom: 90,
+    paddingTop: 10,
   },
-  buttonText: {
-    color: "#f7f3f3ff",
-    fontSize: 17,
-    fontWeight: "bold",
+  chatBtn: {
+    flex: 1,
+    backgroundColor: "#D17B68",
+    borderRadius: 10,
+    paddingVertical: 13,
+    alignItems: "center",
+  },
+  payBtn: {
+    flex: 1,
+    backgroundColor: "#46A282",
+    borderRadius: 10,
+    paddingVertical: 13,
+    alignItems: "center",
+  },
+  btnText: {
+    color: "#ffffff",
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 16,
   },
 });
 
-export default JobProfile;
+export default ViewCompletedJobPost;

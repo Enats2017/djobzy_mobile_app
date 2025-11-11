@@ -18,7 +18,7 @@ import GradientButton from "../../components/GradientButton";
 const MyCurrentBiddingProfile = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { myOffer, current_user } = route.params || [];
+  const { myOffer, current_user ,award, gig} = route.params || [];
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -81,7 +81,14 @@ const MyCurrentBiddingProfile = () => {
                 </View>
               </View>
               {current_user == offer.req_user_id ? (
-                <GradientButton title="Change my offer"/>
+                <GradientButton title="Change my offer" 
+                onPress={() =>
+                  navigation.navigate("ChangeMyOffer", {
+                    gig: gig || [],
+                    award: award || [],
+                  })
+                }
+                />
               ) : (
                 <GradientButton title="View" />
               )}

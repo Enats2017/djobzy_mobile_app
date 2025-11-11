@@ -29,6 +29,7 @@ import Footer from "../../components/Footer";
 import HeaderBar from "../../components/HeaderBar";
 import { API_ICON, API_URL } from "../../api/ApiUrl";
 import { truncateWords } from "../../api/TruncateWords";
+import LineDivider from "../../components/LineDivider";
 
 const Dashboard = () => {
   const [showLoader, setShowLoader] = useState(false);
@@ -127,38 +128,48 @@ const Dashboard = () => {
           <View style={styles.userRow}>
             <Image
               source={{
-                uri: item.photo || "../assets/images/djobzy-logo.png",
+                uri: item.photo || "https://randomuser.me/api/portraits/women/8.jpg",
               }}
               style={styles.avatar}
             />
-            <View style={{ flex: 1 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 3,
-                }}
-              >
-                <Text style={styles.userName}>{item.full_name}</Text>
-                <View style={{ flexDirection: "row", marginLeft: 6 }}>
-                  {[...Array(5)].map((_, i) => (
-                    <FontAwesome
-                      key={i}
-                      name="star"
-                      size={12}
-                      color="#f5c242"
-                    />
-                  ))}
+
+            <View style={styles.userInfo}>
+              <View style={styles.nameRow}>
+                <View style={styles.userNameSection}>
+                  <Text style={styles.userName}>{item.full_name}</Text>
+
+                  <View style={styles.starRow}>
+                    {[...Array(5)].map((_, i) => (
+                      <FontAwesome
+                        key={i}
+                        name="star"
+                        style={styles.starIcon}
+                      />
+                    ))}
+                  </View>
+                </View>
+                <View style={styles.paymentRow}>
+                  <MaterialIcons
+                    name="verified"
+                    size={16}
+                    color="#40b68e"
+                  />
+                  <Text style={styles.paymentVerified}>
+                    Payment verified
+                  </Text>
                 </View>
               </View>
-              <View style={styles.paymentRow}>
-                <MaterialIcons name="verified" size={16} color="#39A881" />
-                <Text style={styles.paymentVerified}>Payment verified</Text>
+
+              <View>
+                <TouchableOpacity style={styles.heartTouchable}>
+                  <FontAwesome
+                    name={"heart-o"}
+                    size={20}
+                    color={"#fff"}
+                  />
+                </TouchableOpacity>
               </View>
             </View>
-            <TouchableOpacity>
-              <Feather name="heart" size={22} color="#fff" />
-            </TouchableOpacity>
           </View>
 
           <Text style={styles.jobTitle}>{item.title}</Text>
@@ -238,7 +249,7 @@ const Dashboard = () => {
           >
             <Text style={styles.viewBtnText}>View</Text>
           </TouchableOpacity>
-          <View style={styles.dividerLine} />
+          <LineDivider />
         </View>
       </>
     );
@@ -466,40 +477,61 @@ const styles = StyleSheet.create({
   userRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 10,
+    gap: 10,
+    width: "100%",
   },
-
   avatar: {
     width: 55,
     height: 55,
     borderRadius: 100,
     borderWidth: 2,
     borderColor: "#fff",
-    marginRight: 12,
   },
-
+  userInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 10,
+    flex: 1,
+  },
+  nameRow: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 5,
+  },
+  userNameSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
   userName: {
-    color: "#ffffff",
-
-    fontSize: 15,
-    marginRight: 7,
+    color: "#fff",
+    fontSize: 16,
     fontFamily: "Montserrat_500Medium",
   },
-
+  starRow: {
+    flexDirection: "row",
+    gap: 3,
+  },
+  starIcon: {
+    fontSize: 13,
+    color: "#EBBE56",
+  },
   paymentRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 3,
   },
-
+  paymentIcon: {
+    fontSize: 16,
+    color: "#39A881",
+  },
   paymentVerified: {
     color: "#ffffff",
-    fontSize: 14,
+    fontSize: 13,
     marginLeft: 4,
-    fontWeight: "bold",
     fontFamily: "Montserrat_400Regular",
   },
-
   jobTitle: {
     color: "#fff",
     fontSize: 16,
@@ -595,13 +627,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 20,
     fontFamily: "Montserrat_700Bold",
-  },
-
-  dividerLine: {
-    height: 1,
-    backgroundColor: "rgba(200,200,200,0.4)",
-    marginHorizontal: 1,
-    marginTop: 20,
   },
 
   // end

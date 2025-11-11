@@ -24,7 +24,6 @@ const ReceivedOffers = () => {
     const fetchData = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
-        console.log(token);
 
         const response = await fetch(`${API_URL}/recieved-offers`, {
           headers: {
@@ -112,7 +111,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 10,
-    paddingTop:30,
   },
   toggleBtn: {
     flex: 1,
@@ -145,7 +143,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderRadius: 10,
   },
-  scrollView: { paddingHorizontal: 1 },
+  scrollView: { paddingHorizontal: 1, paddingBottom: 100 },
 });
 
 export default ReceivedOffers;

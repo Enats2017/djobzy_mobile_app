@@ -1,15 +1,16 @@
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { truncateWords } from "../../api/TruncateWords";
 
-const ActiveBiddings = ({activeBids =[]}) => {
+const ActiveBiddings = ({ activeBids = [] }) => {
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.avatarWrapperOuter}>
           <Image
             source={{
-              uri: "https://randomuser.me/api/portraits/women/82.jpg",
+              uri: activeBids.photo || "https://randomuser.me/api/portraits/women/82.jpg",
             }}
             style={styles.avatarImage}
           />
@@ -33,7 +34,7 @@ const ActiveBiddings = ({activeBids =[]}) => {
 
           <View style={styles.verificationRow}>
             <MaterialIcons
-              name="check-circle"
+              name="verified"
               size={16}
               color="#C3C3C3"
               style={{ marginRight: 6 }}
@@ -63,7 +64,7 @@ const ActiveBiddings = ({activeBids =[]}) => {
       <View style={styles.sectionBox}>
         <Text style={styles.sectionTitle}>Job Description</Text>
         <Text style={styles.sectionText}>
-         {activeBids.description}
+          {truncateWords(activeBids.description, 20)}
         </Text>
       </View>
 
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#ffffff1a",
     borderRadius: 10,
-   flex:1,
+    flex: 1,
     padding: 15,
     marginBottom: 10,
   },

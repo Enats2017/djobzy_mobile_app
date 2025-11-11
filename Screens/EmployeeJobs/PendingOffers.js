@@ -1,9 +1,9 @@
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { truncateWords } from "../../api/TruncateWords";
 
 const PendingOffer = ({pendingOffer=[]}) => {
-
 
   return (
     <View style={styles.card}>
@@ -65,7 +65,7 @@ const PendingOffer = ({pendingOffer=[]}) => {
       <View style={styles.sectionBox}>
         <Text style={styles.sectionTitle}>Job Description</Text>
         <Text style={styles.sectionText}>
-          {pendingOffer.description}
+          {truncateWords(pendingOffer.description, 20)}
         </Text>
       </View>
 
@@ -88,7 +88,6 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#444444ff",
     borderRadius: 12,
-    
     padding: 15,
   },
 

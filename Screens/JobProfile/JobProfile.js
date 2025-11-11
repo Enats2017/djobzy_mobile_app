@@ -31,7 +31,6 @@ const JobProfile = () => {
   const fetchJob = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      console.log(token);
       const response = await fetch(`${API_URL}/employee-job-details/${jobId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -293,7 +292,7 @@ const styles = StyleSheet.create({
 
   locationRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 4,
   },
 
@@ -302,6 +301,8 @@ const styles = StyleSheet.create({
     marginLeft: 2,
     fontFamily: "Montserrat_400Medium",
     fontSize: 16,
+    maxWidth: "90%",
+    flexWrap: "wrap"
   },
   section: {
     paddingVertical: 11,

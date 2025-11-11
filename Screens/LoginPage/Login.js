@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
-import { API_URL , API_ICON } from "../../api/ApiUrl";
+import { API_URL, API_ICON } from "../../api/ApiUrl";
 
 
 const { width, height } = Dimensions.get("window");
@@ -64,7 +64,7 @@ const {
   socialIconSize,
 } = getResponsiveValues();
 
-const Login = ({navigation}) => {
+const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -86,12 +86,12 @@ const Login = ({navigation}) => {
         },
         body: JSON.stringify({ email, password }),
       });
-      const data = await response.json(); 
+      const data = await response.json();
       setLoading(false);
       if (response.ok) {
-       if (data.token) {
-      await AsyncStorage.setItem("token", data.token);  
-       }
+        if (data.token) {
+          await AsyncStorage.setItem("token", data.token);
+        }
         Alert.alert("Success", "Login successful ");
         navigation.navigate("Dashboard");
       } else {
@@ -108,114 +108,114 @@ const Login = ({navigation}) => {
       colors={["#1c1c1c", "#2e2a2ac5", "#3a3a3a"]}
       style={styles.containers}
     >
-       <KeyboardAwareScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.scrollContainer}
         enableOnAndroid
         extraScrollHeight={20}
         keyboardShouldPersistTaps="handled"
       >
 
-      <View style={styles.container}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../../assets/images/Login-icon.png")}
-            style={styles.logo}
-          />
-        </View>
-        <Text style={styles.title}>Sign In To Your Account</Text>
-        <Text style={styles.subtitle}>
-          Enter your email and password to log in
-        </Text>
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="xyz@gmail.com"
-          placeholderTextColor="#888"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <Text style={styles.label}>Password</Text>
-        <View style={styles.passwordContainer}>
-          <TextInput
-            style={styles.passwordInput}
-            placeholder="Enter Password"
-            placeholderTextColor="#888"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.eyeIcon}
-          >
-            <Ionicons
-              name={showPassword ? "eye-off-outline" : "eye-outline"}
-              size={eyeIconSize}
-              color="#888"
+        <View style={styles.container}>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require("../../assets/images/Login-icon.png")}
+              style={styles.logo}
             />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.row}>
-          <TouchableOpacity
-            style={styles.rememberMe}
-            onPress={() => setRemember(!remember)}
-          >
-            <View
-              style={[styles.checkbox, remember && styles.checkboxChecked]}
-            >
-              {remember && (
-                <Ionicons name="checkmark" size={checkIconSize} color="#fff" />
-              )}
-            </View>
-            <Text style={styles.rememberText}> Remember Me</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={()=>navigation.navigate("Forget")}>
-            <Text style={styles.forgotText}>Forgot Password</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity
-          style={styles.loginBtn}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.loginText}>Log in</Text>
-          )}
-        </TouchableOpacity>
-        <View style={styles.dividerContainer}>
-          <View style={styles.line} />
-          <Text style={styles.orText}>Or</Text>
-          <View style={styles.line} />
-        </View>
-
-        <TouchableOpacity style={styles.socialBtn}>
-          <Image
-            source={require("../../assets/images/Google.png")}
-            style={styles.socialIcon}
-          />
-          <Text style={styles.socialText}>Sign In with Google</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.socialBtn}>
-          <Image
-            source={require("../../assets/images/facebook.png")}
-            style={styles.socialIcon}
-          />
-          <Text style={styles.socialText}>Sign In with Facebook</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.footerText}>
-          Don’t have an account?{" "}
-          <Text
-            style={styles.linkText}
-            onPress={() => navigation.navigate("Signup")}
-          >
-            Create one now
+          </View>
+          <Text style={styles.title}>Sign In To Your Account</Text>
+          <Text style={styles.subtitle}>
+            Enter your email and password to log in
           </Text>
-        </Text>
-      </View>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="xyz@gmail.com"
+            placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Enter Password"
+              placeholderTextColor="#888"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeIcon}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                size={eyeIconSize}
+                color="#888"
+              />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.row}>
+            <TouchableOpacity
+              style={styles.rememberMe}
+              onPress={() => setRemember(!remember)}
+            >
+              <View
+                style={[styles.checkbox, remember && styles.checkboxChecked]}
+              >
+                {remember && (
+                  <Ionicons name="checkmark" size={checkIconSize} color="#fff" />
+                )}
+              </View>
+              <Text style={styles.rememberText}> Remember Me</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("Forget")}>
+              <Text style={styles.forgotText}>Forgot Password</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            style={styles.loginBtn}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginText}>Log in</Text>
+            )}
+          </TouchableOpacity>
+          <View style={styles.dividerContainer}>
+            <View style={styles.line} />
+            <Text style={styles.orText}>Or</Text>
+            <View style={styles.line} />
+          </View>
+
+          <TouchableOpacity style={styles.socialBtn}>
+            <Image
+              source={require("../../assets/images/Google.png")}
+              style={styles.socialIcon}
+            />
+            <Text style={styles.socialText}>Sign In with Google</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.socialBtn}>
+            <Image
+              source={require("../../assets/images/facebook.png")}
+              style={styles.socialIcon}
+            />
+            <Text style={styles.socialText}>Sign In with Facebook</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.footerText}>
+            Don’t have an account?{" "}
+            <Text
+              style={styles.linkText}
+              onPress={() => navigation.navigate("Signup")}
+            >
+              Create one now
+            </Text>
+          </Text>
+        </View>
       </KeyboardAwareScrollView>
     </LinearGradient>
   );
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   socialBtn: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent:"center",
+    justifyContent: "center",
     backgroundColor: "#6a6565ff",
     width: "100%",
     height: 45,

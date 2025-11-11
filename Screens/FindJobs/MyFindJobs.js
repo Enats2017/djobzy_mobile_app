@@ -108,25 +108,23 @@ const styles = StyleSheet.create({
   },
   topButtonRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 10
+    gap: 10,
+    marginBottom: 20,
   },
   topButton: {
     flex: 1,
     paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     borderRadius: 20,
-    alignItems: "center",
   },
   topButtonActive: {
     backgroundColor: "#fff"
   },
   topButtonInactive: { backgroundColor: "#423c3c" },
-  topButtonText: { fontSize: 14, fontFamily: "Montserrat_500Medium" },
-  topButtonTextActive: { color: "#222", fontWeight: "500" },
+  topButtonText: { fontSize: 14, fontFamily: "Montserrat_500Medium", textAlign: "center" },
+  topButtonTextActive: { color: "#303030", fontFamily: "Montserrat_600SemiBold" },
   topButtonTextInactive: { color: "#fff", fontWeight: "500" },
   contentContainer: {
     flex: 1,
-    flexDirection: "column",
   },
 });

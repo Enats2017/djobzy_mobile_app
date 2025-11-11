@@ -70,8 +70,6 @@ const BestMatches = () => {
 const styles = StyleSheet.create({
   bestmatch:{
     flex:1,
-    marginTop: 20,
-    
   },
   matchesHeader: {
     flexDirection: "row",
@@ -126,7 +124,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderRadius: 10,
   },
-  scrollView: { paddingHorizontal: 1 },
+  scrollView: { 
+    paddingHorizontal: 1,
+  },
 });
 
 export default BestMatches;

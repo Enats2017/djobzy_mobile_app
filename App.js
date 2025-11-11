@@ -75,19 +75,13 @@ const App = () => {
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Signup" component={Signup} />
           <Stack.Screen name="Dashboard" component={Dashboard} />
-          <Stack.Screen name="CreateJob" component={CreateJob} />  
+          <Stack.Screen name="CreateJob" component={CreateJob} />
           <Stack.Screen name="JobProfile" component={JobProfile} />
           <Stack.Screen name="JobApply" component={JobApplyPage} />
           <Stack.Screen name="MyJobPage" component={MyJobPage} />
           <Stack.Screen name ="MyFindJobs" component={MyFindJobs} />
           <Stack.Screen name ="JobPublishedPage" component={JobPublishedPage} />
           <Stack.Screen name ="JobBoostPaymentSection" component={JobBoostPaymentSection} />
-          <Stack.Screen name ="Offer" component={Offer}/>
-          <Stack.Screen name ="EmployerDashboard" component={EmployerDashboard}/>
-          <Stack.Screen name ="EmployerContracts" component={EmployerContracts}/>
-          <Stack.Screen name ="MyJobPost" component={MyJobPost}/>
-          <Stack.Screen name ="DeactivatedJobs" component={DeactivatedJobs}/>
-          <Stack.Screen name ="Wallet" component={Wallet}/>
         </Stack.Navigator>
       </NavigationContainer>
     </View>

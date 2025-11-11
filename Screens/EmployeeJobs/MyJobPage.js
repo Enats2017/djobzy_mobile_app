@@ -103,6 +103,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
     gap: 10,
+    marginBottom: 20,
   },
   topButton: {
     flex: 1,
@@ -117,10 +118,6 @@ const styles = StyleSheet.create({
   topButtonTextActive: { color: "#222", fontWeight: "700" },
   topButtonTextInactive: { color: "#fff", fontWeight: "500" },
   contentContainer: {
-    flexDirection: "column",
-    alignItems: "center",
-    width: "100%",
-    justifyContent: "center",
     flex: 1,
   },
   

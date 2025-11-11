@@ -16,7 +16,7 @@ export default function FindEmployees() {
   const [liked1, setLiked1] = useState(false);
   const [liked2, setLiked2] = useState(false);
   const [liked3, setLiked3] = useState(false);
-  const [liked4, setLiked4] = useState(false);
+  const [liked4, setLiked4] = useState(true);
 
 
   return (

@@ -112,7 +112,6 @@ const styles = StyleSheet.create({
     width:"100%",
     justifyContent: "space-around",
     marginBottom: 10,
-    paddingTop:30,
   },
   toggleBtn: {
     alignItems: "center",

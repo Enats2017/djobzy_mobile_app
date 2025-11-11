@@ -8,10 +8,17 @@ import {
   View,
 } from "react-native";
 
-const TimePeriod = ({ durationData, setDurationData }) => {
+const TimePeriod = ({
+  durationData,
+  setDurationData,
+  timeError,
+  setTimeError,
+}) => {
   const { selectedTerm, selectedOption, customDays } = durationData;
 
   const setSelectedTerm = (term) => {
+    setTimeError(false); // HIDE ERROR WHEN SWITCHING TABS
+
     setDurationData({
       ...durationData,
       selectedTerm: term,
@@ -30,10 +37,13 @@ const TimePeriod = ({ durationData, setDurationData }) => {
       valueLabel = `${durationData.customDays || "Custom"} Days`;
     else if (option === "customEmp")
       valueLabel = `${durationData.customDays || "Custom"} Months`;
+
+    setTimeError(false);
+
     setDurationData({
       ...durationData,
       selectedOption: option,
-       selectedValue: valueLabel,
+      selectedValue: valueLabel,
     });
   };
 
@@ -171,6 +181,19 @@ const TimePeriod = ({ durationData, setDurationData }) => {
               />
             </View>
           </View>
+
+          {timeError && (
+            <Text
+              style={{
+                color: "red",
+                marginTop: 6,
+                fontSize: 12,
+                fontFamily: "Montserrat_500Medium",
+              }}
+            >
+              *Please select at least one option
+            </Text>
+          )}
         </>
       )}
 
@@ -252,6 +275,19 @@ const TimePeriod = ({ durationData, setDurationData }) => {
               />
             </View>
           </View>
+
+          {timeError && (
+            <Text
+              style={{
+                color: "red",
+                marginTop: 6,
+                fontSize: 12,
+                fontFamily: "Montserrat_500Medium",
+              }}
+            >
+              *Please select at least one option
+            </Text>
+          )}
         </>
       )}
     </View>

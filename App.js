@@ -26,6 +26,12 @@ import MyJobPage from "./Screens/EmployeeJobs/MyJobPage";
 import MyFindJobs from "./Screens/FindJobs/MyFindJobs";
 import JobPublishedPage from "./Screens/JobCreatePage/JobPublishedPage";
 import JobBoostPaymentSection from "./Screens/JobCreatePage/JobBoostPaymentSection";
+import Offer from "./components/Offer";
+import EmployerDashboard from "./Screens/EmployerDashboardPage/EmployerDashboard";
+import EmployerContracts from "./Screens/EmployerJobs/EmployerContracts";
+import MyJobPost from "./Screens/EmployerJobs/MyJobPost";
+import DeactivatedJobs from "./Screens/EmployerJobs/DeactivatedJobs";
+import Wallet from "./Screens/Wallet/Wallet";
 
 
 const Stack = createStackNavigator();
@@ -76,6 +82,12 @@ const App = () => {
           <Stack.Screen name ="MyFindJobs" component={MyFindJobs} />
           <Stack.Screen name ="JobPublishedPage" component={JobPublishedPage} />
           <Stack.Screen name ="JobBoostPaymentSection" component={JobBoostPaymentSection} />
+          <Stack.Screen name ="Offer" component={Offer}/>
+          <Stack.Screen name ="EmployerDashboard" component={EmployerDashboard}/>
+          <Stack.Screen name ="EmployerContracts" component={EmployerContracts}/>
+          <Stack.Screen name ="MyJobPost" component={MyJobPost}/>
+          <Stack.Screen name ="DeactivatedJobs" component={DeactivatedJobs}/>
+          <Stack.Screen name ="Wallet" component={Wallet}/>
         </Stack.Navigator>
       </NavigationContainer>
     </View>

@@ -15,7 +15,12 @@ import {
 } from "react-native";
 import { API_ICON, API_URL } from "../../api/ApiUrl";
 
-const JobCategory = ({ selectedSubs, setSelectedSubs }) => {
+const JobCategory = ({
+  selectedSubs,
+  setSelectedSubs,
+  categoryError,
+  setCategoryError,
+}) => {
   const [search, setSearch] = useState("");
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +59,7 @@ const JobCategory = ({ selectedSubs, setSelectedSubs }) => {
         { serviceId: service.id, subId: sub.subid, name: sub.subname },
         ...selectedSubs,
       ]);
+      setCategoryError(false);
     }
   };
 
@@ -93,8 +99,12 @@ const JobCategory = ({ selectedSubs, setSelectedSubs }) => {
           onChangeText={(text) => setSearch(text)}
         />
       </View>
-
       <View>
+        {categoryError && (
+          <Text style={styles.errorText}>
+            *Please choose at least one category
+          </Text>
+        )}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -265,7 +275,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-
   selectedContainer: {
     flexDirection: "row",
     marginVertical: 10,
@@ -308,6 +317,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
+  },
+
+  errorText: {
+    color: "#FF0000",
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    marginTop: 5,
+    marginBottom: 5,
+    marginLeft: 2,
   },
 });
 

@@ -20,7 +20,7 @@ const BorderButton = ({
 };
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 10,
+    paddingVertical: 9,
     borderRadius: 12,
     borderColor: "#ccc",
     borderWidth: 1,

@@ -38,6 +38,7 @@ import CompletedJobPaymentPage from "./Screens/EmployeeJobs/CompletedJobPaymentP
 import ViewReceivedOffer from "./Screens/EmployeeJobs/ViewReceivedOffer";
 import MyNewReceiveOfferPage from "./Screens/EmployeeJobs/MyNewReceiveOfferPage";
 import AcceptReceivedOfferPage from "./Screens/EmployeeJobs/AcceptReceivedOfferPage";
+import Details from "./Screens/EmployerJobs/Details";
 import VerificationPage from "./Screens/VerificationPage/VerificationPage";
 import PasswordResert from "./Screens/PasswordResertPage/PasswordResert";
 import EmployeeProfileMenu from "./Screens/ProfileMenuPAge/EmployeeProfileMenu";
@@ -113,6 +114,7 @@ const App = () => {
           <Stack.Screen name ="ViewReceivedOffer" component={ViewReceivedOffer} />
           <Stack.Screen name = "MyNewReceiveOfferPage" component={MyNewReceiveOfferPage}/>
           <Stack.Screen name = "AcceptReceivedOfferPage" component={AcceptReceivedOfferPage}/>
+          <Stack.Screen name = "Details" component={Details}/>
           <Stack.Screen name = "VerificationPage" component={VerificationPage} />
           <Stack.Screen name= "PasswordResert" component={PasswordResert} />
           <Stack.Screen name = "EmployeeProfileMenu" component={EmployeeProfileMenu} />

@@ -77,9 +77,13 @@ export default function MyJobPost() {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.viewBtn}>
+            <TouchableOpacity
+              style={styles.viewBtn}
+              onPress={() => navigation.navigate("Details")}
+            >
               <Text style={styles.viewBtnText}>View</Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.boostBtn}>
               <Text style={styles.boostBtnText}>Boost</Text>
             </TouchableOpacity>
@@ -309,7 +313,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 10,
     fontFamily: "Montserrat_400Regular",
-    marginTop:4,
+    marginTop: 4,
   },
   rightInfo: {
     alignItems: "flex-end",

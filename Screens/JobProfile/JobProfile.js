@@ -3,12 +3,11 @@ import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 
 import {
-  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -18,10 +17,12 @@ import {
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Loading from "../../components/Loading";
 
 const JobProfile = () => {
   const route = useRoute();
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const jobId = route.params?.gid;
 
   const [job, setJob] = useState(null);
@@ -30,6 +31,7 @@ const JobProfile = () => {
 
   const fetchJob = async () => {
     try {
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/employee-job-details/${jobId}`, {
         headers: {
@@ -47,17 +49,12 @@ const JobProfile = () => {
     }
   };
   useEffect(() => {
-    fetchJob();
-  }, []);
+    if (isFocused) {
+      fetchJob();
+    }
+  }, [isFocused]);
 
-  if (loading)
-    return (
-      <ActivityIndicator
-        size="large"
-        color="#fff"
-        style={styles.loaderOverlay}
-      />
-    );
+  if (loading) return <Loading />;
   if (error) return <Text style={{ color: "#fff" }}>Error: {error}</Text>;
   if (!job) return <Text style={{ color: "#fff" }}>No job found</Text>;
 

@@ -33,6 +33,8 @@ import CompletedJobPaymentPage from "./Screens/EmployeeJobs/CompletedJobPaymentP
 import ViewReceivedOffer from "./Screens/EmployeeJobs/ViewReceivedOffer";
 import MyNewReceiveOfferPage from "./Screens/EmployeeJobs/MyNewReceiveOfferPage";
 import AcceptReceivedOfferPage from "./Screens/EmployeeJobs/AcceptReceivedOfferPage";
+import ViewCurrentJobPost from "./Screens/EmployeeJobs/ViewCurrentJobPost";
+import CurrentJobPaymentPage from "./Screens/EmployeeJobs/CurrentJobPaymentPage";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -79,20 +81,16 @@ const App = () => {
           <Stack.Screen name="MyJobPage" component={MyJobPage} />
           <Stack.Screen name="MyFindJobs" component={MyFindJobs} />
           <Stack.Screen name="JobPublishedPage" component={JobPublishedPage} />
-          <Stack.Screen
-            name="JobBoostPaymentSection"
-            component={JobBoostPaymentSection}
-          />
-          <Stack.Screen
-            name="MyCurrentBiddingProfile"
-            component={MyCurrentBiddingProfile}
-          />
+          <Stack.Screen name="JobBoostPaymentSection" component={JobBoostPaymentSection} />
+          <Stack.Screen name="MyCurrentBiddingProfile" component={MyCurrentBiddingProfile} />
           <Stack.Screen name ="ChangeMyOffer" component={ChangeMyOffer} />
           <Stack.Screen name ="ViewCompletedJobPost" component={ViewCompletedJobPost}/>
           <Stack.Screen name ="CompletedJobPaymentPage" component={CompletedJobPaymentPage} />
           <Stack.Screen name ="ViewReceivedOffer" component={ViewReceivedOffer} />
           <Stack.Screen name = "MyNewReceiveOfferPage" component={MyNewReceiveOfferPage}/>
           <Stack.Screen name = "AcceptReceivedOfferPage" component={AcceptReceivedOfferPage}/>
+          <Stack.Screen name = "ViewCurrentJobPost" component={ViewCurrentJobPost}/>
+          <Stack.Screen name = "CurrentJobPaymentPage" component={CurrentJobPaymentPage}/>
         </Stack.Navigator>
       </NavigationContainer>
     </View>

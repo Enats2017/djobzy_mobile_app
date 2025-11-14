@@ -54,8 +54,6 @@ export default function CompletedJobPaymentPage() {
   };
   useEffect(() => {
     fetchPayemnt();
-    console.log(data);
-    
   }, []);
 
   if (loading) return <Loading />;
@@ -64,7 +62,7 @@ export default function CompletedJobPaymentPage() {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <PageNameHeaderBar navigation={navigation} title="Payment Details" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 90 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 90 }}>
           <View style={styles.topCard}>
             <View style={styles.topRow}>
               <View style={styles.topBox}>
@@ -94,11 +92,11 @@ export default function CompletedJobPaymentPage() {
             <View style={styles.dividerLine} />
             <View style={styles.topMetaRow}>
               <View style={styles.metaItemRowLeft}>
-                <Text style={styles.metaLabel}>Start Date </Text>
-                <Text style={styles.metaValue}>{gigs.reactivated_at}</Text>
+                <Text style={styles.metaLabel}>Start Date:</Text>
+                <Text style={styles.metaValue}>{gigs.payment_date}</Text>
               </View>
               <View style={styles.metaItemRowRight}>
-                <Text style={styles.metaLabel}>Contract ID </Text>
+                <Text style={styles.metaLabel}>Contract ID:</Text>
                 <Text style={styles.metaValue}>{gigs.gid}</Text>
               </View>
             </View>
@@ -115,7 +113,7 @@ export default function CompletedJobPaymentPage() {
           <View style={styles.userCard}>
             <Image
               source={{
-                uri: "https://randomuser.me/api/portraits/women/42.jpg",
+                uri: user.photo,
               }}
               style={styles.avatar}
             />
@@ -192,9 +190,12 @@ export default function CompletedJobPaymentPage() {
                   <View style={styles.tableRightCell}>
                     <View>
                       {
-                        user.id == data.gigProp.prop_user_id
+                        data.authUser?.id == data.gigProp?.prop_user_id ? (
+                          <Text style={styles.tableValue}>Expenses</Text>
+                        ) : (
+                          <Text style={styles.tableValue}>Income</Text>
+                        )
                       }
-                      <Text style={styles.tableValue}>income</Text>
                     </View>
                   </View>
                 </View>
@@ -207,7 +208,13 @@ export default function CompletedJobPaymentPage() {
                   </View>
                   <View style={styles.dividerVert} />
                   <View style={styles.tableRightCell}>
-                    <Text style={styles.tableValue}>Completed</Text>
+                    {
+                      val.status && val.status == 1 ? (
+                        <Text style={styles.tableValue}>Completed</Text>
+                      ) : (
+                        <Text style={styles.tableValue}>Pending</Text>
+                      )
+                    }
                   </View>
                 </View>
 
@@ -219,7 +226,7 @@ export default function CompletedJobPaymentPage() {
                   </View>
                   <View style={styles.dividerVert} />
                   <View style={styles.tableRightCell}>
-                    <Text style={styles.tableValue}>Stripe</Text>
+                    <Text style={styles.tableValue}>{val.ptype}</Text>
                   </View>
                 </View>
 
@@ -232,12 +239,27 @@ export default function CompletedJobPaymentPage() {
                   <View style={styles.dividerVert} />
                   <View style={styles.tableRightCell}>
                     <Text style={styles.tableValue}>
-                      CAD {val.fixed_minimum}
+                      CAD {val.amount}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.dividerHoriz} />
+
+                <View style={styles.tableRow}>
+                  <View style={styles.tableLeftCell}>
+                    <Text style={styles.tableLabel}>Reference ID</Text>
+                  </View>
+                  <View style={styles.dividerVert} />
+                  <View style={styles.tableRightCell}>
+                    <Text style={styles.tableValue}>
+                      {val.ref}
                     </Text>
                   </View>
                 </View>
               </View>
-            ))}
+            ))
+          }
 
           <View style={styles.footer}>
             <GradientButton title="Withdraw Money" />
@@ -328,7 +350,7 @@ const styles = StyleSheet.create({
   },
   metaValue: {
     color: "#ffffff",
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Montserrat_700Bold",
     marginLeft: 6,
   },

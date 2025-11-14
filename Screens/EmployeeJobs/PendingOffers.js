@@ -1,5 +1,4 @@
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
-import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { truncateWords } from "../../api/TruncateWords";
 
@@ -11,7 +10,7 @@ const PendingOffer = ({pendingOffer=[]}) => {
         <View style={styles.avatarWrapperOuter}>
           <Image
             source={{
-              uri: "https://randomuser.me/api/portraits/women/82.jpg",
+              uri: pendingOffer.photo,
             }}
             style={styles.avatarImage}
           />
@@ -35,7 +34,7 @@ const PendingOffer = ({pendingOffer=[]}) => {
 
           <View style={styles.verificationRow}>
             <MaterialIcons
-              name="check-circle"
+              name="verified"
               size={16}
               color="#C3C3C3"
               style={{ marginRight: 6 }}
@@ -53,7 +52,7 @@ const PendingOffer = ({pendingOffer=[]}) => {
       </View>
 
       <Text style={styles.title}>{pendingOffer.subject}</Text>
-      <Text style={styles.posted}> {pendingOffer.dated} </Text>
+      <Text style={styles.posted}>Offer Date: {pendingOffer.dated} </Text>
 
       <View style={styles.sectionBox}>
         <Text style={styles.sectionTitle}>Introduction Letter</Text>
@@ -89,6 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#444444ff",
     borderRadius: 12,
     padding: 15,
+    marginBottom: 15,
   },
 
   cardHeader: {

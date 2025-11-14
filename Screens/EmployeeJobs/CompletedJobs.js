@@ -1,4 +1,4 @@
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import Foundation from "@expo/vector-icons/Foundation";
 import { useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect } from "react";
@@ -7,10 +7,8 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
@@ -45,104 +43,106 @@ const CompletedJobs = () => {
 
   if (loading) return <Loading />;
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 150 }}>
-        {closeJob.map((job, index) => (
-          <View style={styles.outerContainer} key={index}>
-            <View style={styles.cardContainer}>
-              <View style={styles.profileSection}>
-                <Image
-                  source={{
-                    uri:
-                      job.photo ||
-                      "https://randomuser.me/api/portraits/women/44.jpg",
-                  }}
-                  style={styles.avatar}
-                />
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+      {closeJob.map((job, index) => (
+        <View style={styles.outerContainer} key={index}>
+          <View style={styles.cardContainer}>
+            <View style={styles.profileSection}>
+              <Image
+                source={{
+                  uri:
+                    job.photo ||
+                    "https://randomuser.me/api/portraits/women/44.jpg",
+                }}
+                style={styles.avatar}
+              />
 
-                <View style={styles.profileInfo}>
-                  <View style={styles.usernameRow}>
-                    <Text style={styles.username}> {job.full_name}</Text>
-                  </View>
-                  <View style={styles.verificationRow}>
-                    <MaterialIcons
-                      name="verified"
-                      size={16}
-                      color="#c3c3c3"
-                      style={{ marginRight: 6 }}
-                    />
-                    <Text style={styles.verification}>
-                      Verification Level:{job.verification_count}/7
-                    </Text>
-                  </View>
+              <View style={styles.profileInfo}>
+                <View style={styles.usernameRow}>
+                  <Text style={styles.username}> {job.full_name}</Text>
                 </View>
-
-                <View style={styles.incomeContainer}>
-                  <Text style={styles.incomeLabel}>Total Income:</Text>
-                  <View style={styles.cadButton}>
-                    <Text style={styles.cadText}>CAD {job.bid_price}</Text>
-                  </View>
+                <View style={styles.verificationRow}>
+                  <MaterialIcons
+                    name="verified"
+                    size={16}
+                    color="#c3c3c3"
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={styles.verification}>
+                    Verification Level:{job.verification_count}/7
+                  </Text>
                 </View>
               </View>
 
-              <View style={styles.jobTitleSection}>
-                <Text style={styles.jobTitle}>{job.subject}</Text>
-                <Text style={styles.postedDate}>Posted: {job.updated_at}</Text>
-              </View>
-
-              <View style={styles.jobInfoSection}>
-                <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-                  <Text style={styles.infoText}>Total Price: </Text>
-                  <Text style={[styles.infoHighlight, { marginRight: 10 }]}>
-                    CAD {job.bid_price}
-                  </Text>
-                  <Text style={styles.infoText}>Hourly Rate: </Text>
-                  <Text style={styles.infoHighlight}>
-                    CAD {job.prop_hourly_rate}
-                  </Text>
+              <View style={styles.incomeContainer}>
+                <Text style={styles.incomeLabel}>Total Income:</Text>
+                <View style={styles.cadButton}>
+                  <Text style={styles.cadText}>CAD {job.bid_price}</Text>
                 </View>
+              </View>
+            </View>
 
-                <Text style={styles.infoText}>
-                  Expected Hours:{" "}
-                  <Text style={styles.infoHighlight}>{job.expected_hour}</Text>
+            <View style={styles.jobTitleSection}>
+              <Text style={styles.jobTitle}>{job.subject}</Text>
+              <Text style={styles.postedDate}> Start Date: {job.award_date} | End Date: {job.gig_end_date}</Text>
+              
+            </View>
+
+            <View style={styles.jobInfoSection}>
+              <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                <Text style={styles.infoText}>Total Price: </Text>
+                <Text style={[styles.infoHighlight, { marginRight: 10 }]}>
+                  CAD {job.bid_price}
                 </Text>
+                <Text style={styles.infoText}>Hourly Rate: </Text>
+                <Text style={styles.infoHighlight}>
+                  CAD {job.prop_hourly_rate}
+                </Text>
+              </View>
+
+              <Text style={styles.infoText}>
+                Expected Hours:{" "}
+                <Text style={styles.infoHighlight}>{job.expected_hour}</Text>
+              </Text>
+
+              {job.preferred_location && (
                 <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                   <Text style={styles.infoText}>Location: </Text>
                   <Text style={[styles.infoHighlight, { flex: 1 }]}>
                     {job.preferred_location}
                   </Text>
                 </View>
+              )}
 
-                <View style={styles.divider} />
-
+              {Number(job.is_remote_job) === 1 && (
                 <View style={styles.remoteBadge}>
                   <Foundation name="home" size={24} color="#000000" />
                   <Text style={styles.remoteText}>Remote</Text>
                 </View>
-              </View>
-
-              <View style={styles.jobDescriptionSection}>
-                <Text style={styles.descTitle}>Job Description</Text>
-                <Text style={styles.descText}>{job.description}</Text>
-              </View>
-
-              <View style={styles.buttonSection}>
-                <GradientButton
-                  title="View Job Post"
-                  onPress={() =>
-                    navigation.navigate("ViewCompletedJobPost", {
-                      gid: job.request_slug,
-                    })
-                  }
-                />
-              </View>
+              )}
             </View>
 
-            <View style={styles.divider2} />
+            <View style={styles.jobDescriptionSection}>
+              <Text style={styles.descTitle}>Job Description</Text>
+              <Text style={styles.descText}>{job.description}</Text>
+            </View>
+
+            <View style={styles.buttonSection}>
+              <GradientButton
+                title="View Job Post"
+                onPress={() =>
+                  navigation.navigate("ViewCompletedJobPost", {
+                    gid: job.request_slug,
+                  })
+                }
+              />
+            </View>
           </View>
-        ))}
-      </ScrollView>
-    </SafeAreaView>
+
+          {/* {index !== closeJob.length - 1 && <LineDivider />} */}
+        </View>
+      ))}
+    </ScrollView>
   );
 };
 
@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#444444ff",
     borderRadius: 16,
     padding: 10,
-    marginBottom: 20,
     elevation: 5,
+    marginBottom: 15
   },
   profileSection: {
     flexDirection: "row",
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   },
   postedDate: {
     color: "#ffffff",
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: "Montserrat_400Regular",
     marginTop: 4,
   },
@@ -305,18 +305,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Montserrat_700Bold",
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#797474ff",
-    marginVertical: 2,
-    width: "100%",
-  },
-  divider2: {
-    height: 1,
-    backgroundColor: "#797474ff",
-    marginBottom: 20,
-    width: "100%",
-  },
+
 });
 
 export default CompletedJobs;

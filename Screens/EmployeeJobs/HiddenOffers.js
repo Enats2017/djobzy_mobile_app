@@ -1,24 +1,16 @@
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
-import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import NoJobs from "./NoJobs";
+import { truncateWords } from "../../api/TruncateWords";
 
 const HiddenOffer = ({hiddenOffer=[]}) => {
 
-   if (!hiddenOffer.length) {
-    return (
-      <View style={styles.empty}>
-        <NoJobs/>
-      </View>
-    );
-  }
   return (
     <View style={styles.card2}>
       <View style={styles.cardHeader2}>
         <View style={styles.avatarWrapperOuter2}>
           <Image
             source={{
-              uri: "https://randomuser.me/api/portraits/women/90.jpg",
+              uri: hiddenOffer.photo,
             }}
             style={styles.avatarImage2}
           />
@@ -26,7 +18,7 @@ const HiddenOffer = ({hiddenOffer=[]}) => {
 
         <View style={styles.userInfo2}>
           <View style={styles.nameStarsRow2}>
-            <Text style={styles.username2}>DJOzifa02</Text>
+            <Text style={styles.username2}>{hiddenOffer.full_name}</Text>
             <View style={styles.starsRow2}>
               {[...Array(5)].map((_, i) => (
                 <FontAwesome
@@ -42,38 +34,37 @@ const HiddenOffer = ({hiddenOffer=[]}) => {
 
           <View style={styles.verificationRow2}>
             <MaterialIcons
-              name="check-circle"
+              name="verified"
               size={16}
               color="#C3C3C3"
               style={{ marginRight: 6 }}
             />
-            <Text style={styles.verification2}>Verification Level: 2/7</Text>
+            <Text style={styles.verification2}>Verification Level: {hiddenOffer.verification_count}/7</Text>
           </View>
         </View>
 
         <View style={styles.offeredSection2}>
           <Text style={styles.offeredPriceText2}>Offered Price</Text>
           <View style={styles.cadButton2}>
-            <Text style={styles.cadButtonText2}>CAD 300.00</Text>
+            <Text style={styles.cadButtonText2}>CAD {hiddenOffer.offer_price}</Text>
           </View>
         </View>
       </View>
 
-      <Text style={styles.title2}>Graphic Designer Wanted</Text>
-      <Text style={styles.posted2}>Posted 10:28 08/10/2025</Text>
+      <Text style={styles.title2}>{hiddenOffer.subject}</Text>
+      <Text style={styles.posted2}>Offer Date: {hiddenOffer.dated}</Text>
 
       <View style={styles.sectionBox2}>
         <Text style={styles.sectionTitle2}>Introduction Letter</Text>
         <Text style={styles.sectionText2}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          {hiddenOffer.offer}
         </Text>
       </View>
 
       <View style={styles.sectionBox2}>
         <Text style={styles.sectionTitle2}>Job Description</Text>
         <Text style={styles.sectionText2}>
-          We are seeking a talented and passionate Graphic Designer to join our
-          creative team.
+          {truncateWords(hiddenOffer.description, 20)}
         </Text>
       </View>
 
@@ -92,6 +83,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: "100%",
     padding: 15,
+    marginBottom: 15,
   },
 
   cardHeader2: {

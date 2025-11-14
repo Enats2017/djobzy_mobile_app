@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import {
+  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
@@ -12,62 +13,98 @@ import {
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import LineDivider from "../../components/LineDivider";
+import GradientButton from "../../components/GradientButton";
 
 export default function FindEmployees() {
   const [employees, setEmployees] = useState([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchEmployee = async (pageNum = 1) => {
-    try {
-      if (pageNum === 1) setLoading(true);
-      else setIsFetchingMore(true);
-      const res = await fetch(`${API_URL}/employee-gigs?page=${pageNum}`);
-      const data = await res.json();
-      setEmployees(data.details);
-      console.log('adfad ', employees);
+  const onEndReachedCalledDuringMomentum = useRef(false);
+  const hasFetched = useRef(false);
+  const insets = useSafeAreaInsets();
 
-      if (!data?.details) {
-        setHasMore(false);
-        return;
+  const fetchEmployee = useCallback(
+    async (pageNum = 1) => {
+      if (loading || isFetchingMore) return;
+
+      // IMPORTANT: prevent double calls
+      if (pageNum === 1) {
+        setLoading(true);
+      } else {
+        setIsFetchingMore(true); // lock BEFORE calling API
       }
-      setPage(pageNum);
-      // const newEmployees = data.details.filter(
-      //   (employee) => !employees.some((j) => j.id === employee.id)
-      // );
 
-      // // if (newEmployees.length > 0) {
+      try {
+        const res = await fetch(`${API_URL}/employee-gigs?page=${pageNum}`, {
+          headers: {
+            Accept: "application/json",
+          },
+        });
 
-      // //   console.log('11111111111', employees);
-      // // } else {
-      // //   setHasMore(false);
-      // // }
-    } catch (err) {
-      console.log("Error fetching jobs:", err);
-    } finally {
-      setLoading(false);
-      setIsFetchingMore(false);
-    }
-  };
+        const data = await res.json();
+
+        if (!data?.details || data.details.length === 0) {
+          setHasMore(false);
+          return;
+        }
+
+        console.log("Details count:", data.details.length);
+
+        setEmployees((prev) => {
+          const newItems = data.details.filter(
+            (emp) => !prev.some((j) => j.id === emp.id)
+          );
+          return [...prev, ...newItems];
+        });
+
+        setHasMore(data.details.length === 10);
+        setPage(pageNum);
+
+      } catch (err) {
+        console.log("Error fetching employees:", err);
+      } finally {
+        setLoading(false);
+        setIsFetchingMore(false);
+      }
+    },
+    [loading, isFetchingMore]
+  );
+
   useEffect(() => {
-    if (employees.length === 0) {
-      fetchEmployee();
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchEmployee(1);
     }
-  }, []);
+  }, [fetchEmployee]);
+
+  // -----------------------------
+  // FOOTER
+  // -----------------------------
+  const renderFooter = () => {
+    if (!isFetchingMore) return null;
+    return (
+      <View style={{ paddingVertical: 12 }}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  };
 
   if (loading) return <Loading />;
 
-  const renderEmployeeCard = ({ item }) => {
+  const renderEmployeeCard = ({ item, index }) => {
+    const isLastItem = index === employees.length - 1;
     return (
       <>
         <View style={styles.jobCard1}>
           <View style={styles.userRow1}>
             <Image
               source={{
-                uri: item.photo || "https://randomuser.me/api/portraits/women/1.jpg",
+                uri: item.photo,
               }}
               style={styles.avatar1}
             />
@@ -133,31 +170,35 @@ export default function FindEmployees() {
               )}
             </View>
           </View>
-          <TouchableOpacity style={styles.viewBtn1}>
-            <Text style={styles.viewBtnText1}>View Profile</Text>
-          </TouchableOpacity>
+          <View>
+            <GradientButton title="View" onPress={() => navigation.navigate("JobProfile", { gid: item.request_slug })} />
+          </View>
         </View>
-        <View style={styles.divider1} />
+        {!isLastItem && <LineDivider />}
       </>
     );
   };
 
   return (
-    <View style={styles.findEmployeeContainer}>
+    <View style={[styles.findEmployeeContainer, { paddingBottom: insets.bottom }]}>
       <FlatList
         data={employees}
         renderItem={renderEmployeeCard}
         keyExtractor={(item) => item.id.toString()}
-        onEndReached={() => {
-          if (!isFetchingMore && hasMore) fetchEmployee(page + 1);
-        }}
-        onEndReachedThreshold={0.5}
-        style={{ paddingBottom: 100 }}
+        ListFooterComponent={renderFooter}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={false}
+        onEndReachedThreshold={0.5}
+        onMomentumScrollBegin={() => { onEndReachedCalledDuringMomentum.current = false; }}
+        onEndReached={() => {
+          if (!onEndReachedCalledDuringMomentum.current && hasMore && !isFetchingMore && !loading) {
+            // console.log("🚀 Triggering next page:", page + 1);
+            fetchEmployee(page + 1);
+            onEndReachedCalledDuringMomentum.current = true;
+          }
+        }}
+        contentContainerStyle={{ paddingBottom: 50 }}
       />
     </View>
-
   );
 }
 
@@ -165,9 +206,6 @@ export default function FindEmployees() {
 const styles = StyleSheet.create({
   findEmployeeContainer: {
     flex: 1,
-  },
-  jobCard1: {
-    marginBottom: 18,
   },
   userRow1: {
     flexDirection: "row",
@@ -264,7 +302,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   locationIcon1: {
-    
+
   },
   locationText1: {
     flex: 1,
@@ -285,12 +323,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontFamily: "Montserrat_700Bold",
-  },
-  divider1: {
-    borderBottomColor: "#8e8e8e",
-    borderBottomWidth: 1,
-    marginVertical: 12,
-    opacity: 0.5,
-    marginTop: 5,
   },
 });

@@ -103,7 +103,7 @@ export default function MyFindJobs({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#2f2c2c",
+    backgroundColor: "#222222",
     paddingHorizontal: 18,
   },
   topButtonRow: {

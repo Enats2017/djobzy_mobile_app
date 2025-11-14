@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#222222",
-    paddingHorizontal: 18,
+    paddingHorizontal: 15,
   },
   
   topButtonRow: {
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   topButtonActive: { backgroundColor: "#fff" },
   topButtonInactive: { backgroundColor: "#423c3c" },
   topButtonText: { fontSize: 14, fontFamily: "Montserrat_500Medium" },
-  topButtonTextActive: { color: "#222", fontWeight: "700" },
+  topButtonTextActive: { color: "#222", fontWeight: "600" },
   topButtonTextInactive: { color: "#fff", fontWeight: "500" },
   contentContainer: {
     flex: 1,

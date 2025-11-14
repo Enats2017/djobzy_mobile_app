@@ -12,6 +12,7 @@ const Loading = ({ color = "#ffffff", size = "large" }) => {
 
 const styles = StyleSheet.create({
     loadingContainer: {
+        backgroundColor: "#222222",
         flex: 1,
         justifyContent: "center",
         alignItems: "center",

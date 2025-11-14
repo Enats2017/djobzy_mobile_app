@@ -45,7 +45,7 @@ const JobApplyPage = () => {
         return;
       }
       const payload = {
-        id: gid,
+        id: gig.gid,
         price: myTotalPrice,
         final_price: myFinalTotalPrice,
         description: introLetter,
@@ -66,7 +66,7 @@ const JobApplyPage = () => {
         setMyHourlyRate("");
         setIntroLetter("");
         Alert.alert("Success", "Application submitted");
-        navigation.navigate("Dashboard");
+        navigation.goBack();
       } else {
         alert(result.message || "Failed to submit proposal");
       }

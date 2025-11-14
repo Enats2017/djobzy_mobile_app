@@ -39,6 +39,13 @@ import ViewReceivedOffer from "./Screens/EmployeeJobs/ViewReceivedOffer";
 import MyNewReceiveOfferPage from "./Screens/EmployeeJobs/MyNewReceiveOfferPage";
 import AcceptReceivedOfferPage from "./Screens/EmployeeJobs/AcceptReceivedOfferPage";
 import Details from "./Screens/EmployerJobs/Details";
+import VerificationPage from "./Screens/VerificationPage/VerificationPage";
+import PasswordResert from "./Screens/PasswordResertPage/PasswordResert";
+import EmployeeProfileMenu from "./Screens/ProfileMenuPAge/EmployeeProfileMenu";
+import PromoteService from "./Screens/PromoteServicesPage/PromoteService";
+import PromoteCategoryPage from "./Screens/PromoteServicesPage/PromoteCategoryPage";
+import EmployeeAccount from "./Screens/PromoteServicesPage/EmployeeAccount";
+import EmployeeVerification from "./Screens/PromoteServicesPage/EmployeeVerification";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -105,6 +112,13 @@ const App = () => {
           <Stack.Screen name = "MyNewReceiveOfferPage" component={MyNewReceiveOfferPage}/>
           <Stack.Screen name = "AcceptReceivedOfferPage" component={AcceptReceivedOfferPage}/>
           <Stack.Screen name = "Details" component={Details}/>
+          <Stack.Screen name = "VerificationPage" component={VerificationPage} />
+          <Stack.Screen name= "PasswordResert" component={PasswordResert} />
+          <Stack.Screen name = "EmployeeProfileMenu" component={EmployeeProfileMenu} />
+          <Stack.Screen name = "PromoteService" component={PromoteService} />
+          <Stack.Screen name = "PromoteCategoryPage" component={PromoteCategoryPage} />
+          <Stack.Screen name = "EmployeeAccount" component={EmployeeAccount} />
+          <Stack.Screen name = "EmployeeVerification" component={EmployeeVerification} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

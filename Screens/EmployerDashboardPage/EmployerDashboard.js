@@ -7,17 +7,22 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
-
+import GroupJobPost from "../../assets/images/GroupJobPost.png";
+import GroupNext from "../../assets/images/GroupNext.png";
 
 export default function FindEmployees() {
   const [liked1, setLiked1] = useState(false);
   const [liked2, setLiked2] = useState(false);
   const [liked3, setLiked3] = useState(false);
   const [liked4, setLiked4] = useState(true);
+  const [empDashModal, setEmpDashModal] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(1);
 
+  const closeModal = () => setEmpDashModal(false);
 
   return (
     <SafeAreaView>
@@ -292,6 +297,101 @@ export default function FindEmployees() {
           </View>
         </View>
       </ScrollView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={empDashModal}
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalCard}>
+            <View
+              style={[
+                styles.modalContent,
+                { flex: 1, justifyContent: "center" },
+              ]}
+            >
+              {currentSlide === 1 ? (
+                <>
+                  <Image
+                    source={GroupNext}
+                    style={styles.modalImage}
+                    resizeMode="cover"
+                  />
+
+                  <View style={styles.modalTitleContainer}>
+                    <Text style={styles.modalTitleLine}>Welcome to your</Text>
+                    <Text style={styles.modalTitleLine}>
+                      <Text style={styles.employerColor}>Employer</Text> Profile
+                    </Text>
+                  </View>
+
+                  <Text style={styles.modalDescription}>
+                    A space for businesses to post jobs, showcase their company,
+                    and manage hiring with reviews and ratings.
+                  </Text>
+
+                  <TouchableOpacity
+                    style={styles.yellowButton}
+                    onPress={() => setCurrentSlide(2)}
+                  >
+                    <Text style={styles.yellowButtonText}>Next</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Image
+                    source={GroupJobPost}
+                    style={styles.modalImage}
+                    resizeMode="cover"
+                  />
+
+                  <Text style={styles.modalTitle}>
+                    Start <Text style={styles.djobzyColor}>Djobzy</Text> Journey
+                  </Text>
+                  <View style={styles.modalDescriptionContainer}>
+                    <Text style={styles.modalDescriptionLine}>
+                      In order to get things done, create
+                    </Text>
+                    <Text style={styles.modalDescriptionLine}>
+                      your first job post
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.yellowButton}
+                    onPress={closeModal}
+                  >
+                    <Text style={styles.yellowButtonText}>
+                      Create a Job Post
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              <View style={styles.slideIndicatorRow}>
+                <View
+                  style={[
+                    styles.slideDot,
+                    currentSlide === 1 || currentSlide === 2
+                      ? styles.slideDotActive
+                      : styles.slideDotInactive,
+                  ]}
+                />
+                <View
+                  style={[
+                    styles.slideDot,
+                    currentSlide === 2
+                      ? styles.slideDotActive
+                      : styles.slideDotInactive,
+                  ]}
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -417,5 +517,131 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#ffffff33",
     marginVertical: 15,
+  },
+  scrollContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 30,
+    backgroundColor: "#1e1e1e",
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(34,34,34,0.33)",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  modalCard: {
+    width: "100%",
+    height: 480,
+    backgroundColor: "#fffcfa",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingVertical: 38,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    elevation: 10,
+    marginBottom: 0,
+  },
+  modalContent: {
+    alignItems: "center",
+    width: "100%",
+  },
+  modalImage: {
+    height: 190,
+    marginBottom: 28,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "Montserrat_600SemiBold",
+    marginBottom: 12,
+    color: "#303030",
+    textAlign: "center",
+  },
+  employerColor: {
+    color: "#EA8E4D",
+    fontWeight: "bold",
+  },
+  djobzyColor: {
+    color: "#EA8E4D",
+    fontFamily: "Montserrat_800ExtraBold",
+    fontSize: 20,
+  },
+  modalDescription: {
+    color: "#303030",
+    fontSize: 14,
+    fontFamily: "Montserrat_400Regular",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  yellowButton: {
+    backgroundColor: "#fdbf2d",
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    marginBottom: 15,
+    marginTop: 2,
+    elevation: 1,
+    shadowColor: "#Fdbf2d",
+    shadowOpacity: 0.07,
+    shadowRadius: 2,
+  },
+  yellowButtonText: {
+    color: "#1d1d1d",
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+  },
+  slideIndicatorRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 4,
+    marginBottom: 2,
+    gap: 6,
+  },
+  slideDot: {
+    width: 20,
+    height: 2,
+    borderRadius: 10,
+    backgroundColor: "#ffe8b7",
+  },
+  slideDotActive: {
+    backgroundColor: "#000000",
+  },
+  slideDotInactive: {
+    backgroundColor: "#c3c3c3",
+  },
+
+  modalTitleContainer: {
+    alignItems: "center", 
+    marginBottom: 12,
+  },
+
+  modalTitleLine: {
+    fontSize: 22,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#303030",
+    textAlign: "center",
+    lineHeight: 30, 
+  },
+
+  employerColor: {
+    color: "#cb7767",
+    fontFamily: "Montserrat_800ExtraBold",
+  },
+
+  modalDescriptionContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 28,
+    paddingHorizontal: 10,
+  },
+
+  modalDescriptionLine: {
+    color: "#222",
+    fontSize: 15,
+    fontFamily: "Montserrat_400Regular",
+    textAlign: "center",
+    lineHeight: 22,
   },
 });

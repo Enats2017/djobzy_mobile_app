@@ -45,6 +45,9 @@ import PromoteService from "./Screens/PromoteServicesPage/PromoteService";
 import PromoteCategoryPage from "./Screens/PromoteServicesPage/PromoteCategoryPage";
 import EmployeeAccount from "./Screens/PromoteServicesPage/EmployeeAccount";
 import EmployeeVerification from "./Screens/PromoteServicesPage/EmployeeVerification";
+import ProfileReviewPage from "./Screens/ProfileMenuPAge/ProfileReviewPage";
+import ReferralWallet from "./Screens/ProfileMenuPAge/ReferralWallet";
+import BlogPage from "./Screens/ProfileMenuPAge/BlogPage";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -117,6 +120,9 @@ const App = () => {
           <Stack.Screen name = "PromoteCategoryPage" component={PromoteCategoryPage} />
           <Stack.Screen name = "EmployeeAccount" component={EmployeeAccount} />
           <Stack.Screen name = "EmployeeVerification" component={EmployeeVerification} />
+          <Stack.Screen name = "ProfileReviewPage" component={ProfileReviewPage} />
+          <Stack.Screen name = "ReferralWallet" component={ReferralWallet} />
+          <Stack.Screen name = "BlogPage" component={BlogPage} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

@@ -37,13 +37,9 @@ const EmployeeProfileMenu = () => {
       });
       const data = await response.json();
       console.log("API Response:", data);
-
       if (response.ok) {
         setAccountType(data.account_type);
          setUserInfo(data.name)
-         
-         
-
         if (data.account_type === 0) {
           navigation.replace("Dashboard");
         } else if (data.account_type === 2) {
@@ -51,7 +47,6 @@ const EmployeeProfileMenu = () => {
         }
       } else {
         Alert.alert("Error", data.message || "Something went wrong");
-        console.log(error);
       }
     } catch (error) {
       console.log(error);
@@ -104,11 +99,11 @@ const EmployeeProfileMenu = () => {
           <MenuItem icon="add-circle-outline" title="Promote Services" onPress={() => navigation.navigate("PromoteService")} />
           <MenuItem icon="grid-outline" title="Dashboard" />
           <MenuItem icon="person-outline" title="My account" />
-          <MenuItem icon="star-outline" title="Reviews" />
+          <MenuItem icon="star-outline" title="Reviews" onPress={()=>navigation.navigate("ProfileReviewPage")} />
           <MenuItem icon="checkmark-done-outline" title="Verification" onPress={()=> navigation.navigate("EmployeeVerification")} />
-          <MenuItem icon="wallet-outline" title="Wallet" />
+          <MenuItem icon="wallet-outline" title="Wallet" onPress={()=>navigation.navigate("ReferralWallet")} />
           <MenuItem icon="gift-outline" title="Referral wallet" />
-          <MenuItem icon="chatbubble-ellipses-outline" title="Chat" />
+          <MenuItem icon="chatbubble-ellipses-outline" title="Chat" onPress={()=>navigation.navigate("BlogPage")} />
         </View>
       </ScrollView>
     </SafeAreaView>

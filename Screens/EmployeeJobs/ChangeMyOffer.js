@@ -151,7 +151,7 @@ const ChangeMyOffer = () => {
               </View>
             </View>
             <Text style={styles.note}>
-              <Text style={styles.bold}>10 Hours </Text>
+              <Text style={styles.bold}>{award.expected_hour} Hours </Text>
               is expected for the job to be done.
             </Text>
             <View style={styles.offerHeader}>
@@ -203,7 +203,7 @@ const ChangeMyOffer = () => {
               </View>
             </View>
             <Text style={styles.note}>
-              <Text style={styles.bold}>90 Hours </Text>
+              <Text style={styles.bold}>{expectedTime} Hours </Text>
               is expected for the job to be done.
             </Text>
             <Text style={styles.sectionTitle}>Previous bids</Text>
@@ -225,8 +225,14 @@ const ChangeMyOffer = () => {
                     {award.prop_hourly_rate}/hr
                   </Text>
                 </View>
+                
               </View>
+              
             </View>
+             <Text style={styles.note}>
+              <Text style={styles.bold}>{award.expected_hour} Hours </Text>
+              is expected for the job to be done.
+            </Text>
             <Text style={styles.sectionTitle}>
               Introduction Letter (Required)
             </Text>
@@ -338,7 +344,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingVertical: 14,
     paddingHorizontal: 10,
-    marginBottom: 15,
+   
   },
   currency: {
     color: "#D38979",

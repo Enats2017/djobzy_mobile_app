@@ -9,7 +9,7 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Alert
+  Alert,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 
@@ -24,7 +24,15 @@ import Footer from "../../components/Footer";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const CreateJob = () => {
+  const [titleError, setTitleError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
+  const [categoryError, setCategoryError] = useState(false);
+
   const [activeTab, setActiveTab] = useState(0);
+  const [timeError, setTimeError] = useState(false);
+  const [priceError, setPriceError] = useState(false);
+  const [hourlyError, setHourlyError] = useState(false);
+
   const totalSteps = 7;
   const navigation = useNavigation();
   const [jobData, setJobData] = useState({ title: "", description: "" });
@@ -49,6 +57,13 @@ const CreateJob = () => {
   });
 
   const handleBack = () => {
+    setPriceError(false);
+    setHourlyError(false);
+    setTimeError(false);
+    setCategoryError(false);
+    setTitleError(false);
+    setDescriptionError(false);
+
     if (activeTab > 0) {
       setActiveTab(activeTab - 1);
     } else {
@@ -77,16 +92,22 @@ const CreateJob = () => {
           name: s.name || "",
         })) || [];
       formData.append("subservices", JSON.stringify(subservices));
-      formData.append("requirements", JSON.stringify(contractData?.requirements?.map((r) => r.value) || []));
-      formData.append("languages", JSON.stringify(
-        contractData?.languages?.map((l) => ({
-          language: l.lang || "",
-          level: l.level || 2,
-        })) || []
-      )
+      formData.append(
+        "requirements",
+        JSON.stringify(contractData?.requirements?.map((r) => r.value) || [])
+      );
+      formData.append(
+        "languages",
+        JSON.stringify(
+          contractData?.languages?.map((l) => ({
+            language: l.lang || "",
+            level: l.level || 2,
+          })) || []
+        )
       );
 
-      if (contractData?.address) formData.append("address", contractData.address);
+      if (contractData?.address)
+        formData.append("address", contractData.address);
       if (fileData?.uri) {
         let uri = fileData.uri;
         if (Platform.OS === "android" && uri.startsWith("file://"))
@@ -112,8 +133,10 @@ const CreateJob = () => {
       if (data.status === 200) {
         // Alert.alert("Success", "Job submitted successfully!");
         navigation.navigate("JobPublishedPage", { gig: data.gig });
+        navigation.navigate("JobPublishedPage", { gig: data.gig });
       } else {
         console.log(data.message);
+
 
         Alert.alert("Error", data.message || "Failed to submit job");
       }
@@ -123,41 +146,90 @@ const CreateJob = () => {
     }
   };
   const handleNext = () => {
+    setPriceError(false);
+    setHourlyError(false);
+    setTimeError(false);
+    setCategoryError(false);
+    setTitleError(false);
+    setDescriptionError(false);
+
     switch (activeTab) {
       case 0:
+        let errorFound = false;
+
+        // TITLE EMPTY?
         if (!jobData.title.trim()) {
-          alert("Please enter a job title");
-          return;
+          setTitleError(true);
+          errorFound = true;
+        } else {
+          setTitleError(false);
         }
+        if (!jobData.description.trim()) {
+          setDescriptionError(true);
+          errorFound = true;
+        } else {
+          setDescriptionError(false);
+        }
+        if (errorFound) return;
         setActiveTab(1);
         break;
+
       case 1:
+        let catError = false;
         if (selectedSubs.length === 0) {
-          alert("Please choose at least one category");
-          return;
+          setCategoryError(true);
+          catError = true;
+        } else {
+          setCategoryError(false);
         }
+        if (catError) return;
         setActiveTab(2);
-
         break;
-      case 2:
-        setActiveTab(3);
-        console.log(contractData);
 
+      case 2:
+        setTimeError(false);
+        setActiveTab(3);
         break;
       case 3:
+        setTimeError(false);
         setActiveTab(4);
-
         break;
       case 4:
+        if (!durationData.selectedOption) {
+          setTimeError(true);
+          return;
+        }
+        setTimeError(false);
         setActiveTab(5);
-        console.log(durationData);
         break;
       case 5:
+        let priceValid = budgetData.totalPrice.trim() !== "";
+        let hourlyValid = budgetData.hourlyRate.trim() !== "";
+        if (!priceValid) setPriceError(true);
+        if (!hourlyValid) setHourlyError(true);
+        if (!priceValid || !hourlyValid) return;
+        setPriceError(false);
+        setHourlyError(false);
         setActiveTab(6);
-        console.log(budgetData);
-
         break;
       case 6:
+        if (!budgetData.totalPrice || budgetData.totalPrice.trim() === "") {
+          setPriceError(true);
+        }
+        if (!budgetData.hourlyRate || budgetData.hourlyRate.trim() === "") {
+          setHourlyError(true);
+        }
+        if (
+          !budgetData.totalPrice ||
+          budgetData.totalPrice.trim() === "" ||
+          !budgetData.hourlyRate ||
+          budgetData.hourlyRate.trim() === ""
+        ) {
+          return;
+        }
+
+        setPriceError(false);
+        setHourlyError(false);
         const finalData = {
           title: jobData.title,
           description: jobData.description,
@@ -165,13 +237,12 @@ const CreateJob = () => {
           requirements: contractData.requirements,
           languages: contractData.languages,
           address: contractData.address,
-          file: fileData, // fileUri & fileName
+          file: fileData,
           duration: durationData,
           budget: budgetData,
         };
 
         console.log("🟢 Submitting job data:", finalData);
-
         submitJob(finalData);
     }
   };
@@ -224,8 +295,8 @@ const CreateJob = () => {
                             isActive
                               ? styles.activeCircle
                               : isCompleted
-                                ? styles.completedCircle
-                                : styles.inactiveCircle,
+                              ? styles.completedCircle
+                              : styles.inactiveCircle,
                           ]}
                         />
                         <Text
@@ -234,8 +305,8 @@ const CreateJob = () => {
                             isActive
                               ? styles.activeText
                               : isCompleted
-                                ? styles.completedText
-                                : styles.inactiveText,
+                              ? styles.completedText
+                              : styles.inactiveText,
                           ]}
                         >
                           {label}
@@ -272,12 +343,22 @@ const CreateJob = () => {
 
           <View style={styles.contentContainer}>
             {activeTab === 0 && (
-              <TitleSection jobData={jobData} setJobData={setJobData} />
+              <TitleSection
+                jobData={jobData}
+                setJobData={setJobData}
+                titleError={titleError}
+                setTitleError={setTitleError}
+                descriptionError={descriptionError}
+                setDescriptionError={setDescriptionError}
+              />
             )}
+
             {activeTab === 1 && (
               <Category
                 selectedSubs={selectedSubs}
                 setSelectedSubs={setSelectedSubs}
+                categoryError={categoryError}
+                setCategoryError={setCategoryError}
               />
             )}
             {activeTab === 2 && (
@@ -293,11 +374,22 @@ const CreateJob = () => {
               <TimePeriod
                 durationData={durationData}
                 setDurationData={setDurationData}
+                timeError={timeError}
+                setTimeError={setTimeError}
               />
             )}
+
             {activeTab === 5 && (
-              <SetPrice budgetData={budgetData} setBudgetData={setBudgetData} />
+              <SetPrice
+                budgetData={budgetData}
+                setBudgetData={setBudgetData}
+                priceError={priceError}
+                setPriceError={setPriceError}
+                hourlyError={hourlyError}
+                setHourlyError={setHourlyError}
+              />
             )}
+
             {activeTab === 6 && (
               <ReviewPage
                 jobData={jobData}

@@ -10,18 +10,29 @@ import {
   View,
 } from "react-native";
 
-const SetPrice = ({ budgetData, setBudgetData }) => {
+const SetPrice = ({
+  budgetData,
+  setBudgetData,
+  priceError,
+  setPriceError,
+  hourlyError,
+  setHourlyError,
+}) => {
   const navigation = useNavigation();
   const { hourlyRate, totalPrice, expectedTime, processingFee } = budgetData;
 
   const handleHourlyChange = (value) => {
+    setHourlyError(false);
     const hourly = parseFloat(value || 0);
     const total = parseFloat(budgetData.totalPrice || 0);
 
     let expected = 0;
     if (total && hourly) {
       if (hourly > total) {
-        Alert.alert("Invalid Input", "Hourly rate cannot be more than total price.");
+        Alert.alert(
+          "Invalid Input",
+          "Hourly rate cannot be more than total price."
+        );
       } else {
         expected = Math.ceil(total / hourly);
       }
@@ -35,6 +46,7 @@ const SetPrice = ({ budgetData, setBudgetData }) => {
   };
 
   const handleTotalPriceChange = (value) => {
+    setPriceError(false);
     const total = parseFloat(value || 0);
     const hourly = parseFloat(budgetData.hourlyRate || 0);
 
@@ -66,7 +78,12 @@ const SetPrice = ({ budgetData, setBudgetData }) => {
           <Text style={styles.label}>Total Price</Text>
         </View>
 
-        <View style={styles.inputWrapper}>
+        <View
+          style={[
+            styles.inputWrapper,
+            priceError && { borderColor: "#FF0000", borderWidth: 1 },
+          ]}
+        >
           <Text style={styles.currencyText}>CAD</Text>
           <View style={styles.separator} />
           <TextInput
@@ -77,6 +94,11 @@ const SetPrice = ({ budgetData, setBudgetData }) => {
             keyboardType="numeric"
           />
         </View>
+        {priceError && (
+          <Text style={styles.errorText}>
+            *Please enter a valid total price
+          </Text>
+        )}
       </View>
 
       {/* Hourly Rate */}
@@ -91,7 +113,12 @@ const SetPrice = ({ budgetData, setBudgetData }) => {
           />
         </View>
 
-        <View style={styles.inputWrapper}>
+        <View
+          style={[
+            styles.inputWrapper,
+            hourlyError && { borderColor: "#FF0000", borderWidth: 1 },
+          ]}
+        >
           <Text style={styles.currencyText}>CAD</Text>
           <View style={styles.separator} />
           <TextInput
@@ -103,6 +130,11 @@ const SetPrice = ({ budgetData, setBudgetData }) => {
           />
           <Text style={styles.prefix}>/ hr</Text>
         </View>
+        {hourlyError && (
+          <Text style={styles.errorText}>
+            *Please enter a valid hourly rate
+          </Text>
+        )}
       </View>
 
       {/* Expected Time */}
@@ -123,7 +155,7 @@ const SetPrice = ({ budgetData, setBudgetData }) => {
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   budget: {
@@ -171,7 +203,7 @@ const styles = StyleSheet.create({
   boldText: {
     color: "#c3c3c3",
   },
-  
+
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
@@ -206,6 +238,14 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: "#ccc",
     marginTop: 10,
+  },
+  errorText: {
+    color: "#FF0000",
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+    marginTop: 5,
+    marginBottom: 5,
+    marginLeft: 2,
   },
 });
 

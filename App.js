@@ -26,6 +26,11 @@ import MyJobPage from "./Screens/EmployeeJobs/MyJobPage";
 import MyFindJobs from "./Screens/FindJobs/MyFindJobs";
 import JobPublishedPage from "./Screens/JobCreatePage/JobPublishedPage";
 import JobBoostPaymentSection from "./Screens/JobCreatePage/JobBoostPaymentSection";
+import EmployerDashboard from "./Screens/EmployerDashboardPage/EmployerDashboard";
+import EmployerContracts from "./Screens/EmployerJobs/EmployerContracts";
+import MyJobPost from "./Screens/EmployerJobs/MyJobPost";
+import DeactivatedJobs from "./Screens/EmployerJobs/DeactivatedJobs";
+import Wallet from "./Screens/Wallet/Wallet";
 import MyCurrentBiddingProfile from "./Screens/EmployeeJobs/MyCurrentBiddingProfile";
 import ChangeMyOffer from "./Screens/EmployeeJobs/ChangeMyOffer";
 import ViewCompletedJobPost from "./Screens/EmployeeJobs/ViewCompletedJobPost";
@@ -35,6 +40,17 @@ import MyNewReceiveOfferPage from "./Screens/EmployeeJobs/MyNewReceiveOfferPage"
 import AcceptReceivedOfferPage from "./Screens/EmployeeJobs/AcceptReceivedOfferPage";
 import ViewCurrentJobPost from "./Screens/EmployeeJobs/ViewCurrentJobPost";
 import CurrentJobPaymentPage from "./Screens/EmployeeJobs/CurrentJobPaymentPage";
+import Details from "./Screens/EmployerJobs/Details";
+import VerificationPage from "./Screens/VerificationPage/VerificationPage";
+import PasswordResert from "./Screens/PasswordResertPage/PasswordResert";
+import EmployeeProfileMenu from "./Screens/ProfileMenuPAge/EmployeeProfileMenu";
+import PromoteService from "./Screens/PromoteServicesPage/PromoteService";
+import PromoteCategoryPage from "./Screens/PromoteServicesPage/PromoteCategoryPage";
+import EmployeeAccount from "./Screens/PromoteServicesPage/EmployeeAccount";
+import EmployeeVerification from "./Screens/PromoteServicesPage/EmployeeVerification";
+import ProfileReviewPage from "./Screens/ProfileMenuPAge/ProfileReviewPage";
+import ReferralWallet from "./Screens/ProfileMenuPAge/ReferralWallet";
+import BlogPage from "./Screens/ProfileMenuPAge/BlogPage";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -79,6 +95,11 @@ const App = () => {
           <Stack.Screen name="JobProfile" component={JobProfile} />
           <Stack.Screen name="JobApply" component={JobApplyPage} />
           <Stack.Screen name="MyJobPage" component={MyJobPage} />
+          <Stack.Screen name ="EmployerDashboard" component={EmployerDashboard}/>
+          <Stack.Screen name ="EmployerContracts" component={EmployerContracts}/>
+          <Stack.Screen name ="MyJobPost" component={MyJobPost}/>
+          <Stack.Screen name ="DeactivatedJobs" component={DeactivatedJobs}/>
+          <Stack.Screen name ="Wallet" component={Wallet}/>
           <Stack.Screen name="MyFindJobs" component={MyFindJobs} />
           <Stack.Screen name="JobPublishedPage" component={JobPublishedPage} />
           <Stack.Screen name="JobBoostPaymentSection" component={JobBoostPaymentSection} />
@@ -91,6 +112,17 @@ const App = () => {
           <Stack.Screen name = "AcceptReceivedOfferPage" component={AcceptReceivedOfferPage}/>
           <Stack.Screen name = "ViewCurrentJobPost" component={ViewCurrentJobPost}/>
           <Stack.Screen name = "CurrentJobPaymentPage" component={CurrentJobPaymentPage}/>
+          <Stack.Screen name = "Details" component={Details}/>
+          <Stack.Screen name = "VerificationPage" component={VerificationPage} />
+          <Stack.Screen name= "PasswordResert" component={PasswordResert} />
+          <Stack.Screen name = "EmployeeProfileMenu" component={EmployeeProfileMenu} />
+          <Stack.Screen name = "PromoteService" component={PromoteService} />
+          <Stack.Screen name = "PromoteCategoryPage" component={PromoteCategoryPage} />
+          <Stack.Screen name = "EmployeeAccount" component={EmployeeAccount} />
+          <Stack.Screen name = "EmployeeVerification" component={EmployeeVerification} />
+          <Stack.Screen name = "ProfileReviewPage" component={ProfileReviewPage} />
+          <Stack.Screen name = "ReferralWallet" component={ReferralWallet} />
+          <Stack.Screen name = "BlogPage" component={BlogPage} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

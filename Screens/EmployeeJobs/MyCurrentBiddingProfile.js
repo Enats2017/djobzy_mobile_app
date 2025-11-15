@@ -24,7 +24,7 @@ const MyCurrentBiddingProfile = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.bcontainer}>
         <PageNameHeaderBar navigation={navigation} title="Bidding Profiles" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {myOffer.map((offer, index) => (
             <View style={styles.card} key={index}>
               <View style={styles.profileRow}>

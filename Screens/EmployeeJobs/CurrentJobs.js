@@ -8,18 +8,19 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import { truncateWords } from "../../api/TruncateWords";
-import LineDivider from "../../components/LineDivider";
+import GradientButton from "../../components/GradientButton";
+import { useNavigation } from "@react-navigation/native";
+import NoJobs from "./NoJobs";
 
 const CurrentJobs = () => {
   const [currentJobs, setCurrnetJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,6 +44,8 @@ const CurrentJobs = () => {
   }, []);
 
   if (loading) return <Loading />;
+
+  if (currentJobs.length === 0) return <NoJobs />
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
@@ -88,7 +91,7 @@ const CurrentJobs = () => {
 
             <View style={styles.jobTitleSection}>
               <Text style={styles.jobTitle}>{currentJob.subject}</Text>
-              <Text style={styles.postedDate}>Posted: {currentJob.payment_date}</Text>
+              <Text style={styles.postedDate}>Start Date : {currentJob.payment_date}</Text>
             </View>
 
             <View style={styles.jobInfoSection}>
@@ -125,13 +128,18 @@ const CurrentJobs = () => {
             </View>
 
             <View style={styles.buttonSection}>
-              <TouchableOpacity style={styles.viewJobButton}>
-                <Text style={styles.viewJobButtonText}>View Job Post</Text>
-              </TouchableOpacity>
+              <GradientButton
+                title="View Job Post"
+                onPress={() =>
+                  navigation.navigate("ViewCurrentJobPost", {
+                    gid: currentJob.request_slug,
+                  })
+                }
+              />
             </View>
           </View>
 
-          {index !== currentJobs.length - 1 && <LineDivider />}
+          {/* {index !== currentJobs.length - 1 && <LineDivider />} */}
         </View>
       ))}
     </ScrollView>
@@ -147,6 +155,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 10,
     flex: 1,
+    marginBottom: 15
   },
   userRow: {
     flexDirection: "row",
@@ -263,7 +272,7 @@ const styles = StyleSheet.create({
     borderColor: "#797474ff",
     borderWidth: 1,
     padding: 15,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   descTitle: {
     color: "#fff",

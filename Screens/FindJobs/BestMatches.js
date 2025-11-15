@@ -57,12 +57,9 @@ const BestMatches = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <ScrollView
-        contentContainerStyle={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        {activeTab ? <FindJobs /> : <FindEmployees />}
-      </ScrollView>
+
+      {activeTab ? <FindJobs /> : <FindEmployees />}
+
     </View>
   );
 };

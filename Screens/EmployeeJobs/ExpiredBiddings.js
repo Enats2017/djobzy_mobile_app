@@ -51,7 +51,7 @@ const ExpiredBiddings = ({expireBids =[]}) => {
       </View>
 
       <Text style={styles.title2}>{expireBids.subject}</Text>
-      <Text style={styles.posted2}>Posted {expireBids.dated}</Text>
+      <Text style={styles.posted2}>Posted On: {expireBids.dated}</Text>
 
       <View style={styles.sectionBox2}>
         <Text style={styles.sectionTitle2}>Introduction Letter</Text>
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flex: 1,
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 15,
   },
 
   cardHeader2: {

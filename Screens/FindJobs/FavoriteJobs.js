@@ -19,6 +19,8 @@ import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import { truncateWords } from "../../api/TruncateWords";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import LineDivider from "../../components/LineDivider";
+import NoJobs from "../EmployeeJobs/NoJobs";
 
 export default function FavoriteJobs() {
   const [loading, setLoading] = useState(true);
@@ -65,129 +67,127 @@ export default function FavoriteJobs() {
           </TouchableOpacity>
         </View>
 
-        {jobs.map((job, index) => (
-          <View key={job.gid || index}>
-            <View style={styles.jobCard}>
-              <Text style={styles.uploadTextAbove}>
-                Uploaded at {job.job_created}
-              </Text>
-              <View style={styles.userRow}>
-                <Image
-                  source={{
-                    uri:
-                      job.photo ||
-                      "https://randomuser.me/api/portraits/women/8.jpg",
-                  }}
-                  style={styles.avatar}
-                />
+        {jobs && jobs.length > 0 ? (
+          jobs.map((job, index) => (
+            <View key={job.gid || index}>
+              <View style={styles.jobCard}>
+                <Text style={styles.uploadTextAbove}>
+                  Uploaded at {job.job_created}
+                </Text>
+                <View style={styles.userRow}>
+                  <Image
+                    source={{
+                      uri:
+                        job.photo ||
+                        "https://randomuser.me/api/portraits/women/8.jpg",
+                    }}
+                    style={styles.avatar}
+                  />
 
-                <View style={styles.userInfo}>
-                  <View style={styles.nameRow}>
-                    <View style={styles.userNameSection}>
-                      <Text style={styles.userName}>{job.full_name}</Text>
+                  <View style={styles.userInfo}>
+                    <View style={styles.nameRow}>
+                      <View style={styles.userNameSection}>
+                        <Text style={styles.userName}>{job.full_name}</Text>
 
-                      <View style={styles.starRow}>
-                        {[...Array(5)].map((_, i) => (
-                          <FontAwesome
-                            key={i}
-                            name="star"
-                            style={styles.starIcon}
-                          />
-                        ))}
+                        <View style={styles.starRow}>
+                          {[...Array(5)].map((_, i) => (
+                            <FontAwesome
+                              key={i}
+                              name="star"
+                              style={styles.starIcon}
+                            />
+                          ))}
+                        </View>
+                      </View>
+                      <View style={styles.paymentRow}>
+                        <MaterialIcons
+                          name="verified"
+                          size={16}
+                          color="#40b68e"
+                        />
+                        <Text style={styles.paymentVerified}>
+                          Payment verified
+                        </Text>
                       </View>
                     </View>
-                    <View style={styles.paymentRow}>
-                      <MaterialIcons
-                        name="verified"
-                        size={16}
-                        color="#40b68e"
-                      />
-                      <Text style={styles.paymentVerified}>
-                        Payment verified
-                      </Text>
+
+                    <View>
+                      <TouchableOpacity style={styles.heartTouchable}>
+                        <FontAwesome
+                          name={liked ? "heart" : "heart-o"}
+                          size={20}
+                          color={liked ? "#ff0000" : "#fff"}
+                        />
+                      </TouchableOpacity>
                     </View>
                   </View>
-
-                  <View>
-                    <TouchableOpacity style={styles.heartTouchable}>
-                      <FontAwesome
-                        name={liked ? "heart" : "heart-o"}
-                        size={20}
-                        color={liked ? "#ff0000" : "#fff"}
-                      />
-                    </TouchableOpacity>
-                  </View>
                 </View>
-              </View>
 
-              <View style={styles.jobTitleSection}>
-                <Text style={styles.jobTitle}>{job.subject}</Text>
-                <Text style={styles.jobDesc}>{truncateWords(job.description, 20)}</Text>
-              </View>
+                <View style={styles.jobTitleSection}>
+                  <Text style={styles.jobTitle}>{job.subject}</Text>
+                  <Text style={styles.jobDesc}>{truncateWords(job.description, 20)}</Text>
+                </View>
 
-              <View style={styles.skillRow}>
-                {job.cat.map((category, index) => (
-                  <View key={index}>
+                <View style={styles.skillRow}>
+                  {job.cat.map((category, index) => (
+                    <View key={index}>
+                      <View style={styles.skillTag}>
+                        <Text style={styles.skillText}>{category.subname}</Text>
+                      </View>
+                    </View>
+                  ))}
+
+                  {job.more && Number(job.more) > 0 ? (
                     <View style={styles.skillTag}>
-                      <Text style={styles.skillText}>{category.subname}</Text>
+                      <Text style={styles.skillText}>+{job.more} more</Text>
                     </View>
-                  </View>
-                ))}
-
-                {job.more && Number(job.more) > 0 ? (
-                  <View style={styles.skillTag}>
-                    <Text style={styles.skillText}>+{job.more} more</Text>
-                  </View>
-                ) : null}
-              </View>
-
-
-              <View style={styles.jobFooter}>
-                <AntDesign
-                  name="dollar"
-                  size={16}
-                  color="#CB7767"
-                  style={styles.locationIcon}
-                />
-                <Text style={styles.hourly}>Hourly: </Text>
-                <Text style={styles.hourlyRange}>CAD {job.hour_minimum}</Text>
-                <View style={styles.locationRow}>
-                  {job.preferred_location && (
-                    <>
-                      <FontAwesome6
-                        name="location-dot"
-                        size={14}
-                        color="#cb7767"
-                        style={styles.locationIcon}
-                      />
-
-                      <Text style={styles.locationText}>
-                        {job.preferred_location}
-                      </Text>
-                    </>
-                  )}
+                  ) : null}
                 </View>
-              </View>
 
-              <TouchableOpacity style={styles.viewBtn}>
-                <Text style={styles.viewBtnText}>View</Text>
-              </TouchableOpacity>
+
+                <View style={styles.jobFooter}>
+                  <AntDesign
+                    name="dollar"
+                    size={16}
+                    color="#CB7767"
+                    style={styles.locationIcon}
+                  />
+                  <Text style={styles.hourly}>Hourly: </Text>
+                  <Text style={styles.hourlyRange}>CAD {job.hour_minimum}</Text>
+                  <View style={styles.locationRow}>
+                    {job.preferred_location && (
+                      <>
+                        <FontAwesome6
+                          name="location-dot"
+                          size={14}
+                          color="#cb7767"
+                          style={styles.locationIcon}
+                        />
+
+                        <Text style={styles.locationText}>
+                          {job.preferred_location}
+                        </Text>
+                      </>
+                    )}
+                  </View>
+                </View>
+
+                <TouchableOpacity style={styles.viewBtn}>
+                  <Text style={styles.viewBtnText}>View</Text>
+                </TouchableOpacity>
+              </View>
+              <LineDivider />
             </View>
-            <View style={styles.dividerLine} />
-          </View>
-        ))}
+          ))
+        ) : (
+          <NoJobs />
+        )}
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  dividerLine: {
-    height: 1,
-    backgroundColor: "rgba(200,200,200,0.4)",
-    marginHorizontal: 1,
-    marginVertical: 15,
-  },
   scrollView: {
     paddingBottom: 100,
   },

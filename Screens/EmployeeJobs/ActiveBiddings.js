@@ -52,7 +52,7 @@ const ActiveBiddings = ({ activeBids = [] }) => {
       </View>
 
       <Text style={styles.title}>{activeBids.subject}</Text>
-      <Text style={styles.posted}>Posted {activeBids.dated}</Text>
+      <Text style={styles.posted}>Posted On: {activeBids.dated}</Text>
 
       <View style={styles.sectionBox}>
         <Text style={styles.sectionTitle}>Introduction Letter</Text>
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flex: 1,
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 15,
   },
 
   cardHeader: {
@@ -99,7 +99,6 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
     borderWidth: 1,
     borderRadius: 30,
-    marginRight: 2,
     width: 55,
     height: 55,
     overflow: "hidden",
@@ -109,7 +108,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: 30,
-    marginLeft: 1,
   },
 
   userInfo: { flex: 1 },

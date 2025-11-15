@@ -1,377 +1,106 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
-  Image,
+  ActivityIndicator,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
   FlatList,
 } from "react-native";
-import { Feather, FontAwesome } from "@expo/vector-icons";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import Entypo from "@expo/vector-icons/Entypo";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { API_URL } from "../../api/ApiUrl";
-import { truncateWords } from "../../api/TruncateWords";
 import Loading from "../../components/Loading";
+import JobCard from "../EmployeeJobs/JobCard";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function FindJobs() {
   const [jobs, setJobs] = useState([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const onEndReachedCalledDuringMomentum = useRef(false);
+  const hasFetched = useRef(false);
+  const insets = useSafeAreaInsets();
 
-  const fetchJobs = async (pageNum = 1) => {
+  const fetchJobs = useCallback(async (pageNum = 1) => {
     try {
+      if (loading || isFetchingMore) return;
       if (pageNum === 1) setLoading(true);
       else setIsFetchingMore(true);
-      const res = await fetch(`${API_URL}/best-matches?page=${pageNum}`);
+      // console.log("📡 Fetching jobs for page:", pageNum);
+      const res = await fetch(`${API_URL}/best-matches?page=${pageNum}`, {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
       const data = await res.json();
-      if (!data?.gigs) {
+      if (!data?.gigs || data.gigs.length === 0) {
         setHasMore(false);
         return;
       }
-      const newJobs = data.gigs.filter(
-        (job) => !jobs.some((j) => j.gid === job.gid)
-      );
 
-      if (newJobs.length > 0) {
-        setJobs((prev) => [...prev, ...newJobs]);
-        setPage(pageNum);
-      } else {
-        setHasMore(false);
-      }
+      setJobs((prev) => {
+        const newGigs = data.gigs.filter(
+          (gig) => !prev.some((j) => j.gid === gig.gid)
+        );
+        return [...prev, ...newGigs];
+      });
+      setHasMore(data.gigs.length === 10);
+      setPage(pageNum);
     } catch (err) {
-      console.log("Error fetching jobs:", err);
+      console.log("❌ Error fetching jobs:", err);
     } finally {
       setLoading(false);
       setIsFetchingMore(false);
     }
-  };
+  }, [loading, isFetchingMore]);
+
   useEffect(() => {
-    if (jobs.length === 0) {
-      fetchJobs();
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchJobs(1);
     }
-  }, []);
+  }, [fetchJobs]);
 
   if (loading) return <Loading />;
-
-  const renderJobCard = ({ item }) => {
-    const servicesCount = item.gigServices ? item.gigServices.length : 0;
-    const maxVisibleServices = 2;
-
+  const renderFooter = () => {
+    if (!isFetchingMore) return null;
     return (
-      <>
-        <View style={[styles.jobCard]}>
-          <Text style={[styles.uploadTextAbove, { marginBottom: 8 }]}>
-            Uploaded at {item.created}
-          </Text>
-          <View style={styles.userRow}>
-            <Image
-              source={{
-                uri:
-                  item.photo ||
-                  "https://randomuser.me/api/portraits/women/8.jpg",
-              }}
-              style={styles.avatar}
-            />
-
-            <View style={styles.userInfo}>
-              <View style={styles.nameRow}>
-                <View style={styles.userNameSection}>
-                  <Text style={styles.userName}>{item.full_name}</Text>
-                  <View style={styles.starRow}>
-                    {[...Array(5)].map((_, i) => (
-                      <FontAwesome
-                        key={i}
-                        name="star"
-                        style={styles.starIcon}
-                      />
-                    ))}
-                  </View>
-                </View>
-                <View style={styles.paymentRow}>
-                  <MaterialIcons
-                    name="verified"
-                    size={16}
-                    color="#40b68e"
-                  />
-                  <Text style={styles.paymentVerified}>
-                    Payment verified
-                  </Text>
-                </View>
-              </View>
-
-              <View>
-                <TouchableOpacity style={styles.heartTouchable}>
-                  <FontAwesome
-                    name={"heart-o"}
-                    size={20}
-                    color={"#fff"}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
-          <Text style={styles.jobTitle}>{item.title}</Text>
-          <Text style={styles.jobDesc}>
-            {truncateWords(item.description, 20)}
-          </Text>
-
-          <View style={styles.skillRow}>
-            {servicesCount > 0 ? (
-              <>
-                {item.gigServices
-                  .slice(0, maxVisibleServices)
-                  .map((service, index) => (
-                    <View key={index}>
-                      <View style={styles.skillTag}>
-                        <Text style={styles.skillText}>
-                          {service.sub_services.subname || "No Subcategory"}
-                        </Text>
-                      </View>
-                    </View>
-                  ))}
-
-                {servicesCount > maxVisibleServices && (
-                  <View style={styles.skillTag}>
-                    <Text style={styles.skillText}>
-                      +{servicesCount - maxVisibleServices} More
-                    </Text>
-                  </View>
-                )}
-              </>
-            ) : (
-              <Text style={styles.noData}>No Data Found</Text>
-            )}
-          </View>
-          <View style={styles.jobFooter}>
-            <AntDesign
-              name="dollar"
-              size={16}
-              color="#CB7767"
-              style={styles.locationIcon}
-            />
-            <Text style={styles.hourly}>Hourly: </Text>
-            <Text style={styles.hourlyRange}>{item.hour_minimum}</Text>
-            <View style={styles.locationRow}>
-              {item.preferred_location && (
-                <>
-                  <Feather
-                    name="map-pin"
-                    size={16}
-                    color="#eb8676"
-                    style={styles.locationIcon}
-                  />
-
-                  <Text style={styles.locationText}>
-                    {item.preferred_location}
-                  </Text>
-                </>
-              )}
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={styles.viewBtn}
-            onPress={() =>
-              navigation.navigate("JobProfile", { gid: item.request_slug })
-            }
-          >
-            <Text style={styles.viewBtnText}>View</Text>
-          </TouchableOpacity>
-          <View style={styles.dividerLine} />
-        </View>
-      </>
+      <View style={{ paddingBottom: 10 }}>
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
     );
   };
 
+  const renderJobCard = ({ item, index }) => {
+    const isLastItem = index === jobs.length - 1;
+    return <JobCard item={item} lastItem={isLastItem} />
+  };
+
   return (
-    <View style={styles.findJobContainer}>
+    <View style={[styles.findJobContainer, { paddingBottom: insets.bottom }]}>
       <FlatList
         data={jobs}
         renderItem={renderJobCard}
         keyExtractor={(item) => item.gid.toString()}
-        onEndReached={() => {
-          if (!isFetchingMore && hasMore) fetchJobs(page + 1);
-        }}
+        ListFooterComponent={renderFooter}
         onEndReachedThreshold={0.5}
-        style={{ paddingBottom: 100 }}
+        onMomentumScrollBegin={() => { onEndReachedCalledDuringMomentum.current = false; }}
+        onEndReached={() => {
+          if (!onEndReachedCalledDuringMomentum.current && hasMore && !isFetchingMore && !loading) {
+            // console.log("🚀 Triggering next page:", page + 1);
+            fetchJobs(page + 1);
+            onEndReachedCalledDuringMomentum.current = true;
+          }
+        }}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={false}
+        contentContainerStyle={{ paddingBottom: 50 }}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  dividerLine: {
-    height: 1,
-    backgroundColor: "rgba(200,200,200,0.4)",
-    marginHorizontal: 1,
-    marginVertical: 15,
-  },
   findJobContainer: {
     flex: 1,
   },
-  uploadTextAbove: {
-    color: "#c3c3c3",
-    fontSize: 12,
-    marginBottom: 8,
-    fontFamily: "Montserrat_400Regular",
-  },
-  userRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-    gap: 10,
-    width: "100%",
-  },
-  avatar: {
-    width: 55,
-    height: 55,
-    borderRadius: 100,
-    borderWidth: 2,
-    borderColor: "#fff",
-  },
-  userInfo: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 10,
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: 5,
-  },
-  userNameSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
-  userName: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Montserrat_500Medium",
-  },
-  starRow: {
-    flexDirection: "row",
-    gap: 3,
-  },
-  starIcon: {
-    fontSize: 13,
-    color: "#EBBE56",
-  },
-  paymentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  paymentIcon: {
-    fontSize: 16,
-    color: "#39A881",
-  },
-  paymentVerified: {
-    color: "#ffffff",
-    fontSize: 13,
-    marginLeft: 4,
-    fontFamily: "Montserrat_400Regular",
-  },
-  jobTitle: {
-    color: "#ffffff",
-    fontSize: 16,
-    marginBottom: 5,
-    marginTop: 6,
-    fontFamily: "Montserrat_600SemiBold",
-  },
-  jobDesc: {
-    fontSize: 15,
-    color: "#fff",
-    lineHeight: 23,
-    fontFamily: "Montserrat_400Regular",
-  },
-  readMore: {
-    color: "#eb8676",
-    fontWeight: "600",
-    fontFamily: "Montserrat_600SemiBold",
-  },
-  skillRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginTop: 10,
-    marginBottom: 10,
-    borderRadius: 30,
-    gap: 6,
-    fontFamily: "Montserrat_500Medium",
-  },
-  skillTag: {
-    backgroundColor: "#514f4f",
-    borderRadius: 30,
-    paddingVertical: 11,
-    paddingHorizontal: 14,
-  },
-  skillText: {
-    color: "#fff",
-    fontSize: 10,
-    fontFamily: "Montserrat_500Medium",
-  },
-  jobFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-    marginTop: 5,
-  },
-  cashIcon: {
-    fontSize: 16,
-    color: "#eb8676",
-    marginRight: 6,
-  },
-  hourly: {
-    fontFamily: "Montserrat_600SemiBold",
-    color: "#fff",
-    fontSize: 12,
-    marginRight: 2,
-  },
-
-  hourlyRange: {
-    color: "#fff",
-    fontSize: 12,
-    marginRight: 12,
-    fontFamily: "Montserrat_400Regular",
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginLeft: 15,
-  },
-  locationIcon: {
-    fontSize: 16,
-    color: "#eb8676",
-    marginRight: 4,
-  },
-  locationText: {
-    color: "#fff",
-    fontSize: 12,
-    fontFamily: "Montserrat_400Regular",
-  },
-  viewBtn: {
-    backgroundColor: "#eb8676",
-    borderRadius: 12,
-    alignItems: "center",
-    paddingVertical: 10,
-    marginTop: 10,
-  },
-  viewBtnText: {
-    color: "#fff",
-    fontFamily: "Montserrat_700Bold",
-    fontSize: 20,
-    letterSpacing: 1,
-  },
-  heartTouchable: {
-    alignItems: "flex-end",
-    width: "100%"
-  }
 });

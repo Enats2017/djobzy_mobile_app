@@ -69,17 +69,17 @@ const ViewCompletedJobPost = () => {
             <View style={styles.statsRow}>
               <View style={styles.statsBox}>
                 <Text style={styles.statsLabel}>Hourly Rate</Text>
-                <Text style={styles.statsValue}>20.00 CAD</Text>
+                <Text style={styles.statsValue}>{job.hour_minimum} CAD</Text>
               </View>
               <View style={styles.vertDivider} />
               <View style={styles.statsBox}>
                 <Text style={styles.statsLabel}>Total Hour</Text>
-                <Text style={styles.statsValue}>1</Text>
+                <Text style={styles.statsValue}>{job.expected_hour}</Text>
               </View>
               <View style={styles.vertDivider} />
               <View style={styles.statsBox}>
                 <Text style={styles.statsLabel}>Total Earn</Text>
-                <Text style={styles.statsValue}>20.00 CAD</Text>
+                <Text style={styles.statsValue}>{job.fixed_minimum} CAD</Text>
               </View>
             </View>
             <View style={styles.userInfoRow}>
@@ -101,7 +101,6 @@ const ViewCompletedJobPost = () => {
             </View>
             <View style={styles.section}>
               <View style={styles.rowBetween}>
-                <Text style={styles.uploadTime}>Uploaded on {job.created}</Text>
                 <Text style={styles.jobTitle}>{job.subject}</Text>
               </View>
             </View>
@@ -123,34 +122,6 @@ const ViewCompletedJobPost = () => {
             <View
               style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
             />
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Pricing</Text>
-              <View style={styles.priceRow}>
-                <Text style={styles.priceText}>
-                  Total Price:{" "}
-                  <Text style={styles.boldText}>CAD {job.fixed_minimum}</Text>
-                </Text>
-                <Text style={styles.priceText}>
-                  Hourly Rate:{" "}
-                  <Text style={styles.boldText}>CAD {job.hour_minimum}</Text>
-                </Text>
-                <Text style={styles.priceText}>
-                  Expected Hours:{" "}
-                  <Text style={styles.boldText}>{job.expected_hour}</Text>
-                </Text>
-              </View>
-            </View>
-
-            <View
-              style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
-            />
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Bidding</Text>
-              <Text style={styles.priceText}>
-                Total bidding:{" "}
-                <Text style={styles.boldText}>{job.proposal_count}</Text>
-              </Text>
-            </View>
 
             <View
               style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
@@ -231,7 +202,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#2C2C2C",
     borderRadius: 12,
-    padding: 16,
+    padding: 15,
     marginTop: 0,
     marginVertical: 20,
     elevation: 3,
@@ -242,7 +213,7 @@ const styles = StyleSheet.create({
     height: 85,
     borderRadius: 100,
     borderWidth: 2,
-    borderColor: "#CFFFFC",
+    borderColor: "#c3c3c3",
   },
 
   userDetails: {
@@ -328,11 +299,6 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontFamily: "Montserrat_500Medium",
     fontSize: 10,
-  },
-  priceRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
   },
   priceText: {
     color: "#ffffff",

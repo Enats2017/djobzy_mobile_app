@@ -1,4 +1,4 @@
-import React from "react";
+import React ,{useState, useEffect}from "react";
 import {
   View,
   Text,
@@ -9,15 +9,43 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
+import { API_URL } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function MyJobPost() {
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(true);
+  const [deactivate, setDeactivate] = useState([]);
+
+  const fetchDeactivate = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/deactivated-jobs`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      const data = await response.json();
+      setDeactivate(data.gigs);
+    } catch (error) {
+      console.log("API Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchDeactivate();
+  }, []);
 
   return (
     <SafeAreaView style={styles.jobpostcontainer}>
       <View style={styles.headerSection}>
         <View style={styles.headerLeft}>
-          <PageNameHeaderBar navigation={navigation} title="My Deactivated Jobs" />
+          <PageNameHeaderBar
+            navigation={navigation}
+            title="My Deactivated Jobs"
+          />
         </View>
       </View>
 
@@ -25,220 +53,73 @@ export default function MyJobPost() {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.jobCard}>
-          <View style={styles.topInfoContainer}>
-            <View style={styles.leftInfo}>
-              <Text style={styles.jobTitle}>
-                Looking For logo designer Looking For logo designer
-              </Text>
-              <Text style={styles.jobId}>Posted 10:24 04/10/2025</Text>
-            </View>
-            <View style={styles.rightInfo}>
-              <View style={styles.proposalsRow}>
-                <Text style={styles.proposalsLabel}>Proposals</Text>
-                <Text style={styles.proposalsCount}>1200</Text>
+        {deactivate.length > 0 ? (
+          deactivate.map((item, index) => (
+            <View key={index} style={styles.jobCard}>
+              <View style={styles.topInfoContainer}>
+                <View style={styles.leftInfo}>
+                  <Text style={styles.jobTitle}>{item.subject}</Text>
+                  <Text style={styles.jobId}>Posted {item.created_at}</Text>
+                </View>
+                <View style={styles.rightInfo}>
+                  <View style={styles.proposalsRow}>
+                    <Text style={styles.proposalsLabel}>Proposals</Text>
+                    <Text style={styles.proposalsCount}>{item.proposal}</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.detailsCard}>
+                <View style={styles.detailsRow}>
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Total Price :</Text>
+                    <Text style={styles.detailValue}>
+                      {item.fixed_price ? item.fixed_minimum : "N/A"}
+                    </Text>
+                  </View>
+                  <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Hourly Rate :</Text>
+                    <Text style={styles.detailValue}>
+                      {" "}
+                      {item.hour_price ? item.hour_minimum : "N/A"}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Expected Hours :</Text>
+                  <Text style={styles.detailValue}>
+                    {item.expected_hour ? item.expected_hour : 0}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.jobDescriptionCard}>
+                <Text style={styles.jobDescriptionLabel}>Job Description</Text>
+                <Text style={styles.jobDescriptionText}>
+                  {item.description}
+                </Text>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.viewBtn}
+                  onPress={() =>
+                    navigation.navigate("PostJobDetails", {
+                      jobId: item.request_slug,
+                    })
+                  }
+                >
+                  <Text style={styles.viewBtnText}>View</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.boostBtn}>
+                  <Text style={styles.boostBtnText}>Reactive</Text>
+                </TouchableOpacity>
               </View>
             </View>
-          </View>
-
-          <View style={styles.detailsCard}>
-            <View style={styles.detailsRow}>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Total Price :</Text>
-                <Text style={styles.detailValue}>CAD 20000.00</Text>
-              </View>
-
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Hourly Rate :</Text>
-                <Text style={styles.detailValue}>CAD 20000.00</Text>
-              </View>
-            </View>
-
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Expected Hours :</Text>
-              <Text style={styles.detailValue}>20000</Text>
-            </View>
-          </View>
-
-          <View style={styles.jobDescriptionCard}>
-            <Text style={styles.jobDescriptionLabel}>Job Description</Text>
-            <Text style={styles.jobDescriptionText}>
-              I am looking for a professional logo designer for my website we
-              are making an Munchrise. I am looking for a professional logo
-              designer for my website we are making an Munchrise. I am looking
-              for a professional logo designer for my website we are making an
-              Munchrise.
-            </Text>
-          </View>
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.viewBtn}>
-              <Text style={styles.viewBtnText}>View</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.boostBtn}>
-              <Text style={styles.boostBtnText}>Reactive</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.jobCard}>
-          <View style={styles.topInfoContainer}>
-            <View style={styles.leftInfo}>
-              <Text style={styles.jobTitle}>
-                Looking For logo designer Looking For logo designer logo
-                designerlogo designerlogo designer
-              </Text>
-              <Text style={styles.jobId}>Posted 10:24 04/10/2025</Text>
-            </View>
-            <View style={styles.rightInfo}>
-              <View style={styles.proposalsRow}>
-                <Text style={styles.proposalsLabel}>Proposals</Text>
-                <Text style={styles.proposalsCount}>100000</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.detailsCard}>
-            <View style={styles.detailsRow}>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Total Price :</Text>
-                <Text style={styles.detailValue}>CAD 20.00</Text>
-              </View>
-
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Hourly Rate :</Text>
-                <Text style={styles.detailValue}>CAD 20.00</Text>
-              </View>
-            </View>
-
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Expected Hours :</Text>
-              <Text style={styles.detailValue}>20</Text>
-            </View>
-          </View>
-
-          <View style={styles.jobDescriptionCard}>
-            <Text style={styles.jobDescriptionLabel}>Job Description</Text>
-            <Text style={styles.jobDescriptionText}>
-              I am looking for a professional logo designer for my website we
-              are making an Munchrise.
-            </Text>
-          </View>
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.viewBtn}>
-              <Text style={styles.viewBtnText}>View</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.boostBtn}>
-              <Text style={styles.boostBtnText}>Reactive</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.jobCard}>
-          <View style={styles.topInfoContainer}>
-            <View style={styles.leftInfo}>
-              <Text style={styles.jobTitle}>
-                Looking For logo designer Looking For logo designer
-              </Text>
-              <Text style={styles.jobId}>Posted 10:24 04/10/2025</Text>
-            </View>
-            <View style={styles.rightInfo}>
-              <View style={styles.proposalsRow}>
-                <Text style={styles.proposalsLabel}>Proposals</Text>
-                <Text style={styles.proposalsCount}>10000</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.detailsCard}>
-            <View style={styles.detailsRow}>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Total Price :</Text>
-                <Text style={styles.detailValue}>CAD 200.00</Text>
-              </View>
-
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Hourly Rate :</Text>
-                <Text style={styles.detailValue}>CAD 200.00</Text>
-              </View>
-            </View>
-
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Expected Hours :</Text>
-              <Text style={styles.detailValue}>2000</Text>
-            </View>
-          </View>
-
-          <View style={styles.jobDescriptionCard}>
-            <Text style={styles.jobDescriptionLabel}>Job Description</Text>
-            <Text style={styles.jobDescriptionText}>
-              I am looking for a professional logo designer for my website we
-              are making an Munchrise. I am looking for a professional logo
-              designer for my website we are making an Munchrise.
-            </Text>
-          </View>
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.viewBtn}>
-              <Text style={styles.viewBtnText}>View</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.boostBtn}>
-              <Text style={styles.boostBtnText}>Reactive</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.jobCard}>
-          <View style={styles.topInfoContainer}>
-            <View style={styles.leftInfo}>
-              <Text style={styles.jobTitle}>Looking For logo designer</Text>
-              <Text style={styles.jobId}>Posted 10:24 04/10/2025</Text>
-            </View>
-            <View style={styles.rightInfo}>
-              <View style={styles.proposalsRow}>
-                <Text style={styles.proposalsLabel}>Proposals</Text>
-                <Text style={styles.proposalsCount}>10</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.detailsCard}>
-            <View style={styles.detailsRow}>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Total Price :</Text>
-                <Text style={styles.detailValue}>CAD 20.00</Text>
-              </View>
-
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Hourly Rate :</Text>
-                <Text style={styles.detailValue}>CAD 20.00</Text>
-              </View>
-            </View>
-
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Expected Hours :</Text>
-              <Text style={styles.detailValue}>20</Text>
-            </View>
-          </View>
-
-          <View style={styles.jobDescriptionCard}>
-            <Text style={styles.jobDescriptionLabel}>Job Description</Text>
-            <Text style={styles.jobDescriptionText}>
-              I am looking for a professional logo designer for my website we
-              are making an Munchrise.
-            </Text>
-          </View>
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.viewBtn}>
-              <Text style={styles.viewBtnText}>View</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.boostBtn}>
-              <Text style={styles.boostBtnText}>Reactive</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+          ))
+        ) : (
+          <Text style={{ textAlign: "center", marginTop: 50, color: "#fff" }}>
+            No Jobs Posted Yet
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

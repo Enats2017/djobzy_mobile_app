@@ -19,6 +19,7 @@ import Loading from "../../components/Loading";
 import { truncateWords } from "../../api/TruncateWords";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import ReviewPage from "../JobCreatePage/ReviewPage";
 
 const PostJobDetails = () => {
   const navigation = useNavigation();
@@ -47,7 +48,7 @@ const PostJobDetails = () => {
       );
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
-
+      console.log(data);
       setPostJob(data);
     } catch (err) {
       setError(err.message);
@@ -58,6 +59,7 @@ const PostJobDetails = () => {
   useEffect(() => {
     fetchEmployerJob();
   }, []);
+  
 
   const fetchUserAppliedDetials = async (id) => {
     try {
@@ -81,6 +83,8 @@ const PostJobDetails = () => {
       setModalLoading(false);
     }
   };
+ 
+  
 
   const fetchachiveJob = async (id) => {
     try {
@@ -97,8 +101,8 @@ const PostJobDetails = () => {
       });
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
-      console.log(data);
       setShowDeactivateModal(false);
+
     } catch (err) {
       console.log(err);
 
@@ -217,79 +221,81 @@ const PostJobDetails = () => {
               </View>
             </View>
             <View style={styles.cardContainer} />
-            <View style={styles.biddingsHeaderRow}>
-              <Text style={styles.biddingsTitle}>Biddings</Text>
-              <TouchableOpacity>
-                <Text style={styles.biddingsSortBy}>Sort By</Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.biddingsSubText}>
-              {" "}
-              6 Candidate is bidding for this job{" "}
-            </Text>
-            <View style={styles.biddingsGrid}>
-              {postJob?.gigs?.map((gig, index) => (
-                <View key={index} style={styles.biddingCard}>
-                  <View style={styles.biddingCardHeader}>
-                    <Image
-                      source={{ uri: gig.photo }}
-                      style={styles.avatarCircle}
-                    />
-
-                    <View style={styles.candidateInfo}>
-                      <Text style={styles.candidateName}>
-                        {truncateWords(gig.full_name, 3)}
-                      </Text>
-
-                      <View style={styles.starsRow}>
-                        {[...Array(5)].map((_, i) => (
-                          <FontAwesome
-                            key={i}
-                            name="star"
-                            size={10}
-                            color="#EBBE56"
-                          />
-                        ))}
-                      </View>
-                    </View>
-                    <TouchableOpacity style={styles.moreCircle}>
-                      <Ionicons
-                        name="arrow-forward-circle"
-                        size={23}
-                        color="#fdbf2d"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.biddingDetailsRow}>
-                    <View style={styles.biddingDetailsCol}>
-                      <Text style={styles.biddingDetailsLabel}>
-                        Total Price
-                      </Text>
-                      <Text style={styles.biddingDetailsValue}>
-                        {gig.bid_price} CAD
-                      </Text>
-                    </View>
-                    <View style={styles.verticalDivider} />
-                    <View style={styles.biddingDetailsCol}>
-                      <Text style={styles.biddingDetailsLabel}>
-                        Hourly Rate
-                      </Text>
-                      <Text style={styles.biddingDetailsValue}>
-                        {gig.prop_hourly_rate} CAD
-                      </Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.biddingPayHireBtn}
-                    onPress={() => fetchUserAppliedDetials(gig.prp_id)}
-                  >
-                    <Text style={styles.biddingPayHireBtnText}>Pay & Hire</Text>
+            {postJob?.gigs?.length > 0 && (
+              <>
+                <View style={styles.biddingsHeaderRow}>
+                  <Text style={styles.biddingsTitle}>Biddings</Text>
+                  <TouchableOpacity>
+                    <Text style={styles.biddingsSortBy}>Sort By</Text>
                   </TouchableOpacity>
                 </View>
-              ))}
-            </View>
-          </ScrollView>
-          <View>
+                <Text style={styles.biddingsSubText}>
+                  {" "}
+                  6 Candidate is bidding for this job{" "}
+                </Text>
+                <View style={styles.biddingsGrid}>
+                  {postJob?.gigs?.map((gig, index) => (
+                    <View key={index} style={styles.biddingCard}>
+                      <View style={styles.biddingCardHeader}>
+                        <Image
+                          source={{ uri: gig.photo }}
+                          style={styles.avatarCircle}
+                        />
+
+                        <View style={styles.candidateInfo}>
+                          <Text style={styles.candidateName}>
+                            {truncateWords(gig.full_name, 3)}
+                          </Text>
+
+                          <View style={styles.starsRow}>
+                            {[...Array(5)].map((_, i) => (
+                              <FontAwesome
+                                key={i}
+                                name="star"
+                                size={10}
+                                color="#EBBE56"
+                              />
+                            ))}
+                          </View>
+                        </View>
+                        <TouchableOpacity style={styles.moreCircle}>
+                          <Ionicons
+                            name="arrow-forward-circle"
+                            size={23}
+                            color="#fdbf2d"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.biddingDetailsRow}>
+                        <View style={styles.biddingDetailsCol}>
+                          <Text style={styles.biddingDetailsLabel}>
+                            Total Price
+                          </Text>
+                          <Text style={styles.biddingDetailsValue}>
+                            {gig.bid_price} CAD
+                          </Text>
+                        </View>
+                        <View style={styles.verticalDivider} />
+                        <View style={styles.biddingDetailsCol}>
+                          <Text style={styles.biddingDetailsLabel}>
+                            Hourly Rate
+                          </Text>
+                          <Text style={styles.biddingDetailsValue}>
+                            {gig.prop_hourly_rate} CAD
+                          </Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.biddingPayHireBtn}
+                        onPress={() => fetchUserAppliedDetials(gig.prp_id)}
+                      >
+                        <Text style={styles.biddingPayHireBtnText}>Pay & Hire</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
             <TouchableOpacity
               style={styles.deactivateBtn}
               onPress={() => openDeactivateModal()}
@@ -298,11 +304,13 @@ const PostJobDetails = () => {
                 Deactivate & Archive this job
               </Text>
             </TouchableOpacity>
+          </ScrollView>
+          <View>
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.buttonEdit}>
+              <TouchableOpacity style={styles.buttonEdit} onPress={()=>navigation.navigate("CreateJob",{requestSlug:postJob.details.request_slug})}>
                 <Text style={styles.buttonEditText}>Edit</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonBoost}>
+              <TouchableOpacity style={styles.buttonBoost} onPress={()=>navigation.navigate("JobBoostPaymentSection",{gig : postJob.details })}>
                 <Text style={styles.buttonBoostText}>Boost</Text>
               </TouchableOpacity>
             </View>
@@ -904,6 +912,36 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_700Bold",
     fontSize: 16,
   },
+  requirementItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 8,
+  marginRight: 8,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  
+  borderRadius: 10,
+},
+circleNumber: {
+  width: 26,
+  height: 26,
+  borderRadius: 13,
+  backgroundColor: "#ffffff1a",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 8,
+},
+circleNumberText: {
+  color: "#fff",
+  fontWeight: "bold",
+  fontSize: 13,
+},
+requirementText: {
+  fontSize: 15,
+  color: "#ffffff",
+  fontFamily:"Montserrat_500Medium"
+},
+
 });
 
 export default PostJobDetails;

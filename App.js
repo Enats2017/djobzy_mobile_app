@@ -52,6 +52,8 @@ import ProfileReviewPage from "./Screens/ProfileMenuPAge/ProfileReviewPage";
 import ReferralWallet from "./Screens/ProfileMenuPAge/ReferralWallet";
 import BlogPage from "./Screens/ProfileMenuPAge/BlogPage";
 import PostJobDetails from "./Screens/ContractPage/PostJobDetails";
+import ReceiveApplication from "./Screens/ContractPage/ReceiveApplication";
+import EmployerSentOffer from "./Screens/ContractPage/EmployerSentOffer";
 
 
 const Stack = createStackNavigator();
@@ -126,7 +128,8 @@ const App = () => {
           <Stack.Screen name = "ReferralWallet" component={ReferralWallet} />
           <Stack.Screen name = "BlogPage" component={BlogPage} />
           <Stack.Screen name = "PostJobDetails" component={PostJobDetails} />
-         
+          <Stack.Screen name = "ReceiveApplication" component={ReceiveApplication} />
+          <Stack.Screen name = "EmployerSentOffer" component={EmployerSentOffer} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

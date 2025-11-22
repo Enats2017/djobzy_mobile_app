@@ -27,6 +27,8 @@ export default function MyJobPost() {
         },
       });
       const data = await response.json();
+
+      
       setDeactivate(data.gigs);
     } catch (error) {
       console.log("API Error:", error);
@@ -37,6 +39,33 @@ export default function MyJobPost() {
   useEffect(() => {
     fetchDeactivate();
   }, []);
+
+  const handleReactivate = async (gid) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    const response = await fetch(`${API_URL}/reactivate`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ id: gid }),
+    });
+
+    const data = await response.json();
+    console.log("Reactivate Response:", data);
+
+    if (data.status) {
+      setDeactivate(prev => prev.filter(job => job.gid !== gid));
+      navigation.navigate("MyJobPost");
+    }
+  } catch (error) {
+    console.log("Reactivate Error:", error);
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.jobpostcontainer}>
@@ -109,7 +138,7 @@ export default function MyJobPost() {
                   <Text style={styles.viewBtnText}>View</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.boostBtn}>
+                <TouchableOpacity style={styles.boostBtn} onPress={() => handleReactivate(item.gid)}>
                   <Text style={styles.boostBtnText}>Reactive</Text>
                 </TouchableOpacity>
               </View>

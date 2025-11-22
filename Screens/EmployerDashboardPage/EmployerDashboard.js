@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,296 +6,329 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Dimensions,
   Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import GroupJobPost from "../../assets/images/GroupJobPost.png";
 import GroupNext from "../../assets/images/GroupNext.png";
+import { useNavigation } from "@react-navigation/native";
+import Footer from "../../components/Footer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import RecommendedJobs from "./RecommendedJobs";
+import SocialFeed from "./SocialFeed";
+import HeaderBar from "../../components/HeaderBar";
+import { API_ICON, API_URL } from "../../api/ApiUrl";
+import EmployerFooter from "../../components/EmployerFooter";
 
-export default function FindEmployees() {
-  const [liked1, setLiked1] = useState(false);
-  const [liked2, setLiked2] = useState(false);
-  const [liked3, setLiked3] = useState(false);
-  const [liked4, setLiked4] = useState(true);
+export default function EmployerDashboard() {
+  const [activeTab, setActiveTab] = useState("jobs");
+  const [employees, setEmployees] = useState([]);
   const [empDashModal, setEmpDashModal] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(1);
+  const [liked, setLiked] = useState({});
 
+  const navigation = useNavigation();
   const closeModal = () => setEmpDashModal(false);
 
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const fetchEmployees = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/employer-dashboard`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      const raw = await res.text();
+
+      const data = JSON.parse(raw);
+
+      setEmployees(
+        (data?.suggested_profiles || []).filter(
+          (emp) => emp.seller_services_for_search?.length > 0
+        )
+      );
+    } catch (e) {}
+  };
+
+  const toggleLike = async (id) => {
+    setLiked((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+
+    const token = await AsyncStorage.getItem("token");
+
+    await fetch(`${API_URL}/toggle-favorite`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ employee_id: id }),
+    }).then((res) => res.json());
+  };
+
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#1e1e1e" }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
+        contentContainerStyle={[styles.scrollContainer, { paddingBottom: 120 }]}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Find Employees</Text>
-        </View>
+        <HeaderBar />
+        <RecommendedJobs activeTab={activeTab} setActiveTab={setActiveTab} />
+        {activeTab === "feeds" && <SocialFeed />}
 
-        <View style={styles.tabBar}>
-          <TouchableOpacity
-            style={styles.smallTab}
-            onPress={() => console.log("Categories pressed")}
-          >
-            <Text style={styles.tabText}>Categories</Text>
-          </TouchableOpacity>
+        {activeTab === "categories" && <SocialFeed />}
 
-          <TouchableOpacity
-            style={styles.smallTab}
-            onPress={() => console.log("Favourite Employees pressed")}
-          >
-            <Text style={styles.tabText}>Favourite Employees</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.cardContainer}>
-          <View style={styles.employeeCard}>
-            <View style={styles.cardHeader}>
-              <Image
-                source={{
-                  uri: "https://randomuser.me/api/portraits/men/42.jpg",
-                }}
-                style={styles.avatar}
-              />
-              <View style={styles.infoWrapper}>
-                <View style={styles.nameStarRow}>
-                  <Text style={styles.name}>Ozuka</Text>
-                  <View style={styles.starContainer}>
-                    {[...Array(4)].map((_, i) => (
-                      <FontAwesome
-                        key={i}
-                        name="star"
-                        size={13}
-                        color="#EBBE56"
-                      />
-                    ))}
-                    <FontAwesome
-                      name="star-half-full"
-                      size={13}
-                      color="#EBBE56"
+        {activeTab === "favourites" && (
+          <View style={{ marginTop: 10 }}>
+            {employees
+              .filter((emp) => liked[emp.id])
+              .map((emp) => (
+                <View style={styles.employeeCard} key={emp.id}>
+                  <View style={styles.cardHeader}>
+                    <Image
+                      source={{
+                        uri:
+                          emp?.photo ||
+                          "https://dummyimage.com/120x120/aaa/fff&text=NA",
+                      }}
+                      style={styles.avatar}
                     />
-                  </View>
-                </View>
-                <View style={styles.verification}>
-                  <MaterialIcons name="verified" size={16} color="#c3c3c3" />
-                  <Text style={styles.verificationText}>
-                    Verification Level: 2/7
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                onPress={() => setLiked1(!liked1)}
-                style={styles.heartTouchable}
-              >
-                <FontAwesome
-                  name={liked1 ? "heart" : "heart-o"}
-                  size={20}
-                  color={liked1 ? "#ff0000" : "#c3c3c3"}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.skills}>
-              {[
-                "Full-Stack Web Application Development",
-                "Cloud Infrastructure Management",
-                "Logo",
-                "Website Design",
-                "Mobile Application Design",
-              ].map((skill, i) => (
-                <View style={styles.skill} key={i}>
-                  <Text style={styles.skillText}>{skill}</Text>
-                </View>
-              ))}
-            </View>
-            <TouchableOpacity style={styles.profileBtn}>
-              <Text style={styles.profileBtnText}>View Profile</Text>
-            </TouchableOpacity>
-          </View>
 
-          <View style={styles.employeeCard}>
-            <View style={styles.cardHeader}>
-              <Image
-                source={{
-                  uri: "https://randomuser.me/api/portraits/men/9.jpg",
-                }}
-                style={styles.avatar}
-              />
-              <View style={styles.infoWrapper}>
-                <View style={styles.nameStarRow}>
-                  <Text style={styles.name}>
-                    Jonathan Alexander Christopher
-                  </Text>
-                  <View style={styles.starContainer}>
-                    {[...Array(5)].map((_, i) => (
-                      <FontAwesome
-                        key={i}
-                        name="star"
-                        size={13}
-                        color="#EBBE56"
-                      />
-                    ))}
-                  </View>
-                </View>
-                <View style={styles.verification}>
-                  <MaterialIcons name="verified" size={16} color="#c3c3c3" />
-                  <Text style={styles.verificationText}>
-                    Verification Level: 2/7
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                onPress={() => setLiked2(!liked2)}
-                style={styles.heartTouchable}
-              >
-                <FontAwesome
-                  name={liked2 ? "heart" : "heart-o"}
-                  size={20}
-                  color={liked2 ? "#ff0000" : "#c3c3c3"}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.skills}>
-              {[
-                "High-Fidelity Mockup Design",
-                "Database Optimization and API Integration",
-                "Logo",
-                "Website Design",
-                "Mobile Application Design",
-              ].map((skill, i) => (
-                <View style={styles.skill} key={i}>
-                  <Text style={styles.skillText}>{skill}</Text>
-                </View>
-              ))}
-            </View>
-            <TouchableOpacity style={styles.profileBtn}>
-              <Text style={styles.profileBtnText}>View Profile</Text>
-            </TouchableOpacity>
-          </View>
+                    <View style={styles.infoWrapper}>
+                      <View
+                        style={[
+                          styles.nameStarRow,
+                          { justifyContent: "flex-start" },
+                        ]}
+                      >
+                        <Text style={styles.name}>
+                          {emp?.name || emp?.full_name || "No Name"}
+                        </Text>
 
-          <View style={styles.employeeCard}>
-            <View style={styles.cardHeader}>
-              <Image
-                source={{
-                  uri: "https://randomuser.me/api/portraits/men/4.jpg",
-                }}
-                style={styles.avatar}
-              />
-              <View style={styles.infoWrapper}>
-                <View style={styles.nameStarRow}>
-                  <Text style={styles.name}>David Miller</Text>
-                  <View style={styles.starContainer}>
-                    {[...Array(5)].map((_, i) => (
-                      <FontAwesome
-                        key={i}
-                        name="star"
-                        size={13}
-                        color="#EBBE56"
-                      />
-                    ))}
-                  </View>
-                </View>
-                <View style={styles.verification}>
-                  <MaterialIcons name="verified" size={16} color="#c3c3c3" />
-                  <Text style={styles.verificationText}>
-                    Verification Level: 2/7
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                onPress={() => setLiked3(!liked3)}
-                style={styles.heartTouchable}
-              >
-                <FontAwesome
-                  name={liked3 ? "heart" : "heart-o"}
-                  size={20}
-                  color={liked3 ? "#ff0000" : "#c3c3c3"}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.skills}>
-              {[
-                "UI/UX Design",
-                "Advanced UI/UX Wireframing and Animation Design",
-                "Logo",
-                "Scalable Architecture for Enterprise Applications",
-                "Mobile Application Design",
-              ].map((skill, i) => (
-                <View style={styles.skill} key={i}>
-                  <Text style={styles.skillText}>{skill}</Text>
-                </View>
-              ))}
-            </View>
-            <TouchableOpacity style={styles.profileBtn}>
-              <Text style={styles.profileBtnText}>View Profile</Text>
-            </TouchableOpacity>
-          </View>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            marginLeft: 6,
+                          }}
+                        >
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <FontAwesome
+                              key={star}
+                              name={emp.avg_rating >= star ? "star" : "star-o"}
+                              size={14}
+                              color="#EBBE56"
+                              style={{ marginRight: 2 }}
+                            />
+                          ))}
+                        </View>
+                      </View>
 
-          <View style={styles.employeeCard}>
-            <View style={styles.cardHeader}>
-              <Image
-                source={{
-                  uri: "https://randomuser.me/api/portraits/men/47.jpg",
-                }}
-                style={styles.avatar}
-              />
-              <View style={styles.infoWrapper}>
-                <View style={styles.nameStarRow}>
-                  <Text style={styles.name}>
-                    Michael Jordan Michael Jordan Michael Jordan Michael Jordan
-                  </Text>
-                  <View style={styles.starContainer}>
-                    {[...Array(5)].map((_, i) => (
+                      <View style={styles.verification}>
+                        <MaterialIcons
+                          name="verified"
+                          size={16}
+                          color="#c3c3c3"
+                        />
+                        <Text style={styles.verificationText}>
+                          Verification Level: {emp?.verification_count || 0}/7
+                        </Text>
+                      </View>
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={() => toggleLike(emp.id)}
+                      style={styles.heartTouchable}
+                    >
                       <FontAwesome
-                        key={i}
-                        name="star"
-                        size={13}
-                        color="#EBBE56"
+                        name={liked[emp.id] ? "heart" : "heart-o"}
+                        size={20}
+                        color={liked[emp.id] ? "#ff0000" : "#c3c3c3"}
                       />
-                    ))}
+                    </TouchableOpacity>
                   </View>
+
+                  <View style={styles.divider} />
+
+                  <View style={styles.skills}>
+                    {(emp?.seller_services_for_search || []).map(
+                      (service, i) => (
+                        <View style={styles.skill} key={i}>
+                          <Text style={styles.skillText}>
+                            {service?.sub_services?.ss_service_name ||
+                              service?.titles ||
+                              "Skill"}
+                          </Text>
+                        </View>
+                      )
+                    )}
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.profileBtn}
+                    onPress={() => navigation.navigate("ViewEmployeePage")}
+                  >
+                    <Text style={styles.profileBtnText}>View Profile</Text>
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.verification}>
-                  <MaterialIcons name="verified" size={16} color="#c3c3c3" />
-                  <Text style={styles.verificationText}>
-                    Verification Level: 2/7
-                  </Text>
-                </View>
-              </View>
+              ))}
+
+            {employees.filter((e) => liked[e.id]).length === 0 && (
+              <Text style={{ color: "#fff", marginTop: 20 }}>
+                No favourite employees yet.
+              </Text>
+            )}
+          </View>
+        )}
+
+        {activeTab === "jobs" && (
+          <>
+            <View style={styles.header}>
+              <Text style={styles.title}>Find Employees</Text>
+            </View>
+            <View style={styles.tabBar}>
               <TouchableOpacity
-                onPress={() => setLiked4(!liked4)}
-                style={styles.heartTouchable}
+                style={[
+                  styles.smallTab,
+                  activeTab === "categories" && { backgroundColor: "#C96B59" },
+                ]}
+                onPress={() => setActiveTab("categories")}
               >
-                <FontAwesome
-                  name={liked4 ? "heart" : "heart-o"}
-                  size={20}
-                  color={liked4 ? "#ff0000" : "#c3c3c3"}
-                />
+                <Text style={styles.tabText}>Categories</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.smallTab,
+                  activeTab === "favourites" && { backgroundColor: "#C96B59" },
+                ]}
+                onPress={() => setActiveTab("favourites")}
+              >
+                <Text style={styles.tabText}>Favourite Employees</Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.divider} />
-            <View style={styles.skills}>
-              {[
-                "UI/UX Design",
-                "Graphic Design",
-                "Logo",
-                "Website Design",
-                "Mobile Application Design",
-              ].map((skill, i) => (
-                <View style={styles.skill} key={i}>
-                  <Text style={styles.skillText}>{skill}</Text>
+
+            <View style={styles.cardContainer}>
+              {employees.map((emp, index) => (
+                <View style={styles.employeeCard} key={index}>
+                  <View style={styles.cardHeader}>
+                    <Image
+                      source={{
+                        uri:
+                          emp?.photo ||
+                          "https://dummyimage.com/120x120/aaa/fff&text=NA",
+                      }}
+                      style={styles.avatar}
+                    />
+
+                    <View style={styles.infoWrapper}>
+                      <View
+                        style={[
+                          styles.nameStarRow,
+                          { justifyContent: "flex-start" },
+                        ]}
+                      >
+                        <Text style={styles.name}>
+                          {emp?.name || emp?.full_name || "No Name"}
+                        </Text>
+
+                        <View
+                          style={[
+                            styles.nameStarRow,
+                            { justifyContent: "flex-start" },
+                          ]}
+                        >
+                          <Text style={styles.name}>
+                            {emp?.name || emp?.full_name || "No Name"}
+                          </Text>
+
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              marginLeft: 6,
+                            }}
+                          >
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <FontAwesome
+                                key={star}
+                                name={
+                                  emp.avg_rating >= star ? "star" : "star-o"
+                                }
+                                size={14}
+                                color="#EBBE56"
+                                style={{ marginRight: 2 }}
+                              />
+                            ))}
+                          </View>
+                        </View>
+                      </View>
+
+                      <View style={styles.verification}>
+                        <MaterialIcons
+                          name="verified"
+                          size={16}
+                          color="#c3c3c3"
+                        />
+                        <Text style={styles.verificationText}>
+                          Verification Level: {emp?.verification_count || 0}/7
+                        </Text>
+                      </View>
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={() => {
+                        toggleLike(emp.id);
+                      }}
+                      style={styles.heartTouchable}
+                    >
+                      <FontAwesome
+                        name={liked[emp.id] ? "heart" : "heart-o"}
+                        size={20}
+                        color={liked[emp.id] ? "#ff0000" : "#c3c3c3"}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.divider} />
+
+                  <View style={styles.skills}>
+                    {(emp?.seller_services_for_search || []).map(
+                      (service, i) => (
+                        <View style={styles.skill} key={i}>
+                          <Text style={styles.skillText}>
+                            {service?.sub_services?.ss_service_name ||
+                              service?.titles ||
+                              "Skill"}
+                          </Text>
+                        </View>
+                      )
+                    )}
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.profileBtn}
+                    onPress={() => navigation.navigate("ViewEmployeePage")}
+                  >
+                    <Text style={styles.profileBtnText}>View Profile</Text>
+                  </TouchableOpacity>
                 </View>
               ))}
             </View>
-            <TouchableOpacity style={styles.profileBtn}>
-              <Text style={styles.profileBtnText}>View Profile</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+          </>
+        )}
       </ScrollView>
 
       <Modal
@@ -350,6 +383,7 @@ export default function FindEmployees() {
                   <Text style={styles.modalTitle}>
                     Start <Text style={styles.djobzyColor}>Djobzy</Text> Journey
                   </Text>
+
                   <View style={styles.modalDescriptionContainer}>
                     <Text style={styles.modalDescriptionLine}>
                       In order to get things done, create
@@ -374,7 +408,7 @@ export default function FindEmployees() {
                 <View
                   style={[
                     styles.slideDot,
-                    currentSlide === 1 || currentSlide === 2
+                    currentSlide === 1
                       ? styles.slideDotActive
                       : styles.slideDotInactive,
                   ]}
@@ -392,6 +426,8 @@ export default function FindEmployees() {
           </View>
         </View>
       </Modal>
+
+      <EmployerFooter />
     </SafeAreaView>
   );
 }
@@ -399,8 +435,8 @@ export default function FindEmployees() {
 const styles = StyleSheet.create({
   scrollContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 30,
     backgroundColor: "#1e1e1e",
+    flex: 1,
   },
   header: {
     marginTop: 20,
@@ -429,8 +465,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_500Medium",
     fontSize: 14,
   },
-  cardContainer: {
-  },
+  cardContainer: {},
   employeeCard: {
     backgroundColor: "#1e1e1e",
     borderRadius: 16,
@@ -439,11 +474,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#FFFFFF33",
   },
- cardHeader: {
-  flexDirection: "row",
-  alignItems: "flex-start",  
-  justifyContent: "space-between", 
-},
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
   avatar: {
     width: 60,
     height: 60,
@@ -468,13 +503,14 @@ const styles = StyleSheet.create({
   },
   starContainer: {
     flexDirection: "row",
-    gap: 3,
     flexWrap: "wrap",
   },
   verification: {
     flexDirection: "row",
     alignItems: "center",
+    marginTop: 3,
   },
+
   verificationText: {
     color: "#c3c3c3",
     fontSize: 12,
@@ -482,8 +518,8 @@ const styles = StyleSheet.create({
     marginLeft: 3,
   },
   heartTouchable: {
-  padding: 6,
-},
+    padding: 6,
+  },
   skills: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -613,7 +649,7 @@ const styles = StyleSheet.create({
   },
 
   modalTitleContainer: {
-    alignItems: "center", 
+    alignItems: "center",
     marginBottom: 12,
   },
 
@@ -622,7 +658,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_600SemiBold",
     color: "#303030",
     textAlign: "center",
-    lineHeight: 30, 
+    lineHeight: 30,
   },
 
   employerColor: {

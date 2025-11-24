@@ -53,7 +53,7 @@ const Footer = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tab}
-
+            onPress={() => navigation.navigate("EmployeeProfileMenu")}
           >
             <Ionicons
               name="person-outline"
@@ -72,7 +72,6 @@ const Footer = () => {
   )
 }
 const styles = StyleSheet.create({
-
   BottomBar: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -86,7 +85,6 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 999,
     right: 0,
-
 
   },
   tab: {

@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#222222",
-    padding: 12,
+    paddingHorizontal: 15,
   },
   sectionHeader: {
     fontSize: 18,

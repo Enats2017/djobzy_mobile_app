@@ -13,13 +13,11 @@ import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import GroupJobPost from "../../assets/images/GroupJobPost.png";
 import GroupNext from "../../assets/images/GroupNext.png";
 import { useNavigation } from "@react-navigation/native";
-import Footer from "../../components/Footer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Employees from "./Employees";
 import RecommendedJobs from "./RecommendedJobs";
-import SocialFeed from "./SocialFeed";
 import HeaderBar from "../../components/HeaderBar";
 import { API_ICON, API_URL } from "../../api/ApiUrl";
-import EmployerFooter from "../../components/EmployerFooter";
 
 export default function EmployerDashboard() {
   const [activeTab, setActiveTab] = useState("jobs");
@@ -47,9 +45,8 @@ export default function EmployerDashboard() {
         },
       });
 
-      const raw = await res.text();
+      const data = await res.json();
 
-      const data = JSON.parse(raw);
 
       setEmployees(
         (data?.suggested_profiles || []).filter(
@@ -85,10 +82,15 @@ export default function EmployerDashboard() {
         contentContainerStyle={[styles.scrollContainer, { paddingBottom: 120 }]}
       >
         <HeaderBar />
-        <RecommendedJobs activeTab={activeTab} setActiveTab={setActiveTab} />
-        {activeTab === "feeds" && <SocialFeed />}
+        <Employees
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          tabs={{ feeds: "Social Feed", jobs: "Employees" }}
+        />
 
-        {activeTab === "categories" && <SocialFeed />}
+        {activeTab === "feeds" && <RecommendedJobs />}
+
+        {activeTab === "categories" && <RecommendedJobs />}
 
         {activeTab === "favourites" && (
           <View style={{ marginTop: 10 }}>
@@ -178,7 +180,11 @@ export default function EmployerDashboard() {
 
                   <TouchableOpacity
                     style={styles.profileBtn}
-                    onPress={() => navigation.navigate("ViewEmployeePage")}
+                    onPress={() =>
+                      navigation.navigate("EmployerProfilePage", {
+                        name: emp.name,
+                      })
+                    }
                   >
                     <Text style={styles.profileBtnText}>View Profile</Text>
                   </TouchableOpacity>
@@ -320,7 +326,11 @@ export default function EmployerDashboard() {
 
                   <TouchableOpacity
                     style={styles.profileBtn}
-                    onPress={() => navigation.navigate("ViewEmployeePage")}
+                    onPress={() =>
+                      navigation.navigate("EmployerProfilePage", {
+                        name: emp.name,
+                      })
+                    }
                   >
                     <Text style={styles.profileBtnText}>View Profile</Text>
                   </TouchableOpacity>
@@ -427,7 +437,6 @@ export default function EmployerDashboard() {
         </View>
       </Modal>
 
-      <EmployerFooter />
     </SafeAreaView>
   );
 }

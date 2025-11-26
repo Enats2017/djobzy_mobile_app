@@ -8,7 +8,7 @@ const JobCreate = ({ admin, userId }) => {
   console.log(userId);
   const navigation = useNavigation();
   const handleCreateLater = () => {
-    navigation.navigate("dashboard", { userId });
+    navigation.navigate("Dashboard", { userId });
   };
 
   return (
@@ -30,25 +30,25 @@ const JobCreate = ({ admin, userId }) => {
         <Text style={styles.startText}>
           Start Your <Text style={styles.subText}>Djobzy</Text> Journey
         </Text>
-        <Text style={styles.instructionText}>
+        {/* <Text style={styles.instructionText}>
           In order to get things done,create your first job post
-        </Text>
+        </Text> */}
       </View>
       <View style={styles.jobbtn}>
         {admin === 2 ? (
-          <TouchableOpacity style={styles.nextBtn}>
-            <Text style={styles.nextBtnText}>Create Job Post</Text>
-          </TouchableOpacity>
-        ) : (
           <TouchableOpacity
             style={styles.createBtn}
-            onPress={() => navigation.navigate("CreateJob", { userId })}
+            onPress={() => navigation.navigate("PromoteService", { userId })}
           >
             <Text style={styles.createBtnText}>Create Promoted Services</Text>
           </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.nextBtn}>
+            <Text style={styles.nextBtnText}>Create Job Post</Text>
+          </TouchableOpacity>
         )}
         <TouchableOpacity style={styles.leterBtn} onPress={handleCreateLater}>
-          <Text style={styles.nextBtnText}>Create Leter</Text>
+          <Text style={styles.nextBtnText}>Create Later</Text>
         </TouchableOpacity>
       </View>
     </>
@@ -79,29 +79,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     top: 9,
   },
-  icon: {
+  icon:{
     backgroundColor: "#fff",
     width: 30,
     height: 30,
     borderRadius: 20,
   },
   almostThere: {
-    fontSize: 24,
+    fontSize: 20,
+    fontFamily: "Montserrat_500Medium",
     color: "#FFFFFF",
-    fontWeight: "bold",
     marginTop: 10,
-    marginBottom: 25,
+    marginBottom: 14,
   },
   startText: {
-    fontSize: 23,
+    fontSize: 28,
+    fontFamily: "Montserrat_600SemiBold",
     color: "#fff",
-    fontWeight: "bold",
     marginBottom: 10,
   },
   subText: {
-    fontSize: 24,
-    color: "#FF6666",
-    fontWeight: "bold",
+    fontSize: 28,
+    fontFamily: "Montserrat_700Bold",
+    color: "#CB7767",
+
     marginBottom: 10,
   },
   instructionText: {
@@ -128,11 +129,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-  nextBtnText: { color: "#fff", fontWeight: "700", fontSize: 18 },
+  nextBtnText: { 
+    color: "#fff", 
+    fontWeight: "700", 
+    fontSize: 18
+   },
   createBtnText: {
-    color: "#000",
-    fontSize: 18,
-    fontWeight: "700",
+    color: "#303030",
+    fontSize: 20,
+    fontFamily: "Montserrat_700Bold",
   },
   leterBtn: {
     borderWidth: 1,

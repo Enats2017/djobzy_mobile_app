@@ -12,6 +12,7 @@ import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
+import Footer from "../../components/Footer";
 
 export default function MyJobPost() {
   const navigation = useNavigation();
@@ -38,6 +39,8 @@ export default function MyJobPost() {
   useEffect(() => {
     fetchReviews();
   }, []);
+  console.log( postJob.request_slug,);
+  
   if (loading) return <Loading />;
   return (
     <SafeAreaView style={styles.jobpostcontainer}>
@@ -61,7 +64,7 @@ export default function MyJobPost() {
               <View style={styles.topInfoContainer}>
                 <View style={styles.leftInfo}>
                   <Text style={styles.jobTitle}>{item.subject}</Text>
-                  <Text style={styles.jobId}>Posted {item.created_at}</Text>
+                  <Text style={styles.jobId}>Posted {item.created}</Text>
                 </View>
                 <View style={styles.rightInfo}>
                   <View style={styles.proposalsRow}>
@@ -120,6 +123,7 @@ export default function MyJobPost() {
           </Text>
         )}
       </ScrollView>
+      <Footer/>
     </SafeAreaView>
   );
 }

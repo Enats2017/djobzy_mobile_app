@@ -30,6 +30,8 @@ const PostJobDetails = () => {
   const [profileData, setProfileData] = useState([]);
   const route = useRoute();
   const { jobId } = route.params || [];
+  console.log(jobId);
+  
   const [postJob, setPostJob] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
   const [gigId, setGigId] = useState(null);
@@ -39,7 +41,7 @@ const PostJobDetails = () => {
       const token = await AsyncStorage.getItem("token");
 
       const response = await fetch(
-        `${API_URL}/employer-job-details-api/${jobId}`,
+        `${API_URL}/view-deactivated-jobs/${jobId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -49,7 +51,7 @@ const PostJobDetails = () => {
       );
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
-      console.log(data);
+      console.log("1111111",data);
       setPostJob(data);
     } catch (err) {
       setError(err.message);

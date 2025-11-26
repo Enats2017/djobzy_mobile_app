@@ -11,6 +11,7 @@ import { useNavigation } from "@react-navigation/native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Loading from "../../components/Loading";
 
 export default function MyJobPost() {
   const navigation = useNavigation();
@@ -39,7 +40,7 @@ export default function MyJobPost() {
   useEffect(() => {
     fetchDeactivate();
   }, []);
-
+     if (loading) return <Loading />;
   const handleReactivate = async (gid) => {
   try {
     const token = await AsyncStorage.getItem("token");
@@ -130,7 +131,7 @@ export default function MyJobPost() {
                 <TouchableOpacity
                   style={styles.viewBtn}
                   onPress={() =>
-                    navigation.navigate("PostJobDetails", {
+                    navigation.navigate("DeactivedDetailsPage", {
                       jobId: item.request_slug,
                     })
                   }

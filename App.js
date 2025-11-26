@@ -54,6 +54,16 @@ import BlogPage from "./Screens/ProfileMenuPAge/BlogPage";
 import PostJobDetails from "./Screens/ContractPage/PostJobDetails";
 import ReceiveApplication from "./Screens/ContractPage/ReceiveApplication";
 import EmployerSentOffer from "./Screens/ContractPage/EmployerSentOffer";
+import ProfileEditPage from "./Screens/ProfileMenuPAge/ProfileEditPage";
+import ProfileBoostPage from "./Screens/ProfileMenuPAge/ProfileBoostPage";
+import GeneralSetting from "./Screens/ProfileMenuPAge/GeneralSetting";
+import IdentityVerification from "./Screens/GeneralSetting/IdentityVerification";
+import AccountSetting from "./Screens/GeneralSetting/AccountSetting";
+import UserContactInfo from "./Screens/GeneralSetting/UserContactInfo";
+import UserPaymentPage from "./Screens/GeneralSetting/UserPaymentPage";
+import UserNotification from "./Screens/GeneralSetting/UserNotification";
+import UserSecurity from "./Screens/GeneralSetting/UserSecurity";
+import IDVerificationUploadScreen  from"./Screens/GeneralSetting/IDVerificationUploadScreen";
 
 
 const Stack = createStackNavigator();
@@ -99,7 +109,7 @@ const App = () => {
           <Stack.Screen name="JobProfile" component={JobProfile} />
           <Stack.Screen name="JobApply" component={JobApplyPage} />
           <Stack.Screen name="MyJobPage" component={MyJobPage} />
-          <Stack.Screen name="EmployerDashboard" component={EmployerDashboard} />
+          <Stack.Screen name="EmployerDashboard" component={EmployerDashboard} /> 
           <Stack.Screen name="EmployerContracts" component={EmployerContracts} />
           <Stack.Screen name="MyJobPost" component={MyJobPost} />
           <Stack.Screen name="DeactivatedJobs" component={DeactivatedJobs} />
@@ -121,7 +131,7 @@ const App = () => {
           <Stack.Screen name="PasswordResert" component={PasswordResert} />
           <Stack.Screen name="EmployeeProfileMenu" component={EmployeeProfileMenu} />
           <Stack.Screen name="PromoteService" component={PromoteService} />
-          <Stack.Screen name="PromoteCategoryPage" component={PromoteCategoryPage} />
+          <Stack.Screen name="PromoteCategoryPage" component={PromoteCategoryPage} /> 
           <Stack.Screen name="EmployeeAccount" component={EmployeeAccount} />
           <Stack.Screen name="EmployeeVerification" component={EmployeeVerification} />
           <Stack.Screen name="ProfileReviewPage" component={ProfileReviewPage} />
@@ -130,6 +140,17 @@ const App = () => {
           <Stack.Screen name = "PostJobDetails" component={PostJobDetails} />
           <Stack.Screen name = "ReceiveApplication" component={ReceiveApplication} />
           <Stack.Screen name = "EmployerSentOffer" component={EmployerSentOffer} />
+          <Stack.Screen name = "ProfileEditPage" component={ProfileEditPage}/>
+          <Stack.Screen name = "ProfileBoostPage" component={ProfileBoostPage}/>
+          <Stack.Screen name = "GeneralSetting" component={GeneralSetting} />
+          <Stack.Screen name = "IdentityVerification" component={IdentityVerification}/>
+          <Stack.Screen name = "AccountSetting" component={AccountSetting} />
+          <Stack.Screen name = "UserContactInfo" component={UserContactInfo} />
+          <Stack.Screen name = "UserPaymentPage" component={UserPaymentPage} />
+          <Stack.Screen name = "UserNotification" component={UserNotification}/>
+          <Stack.Screen name = "UserSecurity" component={UserSecurity} />
+          <Stack.Screen name = "IDVerificationUploadScreen" component={IDVerificationUploadScreen} />
+         
         </Stack.Navigator>
       </NavigationContainer>
     </View>

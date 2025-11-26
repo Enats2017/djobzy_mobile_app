@@ -442,6 +442,11 @@ export default function EmployerDashboard() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#222222",
+    paddingHorizontal: 15,
+  },
   scrollContainer: {
     paddingHorizontal: 16,
     backgroundColor: "#1e1e1e",
@@ -563,11 +568,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff33",
     marginVertical: 15,
   },
-  scrollContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 30,
-    backgroundColor: "#1e1e1e",
-  },
+
   modalBackground: {
     flex: 1,
     backgroundColor: "rgba(34,34,34,0.33)",

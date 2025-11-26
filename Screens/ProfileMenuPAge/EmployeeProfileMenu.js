@@ -7,47 +7,75 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useStateForPath } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
+import Loading from "../../components/Loading";
+import Footer from "../../components/Footer";
+import CustomSwitch from "../../components/CustomSwitch";
 
 const EmployeeProfileMenu = () => {
+  const navigation = useNavigation();
   const [isEmployer, setIsEmployer] = useState(false);
+  const [loading, setLoading] = useState(false)
   const [switchLoading, setSwitchLoading] = useState(false);
   const [accountType, setAccountType] = useState(null);
-  const [userInfo, setUserInfo] = useState(null);
+  const [user, setUser] = useState(null);
 
-  const navigation = useNavigation();
-  const handleSwitchAccount = async () => {
-    setSwitchLoading(true);
+  const fetchUser = async () => {
     try {
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/profile-menu-list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      setUser(data.user);
+    } catch (error) {
+      console.error("Error fetching User:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const handleSwitchAccount = async () => {
+    try {
+      setSwitchLoading(true);
+      const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/user-switch-account`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-           Purpose: "fetch",
         },
       });
       const data = await response.json();
-      console.log("API Response:", data);
-      if (response.ok) {
-        setAccountType(data.account_type);
-         setUserInfo(data.name)
-        if (data.account_type === 0) {
-          navigation.replace("Dashboard");
-        } else if (data.account_type === 2) {
-          navigation.replace("JobProfile");
-        }
-      } else {
-        Alert.alert("Error", data.message || "Something went wrong");
+      setAccountType(data?.account_type);
+      if (data?.account_type === 0) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Dashboard" }],
+        });
+      } else if (data?.account_type === 2) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "EmployerDashboard" }],
+        });
       }
+
     } catch (error) {
       console.log(error);
       Alert.alert("Error", "Failed to switch account");
@@ -55,63 +83,92 @@ const EmployeeProfileMenu = () => {
       setSwitchLoading(false);
     }
   };
-  
-  const toggleSwitch = async () => {
-    setIsEmployer((prev) => !prev);
-    await handleSwitchAccount();
+
+  const toggleSwitch = async (newValue, delay = false) => {
+    setIsEmployer(newValue);
+    // if (delay) {
+    //   setTimeout(async () => {
+    //     await handleSwitchAccount();
+    //   }, 5000000);
+    // } else {
+    //   await handleSwitchAccount();
+    // }
   };
 
+
+  // if (loading) return <Loading />
+  // if (switchLoading) return <Loading />
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.pageHeader}>
-        <PageNameHeaderBar title="Employee Profile" navigation={navigation} />
+      <View style={styles.container}>
+        {
+          loading ? (<Loading />) : (
+            <>
+              <PageNameHeaderBar title={user?.admin == 2 ? "Employer Profile" : "Employee Profile"} navigation={navigation} />
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
+                {/* Profile Section */}
+                <View style={styles.profileContainer}>
+                  <Image
+                    source={{
+                      uri: user?.photo,
+                    }}
+                    style={[styles.profileImage, { borderColor: user?.admin === 0 ? '#46a282' : '#ebbe56', borderWidth: 2 }]}
+                  />
+                  <Text style={styles.profileName}>{user?.full_name}</Text>
+                  <Text style={styles.profileRole}> {user?.admin == 0 ? "Employee" : "Employer"} </Text>
+                </View>
+
+                {/* Switch Section */}
+                <View style={styles.switchContainer}>
+                  <Text style={styles.switchLabel}>
+                    {user?.admin == 0 ? "Switch to Employer" : "Switch to Employee"}
+                  </Text>
+
+                  {!switchLoading && (
+                    <CustomSwitch
+                      value={isEmployer}
+                      onChange={toggleSwitch}
+                    />
+                  )}
+
+                  {switchLoading && (
+                    <ActivityIndicator size={30} color="#D17B68" style={{ marginLeft: 10 }} />
+                  )}
+                </View>
+
+
+                {/* Menu Section */}
+                <View style={styles.menuContainer}>
+                  {user?.admin == 0 ? (
+                    <MenuItem icon="add-circle-outline" title="Promote Services" onPress={() => navigation.navigate("PromoteService")} />
+                  ) : (
+                    <MenuItem icon="add-circle-outline" title="Create a Job" onPress={() => navigation.navigate("CreateJob")}/>
+                  )}
+                  <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("Dashboard")}/>
+                  <MenuItem icon="person-outline" title="My account" />
+                  <MenuItem icon="star-outline" title="Reviews" />
+                  <MenuItem icon="checkmark-done-outline" title="Verification" />
+                  <MenuItem icon="wallet-outline" title="Wallet" />
+                  <MenuItem icon="gift-outline" title="Referral wallet" />
+                  <MenuItem icon="chatbubble-ellipses-outline" title="Chat" />
+                </View>
+
+                <TouchableOpacity style={styles.logoutContainer}>
+                  <Text style={styles.logoutLabel}>Logout</Text>
+                  <MaterialIcons name="logout" size={24} color="#ffffff" />
+                </TouchableOpacity>
+              </ScrollView>
+            </>
+          )
+        }
       </View>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Profile Section */}
-        <View style={styles.profileContainer}>
-          <Image
-            source={{
-              uri: "https://randomuser.me/api/portraits/women/44.jpg",
-            }}
-            style={styles.profileImage}
-          />
-          <Text style={styles.profileName}>
-            Aman
-          </Text>
-          <Text style={styles.profileRole}>Employee</Text>
-        </View>
-
-        {/* Switch Section */}
-        <View style={styles.switchContainer}>
-          <Text style={styles.switchLabel}>Switch to Employer</Text>
-          <Switch
-            trackColor={{ false: "#c3c3c3c3", true: "#5cb85c" }}
-            thumbColor={isEmployer ? "#666666" : "#666666"}
-            onValueChange={toggleSwitch}
-            value={isEmployer}
-            disabled={switchLoading}
-            style={styles.switch}
-          />
-        </View>
-
-        {/* Menu Section */}
-        <View style={styles.menuContainer}>
-          <MenuItem icon="add-circle-outline" title="Promote Services" onPress={() => navigation.navigate("PromoteService")} />
-          <MenuItem icon="grid-outline" title="Dashboard" />
-          <MenuItem icon="person-outline" title="My account" />
-          <MenuItem icon="star-outline" title="Reviews" onPress={()=>navigation.navigate("ProfileReviewPage")} />
-          <MenuItem icon="checkmark-done-outline" title="Verification" onPress={()=> navigation.navigate("EmployeeVerification")} />
-          <MenuItem icon="wallet-outline" title="Wallet" onPress={()=>navigation.navigate("ReferralWallet")} />
-          <MenuItem icon="gift-outline" title="Referral wallet" />
-          <MenuItem icon="chatbubble-ellipses-outline" title="Chat" onPress={()=>navigation.navigate("BlogPage")} />
-        </View>
-      </ScrollView>
+      <Footer />
     </SafeAreaView>
   );
 };
 
-const MenuItem = ({ icon, title,onPress }) => (
-  <TouchableOpacity style={styles.menuItem}  onPress={onPress}>
+const MenuItem = ({ icon, title, onPress }) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
     <View style={styles.iconbox}>
       <Ionicons name={icon} size={22} color="#fff" style={styles.menuIcon} />
     </View>
@@ -126,13 +183,16 @@ const MenuItem = ({ icon, title,onPress }) => (
 );
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 15,
+    backgroundColor: "#222222",
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: "#222222",
-    paddingHorizontal: 15,
   },
   scrollContainer: {
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   header: {
     flexDirection: "row",
@@ -168,18 +228,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Montserrat_400Regular",
   },
-  
   switchContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#ffffff1a",
     borderRadius: 12,
-     paddingHorizontal:10,
     marginBottom: 18,
-  },
-  switch:{
-      transform: [{ scaleX: 1.3 }, { scaleY: 1.3}],
+    padding: 15,
   },
   switchLabel: {
     color: "#ffffff",
@@ -195,7 +251,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#3a3a3a",
   },
@@ -221,6 +277,20 @@ const styles = StyleSheet.create({
   forwardIcon: {
     marginRight: 5,
   },
+  logoutContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#ffffff1a",
+    borderRadius: 12,
+    padding: 15,
+    marginTop: 18,
+  },
+  logoutLabel: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontFamily: "Montserrat_500Medium",
+  }
 });
 
 export default EmployeeProfileMenu;

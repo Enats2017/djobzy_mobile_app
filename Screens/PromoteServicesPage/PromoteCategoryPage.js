@@ -1,11 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRoute } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import {
-  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -20,20 +18,29 @@ import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import GradientButton from "../../components/GradientButton";
 import Footer from "../../components/Footer";
 import Loading from "../../components/Loading";
+import { useServiceGlobalStore } from "./ServiceGlobalStore";
 
 const PromoteCategoryPage = () => {
-    const navigation = useNavigation();
+  const navigation = useNavigation();
+
+  // Zustand global store
+  const {
+    categories,
+    addCategory,
+    removeCategory,
+  } = useServiceGlobalStore();
+
+  // Local UI states
   const [search, setSearch] = useState("");
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSubs, setSelectedSubs] = useState([]);
   const [expandedServices, setExpandedServices] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
-        const response = await fetch(`${API_URL}/create-job`, {
+        const response = await fetch(`${API_URL}/all-category`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
@@ -55,17 +62,16 @@ const PromoteCategoryPage = () => {
   );
 
   const handleSelectSub = (service, sub) => {
-    const exists = selectedSubs.some((s) => s.subId === sub.subid);
-    if (!exists) {
-      setSelectedSubs([
-        { serviceId: service.id, subId: sub.subid, name: sub.subname },
-        ...selectedSubs,
-      ]);
-    }
+    addCategory({
+      serviceId: service.id,
+      subId: sub.subid,
+      name: sub.subname,
+    });
   };
 
+  // Remove selected category
   const handleRemoveSub = (subId) => {
-    setSelectedSubs(selectedSubs.filter((s) => s.subId !== subId));
+    removeCategory(subId);
   };
 
   const toggleExpand = (serviceId) => {
@@ -75,118 +81,130 @@ const PromoteCategoryPage = () => {
     }));
   };
 
-   if (loading) return <Loading />;
   return (
     <SafeAreaView style={{ backgroundColor: "#222222", flex: 1 }}>
       <View style={styles.container}>
         <PageNameHeaderBar title="Choose the Categories" navigation={navigation} />
-        <View style={styles.Choosecontainer}>
-          <View style={styles.searchContainer}>
-            <Ionicons
-              name="search"
-              size={19}
-              color="#FFFFFF"
-              style={{ paddingHorizontal: 10 }}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Find Categories"
-              placeholderTextColor="#fff"
-              value={search}
-              onChangeText={(text) => setSearch(text)}
-            />
-          </View>
+        {
+          loading ? (
+            <Loading />
+          ) : (
+            <View style={styles.Choosecontainer}>
+              <View style={styles.searchContainer}>
+                <Ionicons
+                  name="search"
+                  size={19}
+                  color="#FFFFFF"
+                  style={{ paddingHorizontal: 10 }}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Find Categories"
+                  placeholderTextColor="#fff"
+                  value={search}
+                  onChangeText={(text) => setSearch(text)}
+                />
+              </View>
 
-          <View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.selectedContainer}
-            >
-              {selectedSubs.map((sub) => (
-                <View key={sub.subId} style={styles.selectedPill}>
-                  <Text style={styles.selectedText}>{sub.name}</Text>
-                  <TouchableOpacity onPress={() => handleRemoveSub(sub.subId)}>
-                    <Entypo name="cross" size={17} color="#c3c3c3" />
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-          <ScrollView
-            style={styles.scrolContainer}
-            showsVerticalScrollIndicator={false}
-          >
-            <Text style={styles.catText}>Categories</Text>
-            {filteredServices.map((service) => (
-              <View key={service.id} style={styles.categoryContainer}>
-                <TouchableOpacity
-                  style={styles.mainCategory}
-                  onPress={() => toggleExpand(service.id)}
+              <View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.selectedContainer}
                 >
-                  <View style={styles.iconimage}>
-                    {service.icon && (
-                      <Image
-                        source={{
-                          uri: `${API_ICON}/images/servicephoto/png-image/${service.icon}?tr=ef-grayscale`,
-                        }}
-                        style={styles.image}
+                  {categories.map((sub) => (
+                    <View key={sub.subId} style={styles.selectedPill}>
+                      <Text style={styles.selectedText}>{sub.name}</Text>
+                      <TouchableOpacity onPress={() => handleRemoveSub(sub.subId)}>
+                        <Entypo name="cross" size={17} color="#c3c3c3" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+              <ScrollView
+                style={styles.scrolContainer}
+                showsVerticalScrollIndicator={false}
+              >
+                <Text style={styles.catText}>Categories</Text>
+                {filteredServices.map((service) => (
+                  <View key={service.id} style={styles.categoryContainer}>
+                    <TouchableOpacity
+                      style={styles.mainCategory}
+                      onPress={() => toggleExpand(service.id)}
+                    >
+                      <View style={styles.iconimage}>
+                        {service.icon && (
+                          <Image
+                            source={{
+                              uri: `${API_ICON}/images/servicephoto/png-image/${service.icon}?tr=ef-grayscale`,
+                            }}
+                            style={styles.image}
+                          />
+                        )}
+                      </View>
+
+                      <Text style={styles.mainText}>{service.name}</Text>
+                      <Ionicons
+                        name={
+                          expandedServices[service.id]
+                            ? "chevron-up"
+                            : "chevron-down"
+                        }
+                        size={20}
+                        color="#c3c3c3"
+                        style={{ marginLeft: "auto" }}
                       />
+                    </TouchableOpacity>
+                    {expandedServices[service.id] && (
+                      <View style={styles.subCategories}>
+                        {service.subservices.map((sub) => {
+                          const isSelected = categories.some(
+                            (s) => s.subId === sub.subid
+                          );
+                          return (
+                            <TouchableOpacity
+                              key={sub.subid}
+                              style={
+                                isSelected ? styles.selectedSubBox : styles.subBox
+                              }
+                              onPress={() => handleSelectSub(service, sub)}
+                            >
+                              <Text
+                                style={
+                                  isSelected
+                                    ? styles.selectedSubText
+                                    : styles.subText
+                                }
+                              >
+                                {sub.subname}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
                     )}
                   </View>
+                ))}
+              </ScrollView>
+              <View style={styles.categoryBtn}>
+                <GradientButton
+                  title="Save and Publish"
+                  onPress={() => {
+                    const finalData = useServiceGlobalStore.getState();
+                    console.log("FINAL SERVICE DATA:", finalData);
 
-                  <Text style={styles.mainText}>{service.name}</Text>
-                  <Ionicons
-                    name={
-                      expandedServices[service.id]
-                        ? "chevron-up"
-                        : "chevron-down"
-                    }
-                    size={20}
-                    color="#c3c3c3"
-                    style={{ marginLeft: "auto" }}
-                  />
-                </TouchableOpacity>
-                {expandedServices[service.id] && (
-                  <View style={styles.subCategories}>
-                    {service.subservices.map((sub) => {
-                      const isSelected = selectedSubs.some(
-                        (s) => s.subId === sub.subid
-                      );
-                      return (
-                        <TouchableOpacity
-                          key={sub.subid}
-                          style={
-                            isSelected ? styles.selectedSubBox : styles.subBox
-                          }
-                          onPress={() => handleSelectSub(service, sub)}
-                        >
-                          <Text
-                            style={
-                              isSelected
-                                ? styles.selectedSubText
-                                : styles.subText
-                            }
-                          >
-                            {sub.subname}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                )}
+                    // ▸ Add publish API here later
+                    // navigation.navigate("SuccessPage");
+
+                  }}
+                />
               </View>
-            ))}
-          </ScrollView>
-          <View style={styles.categoryBtn}>
-            <GradientButton
-              title="Choose Category"
-              onPress={() => navigation.navigate("EmployeeAccount")}
-            />
-          </View>
-        </View>
+            </View>
+          )
+        }
       </View>
-      <Footer/>
+      <Footer />
     </SafeAreaView>
   );
 };
@@ -196,9 +214,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     flex: 1,
   },
-   Choosecontainer: {
+  Choosecontainer: {
     height: "85%",
-   
+
   },
 
   heading: {
@@ -331,11 +349,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
   },
-  categoryBtn:{
-    paddingBottom:47,
-    paddingTop:4,
+  categoryBtn: {
+    paddingBottom: 47,
+    paddingTop: 4,
   },
-  
+
 });
 
 export default PromoteCategoryPage;

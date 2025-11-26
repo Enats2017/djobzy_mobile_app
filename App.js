@@ -99,34 +99,34 @@ const App = () => {
           <Stack.Screen name="JobProfile" component={JobProfile} />
           <Stack.Screen name="JobApply" component={JobApplyPage} />
           <Stack.Screen name="MyJobPage" component={MyJobPage} />
-          <Stack.Screen name ="EmployerDashboard" component={EmployerDashboard}/>
-          <Stack.Screen name ="EmployerContracts" component={EmployerContracts}/>
-          <Stack.Screen name ="MyJobPost" component={MyJobPost}/>
-          <Stack.Screen name ="DeactivatedJobs" component={DeactivatedJobs}/>
-          <Stack.Screen name ="Wallet" component={Wallet}/>
+          <Stack.Screen name="EmployerDashboard" component={EmployerDashboard} />
+          <Stack.Screen name="EmployerContracts" component={EmployerContracts} />
+          <Stack.Screen name="MyJobPost" component={MyJobPost} />
+          <Stack.Screen name="DeactivatedJobs" component={DeactivatedJobs} />
+          <Stack.Screen name="Wallet" component={Wallet} />
           <Stack.Screen name="MyFindJobs" component={MyFindJobs} />
           <Stack.Screen name="JobPublishedPage" component={JobPublishedPage} />
           <Stack.Screen name="JobBoostPaymentSection" component={JobBoostPaymentSection} />
           <Stack.Screen name="MyCurrentBiddingProfile" component={MyCurrentBiddingProfile} />
-          <Stack.Screen name ="ChangeMyOffer" component={ChangeMyOffer} />
-          <Stack.Screen name ="ViewCompletedJobPost" component={ViewCompletedJobPost}/>
-          <Stack.Screen name ="CompletedJobPaymentPage" component={CompletedJobPaymentPage} />
-          <Stack.Screen name ="ViewReceivedOffer" component={ViewReceivedOffer} />
-          <Stack.Screen name = "MyNewReceiveOfferPage" component={MyNewReceiveOfferPage}/>
-          <Stack.Screen name = "AcceptReceivedOfferPage" component={AcceptReceivedOfferPage}/>
-          <Stack.Screen name = "ViewCurrentJobPost" component={ViewCurrentJobPost}/>
-          <Stack.Screen name = "CurrentJobPaymentPage" component={CurrentJobPaymentPage}/>
-          <Stack.Screen name = "Details" component={Details}/>
-          <Stack.Screen name = "VerificationPage" component={VerificationPage} />
-          <Stack.Screen name= "PasswordResert" component={PasswordResert} />
-          <Stack.Screen name = "EmployeeProfileMenu" component={EmployeeProfileMenu} />
-          <Stack.Screen name = "PromoteService" component={PromoteService} />
-          <Stack.Screen name = "PromoteCategoryPage" component={PromoteCategoryPage} />
-          <Stack.Screen name = "EmployeeAccount" component={EmployeeAccount} />
-          <Stack.Screen name = "EmployeeVerification" component={EmployeeVerification} />
-          <Stack.Screen name = "ProfileReviewPage" component={ProfileReviewPage} />
-          <Stack.Screen name = "ReferralWallet" component={ReferralWallet} />
-          <Stack.Screen name = "BlogPage" component={BlogPage} />
+          <Stack.Screen name="ChangeMyOffer" component={ChangeMyOffer} />
+          <Stack.Screen name="ViewCompletedJobPost" component={ViewCompletedJobPost} />
+          <Stack.Screen name="CompletedJobPaymentPage" component={CompletedJobPaymentPage} />
+          <Stack.Screen name="ViewReceivedOffer" component={ViewReceivedOffer} />
+          <Stack.Screen name="MyNewReceiveOfferPage" component={MyNewReceiveOfferPage} />
+          <Stack.Screen name="AcceptReceivedOfferPage" component={AcceptReceivedOfferPage} />
+          <Stack.Screen name="ViewCurrentJobPost" component={ViewCurrentJobPost} />
+          <Stack.Screen name="CurrentJobPaymentPage" component={CurrentJobPaymentPage} />
+          <Stack.Screen name="Details" component={Details} />
+          <Stack.Screen name="VerificationPage" component={VerificationPage} />
+          <Stack.Screen name="PasswordResert" component={PasswordResert} />
+          <Stack.Screen name="EmployeeProfileMenu" component={EmployeeProfileMenu} />
+          <Stack.Screen name="PromoteService" component={PromoteService} />
+          <Stack.Screen name="PromoteCategoryPage" component={PromoteCategoryPage} />
+          <Stack.Screen name="EmployeeAccount" component={EmployeeAccount} />
+          <Stack.Screen name="EmployeeVerification" component={EmployeeVerification} />
+          <Stack.Screen name="ProfileReviewPage" component={ProfileReviewPage} />
+          <Stack.Screen name="ReferralWallet" component={ReferralWallet} />
+          <Stack.Screen name="BlogPage" component={BlogPage} />
           <Stack.Screen name = "PostJobDetails" component={PostJobDetails} />
           <Stack.Screen name = "ReceiveApplication" component={ReceiveApplication} />
           <Stack.Screen name = "EmployerSentOffer" component={EmployerSentOffer} />

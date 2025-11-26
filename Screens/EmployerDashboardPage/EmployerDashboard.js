@@ -18,7 +18,6 @@ import Employees from "./Employees";
 import RecommendedJobs from "./RecommendedJobs";
 import HeaderBar from "../../components/HeaderBar";
 import { API_ICON, API_URL } from "../../api/ApiUrl";
-import EmployerFooter from "../../components/EmployerFooter";
 
 export default function EmployerDashboard() {
   const [activeTab, setActiveTab] = useState("jobs");
@@ -438,7 +437,6 @@ export default function EmployerDashboard() {
         </View>
       </Modal>
 
-      <EmployerFooter />
     </SafeAreaView>
   );
 }

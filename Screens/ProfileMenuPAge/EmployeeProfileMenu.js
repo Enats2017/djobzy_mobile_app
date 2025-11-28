@@ -75,7 +75,6 @@ const EmployeeProfileMenu = () => {
           routes: [{ name: "EmployerDashboard" }],
         });
       }
-
     } catch (error) {
       console.log(error);
       Alert.alert("Error", "Failed to switch account");
@@ -83,7 +82,6 @@ const EmployeeProfileMenu = () => {
       setSwitchLoading(false);
     }
   };
-
   const toggleSwitch = async (newValue, delay = false) => {
     setIsEmployer(newValue);
      if (delay) {
@@ -145,7 +143,7 @@ const EmployeeProfileMenu = () => {
                   <MenuItem icon="wallet-outline" title="Wallet" onPress={()=> navigation.navigate("Wallet")} />
                   <MenuItem icon="settings-outline" title="Setting" onPress={()=> navigation.navigate("GeneralSetting")} />
                   <MenuItem icon="gift-outline" title="Referral wallet" onPress={()=> navigation.navigate("ReferralWallet")}/>
-                  <MenuItem icon="chatbubble-ellipses-outline" title="Chat" />
+                  <MenuItem icon="chatbubble-ellipses-outline" title="Chat"  onPress={()=> navigation.navigate("FeedChat")}/>
                   <MenuItem icon="document-outline" title="Blog" onPress={()=>navigation.navigate("BlogPage")} />
                 </View>
                 <TouchableOpacity style={styles.logoutContainer}>
@@ -157,7 +155,7 @@ const EmployeeProfileMenu = () => {
           )
         }
       </View>
-      <Footer />
+      <Footer accountType={accountType}/>
     </SafeAreaView>
   );
 };

@@ -11,12 +11,16 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import Footer from "../../components/Footer";
 import HeaderBar from "../../components/HeaderBar";
 import { API_URL } from "../../api/ApiUrl";
 import JobCard from "../EmployeeJobs/JobCard";
+import FeedPost from "../SocialMediaPage/FeedPost";
+import { ScrollView } from "react-native-gesture-handler";
+import LineDivider from "../../components/LineDivider";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("jobs");
@@ -29,41 +33,47 @@ const Dashboard = () => {
   const onEndReachedCalledDuringMomentum = useRef(false);
   const hasFetched = useRef(false);
 
-  const fetchJobs = useCallback(async (pageNum = 1) => {
-    try {
-      if (loading || isFetchingMore) return;
-      if (pageNum === 1) setLoading(true);
-      else setIsFetchingMore(true);
-      const token = await AsyncStorage.getItem("token");
-      // console.log("📡 Fetching jobs for page:", pageNum);
-      const res = await fetch(`${API_URL}/employee-dashboard?page=${pageNum}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-
-      const data = await res.json();
-      if (!data?.gigs || data.gigs.length === 0) {
-        setHasMore(false);
-        return;
-      }
-
-      setJobs((prev) => {
-        const newGigs = data.gigs.filter(
-          (gig) => !prev.some((j) => j.gid === gig.gid)
+  const fetchJobs = useCallback(
+    async (pageNum = 1) => {
+      try {
+        if (loading || isFetchingMore) return;
+        if (pageNum === 1) setLoading(true);
+        else setIsFetchingMore(true);
+        const token = await AsyncStorage.getItem("token");
+        // console.log("📡 Fetching jobs for page:", pageNum);
+        const res = await fetch(
+          `${API_URL}/employee-dashboard?page=${pageNum}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
         );
-        return [...prev, ...newGigs];
-      });
-      setHasMore(data.gigs.length === 10);
-      setPage(pageNum);
-    } catch (err) {
-      console.log("❌ Error fetching jobs:", err);
-    } finally {
-      setLoading(false);
-      setIsFetchingMore(false);
-    }
-  }, [loading, isFetchingMore]);
+
+        const data = await res.json();
+        if (!data?.gigs || data.gigs.length === 0) {
+          setHasMore(false);
+          return;
+        }
+
+        setJobs((prev) => {
+          const newGigs = data.gigs.filter(
+            (gig) => !prev.some((j) => j.gid === gig.gid)
+          );
+          return [...prev, ...newGigs];
+        });
+        setHasMore(data.gigs.length === 10);
+        setPage(pageNum);
+      } catch (err) {
+        console.log("❌ Error fetching jobs:", err);
+      } finally {
+        setLoading(false);
+        setIsFetchingMore(false);
+      }
+    },
+    [loading, isFetchingMore]
+  );
 
   useEffect(() => {
     if (!hasFetched.current) {
@@ -77,32 +87,36 @@ const Dashboard = () => {
       <View>
         <Text style={styles.sectionHeader}>My Jobs</Text>
         <View style={styles.chipRow}>
-          {["Current jobs", "Received offers", "My biddings"].map((item, index) => (
-            <TouchableOpacity
-              key={index + 1}
-              style={styles.chip}
-              onPress={() => {
-                navigation.navigate("MyJobPage", { tab: index + 1 });
-              } }
-            >
-              <Text style={styles.chipText}>{item}</Text>
-            </TouchableOpacity>
-          ))}
+          {["Current jobs", "Received offers", "My biddings"].map(
+            (item, index) => (
+              <TouchableOpacity
+                key={index + 1}
+                style={styles.chip}
+                onPress={() => {
+                  navigation.navigate("MyJobPage", { tab: index + 1 });
+                }}
+              >
+                <Text style={styles.chipText}>{item}</Text>
+              </TouchableOpacity>
+            )
+          )}
         </View>
 
         <Text style={styles.sectionHeader}>Find Jobs</Text>
         <View style={styles.chipRow}>
-          {["Best Matches", "Categories", "Favorite jobs"].map((item, index) => (
-            <TouchableOpacity
-              key={index + 1}
-              style={styles.chip}
-              onPress={() => {
-                navigation.navigate("MyFindJobs", { tab: index + 1 });
-              } }
-            >
-              <Text style={styles.chipText}>{item}</Text>
-            </TouchableOpacity>
-          ))}
+          {["Best Matches", "Categories", "Favorite jobs"].map(
+            (item, index) => (
+              <TouchableOpacity
+                key={index + 1}
+                style={styles.chip}
+                onPress={() => {
+                  navigation.navigate("MyFindJobs", { tab: index + 1 });
+                }}
+              >
+                <Text style={styles.chipText}>{item}</Text>
+              </TouchableOpacity>
+            )
+          )}
         </View>
         <Text style={styles.sectionHeader}>Jobs</Text>
       </View>
@@ -120,7 +134,7 @@ const Dashboard = () => {
 
   const renderJobCard = ({ item, index }) => {
     const isLastItem = index === jobs.length - 1;
-    return <JobCard item={item} lastItem={isLastItem} />
+    return <JobCard item={item} lastItem={isLastItem} />;
   };
 
   return (
@@ -137,9 +151,7 @@ const Dashboard = () => {
             >
               <Text
                 style={
-                  activeTab === "feeds"
-                    ? styles.activeTabText
-                    : styles.tabText
+                  activeTab === "feeds" ? styles.activeTabText : styles.tabText
                 }
               >
                 Social Feed
@@ -176,9 +188,16 @@ const Dashboard = () => {
                 ListHeaderComponent={renderHeader}
                 ListFooterComponent={renderFooter}
                 onEndReachedThreshold={0.5}
-                onMomentumScrollBegin={() => { onEndReachedCalledDuringMomentum.current = false; }}
+                onMomentumScrollBegin={() => {
+                  onEndReachedCalledDuringMomentum.current = false;
+                }}
                 onEndReached={() => {
-                  if (!onEndReachedCalledDuringMomentum.current && hasMore && !isFetchingMore && !loading) {
+                  if (
+                    !onEndReachedCalledDuringMomentum.current &&
+                    hasMore &&
+                    !isFetchingMore &&
+                    !loading
+                  ) {
                     fetchJobs(page + 1);
                     onEndReachedCalledDuringMomentum.current = true;
                   }
@@ -188,61 +207,87 @@ const Dashboard = () => {
               />
             )
           ) : (
-            <View>
-              <View style={styles.postBox}>
-                <TouchableOpacity
-                  style={styles.feed}
-                  onPress={() => navigation.navigate("CreateFeed")}
-                >
-                  <Text style={styles.textfeed}>Create Feed/Post</Text>
-                  <View style={styles.anylog}>
-                    <Text style={{ fontSize: 15 }}>Anyone</Text>
-                    <Entypo
-                      name="chevron-small-down"
-                      size={18}
-                      color="#161616ff"
-                    />
+            <>
+            <ScrollView contentContainerStyle={{paddingBottom:80}} showsVerticalScrollIndicator={false}>
+              <View style={styles.postcontainer}>
+                <View style={styles.postBox}>
+                  <TouchableOpacity
+                    style={styles.feed}
+                    onPress={() => navigation.navigate("CreateFeedPost")}
+                  >
+                    <Text style={styles.textfeed}>Create Feed/Post</Text>
+                    <View style={styles.anylog}>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontFamily: "Montserrat_500Medium",
+                          color: "#fff",
+                        }}
+                      >
+                        Anyone
+                      </Text>
+                      <Entypo name="chevron-small-down" size={20} color="#fff" />
+                    </View>
+                  </TouchableOpacity>
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Post Something"
+                    placeholderTextColor="#888"
+                  />
+
+                  <View style={styles.buttonRow}>
+                    <TouchableOpacity style={styles.button}>
+                      <Image
+                        source={require("../../assets/images/img.png")}
+                        style={styles.logo}
+                        resizeMode="contain"
+                      />
+                      <Text style={styles.buttonText}>Image</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.button}>
+                      <Image
+                        source={require("../../assets/images/vedio.png")}
+                        style={styles.logo}
+                        resizeMode="contain"
+                      />
+                      <Text style={styles.buttonText}>Video</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.button}>
+                      <Image
+                        source={require("../../assets/images/ai.png")}
+                        style={styles.logo}
+                        resizeMode="contain"
+                      />
+                      <Text style={styles.buttonText}>
+                        Generate AI {"\n"} Video
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
-
-                <TextInput
-                  style={styles.input}
-                  placeholder="Post Something"
-                  placeholderTextColor="#888"
-                />
-
-                <View style={styles.buttonRow}>
-                  <TouchableOpacity style={styles.button}>
-                    <Icon
-                      name="image-outline"
-                      size={22}
-                      style={styles.iconTag}
-                    />
-                    <Text style={styles.buttonText}>Image</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.button}>
-                    <Icon
-                      name="videocam-outline"
-                      size={22}
-                      style={styles.iconTag}
-                    />
-                    <Text style={styles.buttonText}>Video</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.button}>
-                    <Icon
-                      name="sparkles-outline"
-                      size={22}
-                      style={styles.iconTag}
-                    />
-                    <Text style={styles.buttonText}>
-                      Generate AI {"\n"} Video
-                    </Text>
-                  </TouchableOpacity>
                 </View>
               </View>
-            </View>
+              <View>
+                <FeedPost/>
+                <FeedPost  
+                author="Aman Yadav"
+                subtitle="Full stack developer & UX audit"
+                time="18 Aug, 12 am"
+                text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.."
+               avatar={require("../../assets/images/social-img1.png")}
+               image={require("../../assets/images/image1818.png")}
+                likesNumber={5500}
+                commentsNumber={1300}
+                savesNumber={2100}
+                />
+
+              </View>
+              
+
+            </ScrollView>
+            </>
+            
           )}
         </View>
 
@@ -269,7 +314,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     paddingVertical: 10,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
 
   chip: {
@@ -327,30 +372,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  postBox: {
-    backgroundColor: "#f7f7f7",
-    padding: 10,
-    marginVertical: 10,
-    marginHorizontal: 12,
-
-    borderRadius: 5,
-    elevation: 7,
+  postcontainer: {
+    backgroundColor: "#FFFFFF1a",
+    marginTop: 25,
+    borderRadius: 10,
+    marginBottom:25
   },
+  postBox: {
+    padding: 7,
+  },
+
   input: {
-    backgroundColor: "#d4d0d0ff",
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 16,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 12,
-    marginHorizontal: 12,
-
-    fontSize: 18,
+    color: "#FFFFFF",
+    borderColor: "#FFFFFF33",
+    padding: 15,
+    marginHorizontal: 10,
     marginBottom: 10,
   },
-  iconTag: {
-    padding: 7,
-
-    borderRadius: 10,
+  logo: {
+    height: 21,
+    width: 21,
+    marginRight: 7,
   },
   buttonRow: {
     flexDirection: "row",
@@ -364,10 +410,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   buttonText: {
-    color: "#7e7d7dff",
-    marginLeft: 5,
-    fontWeight: "600",
-    fontSize: 18,
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    color: "#c3c3c3c3",
   },
 
   feed: {
@@ -381,8 +426,9 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   textfeed: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 22,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#fff",
   },
 });
 

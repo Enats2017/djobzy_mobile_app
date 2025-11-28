@@ -7,9 +7,10 @@ import {
   ScrollView,
   StyleSheet,
   Modal,
+  TextInput
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, MaterialIcons,Entypo } from "@expo/vector-icons";
 import GroupJobPost from "../../assets/images/GroupJobPost.png";
 import GroupNext from "../../assets/images/GroupNext.png";
 import { useNavigation } from "@react-navigation/native";
@@ -18,6 +19,9 @@ import Employees from "./Employees";
 import RecommendedJobs from "./RecommendedJobs";
 import HeaderBar from "../../components/HeaderBar";
 import { API_ICON, API_URL } from "../../api/ApiUrl";
+import FeedPost from "../SocialMediaPage/FeedPost";
+import Footer from "../../components/Footer";
+
 
 export default function EmployerDashboard() {
   const [activeTab, setActiveTab] = useState("jobs");
@@ -36,6 +40,7 @@ export default function EmployerDashboard() {
   const fetchEmployees = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
+      console.log(token);
 
       const res = await fetch(`${API_URL}/employer-dashboard`, {
         method: "GET",
@@ -46,13 +51,7 @@ export default function EmployerDashboard() {
       });
 
       const data = await res.json();
-
-
-      setEmployees(
-        (data?.suggested_profiles || []).filter(
-          (emp) => emp.seller_services_for_search?.length > 0
-        )
-      );
+      setEmployees(data.suggested_profiles);
     } catch (e) {}
   };
 
@@ -76,10 +75,10 @@ export default function EmployerDashboard() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#1e1e1e" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContainer, { paddingBottom: 120 }]}
+        contentContainerStyle={[styles.scrollContainer, { paddingBottom: 100 }]}
       >
         <HeaderBar />
         <Employees
@@ -87,11 +86,87 @@ export default function EmployerDashboard() {
           setActiveTab={setActiveTab}
           tabs={{ feeds: "Social Feed", jobs: "Employees" }}
         />
+        {activeTab === "feeds" && (
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 80 }}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.postcontainer}>
+              <View style={styles.postBox}>
+                <TouchableOpacity
+                  style={styles.feed}
+                  onPress={() => navigation.navigate("CreateFeedPost")}
+                >
+                  <Text style={styles.textfeed}>Create Feed/Post</Text>
+                  <View style={styles.anylog}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontFamily: "Montserrat_500Medium",
+                        color: "#fff",
+                      }}
+                    >
+                      Anyone
+                    </Text>
+                    <Entypo name="chevron-small-down" size={20} color="#fff" />
+                  </View>
+                </TouchableOpacity>
 
-        {activeTab === "feeds" && <RecommendedJobs />}
+                <TextInput
+                  style={styles.input}
+                  placeholder="Post Something"
+                  placeholderTextColor="#888"
+                />
 
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity style={styles.button}>
+                    <Image
+                      source={require("../../assets/images/img.png")}
+                      style={styles.logo}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.buttonText}>Image</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.button}>
+                    <Image
+                      source={require("../../assets/images/vedio.png")}
+                      style={styles.logo}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.buttonText}>Video</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.button}>
+                    <Image
+                      source={require("../../assets/images/ai.png")}
+                      style={styles.logo}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.buttonText}>
+                      Generate AI {"\n"} Video
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            <View>
+              <FeedPost />
+              <FeedPost
+                author="Aman Yadav"
+                subtitle="Full stack developer & UX audit"
+                time="18 Aug, 12 am"
+                text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.."
+                avatar={require("../../assets/images/social-img1.png")}
+                image={require("../../assets/images/image1818.png")}
+                likesNumber={5500}
+                commentsNumber={1300}
+                savesNumber={2100}
+              />
+            </View>
+          </ScrollView>
+        )}
         {activeTab === "categories" && <RecommendedJobs />}
-
         {activeTab === "favourites" && (
           <View style={{ marginTop: 10 }}>
             {employees
@@ -165,17 +240,13 @@ export default function EmployerDashboard() {
                   <View style={styles.divider} />
 
                   <View style={styles.skills}>
-                    {(emp?.seller_services_for_search || []).map(
-                      (service, i) => (
-                        <View style={styles.skill} key={i}>
-                          <Text style={styles.skillText}>
-                            {service?.sub_services?.ss_service_name ||
-                              service?.titles ||
-                              "Skill"}
-                          </Text>
-                        </View>
-                      )
-                    )}
+                    {emp?.seller_services_for_search?.map((item, i) => (
+                      <View style={styles.skill} key={i}>
+                        <Text style={styles.skillText}>
+                          {item?.sub_services?.subname || "Skill"}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
 
                   <TouchableOpacity
@@ -232,9 +303,7 @@ export default function EmployerDashboard() {
                   <View style={styles.cardHeader}>
                     <Image
                       source={{
-                        uri:
-                          emp?.photo ||
-                          "https://dummyimage.com/120x120/aaa/fff&text=NA",
+                        uri: "https://randomuser.me/api/portraits/women/44.jpg",
                       }}
                       style={styles.avatar}
                     />
@@ -317,7 +386,7 @@ export default function EmployerDashboard() {
                           <Text style={styles.skillText}>
                             {service?.sub_services?.ss_service_name ||
                               service?.titles ||
-                              "Skill"}
+                              "Account"}
                           </Text>
                         </View>
                       )
@@ -436,7 +505,7 @@ export default function EmployerDashboard() {
           </View>
         </View>
       </Modal>
-
+      <Footer/>
     </SafeAreaView>
   );
 }
@@ -450,7 +519,6 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingHorizontal: 16,
     backgroundColor: "#1e1e1e",
-    flex: 1,
   },
   header: {
     marginTop: 20,
@@ -689,5 +757,64 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
     textAlign: "center",
     lineHeight: 22,
+  },
+
+  // social media
+  postcontainer: {
+    backgroundColor: "#FFFFFF1a",
+    marginTop: 25,
+    borderRadius: 10,
+    marginBottom:25
+  },
+  postBox: {
+    padding: 7,
+  },
+
+  input: {
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    color: "#FFFFFF",
+    borderColor: "#FFFFFF33",
+    padding: 15,
+    marginHorizontal: 10,
+    marginBottom: 10,
+  },
+  logo: {
+    height: 21,
+    width: 21,
+    marginRight: 7,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 5,
+  },
+  buttonText: {
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    color: "#c3c3c3c3",
+  },
+  feed: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 11,
+    paddingHorizontal: 10,
+  },
+  anylog: {
+    flexDirection: "row",
+    gap: 3,
+  },
+  textfeed: {
+    fontSize: 22,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#fff",
   },
 });

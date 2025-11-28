@@ -64,6 +64,12 @@ import UserPaymentPage from "./Screens/GeneralSetting/UserPaymentPage";
 import UserNotification from "./Screens/GeneralSetting/UserNotification";
 import UserSecurity from "./Screens/GeneralSetting/UserSecurity";
 import IDVerificationUploadScreen  from"./Screens/GeneralSetting/IDVerificationUploadScreen";
+import EmployerProfilePage from "./Screens/EmployerHirePage/EmployerProfilePage";
+import  ViewHirePage from "./Screens/EmployerHirePage/ViewHirePage";
+import FeedChat from "./Screens/SocialMediaPage/FeedChat";
+import ChatCommunication from "./Screens/SocialMediaPage/ChatCommunication";
+import CreateFeedPost from "./Screens/SocialMediaPage/CreateFeedPost";
+import NotificationScreen from "./Screens/EmployerHirePage/NotificationScreen";
 
 
 const Stack = createStackNavigator();
@@ -150,6 +156,13 @@ const App = () => {
           <Stack.Screen name = "UserNotification" component={UserNotification}/>
           <Stack.Screen name = "UserSecurity" component={UserSecurity} />
           <Stack.Screen name = "IDVerificationUploadScreen" component={IDVerificationUploadScreen} />
+          <Stack.Screen name = "EmployerProfilePage" component={EmployerProfilePage} />
+          <Stack.Screen name = "ViewHirePage" component={ViewHirePage} />
+          <Stack.Screen name = "FeedChat" component={FeedChat}/>
+          <Stack.Screen name = "ChatCommunication" component={ChatCommunication}/>
+          <Stack.Screen name = "CreateFeedPost" component={CreateFeedPost}/>
+          <Stack.Screen name = "NotificationScreen" component={NotificationScreen}/>
+
          
         </Stack.Navigator>
       </NavigationContainer>

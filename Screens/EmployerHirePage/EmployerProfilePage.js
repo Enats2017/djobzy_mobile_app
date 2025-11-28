@@ -12,10 +12,17 @@ import { useNavigation } from "@react-navigation/native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  MaterialCommunityIcons,
+  AntDesign,
+  Ionicons,
+} from "@expo/vector-icons";
 import Footer from "../../components/Footer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
+import FeedPost from "../SocialMediaPage/FeedPost";
+import GradientButton from "../../components/GradientButton";
+import LineDivider from "../../components/LineDivider";
 
 export default function EmployerProfilePage({ route }) {
   const navigation = useNavigation();
@@ -73,7 +80,10 @@ export default function EmployerProfilePage({ route }) {
           title={profile?.full_name || profile?.name || "Profile"}
         />
 
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
           <View style={styles.cardBox}>
             <View style={styles.profileRow}>
               <Image
@@ -204,8 +214,62 @@ export default function EmployerProfilePage({ route }) {
                   "No about info available."}
               </Text>
             </View>
-
             <View style={styles.dividerLine} />
+          </View>
+          <FeedPost />
+          <View style={styles.promote}>
+            <Text style={styles.sectionLabel}>My Promoted Services</Text>
+            <TouchableOpacity style={styles.plusbtn}>
+              <AntDesign name="plus" size={18} color="#030303" />
+              <Text style={styles.plustext}>Promote Services</Text>
+            </TouchableOpacity>
+            <View style={styles.wrapper}>
+              <View style={styles.iconContainer}>
+                <Ionicons name="logo-android" size={28} color="#000" />
+              </View>
+              <View style={styles.card}>
+                <Text style={styles.title}>
+                  I can create mobile application
+                </Text>
+                <Text style={styles.price}>50.00 CAD</Text>
+                <Text style={styles.perHour}>/hour</Text>
+                <GradientButton
+                  title="View"
+                  fontSize={15}
+                  paddingVertical={10}
+                  paddingHorizontal={35}
+                />
+              </View>
+              <View style={styles.iconContainer}>
+                <Ionicons name="logo-android" size={28} color="#000" />
+              </View>
+              <View style={styles.card}>
+                <Text style={styles.title}>
+                  I can create mobile application
+                </Text>
+                <Text style={styles.price}>50.00 CAD</Text>
+                <Text style={styles.perHour}>/hour</Text>
+                <GradientButton
+                  title="View"
+                  fontSize={15}
+                  paddingVertical={10}
+                  paddingHorizontal={35}
+                />
+              </View>
+            </View>
+            <LineDivider />
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Attachments</Text>
+              <Text style={styles.profileTitleText}>.........</Text>
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Current Work</Text>
+              <Text style={styles.profileTitleText}>.........</Text>
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Work History And Reviews</Text>
+              <Text style={styles.profileTitleText}>.........</Text>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -378,9 +442,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff33",
     marginHorizontal: 4,
   },
-  infoOuterContainer: {
-    marginBottom: 80,
-  },
+
   sectionLabel: {
     color: "#ffffff",
     fontSize: 16,
@@ -406,5 +468,88 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff33",
     marginVertical: 15,
     width: "100%",
+  },
+  plusbtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    paddingHorizontal: 8,
+    width: "50%",
+    paddingVertical: 5,
+    marginBottom: 28,
+  },
+  plustext: {
+    color: "#030303",
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+  },
+  wrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  iconContainer: {
+    position: "absolute",
+    top: -20,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    left: 60,
+    paddingBottom: 4.2,
+    borderRadius: 22.5,
+    backgroundColor: "#E7C1AF",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#3D3D3D",
+  },
+
+  card: {
+    width: 160,
+    paddingTop: 27,
+    paddingBottom: 18,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#ffffff1a",
+  },
+
+  title: {
+    color: "#ffffff",
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: 10,
+    lineHeight: 17,
+  },
+
+  price: {
+    color: "#25dd4dff",
+    fontSize: 16,
+    fontFamily:"Montserrat_600SemiBold",
+    marginTop: 6,
+  },
+
+  perHour: {
+    color: "#30D354",
+    fontSize: 12,
+    fontFamily:"Montserrat_400Regular",
+  },
+
+  btn: {
+    backgroundColor: "#CC6C52",
+    marginTop: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+  },
+
+  btnText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

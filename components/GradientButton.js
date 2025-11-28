@@ -7,7 +7,9 @@ const GradientButton = ({
   onPress,
   paddingHorizontal = 55,
   marginTop=10,
+   paddingVertical=10,
   fontSize = 20,
+
   styleOverride = {}, 
 }) => {
   return (
@@ -15,7 +17,7 @@ const GradientButton = ({
       <LinearGradient
         colors={["#C96B59", "#D17B68",]}
         
-        style={[styles.button, { paddingHorizontal, marginTop },styleOverride]}
+        style={[styles.button, { paddingHorizontal, marginTop,paddingVertical },styleOverride]}
       >
         <Text style={[styles.buttonText, { fontSize }]}>{title}</Text>
       </LinearGradient>

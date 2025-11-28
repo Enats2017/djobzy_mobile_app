@@ -6,6 +6,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 const Footer = () => {
   const [active, setActive] = useState(0);
   const navigation = useNavigation();
+  
+  
   return (
     <>
       <View style={styles.bottomContainer}>
@@ -31,16 +33,15 @@ const Footer = () => {
             <Ionicons
               name="add-circle-outline"
               size={24}
-
               color={active === "Post" ? "#f49676" : "#000000"}
             />
             <Text style={[styles.label, active === "Post" && styles.activeText]}>
               Post
             </Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.tab}
+            onPress={()=>navigation.navigate("NotificationScreen")}
           >
             <Ionicons
               name="notifications-outline"
@@ -65,7 +66,6 @@ const Footer = () => {
             </Text>
           </TouchableOpacity>
         </View>
-
       </View>
 
     </>
@@ -85,11 +85,9 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 999,
     right: 0,
-
   },
   tab: {
     alignItems: "center",
-
   },
   label: {
     fontSize: 14,

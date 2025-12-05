@@ -10,6 +10,8 @@ import { useNavigation } from "@react-navigation/native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import EmployerFooter from "../../components/EmployerFooter";
+
 export default function EmployerContracts() {
   const navigation = useNavigation();
 
@@ -25,20 +27,20 @@ export default function EmployerContracts() {
       >
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate("MyJobPost")}
+          onPress={() => navigation.navigate("EmployerJobPost")}
         >
           <Text style={styles.menuText}>My Job Post</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={()=>navigation.navigate("ActiveContract")}>
           <Text style={styles.menuText}>Active contracts</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={()=>navigation.navigate("ReceiveApplication")}>
           <Text style={styles.menuText}>Received Application</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={()=> navigation.navigate("EmployerSentOffer")}>
           <Text style={styles.menuText}>Sent Offers</Text>
         </TouchableOpacity>
 
@@ -53,6 +55,7 @@ export default function EmployerContracts() {
           <Text style={styles.menuText}>Deactivated Jobs</Text>
         </TouchableOpacity>
       </ScrollView>
+      <EmployerFooter/>
     </SafeAreaView>
   );
 }

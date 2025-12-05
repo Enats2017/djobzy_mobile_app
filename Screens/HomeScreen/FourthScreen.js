@@ -15,47 +15,49 @@ const { width, height } = Dimensions.get("window");
 const FourthScreen = () => {
   const navigation = useNavigation();
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-         <View style={styles.imageContainer}>
-          <Image
-            source={require("../../assets/images/Group2.png")}
-            style={styles.baseImage}
-          />
-          <Image
-            source={require("../../assets/images/Team work.png")}
-            style={styles.overlayImage}
-          />
-        </View>
-
-        {/* Text Section */}
-        <View style={styles.text}>
-          <Text style={styles.heading}>Build Your</Text>
-            <Text style={styles.bold}>Dream Team</Text>
-          <Text style={styles.subheading}>
-            Hire top talent for short or long-term projects.
-          </Text>
-        </View>
-
-        {/* Buttons Section */}
-         <View style={styles.buttons}>
-          <TouchableOpacity style={[styles.circleButton, {backgroundColor:"#39A881"}]}  onPress={() => navigation.navigate("Employer")}>
-             <Image
-            source={require("../../assets/images/Group-vector.png")}
-          
-            resizeMode="contain"
-          />
-            <Text style={[styles.circleText, { color: "white" }]}>I'm an Employee</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.circleButton, styles.white]} onPress={() => navigation.navigate("Employee")}>
+    <SafeAreaView  style={{flex:1}} >
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.imageContainer}>
             <Image
-            source={require("../../assets/images/Group-icon.png")}
+              source={require("../../assets/images/Group2.png")}
+              style={styles.baseImage}
+            />
+            <Image
+              source={require("../../assets/images/Team work.png")}
+              style={styles.overlayImage}
+            />
+          </View>
+
+          {/* Text Section */}
+          <View style={styles.text}>
+            <Text style={styles.heading}>Build Your</Text>
+              <Text style={styles.bold}>Dream Team</Text>
+            <Text style={styles.subheading}>
+              Hire top talent for short or long-term projects.
+            </Text>
+          </View>
+
+          {/* Buttons Section */}
+          <View style={styles.buttons}>
+            <TouchableOpacity style={[styles.circleButton, {backgroundColor:"#39A881"}]}  onPress={() => navigation.navigate("Login")}>
+              <Image
+              source={require("../../assets/images/Group-vector.png")}
             
-            resizeMode="contain"
-          />
-            <Text style={[styles.circleText, { color: "#111" }]}>I'm an Employer</Text>
-          </TouchableOpacity>
+              resizeMode="contain"
+            />
+              <Text style={[styles.circleText, { color: "white" }]}>I'm an Employee</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.circleButton, styles.white]} onPress={() => navigation.navigate("Login")}>
+              <Image
+              source={require("../../assets/images/Group-icon.png")}
+              
+              resizeMode="contain"
+            />
+              <Text style={[styles.circleText, { color: "#111" }]}>I'm an Employer</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </SafeAreaView>

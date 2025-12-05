@@ -26,7 +26,7 @@ const Resert = ({ onNext }) => {
     setError("");
     try {
       const response = await axios.post(
-        `${API_URL}/forgot`,
+        `${API_URL} /forgot-password`,
         { email: email },
         { headers: { "Content-Type": "application/json" } }
       );

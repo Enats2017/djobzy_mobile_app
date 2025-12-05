@@ -23,25 +23,26 @@ import { API_URL } from "../../api/ApiUrl";
 import FeedPost from "../SocialMediaPage/FeedPost";
 import GradientButton from "../../components/GradientButton";
 import LineDivider from "../../components/LineDivider";
+import Loading from "../../components/Loading";
+import EmployerFooter from "../../components/EmployerFooter";
 
 export default function EmployerProfilePage({ route }) {
   const navigation = useNavigation();
   const { name } = route?.params ?? {};
-
   const [isEmployer, setIsEmployer] = useState(false);
   const [profile, setProfile] = useState(null);
   const [gigs, setGigs] = useState([]);
   const [categories, setCategories] = useState([]);
   const [attachments, setAttachments] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [jobCount, setJobCount] = useState(0);
   const [moneyEarned, setMoneyEarned] = useState(0);
   const [isFollowed, setIsFollowed] = useState(false);
+  const [loading , setLoading] = useState(false);
 
   const fetchEmployeeProfile = async () => {
     try {
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
-
       const res = await fetch(`${API_URL}/employer-profile/${name}`, {
         method: "GET",
         headers: {
@@ -49,12 +50,9 @@ export default function EmployerProfilePage({ route }) {
           Accept: "application/json",
         },
       });
-
       const data = await res.json();
-
       if (data.status === "success") {
         setProfile(data.profile);
-
         setJobCount(data.job_count ?? 0);
         setMoneyEarned(data.total_price ?? 0);
         setGigs(data.gigs || []);
@@ -72,6 +70,8 @@ export default function EmployerProfilePage({ route }) {
     if (name) fetchEmployeeProfile();
   }, [name]);
 
+  
+if (loading) return <Loading />
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.employeeContainer}>
@@ -165,7 +165,7 @@ export default function EmployerProfilePage({ route }) {
 
               <TouchableOpacity
                 style={styles.btnHire}
-                onPress={() => navigation.navigate("ViewHirePage")}
+                onPress={() => navigation.navigate("ViewHirePage",{jobId:profile.id||[]})}
               >
                 <Text style={styles.btnHireText}>Hire</Text>
               </TouchableOpacity>
@@ -274,7 +274,7 @@ export default function EmployerProfilePage({ route }) {
         </ScrollView>
       </View>
 
-      <Footer />
+      <EmployerFooter/>
     </SafeAreaView>
   );
 }

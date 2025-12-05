@@ -5,23 +5,24 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
-const Footer = () => {
+const EmployerFooter = () => {
   const [active, setActive] = useState(0);
   const navigation = useNavigation();
   return (
     <>
       <View style={styles.bottomContainer}>
         <View style={styles.BottomBar}>
-          <TouchableOpacity style={styles.tab} onPress={() => {}}>
-            <Ionicons name="document-attach" size={24} color="black" />
-            <Text
-              style={[styles.label, active === "Jobs" && styles.activeText]}
-            >
-              Jobs
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => navigation.navigate("EmployerContracts")}
+          >
+            <Ionicons name="document-attach-sharp" size={24}  color={active === "Jobs" ? "#007bff" : "#000000"} />
+            <Text style={[styles.label, active == 0 && styles.activeText]}>
+              Contact
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.tab} onPress={() => {}}>
+          <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("CreateJob")}>
             <MaterialCommunityIcons
               name="plus-circle"
               size={24}
@@ -42,7 +43,7 @@ const Footer = () => {
               Alerts
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tab} onPress={() => {}}>
+          <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("EmployeeProfileMenu")}>
             <MaterialIcons name="person" size={24} color="black" />
             <Text
               style={[styles.label, active === "Profile" && styles.activeText]}
@@ -84,4 +85,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-export default Footer;
+export default EmployerFooter;

@@ -8,7 +8,6 @@ import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 
 const JobPublishedPage = ({ route }) => {
   const { gig } = route.params;
-
   const navigation = useNavigation();
   return (
     <>
@@ -45,7 +44,7 @@ const JobPublishedPage = ({ route }) => {
 
             <TouchableOpacity
               style={[styles.button, { borderColor: "#ccc", borderWidth: 1 }]}
-              onPress={navigation.navigate("Dashboard")}
+              onPress={()=>navigation.navigate("EmployerJobPost")}
             >
               <Text style={styles.buttonText}>Continue without boosting</Text>
             </TouchableOpacity>

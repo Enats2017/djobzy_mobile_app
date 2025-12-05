@@ -14,8 +14,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Home from "./Screens/HomeScreen/Home";
 import SliderScreen from "./Screens/HomeScreen/SliderScreen";
 import FourthScreen from "./Screens/HomeScreen/FourthScreen";
-import Employer from "./Screens/Employer/Employer";
-import Employee from "./Screens/Employee/Employee";
 import Login from "./Screens/LoginPage/Login";
 import Signup from "./Screens/RegisterPage/Signup";
 import Dashboard from "./Screens/DashboardPage/Dashboard";
@@ -28,7 +26,7 @@ import JobPublishedPage from "./Screens/JobCreatePage/JobPublishedPage";
 import JobBoostPaymentSection from "./Screens/JobCreatePage/JobBoostPaymentSection";
 import EmployerDashboard from "./Screens/EmployerDashboardPage/EmployerDashboard";
 import EmployerContracts from "./Screens/EmployerJobs/EmployerContracts";
-import MyJobPost from "./Screens/EmployerJobs/MyJobPost";
+import EmployerJobPost from "./Screens/EmployerJobs/EmployerJobPost";
 import DeactivatedJobs from "./Screens/EmployerJobs/DeactivatedJobs";
 import Wallet from "./Screens/Wallet/Wallet";
 import MyCurrentBiddingProfile from "./Screens/EmployeeJobs/MyCurrentBiddingProfile";
@@ -54,6 +52,7 @@ import BlogPage from "./Screens/ProfileMenuPAge/BlogPage";
 import PostJobDetails from "./Screens/ContractPage/PostJobDetails";
 import ReceiveApplication from "./Screens/ContractPage/ReceiveApplication";
 import EmployerSentOffer from "./Screens/ContractPage/EmployerSentOffer";
+import ActiveContract from "./Screens/ContractPage/ActiveContract";
 import ProfileEditPage from "./Screens/ProfileMenuPAge/ProfileEditPage";
 import ProfileBoostPage from "./Screens/ProfileMenuPAge/ProfileBoostPage";
 import GeneralSetting from "./Screens/ProfileMenuPAge/GeneralSetting";
@@ -70,6 +69,11 @@ import FeedChat from "./Screens/SocialMediaPage/FeedChat";
 import ChatCommunication from "./Screens/SocialMediaPage/ChatCommunication";
 import CreateFeedPost from "./Screens/SocialMediaPage/CreateFeedPost";
 import NotificationScreen from "./Screens/EmployerHirePage/NotificationScreen";
+import Followers from "./Screens/SocialMediaPage/Followers";
+import SendJobOffer from "./Screens/EmployerHirePage/SendJobOffer";
+ import DeactivedDetailsPage from "./Screens/ContractPage/DeactivedDetailsPage";
+ import ViewBoostJobs from "./Screens/ContractPage/ViewBoostJobs";
+ import ProfileSetting from "./Screens/GeneralSetting/ProfileSetting";
 
 
 const Stack = createStackNavigator();
@@ -106,8 +110,6 @@ const App = () => {
           <Stack.Screen name="Home" component={Home} />
           <Stack.Screen name="SliderScreen" component={SliderScreen} />
           <Stack.Screen name="FourthScreen" component={FourthScreen} />
-          <Stack.Screen name="Employer" component={Employer} />
-          <Stack.Screen name="Employee" component={Employee} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Signup" component={Signup} />
           <Stack.Screen name="Dashboard" component={Dashboard} />
@@ -117,7 +119,7 @@ const App = () => {
           <Stack.Screen name="MyJobPage" component={MyJobPage} />
           <Stack.Screen name="EmployerDashboard" component={EmployerDashboard} /> 
           <Stack.Screen name="EmployerContracts" component={EmployerContracts} />
-          <Stack.Screen name="MyJobPost" component={MyJobPost} />
+          <Stack.Screen name="EmployerJobPost" component={EmployerJobPost} />
           <Stack.Screen name="DeactivatedJobs" component={DeactivatedJobs} />
           <Stack.Screen name="Wallet" component={Wallet} />
           <Stack.Screen name="MyFindJobs" component={MyFindJobs} />
@@ -162,6 +164,12 @@ const App = () => {
           <Stack.Screen name = "ChatCommunication" component={ChatCommunication}/>
           <Stack.Screen name = "CreateFeedPost" component={CreateFeedPost}/>
           <Stack.Screen name = "NotificationScreen" component={NotificationScreen}/>
+          <Stack.Screen name = "Followers" component={Followers}/>
+          <Stack.Screen name = "SendJobOffer" component={SendJobOffer}/>
+          <Stack.Screen name = "DeactivedDetailsPage" component={DeactivedDetailsPage}/>
+          <Stack.Screen name = "ActiveContract" component={ActiveContract}/>
+          <Stack.Screen name = "ViewBoostJobs" component={ViewBoostJobs}/>
+          <Stack.Screen name = "ProfileSetting" component={ProfileSetting}/>
 
          
         </Stack.Navigator>

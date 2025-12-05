@@ -21,8 +21,9 @@ import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ReviewPage from "../JobCreatePage/ReviewPage";
 import Footer from "../../components/Footer";
+import EmployerFooter from "../../components/EmployerFooter";
 
-const PostJobDetails = () => {
+const DeactivedDetailsPage = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [showPayHireModal, setShowPayHireModal] = useState(false);
@@ -30,8 +31,6 @@ const PostJobDetails = () => {
   const [profileData, setProfileData] = useState([]);
   const route = useRoute();
   const { jobId } = route.params || [];
-  console.log(jobId);
-  
   const [postJob, setPostJob] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
   const [gigId, setGigId] = useState(null);
@@ -39,7 +38,6 @@ const PostJobDetails = () => {
   const fetchEmployerJob = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(
         `${API_URL}/view-deactivated-jobs/${jobId}`,
         {
@@ -51,7 +49,6 @@ const PostJobDetails = () => {
       );
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
-      console.log("1111111",data);
       setPostJob(data);
     } catch (err) {
       setError(err.message);
@@ -132,6 +129,9 @@ const PostJobDetails = () => {
             <PageNameHeaderBar title="Details" navigation={navigation} />
           </View>
           <ScrollView>
+             <View style={styles.msgBox}>
+                <Text style={styles.msgtext}>The Job Post is Deactivated By The Employer</Text>
+              </View>
             <View style={styles.titleContainer}>
               <Text style={styles.jobTitle}>{postJob.details?.subject}</Text>
               <Text style={styles.postedTime}>upload at {postJob.details?.created}</Text>
@@ -188,37 +188,42 @@ const PostJobDetails = () => {
               </View>
             </View>
 
-            <View style={styles.cardContainer}>
-              <Text style={styles.cardHeading}>Requirnment</Text>
-              <View style={styles.requirementContainer}>
-                {postJob?.requirement?.map((req, index) => (
-                  <View key={index} style={styles.requirementItem}>
-                    <View style={styles.circleNumber}>
-                      <Text style={styles.circleNumberText}>{index + 1}</Text>
-                    </View>
-                    <Text style={styles.requirementText}>
-                      {req.requirement}
-                    </Text>
+             {postJob?.requirement?.length > 0 && (
+                <View style={styles.cardContainer}>
+                  <Text style={styles.cardHeading}>Requirnment</Text>
+                  <View style={styles.requirementContainer}>
+                    {postJob?.requirement?.map((req, index) => (
+                      <View key={index} style={styles.requirementItem}>
+                        <View style={styles.circleNumber}>
+                          <Text style={styles.circleNumberText}>{index + 1}</Text>
+                        </View>
+                        <Text style={styles.requirementText}>
+                          {req.requirement}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
-            </View>
+                </View>
+            
+              )}
 
-            <View style={styles.cardContainer}>
-              <Text style={styles.cardHeading}>Language</Text>
-              <View style={styles.requirementContainer}>
-                {postJob?.language?.map((req, index) => (
-                  <View key={index} style={styles.requirementItem}>
-                    <View style={styles.circleNumber}>
-                      <Text style={styles.circleNumberText}>{index + 1}</Text>
+            {postJob?.language?.length > 0 && (
+              <View style={styles.cardContainer}>
+                <Text style={styles.cardHeading}>Language</Text>
+                <View style={styles.requirementContainer}>
+                  {postJob?.language?.map((req, index) => (
+                    <View key={index} style={styles.requirementItem}>
+                      <View style={styles.circleNumber}>
+                        <Text style={styles.circleNumberText}>{index + 1}</Text>
+                      </View>
+                      <Text style={styles.requirementText}>
+                        {req.language_name}
+                      </Text>
                     </View>
-                    <Text style={styles.requirementText}>
-                      {req.language_name}
-                    </Text>
-                  </View>
-                ))}
+                  ))}
+                </View>
               </View>
-            </View>
+              )}
             <View style={styles.cardContainer} />
             {postJob?.gigs?.length > 0 && (
               <>
@@ -297,14 +302,7 @@ const PostJobDetails = () => {
                 </View>
               </>
             )}
-            <TouchableOpacity
-              style={styles.deactivateBtn}
-              onPress={() => openDeactivateModal()}
-            >
-              <Text style={styles.deactivateBtnText}>
-                Deactivate & Archive this job
-              </Text>
-            </TouchableOpacity>
+            
           </ScrollView>
           <View>
             <View style={styles.buttonRow}>
@@ -318,16 +316,7 @@ const PostJobDetails = () => {
               >
                 <Text style={styles.buttonEditText}>Edit</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.buttonBoost}
-                onPress={() =>
-                  navigation.navigate("JobBoostPaymentSection", {
-                    gig: postJob.details,
-                  })
-                }
-              >
-                <Text style={styles.buttonBoostText}>Boost</Text>
-              </TouchableOpacity>
+              
             </View>
           </View>
         </View>
@@ -436,41 +425,7 @@ const PostJobDetails = () => {
             </View>
           )}
         </Modal>
-        <Modal
-          visible={showDeactivateModal}
-          animationType="slide"
-          transparent
-          onRequestClose={closeDeactivateModal}
-        >
-          <View style={styles.deActivateModalOverlay}>
-            <View style={styles.deActivateModalImageCard}>
-              <Text style={styles.deActivateModalTitle}>
-                Are you sure you want to deactivate{"\n"}this job post?
-              </Text>
-              <Text style={styles.deActivateModalSubtitle}>
-                After this action, your job will no longer be public. However,
-                we will save it in templates in case you decide to publish it
-                again.
-              </Text>
-
-              <TouchableOpacity
-                style={styles.deActivateModalPrimaryBtn}
-                onPress={() => fetchachiveJob(postJob.details?.gid)}
-              >
-                <Text style={styles.deActivateModalPrimaryBtnText}>
-                  Deactivate & Archive this job
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.deActivateModalSecondaryBtn}
-                onPress={closeDeactivateModal}
-              >
-                <Text style={styles.deActivateModalSecondaryBtnText}>No</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-        <Footer/>
+         <EmployerFooter/>
       </SafeAreaView>
     </>
   );
@@ -957,6 +912,21 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontFamily: "Montserrat_500Medium",
   },
+   msgBox:{
+    borderColor:"#46A282",
+    borderWidth:2,
+    backgroundColor:"#46A2821A",
+    borderRadius:10,
+     paddingVertical:10,
+    justifyContent:"center",
+    alignItems:"center",
+    marginBottom:10,
+   },
+   msgtext:{
+    color:"#46A282",
+    fontFamily:"Montserrat_700Bold",
+    fontSize:14,
+   },
 });
 
-export default PostJobDetails;
+export default DeactivedDetailsPage;

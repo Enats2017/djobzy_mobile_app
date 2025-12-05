@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
   Image,
+  Modal
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import Footer from "../../components/Footer";
@@ -32,6 +33,7 @@ const Dashboard = () => {
   const [hasMore, setHasMore] = useState(true);
   const onEndReachedCalledDuringMomentum = useRef(false);
   const hasFetched = useRef(false);
+   const [menuVisible, setMenuVisible] = useState(false);
 
   const fetchJobs = useCallback(
     async (pageNum = 1) => {
@@ -50,13 +52,11 @@ const Dashboard = () => {
             },
           }
         );
-
         const data = await res.json();
         if (!data?.gigs || data.gigs.length === 0) {
           setHasMore(false);
           return;
         }
-
         setJobs((prev) => {
           const newGigs = data.gigs.filter(
             (gig) => !prev.some((j) => j.gid === gig.gid)
@@ -141,7 +141,52 @@ const Dashboard = () => {
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <HeaderBar />
+          <HeaderBar onMenuPress={() => setMenuVisible(true)} />
+          <Modal transparent visible={menuVisible} animationType="fade">
+          <TouchableOpacity
+            style={styles.overlay}
+            activeOpacity={1}
+            onPress={() => setMenuVisible(false)}
+          >
+            <View style={styles.popup}>
+              <TouchableOpacity
+                style={styles.row}
+                onPress={() => {
+                  setMenuVisible(false);
+                  navigation.navigate("Followers", { activeTab: "following" });
+                }}
+              >
+                <Text style={styles.text}>Followers</Text>
+              </TouchableOpacity>
+              <LineDivider marginVertical={12}/>
+
+              <TouchableOpacity
+                style={styles.row}
+                onPress={() => {
+                  setMenuVisible(false);
+                  navigation.navigate("Followers", { activeTab: "follower" });
+                }}
+              >
+                <Text style={styles.text}>Following</Text>
+              </TouchableOpacity>
+
+              <LineDivider  marginVertical={12}/>
+
+              <TouchableOpacity
+                style={styles.row}
+                onPress={() => {
+                  setMenuVisible(false);
+                  navigation.navigate("PostsPage");
+                }}
+              >
+                <Text style={styles.text}>Posts</Text>
+              </TouchableOpacity>
+             
+
+            </View>
+          </TouchableOpacity>
+          </Modal>
+
 
           {/* Tabs inside scroll */}
           <View style={styles.tabContainer}>
@@ -283,7 +328,6 @@ const Dashboard = () => {
                 />
 
               </View>
-              
 
             </ScrollView>
             </>
@@ -365,13 +409,11 @@ const styles = StyleSheet.create({
     outlineWidth: 1,
     borderRadius: 10,
   },
-
   activeTabText: {
     color: "#ffff",
     fontFamily: "Montserrat_600SemiBold",
     fontSize: 16,
   },
-
   postcontainer: {
     backgroundColor: "#FFFFFF1a",
     marginTop: 25,
@@ -381,7 +423,6 @@ const styles = StyleSheet.create({
   postBox: {
     padding: 7,
   },
-
   input: {
     fontFamily: "Montserrat_400Regular",
     fontSize: 16,
@@ -414,7 +455,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#c3c3c3c3",
   },
-
   feed: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -429,6 +469,27 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: "Montserrat_600SemiBold",
     color: "#fff",
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
+    paddingTop: 45,
+    paddingRight: 15,
+  },
+  popup: {
+    width: 160,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal:8,
+    elevation: 7,
+  },
+ 
+  text: {
+    fontSize: 15,
+    color: "#000",
   },
 });
 

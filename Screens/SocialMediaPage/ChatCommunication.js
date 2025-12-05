@@ -149,7 +149,7 @@ export default function ChatCommunication() {
           </View>
         </KeyboardAvoidingView>
       </View>
-      <Footer/>
+      
     </SafeAreaView>
   );
 }

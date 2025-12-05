@@ -14,22 +14,22 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
 
-export default function MyJobPost() {
+export default function EmployerJobPost() {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
-  const [deactivate, setDeactivate] = useState([]);
+  const [postJob, setPostJob] = useState([]);
 
-  const fetchDeactivate = async () => {
+  const fetchReviews = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(`${API_URL}/deactivated-jobs`, {
+      const response = await fetch(`${API_URL}/my-post-job`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
       const data = await response.json();
-      setDeactivate(data.gigs);
+      setPostJob(data.myJobPosts);
     } catch (error) {
       console.log("API Error:", error);
     } finally {
@@ -37,60 +37,37 @@ export default function MyJobPost() {
     }
   };
   useEffect(() => {
-    fetchDeactivate();
+    fetchReviews();
   }, []);
-
-  const handleReactivate = async (gid) => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/reactivate`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ id: gid }),
-      });
-
-      const data = await response.json();
-      console.log("Reactivate Response:", data);
-
-      if (data.status) {
-        setDeactivate((prev) => prev.filter((job) => job.gid !== gid));
-        navigation.navigate("MyJobPost");
-      }
-    } catch (error) {
-      console.log("Reactivate Error:", error);
-    }
-  };
-
+  
   return (
     <SafeAreaView style={styles.jobpostcontainer}>
       <View style={styles.container}>
         <View style={styles.headerSection}>
           <View style={styles.headerLeft}>
-            <PageNameHeaderBar
-              navigation={navigation}
-              title="My Deactivated Jobs"
-            />
+            <PageNameHeaderBar navigation={navigation} title="My Job Posts" />
+          </View>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.viewBoostedJobsBtn} onPress={()=>navigation.navigate("ViewBoostJobs")}>
+              <Text style={styles.viewBoostedJobsText}>View Boosted Jobs</Text>
+            </TouchableOpacity>
           </View>
         </View>
-        {loading ? (
-          <Loading />
-        ) : (
+        {
+          loading?(
+            <Loading/>
+          ):(
           <ScrollView
-            contentContainerStyle={{paddingBottom:80}}
+            contentContainerStyle={{paddingBottom:100}}
             showsVerticalScrollIndicator={false}
           >
-            {deactivate.length > 0 ? (
-              deactivate.map((item, index) => (
+            {postJob.length > 0 ? (
+              postJob.map((item, index) => (
                 <View key={index} style={styles.jobCard}>
                   <View style={styles.topInfoContainer}>
                     <View style={styles.leftInfo}>
                       <Text style={styles.jobTitle}>{item.subject}</Text>
-                      <Text style={styles.jobId}>Posted {item.created_at}</Text>
+                      <Text style={styles.jobId}>Posted {item.created}</Text>
                     </View>
                     <View style={styles.rightInfo}>
                       <View style={styles.proposalsRow}>
@@ -109,10 +86,7 @@ export default function MyJobPost() {
                       </View>
                       <View style={styles.detailItem}>
                         <Text style={styles.detailLabel}>Hourly Rate :</Text>
-                        <Text style={styles.detailValue}>
-                          {" "}
-                          {item.hour_price ? item.hour_minimum : "N/A"}
-                        </Text>
+                        <Text style={styles.detailValue}> {item.hour_price ? item.hour_minimum : "N/A"}</Text>
                       </View>
                     </View>
                     <View style={styles.detailItem}>
@@ -121,32 +95,26 @@ export default function MyJobPost() {
                         {item.expected_hour ? item.expected_hour : 0}
                       </Text>
                     </View>
-                  </View>
+                  </View>             
                   <View style={styles.jobDescriptionCard}>
-                    <Text style={styles.jobDescriptionLabel}>
-                      Job Description
-                    </Text>
+                    <Text style={styles.jobDescriptionLabel}>Job Description</Text>
                     <Text style={styles.jobDescriptionText}>
                       {item.description}
                     </Text>
-                  </View>
+                  </View>              
                   <View style={styles.buttonContainer}>
                     <TouchableOpacity
                       style={styles.viewBtn}
                       onPress={() =>
-                        navigation.navigate("DeactivedDetailsPage", {
+                        navigation.navigate("PostJobDetails", {
                           jobId: item.request_slug,
                         })
                       }
                     >
                       <Text style={styles.viewBtnText}>View</Text>
                     </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.boostBtn}
-                      onPress={() => handleReactivate(item.gid)}
-                    >
-                      <Text style={styles.boostBtnText}>Reactive</Text>
+                    <TouchableOpacity style={styles.boostBtn}>
+                      <Text style={styles.boostBtnText}>Boost</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -157,8 +125,9 @@ export default function MyJobPost() {
               </Text>
             )}
           </ScrollView>
-        )}
-
+          )
+        }
+      
       </View>
       <EmployerFooter/>
     </SafeAreaView>
@@ -167,24 +136,32 @@ export default function MyJobPost() {
 
 const styles = StyleSheet.create({
   jobpostcontainer: {
-    flex: 1,
-    
+    flex: 1, 
   },
   container:{
     flex:1,
-    backgroundColor:"#222222",
+    backgroundColor: "#222222",
     paddingHorizontal:15
+
   },
   headerSection: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    
+    alignItems: "center", 
   },
-  headerLeft: {
-    flex: 1,
+
+  viewBoostedJobsBtn: {
+    backgroundColor: "#FDBF2D",
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderRadius: 5,
   },
-  
+  viewBoostedJobsText: {
+    color: "#000000",
+    fontSize: 14,
+    fontFamily: "Montserrat_500Medium",
+  },
+ 
   jobCard: {
     backgroundColor: "#ffffff1a",
     borderRadius: 12,
@@ -216,6 +193,7 @@ const styles = StyleSheet.create({
   rightInfo: {
     alignItems: "flex-end",
     justifyContent: "center",
+    // marginLeft: 10,
   },
   proposalsRow: {
     flexDirection: "row",
@@ -223,6 +201,7 @@ const styles = StyleSheet.create({
     gap: 5,
     flexWrap: "wrap",
   },
+
   proposalsLabel: {
     color: "#ffffff",
     fontSize: 12,
@@ -248,18 +227,25 @@ const styles = StyleSheet.create({
     gap: 8,
     flexWrap: "wrap",
   },
+
+  leftColumn: {
+    flex: 1,
+  },
+  rightColumn: {
+    flex: 1,
+  },
   detailItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    flexShrink: 1,
-    flexWrap: "wrap",
   },
+
   detailLabel: {
     color: "#ffffff",
     fontSize: 12,
     fontFamily: "Montserrat_400Regular",
   },
+
   detailValue: {
     color: "#FFFFFF",
     fontSize: 12,

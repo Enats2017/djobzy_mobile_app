@@ -69,7 +69,7 @@ import  ViewHirePage from "./Screens/EmployerHirePage/ViewHirePage";
 import FeedChat from "./Screens/SocialMediaPage/FeedChat";
 import ChatCommunication from "./Screens/SocialMediaPage/ChatCommunication";
 import CreateFeedPost from "./Screens/SocialMediaPage/CreateFeedPost";
-import NotificationScreen from "./Screens/EmployerHirePage/NotificationScreen";
+import NotificationScreen from "./Screens/Notification/NotificationScreen";
 
 
 const Stack = createStackNavigator();

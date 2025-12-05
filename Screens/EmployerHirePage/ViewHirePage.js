@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,11 +14,68 @@ import { useNavigation } from "@react-navigation/native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { FontAwesome } from "@expo/vector-icons";
 import Footer from "../../components/Footer";
+import { useRoute } from "@react-navigation/native";
+import { API_URL } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import EmployerFooter from "../../components/EmployerFooter";
 
 export default function ViewHirePage() {
-  const [dropdownOpen, setDropdownOpen] = React.useState(false);
-  const [selectedJob, setSelectedJob] = React.useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState("");
+  const [profile, setProfile] = useState({});
+  const [gigs, setGigs] = useState([]);
+
+  const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
+  const route = useRoute();
+  const { jobId } = route.params || [];
+
+  const fetchEmployerJob = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/employer_hire/${jobId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch job");
+      const data = await response.json();
+      setProfile(data.profile);
+      setGigs(data.gigs);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchEmployerJob();
+  }, []);
+
+  const handleSelectJob = async (item) => {
+  setDropdownOpen(false);
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const res = await fetch(`${API_URL}/onchange-job-details`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: item.gid,
+        emp_id: profile?.id, 
+      }),
+    });
+    const data = await res.json();
+    navigation.navigate("SendJobOffer", { jobDetails: data});
+  } catch (err) {
+    console.log("Job details fetch error", err);
+  }
+};
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -34,12 +91,12 @@ export default function ViewHirePage() {
                 }}
               />
               <View style={styles.profileTextContent}>
-                <Text style={styles.profileName}>John deo</Text>
+                <Text style={styles.profileName}>{profile?.full_name}</Text>
                 <View style={styles.verificationRow}>
                   <View style={styles.iconTextRow}>
                     <MaterialIcons name="verified" size={18} color="#c3c3c3" />
                     <Text style={styles.verificationText}>
-                      Verification Level: 3/7
+                      Verification Level: {profile?.verification_count}/7
                     </Text>
                   </View>
                   <View style={styles.iconTextRow}>
@@ -54,7 +111,6 @@ export default function ViewHirePage() {
               </View>
             </View>
           </View>
-
           <View style={styles.hireStatsContainer}>
             <View style={styles.hireStatsBox}>
               <Text style={styles.hireStatsLabel}>Total Contracts</Text>
@@ -66,7 +122,6 @@ export default function ViewHirePage() {
               <Text style={styles.hireStatsNumber}>189 CAD</Text>
             </View>
           </View>
-
           <View style={styles.offerSection}>
             <Text style={styles.offerTitle}>Send a job offer</Text>
             <Text style={styles.dropdownLabel}>Choose A Job</Text>
@@ -99,83 +154,26 @@ export default function ViewHirePage() {
               <View style={styles.dropdownDivider} />
               {dropdownOpen && (
                 <ScrollView style={styles.dropdownScrollArea}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedJob("Looking for logo designer");
-                      setDropdownOpen(false);
-                    }}
-                    style={styles.dropdownOption}
-                  >
-                    <Text style={styles.dropdownOptionText}>
-                      Looking for logo designer
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedJob("React Native Developer Required");
-                      setDropdownOpen(false);
-                    }}
-                    style={styles.dropdownOption}
-                  >
-                    <Text style={styles.dropdownOptionText}>
-                      React Native Developer Required
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedJob("Content Writer Needed");
-                      setDropdownOpen(false);
-                    }}
-                    style={styles.dropdownOption}
-                  >
-                    <Text style={styles.dropdownOptionText}>
-                      Content Writer Needed
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedJob("Need Admin Assistant");
-                      setDropdownOpen(false);
-                    }}
-                    style={styles.dropdownOption}
-                  >
-                    <Text style={styles.dropdownOptionText}>
-                      Need Admin Assistant
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedJob("Backend Developer");
-                      setDropdownOpen(false);
-                    }}
-                    style={styles.dropdownOption}
-                  >
-                    <Text style={styles.dropdownOptionText}>
-                      Backend Developer
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedJob("UI/UX Designer");
-                      setDropdownOpen(false);
-                    }}
-                    style={[styles.dropdownOption, styles.dropdownOptionLast]}
-                  >
-                    <Text style={styles.dropdownOptionText}>
-                      UI/UX Designer
-                    </Text>
-                  </TouchableOpacity>
+                  {gigs?.map((item, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => handleSelectJob(item)}
+                      style={[
+                        styles.dropdownOption,
+                        index === gigs.length - 1 && styles.dropdownOptionLast,
+                      ]}
+                    >
+                      <Text style={styles.dropdownOptionText}>
+                        {item.subject}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
                 </ScrollView>
               )}
             </View>
           </View>
         </ScrollView>
-        {selectedJob !== "" && (
+        {/* {selectedJob !== "" && (
           <View style={styles.fixedContinueContainer}>
             <TouchableOpacity
               style={styles.continueButton}
@@ -184,9 +182,9 @@ export default function ViewHirePage() {
               <Text style={styles.continueButtonText}>Continue</Text>
             </TouchableOpacity>
           </View>
-        )}
+        )} */}
       </View>
-      <Footer />
+      <EmployerFooter/>
     </SafeAreaView>
   );
 }
@@ -327,14 +325,14 @@ const styles = StyleSheet.create({
   },
 
   fixedContinueContainer: {
-    position: "absolute", 
-    bottom: 90, 
+    position: "absolute",
+    bottom: 90,
     left: 0,
     right: 0,
     paddingHorizontal: 15,
   },
   continueButton: {
-   backgroundColor: "#d17b68",
+    backgroundColor: "#d17b68",
     paddingVertical: 8,
     borderRadius: 10,
     alignItems: "center",

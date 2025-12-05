@@ -7,7 +7,8 @@ import {
   ScrollView,
   StyleSheet,
   Modal,
-  TextInput
+  TextInput,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, MaterialIcons,Entypo } from "@expo/vector-icons";
@@ -21,27 +22,26 @@ import HeaderBar from "../../components/HeaderBar";
 import { API_ICON, API_URL } from "../../api/ApiUrl";
 import FeedPost from "../SocialMediaPage/FeedPost";
 import Footer from "../../components/Footer";
+import Loading from "../../components/Loading";
+import EmployerFooter from "../../components/EmployerFooter";
+import LineDivider from "../../components/LineDivider";
 
 
 export default function EmployerDashboard() {
   const [activeTab, setActiveTab] = useState("jobs");
   const [employees, setEmployees] = useState([]);
-  const [empDashModal, setEmpDashModal] = useState(true);
+  const [empDashModal, setEmpDashModal] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(1);
   const [liked, setLiked] = useState({});
-
+  const [loading, setLoading] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
   const navigation = useNavigation();
   const closeModal = () => setEmpDashModal(false);
-
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
   const fetchEmployees = async () => {
     try {
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
       console.log(token);
-
       const res = await fetch(`${API_URL}/employer-dashboard`, {
         method: "GET",
         headers: {
@@ -49,43 +49,75 @@ export default function EmployerDashboard() {
           Accept: "application/json",
         },
       });
-
       const data = await res.json();
       setEmployees(data.suggested_profiles);
-    } catch (e) {}
+    } catch (e) {
+
+    }
+    finally {
+      setLoading(false);
+    }
   };
-
-  const toggleLike = async (id) => {
-    setLiked((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-
-    const token = await AsyncStorage.getItem("token");
-
-    await fetch(`${API_URL}/toggle-favorite`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({ employee_id: id }),
-    }).then((res) => res.json());
-  };
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContainer, { paddingBottom: 100 }]}
+        contentContainerStyle={[styles.scrollContainer, { paddingBottom: 100, }]}
       >
-        <HeaderBar />
-        <Employees
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          tabs={{ feeds: "Social Feed", jobs: "Employees" }}
-        />
+        <HeaderBar onMenuPress={() => setMenuVisible(true)} />
+          <Modal transparent visible={menuVisible} animationType="fade">
+          <TouchableOpacity
+            style={styles.overlay}
+            activeOpacity={1}
+            onPress={() => setMenuVisible(false)}
+          >
+            <View style={styles.popup}>
+              <TouchableOpacity
+                style={styles.row}
+                onPress={() => {
+                  setMenuVisible(false);
+                  navigation.navigate("Followers", { activeTab: "following" });
+                }}
+              >
+                <Text style={styles.text}>Followers</Text>
+              </TouchableOpacity>
+              <LineDivider marginVertical={12}/>
+
+              <TouchableOpacity
+                style={styles.row}
+                onPress={() => {
+                  setMenuVisible(false);
+                  navigation.navigate("Followers", { activeTab: "follower" });
+                }}
+              >
+                <Text style={styles.text}>Following</Text>
+              </TouchableOpacity>
+
+              <LineDivider  marginVertical={12}/>
+
+              <TouchableOpacity
+                style={styles.row}
+                onPress={() => {
+                  setMenuVisible(false);
+                  navigation.navigate("PostsPage");
+                }}
+              >
+                <Text style={styles.text}>Posts</Text>
+              </TouchableOpacity>
+             
+
+            </View>
+          </TouchableOpacity>
+          </Modal>
+            <Employees
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              tabs={{ feeds: "Social Feed", jobs: "Employees" }}
+            />
         {activeTab === "feeds" && (
           <ScrollView
             contentContainerStyle={{ paddingBottom: 80 }}
@@ -166,110 +198,6 @@ export default function EmployerDashboard() {
             </View>
           </ScrollView>
         )}
-        {activeTab === "categories" && <RecommendedJobs />}
-        {activeTab === "favourites" && (
-          <View style={{ marginTop: 10 }}>
-            {employees
-              .filter((emp) => liked[emp.id])
-              .map((emp) => (
-                <View style={styles.employeeCard} key={emp.id}>
-                  <View style={styles.cardHeader}>
-                    <Image
-                      source={{
-                        uri:
-                          emp?.photo ||
-                          "https://dummyimage.com/120x120/aaa/fff&text=NA",
-                      }}
-                      style={styles.avatar}
-                    />
-
-                    <View style={styles.infoWrapper}>
-                      <View
-                        style={[
-                          styles.nameStarRow,
-                          { justifyContent: "flex-start" },
-                        ]}
-                      >
-                        <Text style={styles.name}>
-                          {emp?.name || emp?.full_name || "No Name"}
-                        </Text>
-
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            marginLeft: 6,
-                          }}
-                        >
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <FontAwesome
-                              key={star}
-                              name={emp.avg_rating >= star ? "star" : "star-o"}
-                              size={14}
-                              color="#EBBE56"
-                              style={{ marginRight: 2 }}
-                            />
-                          ))}
-                        </View>
-                      </View>
-
-                      <View style={styles.verification}>
-                        <MaterialIcons
-                          name="verified"
-                          size={16}
-                          color="#c3c3c3"
-                        />
-                        <Text style={styles.verificationText}>
-                          Verification Level: {emp?.verification_count || 0}/7
-                        </Text>
-                      </View>
-                    </View>
-
-                    <TouchableOpacity
-                      onPress={() => toggleLike(emp.id)}
-                      style={styles.heartTouchable}
-                    >
-                      <FontAwesome
-                        name={liked[emp.id] ? "heart" : "heart-o"}
-                        size={20}
-                        color={liked[emp.id] ? "#ff0000" : "#c3c3c3"}
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.divider} />
-
-                  <View style={styles.skills}>
-                    {emp?.seller_services_for_search?.map((item, i) => (
-                      <View style={styles.skill} key={i}>
-                        <Text style={styles.skillText}>
-                          {item?.sub_services?.subname || "Skill"}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-
-                  <TouchableOpacity
-                    style={styles.profileBtn}
-                    onPress={() =>
-                      navigation.navigate("EmployerProfilePage", {
-                        name: emp.name,
-                      })
-                    }
-                  >
-                    <Text style={styles.profileBtnText}>View Profile</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-
-            {employees.filter((e) => liked[e.id]).length === 0 && (
-              <Text style={{ color: "#fff", marginTop: 20 }}>
-                No favourite employees yet.
-              </Text>
-            )}
-          </View>
-        )}
-
         {activeTab === "jobs" && (
           <>
             <View style={styles.header}>
@@ -285,7 +213,6 @@ export default function EmployerDashboard() {
               >
                 <Text style={styles.tabText}>Categories</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
                 style={[
                   styles.smallTab,
@@ -296,7 +223,13 @@ export default function EmployerDashboard() {
                 <Text style={styles.tabText}>Favourite Employees</Text>
               </TouchableOpacity>
             </View>
-
+            {loading ?(
+               <ActivityIndicator
+                size="large"
+                color="#fff"
+                style={styles.loaderOverlay}
+              />
+            ):(
             <View style={styles.cardContainer}>
               {employees.map((emp, index) => (
                 <View style={styles.employeeCard} key={index}>
@@ -316,7 +249,7 @@ export default function EmployerDashboard() {
                         ]}
                       >
                         <Text style={styles.name}>
-                          {emp?.name || emp?.full_name || "No Name"}
+                          {emp?.full_name || "No Name"}
                         </Text>
 
                         <View
@@ -325,10 +258,7 @@ export default function EmployerDashboard() {
                             { justifyContent: "flex-start" },
                           ]}
                         >
-                          <Text style={styles.name}>
-                            {emp?.name || emp?.full_name || "No Name"}
-                          </Text>
-
+                         
                           <View
                             style={{
                               flexDirection: "row",
@@ -392,7 +322,6 @@ export default function EmployerDashboard() {
                       )
                     )}
                   </View>
-
                   <TouchableOpacity
                     style={styles.profileBtn}
                     onPress={() =>
@@ -405,11 +334,11 @@ export default function EmployerDashboard() {
                   </TouchableOpacity>
                 </View>
               ))}
-            </View>
+            </View>   
+            )}
           </>
         )}
       </ScrollView>
-
       <Modal
         animationType="slide"
         transparent={true}
@@ -505,7 +434,7 @@ export default function EmployerDashboard() {
           </View>
         </View>
       </Modal>
-      <Footer/>
+     <EmployerFooter/>
     </SafeAreaView>
   );
 }
@@ -816,5 +745,31 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: "Montserrat_600SemiBold",
     color: "#fff",
+  },
+   overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
+    paddingTop: 80,
+    paddingRight: 15,
+  },
+  popup: {
+    width: 160,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal:8,
+    elevation: 7,
+  },
+ 
+  text: {
+    fontSize: 15,
+    color: "#000",
+  },
+    loaderOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

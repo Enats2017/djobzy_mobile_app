@@ -11,6 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert
 } from "react-native";
 import { API_ICON, API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -60,7 +61,6 @@ const PromoteCategoryPage = () => {
   const filteredServices = services.filter((item) =>
     item.name.toLowerCase().includes(search.toLowerCase())
   );
-
   const handleSelectSub = (service, sub) => {
     addCategory({
       serviceId: service.id,
@@ -68,7 +68,6 @@ const PromoteCategoryPage = () => {
       name: sub.subname,
     });
   };
-
   // Remove selected category
   const handleRemoveSub = (subId) => {
     removeCategory(subId);
@@ -80,6 +79,84 @@ const PromoteCategoryPage = () => {
       [serviceId]: !prev[serviceId],
     }));
   };
+
+  const handlePublish = async () => {
+  const token = await AsyncStorage.getItem("token");
+
+  const {
+    title,
+    description,
+    hourlyRate,
+    totalPrice,
+    expectedTime,
+    images,
+    categories
+  } = useServiceGlobalStore.getState();
+
+  if (!title || !description || categories.length === 0) {
+    Alert.alert("Missing Info", "Please fill all required fields.");
+    return;
+  }
+
+  const services = categories.map(c => c.subId).join(",");
+
+  let formData = new FormData();
+  formData.append("title", title);
+  formData.append("description", description);
+  formData.append("services", services);
+
+  formData.append("hour_minimum_price", hourlyRate);
+  formData.append("hour_maximum_price", hourlyRate);
+  formData.append("fixed_minimum_price", totalPrice);
+  formData.append("fixed_maximum_price", totalPrice);
+
+  formData.append("time_hours", expectedTime);
+  formData.append("select_calendar", "no-calendar");
+
+  formData.append("price_negotiable", hourlyRate == 0 ? 1 : 0);
+
+  formData.append("page_type", 0);
+  formData.append("service_type", 2);
+
+  // Add all images
+  images.forEach((img, index) => {
+    formData.append("attach_service_file[]", {
+      uri: img.uri,
+      type: "image/jpeg",
+      name: `image_${index}.jpg`
+    });
+  });
+
+  try {
+    setLoading(true);
+
+    const response = await fetch(`${API_URL}/save-promote-service`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      body: formData,
+    });
+
+    const result = await response.json();
+    console.log("SAVE RESULT:", result);
+
+    if (result.status === 200) {
+      Alert.alert("Success", "Service Published Successfully!");
+      useServiceGlobalStore.getState().reset();
+    } else {
+      Alert.alert("Error", result.message);
+    }
+
+  } catch (error) {
+    console.log("ERROR:", error);
+    Alert.alert("Error", "API Network Error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <SafeAreaView style={{ backgroundColor: "#222222", flex: 1 }}>
@@ -188,16 +265,9 @@ const PromoteCategoryPage = () => {
                 ))}
               </ScrollView>
               <View style={styles.categoryBtn}>
-                <GradientButton
+               <GradientButton
                   title="Save and Publish"
-                  onPress={() => {
-                    const finalData = useServiceGlobalStore.getState();
-                    console.log("FINAL SERVICE DATA:", finalData);
-
-                    // ▸ Add publish API here later
-                    // navigation.navigate("SuccessPage");
-
-                  }}
+                  onPress={handlePublish}
                 />
               </View>
             </View>

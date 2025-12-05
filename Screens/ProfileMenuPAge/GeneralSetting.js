@@ -40,6 +40,7 @@ const GeneralSetting = () => {
               type="AntDesign"
               icon="profile"
               title="Profile Settings"
+              onPress={() => navigation.navigate("ProfileSetting")}
             />
             <MenuItem type="Font" icon="contact-book" title="Contact Info" onPress={()=>navigation.navigate("UserContactInfo")} />
             <MenuItem

@@ -2,7 +2,7 @@ import React from "react";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { Image, StyleSheet, TouchableOpacity, View, Platform, StatusBar } from "react-native";
 
-const HeaderBar = () => {
+const HeaderBar = ({ onMenuPress }) => {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
@@ -20,7 +20,7 @@ const HeaderBar = () => {
         <TouchableOpacity style={styles.iconWrapper}>
           <Ionicons name="chatbubble-outline" size={20} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconWrapper}>
+        <TouchableOpacity style={styles.iconWrapper} onPress={onMenuPress}>
           <Feather name="menu" size={20} color="#fff" />
         </TouchableOpacity>
       </View>

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import {
@@ -12,11 +12,13 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import { API_URL, API_ICON } from "../../api/ApiUrl";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
 const getResponsiveValues = () => {
@@ -104,17 +106,11 @@ const Login = ({ navigation }) => {
   };
 
   return (
-    <LinearGradient
-      colors={["#1c1c1c", "#2e2a2ac5", "#3a3a3a"]}
-      style={styles.containers}
-    >
-      <KeyboardAwareScrollView
-        contentContainerStyle={styles.scrollContainer}
-        enableOnAndroid
-        extraScrollHeight={20}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={{ flex: 1 }}>
+      <LinearGradient
+        colors={["#1c1c1c", "#2e2a2ac5", "#3a3a3a"]}
+        style={styles.containers}
       >
-
         <View style={styles.container}>
           <View style={styles.logoContainer}>
             <Image
@@ -164,26 +160,34 @@ const Login = ({ navigation }) => {
                 style={[styles.checkbox, remember && styles.checkboxChecked]}
               >
                 {remember && (
-                  <Ionicons name="checkmark" size={checkIconSize} color="#fff" />
+                  <Ionicons
+                    name="checkmark"
+                    size={checkIconSize}
+                    color="#fff"
+                  />
                 )}
               </View>
               <Text style={styles.rememberText}> Remember Me</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate("Forget")}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("PasswordResert")}
+            >
               <Text style={styles.forgotText}>Forgot Password</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.loginBtn}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.loginText}>Log in</Text>
-            )}
-          </TouchableOpacity>
+         
+            <TouchableOpacity
+              style={styles.loginBtn}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.loginText}>Log in</Text>
+              )}
+            </TouchableOpacity>
+          
           <View style={styles.dividerContainer}>
             <View style={styles.line} />
             <Text style={styles.orText}>Or</Text>
@@ -216,8 +220,8 @@ const Login = ({ navigation }) => {
             </Text>
           </Text>
         </View>
-      </KeyboardAwareScrollView>
-    </LinearGradient>
+      </LinearGradient>
+    </SafeAreaView>
   );
 };
 

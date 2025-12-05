@@ -8,6 +8,7 @@ import PageNameHeaderBar from '../../components/PageNameHeaderBar';
 import { API_URL } from '../../api/ApiUrl';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../../components/Loading';
+import EmployerFooter from '../../components/EmployerFooter';
 
 const ReceiveApplication = () => {
     const navigation = useNavigation();
@@ -41,83 +42,91 @@ const ReceiveApplication = () => {
         fetchEmployerJob();
       }, []);
 
-       if (loading) return <Loading />;
+       
 
   return (
     <>
     <SafeAreaView style={{flex:1}}>
         <View style={styles.container}>
             <PageNameHeaderBar title="Receive Application"  navigation={navigation}/>
-           <ScrollView>
-                {proposals.length > 0 ? (
-                    proposals.map((item, index) => (
-                    <View key={index} style={styles.card}>
-                        <View style={styles.cardHeader}>
-                        <View style={styles.avatarWrapperOuter}>
-                            <Image
-                            source={{ uri: item.photo }}
-                            style={styles.avatarImage}
-                            />
-                        </View>
+            {
+              loading?(
+                <Loading/>
+              ):(
+              <ScrollView contentContainerStyle={{paddingBottom:80}}>
+                  {proposals.length > 0 ? (
+                      proposals.map((item, index) => (
+                      <View key={index} style={styles.card}>
+                          <View style={styles.cardHeader}>
+                          <View style={styles.avatarWrapperOuter}>
+                              <Image
+                              source={{ uri: item.photo }}
+                              style={styles.avatarImage}
+                              />
+                          </View>
 
-                        <View style={styles.userInfo}>
-                            <View style={styles.nameStarsRow}>
-                            <Text style={styles.username}>{item.name}</Text>
-                            <View style={styles.starsRow}>
-                                {[...Array(5)].map((_, i) => (
-                                <FontAwesome key={i} name="star" size={10} color="#EBBE56" />
-                                ))}
-                            </View>
-                            </View>
+                          <View style={styles.userInfo}>
+                              <View style={styles.nameStarsRow}>
+                              <Text style={styles.username}>{item.name}</Text>
+                              <View style={styles.starsRow}>
+                                  {[...Array(5)].map((_, i) => (
+                                  <FontAwesome key={i} name="star" size={10} color="#EBBE56" />
+                                  ))}
+                              </View>
+                              </View>
 
-                            <View style={styles.verificationRow}>
-                            <MaterialIcons name="verified" size={16} color="#C3C3C3" />
-                            <Text style={styles.verification}>
-                                Verification Level: {item.verification_count}/7
-                            </Text>
-                            </View>
-                        </View>
+                              <View style={styles.verificationRow}>
+                              <MaterialIcons name="verified" size={16} color="#C3C3C3" />
+                              <Text style={styles.verification}>
+                                  Verification Level: {item.verification_count}/7
+                              </Text>
+                              </View>
+                          </View>
 
-                        <View style={styles.offeredSection}>
-                            <Text style={styles.offeredPriceText}>Offered Price</Text>
-                            <View style={styles.cadButton}>
-                            <Text style={styles.cadButtonText}>CAD {item.bid_price}</Text>
-                            </View>
-                        </View>
-                        </View>
+                          <View style={styles.offeredSection}>
+                              <Text style={styles.offeredPriceText}>Offered Price</Text>
+                              <View style={styles.cadButton}>
+                              <Text style={styles.cadButtonText}>CAD {item.bid_price}</Text>
+                              </View>
+                          </View>
+                          </View>
 
-                        <Text style={styles.title}>{item.subject}</Text>
-                        <Text style={styles.posted}>Posted On: {item.dated}</Text>
+                          <Text style={styles.title}>{item.subject}</Text>
+                          <Text style={styles.posted}>Posted On: {item.dated}</Text>
 
-                        <View style={styles.sectionBox}>
-                        <Text style={styles.sectionTitle}>Introduction Letter</Text>
-                        <Text style={styles.sectionText}>{item.desc_proposal}</Text>
-                        </View>
+                          <View style={styles.sectionBox}>
+                          <Text style={styles.sectionTitle}>Introduction Letter</Text>
+                          <Text style={styles.sectionText}>{item.desc_proposal}</Text>
+                          </View>
 
-                        <View style={styles.sectionBox}>
-                        <Text style={styles.sectionTitle}>Job Description</Text>
-                        <Text style={styles.sectionText}>{item.description}</Text>
-                        </View>
+                          <View style={styles.sectionBox}>
+                          <Text style={styles.sectionTitle}>Job Description</Text>
+                          <Text style={styles.sectionText}>{item.description}</Text>
+                          </View>
 
-                        <View style={styles.actionRow}>
-                        <TouchableOpacity style={styles.viewBtn}   onPress={() => navigation.navigate("PostJobDetails", {jobId: item.request_slug})}>
-                            <Text style={styles.viewBtnText}>View</Text>
-                        </TouchableOpacity>
+                          <View style={styles.actionRow}>
+                          <TouchableOpacity style={styles.viewBtn} onPress={() => navigation.navigate("PostJobDetails", {jobId: item.request_slug})}>
+                              <Text style={styles.viewBtnText}>View</Text>
+                          </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.chatBtn}>
-                            <Text style={styles.chatBtnText}>Chat</Text>
-                        </TouchableOpacity>
-                        </View>
-                    </View>
-                    ))
-                ) : (
-                    <Text style={{ textAlign: "center", marginTop: 50, color: "#fff" }}>
-                    No Applicants Found
-                    </Text>
-                )}
-            </ScrollView>
+                          <TouchableOpacity style={styles.chatBtn}>
+                              <Text style={styles.chatBtnText}>Chat</Text>
+                          </TouchableOpacity>
+                          </View>
+                      </View>
+                      ))
+                  ) : (
+                      <Text style={{ textAlign: "center", marginTop: 50, color: "#fff" }}>
+                      No Applicants Found
+                      </Text>
+                  )}
+              </ScrollView>
+
+              )}
+            
 
         </View>
+        <EmployerFooter/>
     </SafeAreaView>
       
     </>

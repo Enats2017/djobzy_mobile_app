@@ -14,8 +14,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Home from "./Screens/HomeScreen/Home";
 import SliderScreen from "./Screens/HomeScreen/SliderScreen";
 import FourthScreen from "./Screens/HomeScreen/FourthScreen";
-import Employer from "./Screens/Employer/Employer";
-import Employee from "./Screens/Employee/Employee";
 import Login from "./Screens/LoginPage/Login";
 import Signup from "./Screens/RegisterPage/Signup";
 import Dashboard from "./Screens/DashboardPage/Dashboard";
@@ -28,7 +26,7 @@ import JobPublishedPage from "./Screens/JobCreatePage/JobPublishedPage";
 import JobBoostPaymentSection from "./Screens/JobCreatePage/JobBoostPaymentSection";
 import EmployerDashboard from "./Screens/EmployerDashboardPage/EmployerDashboard";
 import EmployerContracts from "./Screens/EmployerJobs/EmployerContracts";
-import MyJobPost from "./Screens/EmployerJobs/MyJobPost";
+import EmployerJobPost from "./Screens/EmployerJobs/EmployerJobPost";
 import DeactivatedJobs from "./Screens/EmployerJobs/DeactivatedJobs";
 import Wallet from "./Screens/Wallet/Wallet";
 import MyCurrentBiddingProfile from "./Screens/EmployeeJobs/MyCurrentBiddingProfile";
@@ -54,6 +52,7 @@ import BlogPage from "./Screens/ProfileMenuPAge/BlogPage";
 import PostJobDetails from "./Screens/ContractPage/PostJobDetails";
 import ReceiveApplication from "./Screens/ContractPage/ReceiveApplication";
 import EmployerSentOffer from "./Screens/ContractPage/EmployerSentOffer";
+import ActiveContract from "./Screens/ContractPage/ActiveContract";
 import ProfileEditPage from "./Screens/ProfileMenuPAge/ProfileEditPage";
 import ProfileBoostPage from "./Screens/ProfileMenuPAge/ProfileBoostPage";
 import GeneralSetting from "./Screens/ProfileMenuPAge/GeneralSetting";
@@ -63,14 +62,18 @@ import UserContactInfo from "./Screens/GeneralSetting/UserContactInfo";
 import UserPaymentPage from "./Screens/GeneralSetting/UserPaymentPage";
 import UserNotification from "./Screens/GeneralSetting/UserNotification";
 import UserSecurity from "./Screens/GeneralSetting/UserSecurity";
-import IDVerificationUploadScreen  from"./Screens/GeneralSetting/IDVerificationUploadScreen";
+import IDVerificationUploadScreen from "./Screens/GeneralSetting/IDVerificationUploadScreen";
 import EmployerProfilePage from "./Screens/EmployerHirePage/EmployerProfilePage";
-import  ViewHirePage from "./Screens/EmployerHirePage/ViewHirePage";
+import ViewHirePage from "./Screens/EmployerHirePage/ViewHirePage";
 import FeedChat from "./Screens/SocialMediaPage/FeedChat";
 import ChatCommunication from "./Screens/SocialMediaPage/ChatCommunication";
 import CreateFeedPost from "./Screens/SocialMediaPage/CreateFeedPost";
 import NotificationScreen from "./Screens/Notification/NotificationScreen";
-
+import Followers from "./Screens/SocialMediaPage/Followers";
+import SendJobOffer from "./Screens/EmployerHirePage/SendJobOffer";
+import DeactivedDetailsPage from "./Screens/ContractPage/DeactivedDetailsPage";
+import ViewBoostJobs from "./Screens/ContractPage/ViewBoostJobs";
+import ProfileSetting from "./Screens/GeneralSetting/ProfileSetting";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -106,8 +109,6 @@ const App = () => {
           <Stack.Screen name="Home" component={Home} />
           <Stack.Screen name="SliderScreen" component={SliderScreen} />
           <Stack.Screen name="FourthScreen" component={FourthScreen} />
-          <Stack.Screen name="Employer" component={Employer} />
-          <Stack.Screen name="Employee" component={Employee} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Signup" component={Signup} />
           <Stack.Screen name="Dashboard" component={Dashboard} />
@@ -115,9 +116,9 @@ const App = () => {
           <Stack.Screen name="JobProfile" component={JobProfile} />
           <Stack.Screen name="JobApply" component={JobApplyPage} />
           <Stack.Screen name="MyJobPage" component={MyJobPage} />
-          <Stack.Screen name="EmployerDashboard" component={EmployerDashboard} /> 
+          <Stack.Screen name="EmployerDashboard" component={EmployerDashboard} />
           <Stack.Screen name="EmployerContracts" component={EmployerContracts} />
-          <Stack.Screen name="MyJobPost" component={MyJobPost} />
+          <Stack.Screen name="EmployerJobPost" component={EmployerJobPost} />
           <Stack.Screen name="DeactivatedJobs" component={DeactivatedJobs} />
           <Stack.Screen name="Wallet" component={Wallet} />
           <Stack.Screen name="MyFindJobs" component={MyFindJobs} />
@@ -137,33 +138,37 @@ const App = () => {
           <Stack.Screen name="PasswordResert" component={PasswordResert} />
           <Stack.Screen name="EmployeeProfileMenu" component={EmployeeProfileMenu} />
           <Stack.Screen name="PromoteService" component={PromoteService} />
-          <Stack.Screen name="PromoteCategoryPage" component={PromoteCategoryPage} /> 
+          <Stack.Screen name="PromoteCategoryPage" component={PromoteCategoryPage} />
           <Stack.Screen name="EmployeeAccount" component={EmployeeAccount} />
           <Stack.Screen name="EmployeeVerification" component={EmployeeVerification} />
           <Stack.Screen name="ProfileReviewPage" component={ProfileReviewPage} />
           <Stack.Screen name="ReferralWallet" component={ReferralWallet} />
           <Stack.Screen name="BlogPage" component={BlogPage} />
-          <Stack.Screen name = "PostJobDetails" component={PostJobDetails} />
-          <Stack.Screen name = "ReceiveApplication" component={ReceiveApplication} />
-          <Stack.Screen name = "EmployerSentOffer" component={EmployerSentOffer} />
-          <Stack.Screen name = "ProfileEditPage" component={ProfileEditPage}/>
-          <Stack.Screen name = "ProfileBoostPage" component={ProfileBoostPage}/>
-          <Stack.Screen name = "GeneralSetting" component={GeneralSetting} />
-          <Stack.Screen name = "IdentityVerification" component={IdentityVerification}/>
-          <Stack.Screen name = "AccountSetting" component={AccountSetting} />
-          <Stack.Screen name = "UserContactInfo" component={UserContactInfo} />
-          <Stack.Screen name = "UserPaymentPage" component={UserPaymentPage} />
-          <Stack.Screen name = "UserNotification" component={UserNotification}/>
-          <Stack.Screen name = "UserSecurity" component={UserSecurity} />
-          <Stack.Screen name = "IDVerificationUploadScreen" component={IDVerificationUploadScreen} />
-          <Stack.Screen name = "EmployerProfilePage" component={EmployerProfilePage} />
-          <Stack.Screen name = "ViewHirePage" component={ViewHirePage} />
-          <Stack.Screen name = "FeedChat" component={FeedChat}/>
-          <Stack.Screen name = "ChatCommunication" component={ChatCommunication}/>
-          <Stack.Screen name = "CreateFeedPost" component={CreateFeedPost}/>
-          <Stack.Screen name = "NotificationScreen" component={NotificationScreen}/>
-
-         
+          <Stack.Screen name="PostJobDetails" component={PostJobDetails} />
+          <Stack.Screen name="ReceiveApplication" component={ReceiveApplication} />
+          <Stack.Screen name="EmployerSentOffer" component={EmployerSentOffer} />
+          <Stack.Screen name="ProfileEditPage" component={ProfileEditPage} />
+          <Stack.Screen name="ProfileBoostPage" component={ProfileBoostPage} />
+          <Stack.Screen name="GeneralSetting" component={GeneralSetting} />
+          <Stack.Screen name="IdentityVerification" component={IdentityVerification} />
+          <Stack.Screen name="AccountSetting" component={AccountSetting} />
+          <Stack.Screen name="UserContactInfo" component={UserContactInfo} />
+          <Stack.Screen name="UserPaymentPage" component={UserPaymentPage} />
+          <Stack.Screen name="UserNotification" component={UserNotification} />
+          <Stack.Screen name="UserSecurity" component={UserSecurity} />
+          <Stack.Screen name="IDVerificationUploadScreen" component={IDVerificationUploadScreen} />
+          <Stack.Screen name="EmployerProfilePage" component={EmployerProfilePage} />
+          <Stack.Screen name="ViewHirePage" component={ViewHirePage} />
+          <Stack.Screen name="FeedChat" component={FeedChat} />
+          <Stack.Screen name="ChatCommunication" component={ChatCommunication} />
+          <Stack.Screen name="CreateFeedPost" component={CreateFeedPost} />
+          <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
+          <Stack.Screen name="Followers" component={Followers} />
+          <Stack.Screen name="SendJobOffer" component={SendJobOffer} />
+          <Stack.Screen name="DeactivedDetailsPage" component={DeactivedDetailsPage} />
+          <Stack.Screen name="ActiveContract" component={ActiveContract} />
+          <Stack.Screen name="ViewBoostJobs" component={ViewBoostJobs} />
+          <Stack.Screen name="ProfileSetting" component={ProfileSetting} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

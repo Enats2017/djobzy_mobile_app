@@ -11,6 +11,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -60,142 +62,154 @@ const Signup = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1}}>
-    <LinearGradient
-      colors={["#1c1c1c", "#2e2a2ac5", "#3a3a3a"]}
-      style={styles.containers}
-    >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={styles.container}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require("../../assets/images/Login-icon.png")}
-              style={styles.logo}
-            />
-          </View>
-          <Text style={styles.title}>Create An Account</Text>
-          <Text style={styles.subtitle}>
-            Create an account to explore about our app
-          </Text>
-          <Text style={styles.label}>Full Name/Company Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Full Name/Company Name"
-            placeholderTextColor="#888"
-            value={fullName}
-            onChangeText={setFullName}
-          />
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="xyz@gmail.com"
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <Text style={styles.label}>Password</Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              placeholder="Password"
-              placeholderTextColor="#888"
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
-            >
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={20}
-                color="#888"
-              />
-            </TouchableOpacity>
-          </View>
-
-          <Text style={styles.label}>Referral's username (Optional)</Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              placeholder="Referral's username"
-              placeholderTextColor="#888"
-              value={referralUsername}
-              onChangeText={setReferralUsername}
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
-            >
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={20}
-                color="#888"
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={styles.rememberMe}
-              onPress={() => setRemember(!remember)}
-            >
-              <View
-                style={[styles.checkbox, remember && styles.checkboxChecked]}
-              >
-                {remember && (
-                  <Ionicons name="checkmark" size={14} color="#fff" />
-                )}
+    <SafeAreaView style={{ flex: 1 }}>
+        
+        <LinearGradient
+          colors={["#1c1c1c", "#2e2a2ac5", "#3a3a3a"]}
+          style={styles.containers}
+        >
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+          >
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+            <View style={styles.container}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require("../../assets/images/Login-icon.png")}
+                  style={styles.logo}
+                />
               </View>
-              <Text style={styles.rememberText}>
-                By Signing up, you agree to the
+              <Text style={styles.title}>Create An Account</Text>
+              <Text style={styles.subtitle}>
+                Create an account to explore about our app
               </Text>
-            </TouchableOpacity>
-            <Text style={styles.forgotText}>
-              Terms and Condition{" "}
-              <Text style={{ color: "#fff", textDecorationLine: "none" }}>
-                and
-              </Text>{" "}
-              Privacy Policy
-            </Text>
-          </View>
-          <TouchableOpacity style={styles.loginBtn} onPress={handleRegister}>
-            <Text style={styles.loginText}>Sign Up</Text>
-          </TouchableOpacity>
-          <View style={styles.dividerContainer}>
-            <View style={styles.line} />
-            <Text style={styles.orText}>Or</Text>
-            <View style={styles.line} />
-          </View>
-          <TouchableOpacity style={styles.googleBtn}>
-            <Image
-              source={require("../../assets/images/Google.png")}
-              style={styles.socialIcon}
-            />
-            <Text style={styles.socialText}>Sign In with Google</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.facebookBtn}>
-            <Image
-              source={require("../../assets/images/facebook.png")}
-              style={styles.socialIcon}
-            />
-            <Text style={styles.socialText}>Sign In with Facebook</Text>
-          </TouchableOpacity>
-          <Text style={styles.footerText}>
-            Already have an account?{" "}
-            <Text
-              style={styles.linkText}
-              onPress={() => navigation.navigate("Login")}
-            >
-              Sign in
-            </Text>
-          </Text>
-        </View>
-      </ScrollView>
-    </LinearGradient>
+              <Text style={styles.label}>Full Name/Company Name</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Full Name/Company Name"
+                placeholderTextColor="#888"
+                value={fullName}
+                onChangeText={setFullName}
+              />
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="xyz@gmail.com"
+                placeholderTextColor="#888"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              <Text style={styles.label}>Password</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="Password"
+                  placeholderTextColor="#888"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={20}
+                    color="#888"
+                  />
+                </TouchableOpacity>
+              </View>
 
+              <Text style={styles.label}>Referral's username (Optional)</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="Referral's username"
+                  placeholderTextColor="#888"
+                  value={referralUsername}
+                  onChangeText={setReferralUsername}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={20}
+                    color="#888"
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.row}>
+                <TouchableOpacity
+                  style={styles.rememberMe}
+                  onPress={() => setRemember(!remember)}
+                >
+                  <View
+                    style={[
+                      styles.checkbox,
+                      remember && styles.checkboxChecked,
+                    ]}
+                  >
+                    {remember && (
+                      <Ionicons name="checkmark" size={14} color="#fff" />
+                    )}
+                  </View>
+                  <Text style={styles.rememberText}>
+                    By Signing up, you agree to the
+                  </Text>
+                </TouchableOpacity>
+                <Text style={styles.forgotText}>
+                  Terms and Condition{" "}
+                  <Text style={{ color: "#fff", textDecorationLine: "none" }}>
+                    and
+                  </Text>{" "}
+                  Privacy Policy
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.loginBtn}
+                onPress={handleRegister}
+              >
+                <Text style={styles.loginText}>Sign Up</Text>
+              </TouchableOpacity>
+              <View style={styles.dividerContainer}>
+                <View style={styles.line} />
+                <Text style={styles.orText}>Or</Text>
+                <View style={styles.line} />
+              </View>
+              <TouchableOpacity style={styles.googleBtn}>
+                <Image
+                  source={require("../../assets/images/Google.png")}
+                  style={styles.socialIcon}
+                />
+                <Text style={styles.socialText}>Sign In with Google</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.facebookBtn}>
+                <Image
+                  source={require("../../assets/images/facebook.png")}
+                  style={styles.socialIcon}
+                />
+                <Text style={styles.socialText}>Sign In with Facebook</Text>
+              </TouchableOpacity>
+              <Text style={styles.footerText}>
+                Already have an account?{" "}
+                <Text
+                  style={styles.linkText}
+                  onPress={() => navigation.navigate("Login")}
+                >
+                  Sign in
+                </Text>
+              </Text>
+            </View>
+          </ScrollView>
+      </KeyboardAvoidingView>
+        </LinearGradient>
     </SafeAreaView>
   );
 };

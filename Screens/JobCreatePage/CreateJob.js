@@ -22,16 +22,17 @@ import SetPrice from "./SetPrice";
 import ReviewPage from "./ReviewPage";
 import Footer from "../../components/Footer";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Loading from "../../components/Loading";
 
 const CreateJob = () => {
   const [titleError, setTitleError] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
-
   const [activeTab, setActiveTab] = useState(0);
   const [timeError, setTimeError] = useState(false);
   const [priceError, setPriceError] = useState(false);
   const [hourlyError, setHourlyError] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   const totalSteps = 7;
   const navigation = useNavigation();
@@ -45,7 +46,7 @@ const CreateJob = () => {
   const [fileData, setFileData] = useState({ fileName: null, fileUri: null });
   const [durationData, setDurationData] = useState({
     selectedTerm: "short",
-    selectedOption: "",
+    selectedOption: "1",
     customDays: "",
   });
 
@@ -71,10 +72,10 @@ const CreateJob = () => {
     }
   };
   const submitJob = async (finalData) => {
+      setLoading(true)
     try {
       const token = await AsyncStorage.getItem("token");
       const formData = new FormData();
-
       formData.append("title", jobData.title || "");
       formData.append("description", jobData.description || "");
       formData.append("contractType", contractData?.type || "fixed");
@@ -118,7 +119,6 @@ const CreateJob = () => {
           type: fileData.type || "application/pdf",
         });
       }
-
       const response = await fetch(`${API_URL}/save-job-data`, {
         method: "POST",
         headers: {
@@ -127,23 +127,20 @@ const CreateJob = () => {
         },
         body: formData,
       });
-
       const data = await response.json();
-      console.log(data);
-      if (data.status === 200) {
-        // Alert.alert("Success", "Job submitted successfully!");
-        navigation.navigate("JobPublishedPage", { gig: data.gig });
+      if (data.status === 200) {       
         navigation.navigate("JobPublishedPage", { gig: data.gig });
       } else {
         console.log(data.message);
-
-
         Alert.alert("Error", data.message || "Failed to submit job");
       }
     } catch (error) {
       console.log("Error submitting job:", error);
       Alert.alert("Error", "Something went wrong while submitting job.");
     }
+     finally{
+      setLoading(false)
+     }
   };
   const handleNext = () => {
     setPriceError(false);
@@ -227,7 +224,6 @@ const CreateJob = () => {
         ) {
           return;
         }
-
         setPriceError(false);
         setHourlyError(false);
         const finalData = {
@@ -246,7 +242,6 @@ const CreateJob = () => {
         submitJob(finalData);
     }
   };
-
   return (
     <>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
@@ -340,68 +335,74 @@ const CreateJob = () => {
               opacity: 0.5,
             }}
           />
+          {
+            loading?(
+              <Loading/>
+            ):(
 
-          <View style={styles.contentContainer}>
-            {activeTab === 0 && (
-              <TitleSection
-                jobData={jobData}
-                setJobData={setJobData}
-                titleError={titleError}
-                setTitleError={setTitleError}
-                descriptionError={descriptionError}
-                setDescriptionError={setDescriptionError}
-              />
-            )}
+            <View style={styles.contentContainer}>
+              {activeTab === 0 && (
+                <TitleSection
+                  jobData={jobData}
+                  setJobData={setJobData}
+                  titleError={titleError}
+                  setTitleError={setTitleError}
+                  descriptionError={descriptionError}
+                  setDescriptionError={setDescriptionError}
+                />
+              )}
 
-            {activeTab === 1 && (
-              <Category
-                selectedSubs={selectedSubs}
-                setSelectedSubs={setSelectedSubs}
-                categoryError={categoryError}
-                setCategoryError={setCategoryError}
-              />
-            )}
-            {activeTab === 2 && (
-              <AddressSection
-                contractData={contractData}
-                setContractData={setContractData}
-              />
-            )}
-            {activeTab === 3 && (
-              <FileUpload fileData={fileData} setFileData={setFileData} />
-            )}
-            {activeTab === 4 && (
-              <TimePeriod
-                durationData={durationData}
-                setDurationData={setDurationData}
-                timeError={timeError}
-                setTimeError={setTimeError}
-              />
-            )}
+              {activeTab === 1 && (
+                <Category
+                  selectedSubs={selectedSubs}
+                  setSelectedSubs={setSelectedSubs}
+                  categoryError={categoryError}
+                  setCategoryError={setCategoryError}
+                />
+              )}
+              {activeTab === 2 && (
+                <AddressSection
+                  contractData={contractData}
+                  setContractData={setContractData}
+                />
+              )}
+              {activeTab === 3 && (
+                <FileUpload fileData={fileData} setFileData={setFileData} />
+              )}
+              {activeTab === 4 && (
+                <TimePeriod
+                  durationData={durationData}
+                  setDurationData={setDurationData}
+                  timeError={timeError}
+                  setTimeError={setTimeError}
+                />
+              )}
 
-            {activeTab === 5 && (
-              <SetPrice
-                budgetData={budgetData}
-                setBudgetData={setBudgetData}
-                priceError={priceError}
-                setPriceError={setPriceError}
-                hourlyError={hourlyError}
-                setHourlyError={setHourlyError}
-              />
-            )}
+              {activeTab === 5 && (
+                <SetPrice
+                  budgetData={budgetData}
+                  setBudgetData={setBudgetData}
+                  priceError={priceError}
+                  setPriceError={setPriceError}
+                  hourlyError={hourlyError}
+                  setHourlyError={setHourlyError}
+                />
+              )}
 
-            {activeTab === 6 && (
-              <ReviewPage
-                jobData={jobData}
-                selectedSubs={selectedSubs}
-                contractData={contractData}
-                fileData={fileData}
-                durationData={durationData}
-                budgetData={budgetData}
-                setActiveTab={setActiveTab}
-              />
-            )}
-          </View>
+              {activeTab === 6 && (
+                <ReviewPage
+                  jobData={jobData}
+                  selectedSubs={selectedSubs}
+                  contractData={contractData}
+                  fileData={fileData}
+                  durationData={durationData}
+                  budgetData={budgetData}
+                  setActiveTab={setActiveTab}
+                />
+              )}
+            </View>
+            )
+          }
         </View>
         <View style={styles.sectionBtn}>
           <TouchableOpacity

@@ -7,18 +7,20 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  Share, Platform, ToastAndroid
+  Share,
+  Platform,
+  ToastAndroid,
 } from "react-native";
 import Octicons from "@expo/vector-icons/Octicons";
 import Entypo from "@expo/vector-icons/Entypo";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Ionicons,
   Feather,
   FontAwesome,
   MaterialIcons,
 } from "@expo/vector-icons";
- import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import LineDivider from "../../components/LineDivider";
 import Footer from "../../components/Footer";
@@ -29,72 +31,84 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 
-
 const EmployeeAccount = () => {
   const [copyModel, setCopyModel] = useState(false);
   const [copyText, setCopyText] = useState("");
-  const [loading, setLoading] = useState(false)
+  const [subcategory, setSubcategory] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [shareModel, setShareModel] = useState(false);
   const [downloadModal, setDownloadModal] = useState(false);
-  const [user , setUser] = useState([]);
+  const [user, setUser] = useState([]);
   const [activeTab, setActiveTab] = useState("employee");
   const navigation = useNavigation();
   const route = useRoute();
-  const {name} = route.params || []; 
-   
+  const { name } = route.params || [];
+  const insets = useSafeAreaInsets();
+
+
   //   function openCopyModel() {
   //   setCopyModel(true);
   // }
   // function closeCopyModel() {
   //   setCopyModel(false);
   // }
- const handleCopy = async () => {
-   const link = "https://test.djobzy.com/employee/4545";
-  try {
-     setCopyText(link);
-    await Clipboard.setStringAsync(link);
-    if (Platform.OS === "android") {
-      ToastAndroid.show("Copied to clipboard!", ToastAndroid.SHORT);
-    } else {
-      Alert.alert("Copied!", "Link copied to clipboard.");
+  const handleCopy = async () => {
+    const link = "https://test.djobzy.com/employee/4545";
+    try {
+      setCopyText(link);
+      await Clipboard.setStringAsync(link);
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Copied to clipboard!", ToastAndroid.SHORT);
+      } else {
+        Alert.alert("Copied!", "Link copied to clipboard.");
+      }
+    } catch (error) {
+      console.log("Clipboard Error:", error);
+      alert("Copy failed");
     }
-  } catch (error) {
-    console.log("Clipboard Error:", error);
-    alert("Copy failed");
-  }
-};
-useEffect(() => {
-    const fetchEmployee = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_URL}/employee-profile/${name}`);
-        if (!response.ok) throw new Error("Failed to fetch job");
-        const data = await response.json();
-         setUser(data.profile);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  };
+  const fetchEmployee = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/employee-profile/${name}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      const data = await response.json();
+      setUser(data.editprofile);
+       setSubcategory(data.subcategory);
+    } catch (err) {
+      setError(err.message);
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchEmployee();
-  }, [name]);
+  }, []);
+  
+  const removeCategory = (id) => {
+  setSubcategory((prev) => prev.filter((c) => c.subid !== id));
+};
 
-   const handleShare = async () => {
-      try {
-        await Share.share({
-          message: `Hey! Use my referral code:`,
-        });
-      } catch (error) {
-        if (Platform.OS === "android") {
-          ToastAndroid.show("Unable to share referral code.", ToastAndroid.SHORT);
-        } else {
-          Alert.alert("Error", "Unable to share referral code.");
-        }
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Hey! Use my referral code:`,
+      });
+    } catch (error) {
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Unable to share referral code.", ToastAndroid.SHORT);
+      } else {
+        Alert.alert("Error", "Unable to share referral code.");
       }
-    };
-      if (loading) return <Loading />
+    }
+  };
+  if (loading) return <Loading/>;
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -107,7 +121,9 @@ useEffect(() => {
               <View style={styles.profileRow}>
                 <Image
                   source={{
-                    uri:  user.photo ||"https://randomuser.me/api/portraits/women/44.jpg",
+                    uri:
+                      user.photo ||
+                      "https://randomuser.me/api/portraits/women/44.jpg",
                   }}
                   style={styles.avatar}
                 />
@@ -123,7 +139,9 @@ useEffect(() => {
                       size={14}
                       color="#c3c3c3c3"
                     />
-                    <Text style={styles.infoText}>Verification Level: {user?.verification_count}/7</Text>
+                    <Text style={styles.infoText}>
+                      Verification Level: {user?.verification_count}/7
+                    </Text>
                   </View>
                   <View style={styles.iconbox}>
                     <Entypo name="location-pin" size={14} color="#c3c3c3c3" />
@@ -136,7 +154,7 @@ useEffect(() => {
             <View style={styles.iconRow}>
               <TouchableOpacity
                 style={styles.iconBtn}
-                onPress={()=>setCopyModel(true)}
+                onPress={() => setCopyModel(true)}
               >
                 <Ionicons name="copy" size={20} color="#ffffff" />
                 <Text style={styles.iconText}>Copy</Text>
@@ -147,17 +165,26 @@ useEffect(() => {
                 <Text style={styles.iconText}>Share</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.iconBtn} onPress={()=> setDownloadModal(true)}>
+              <TouchableOpacity
+                style={styles.iconBtn}
+                onPress={() => setDownloadModal(true)}
+              >
                 <MaterialIcons name="download" size={20} color="#ffffff" />
                 <Text style={styles.iconText}>Download</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.iconBtn} onPress={()=>navigation.navigate("ProfileBoostPage") }>
+              <TouchableOpacity
+                style={styles.iconBtn}
+                onPress={() => navigation.navigate("ProfileBoostPage")}
+              >
                 <Ionicons name="rocket" size={20} color="#ffffff" />
                 <Text style={styles.iconText}>Boost</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.iconBtn} onPress={()=>navigation.navigate("ProfileEditPage")}>
+              <TouchableOpacity
+                style={styles.iconBtn}
+                onPress={() => navigation.navigate("ProfileEditPage")}
+              >
                 <Feather name="edit-3" size={20} color="#fff" />
                 <Text style={styles.iconText}>Edit</Text>
               </TouchableOpacity>
@@ -172,7 +199,7 @@ useEffect(() => {
                   <Text style={styles.statLabel}>Number of Jobs</Text>
                 </View>
                 <View style={styles.statBox}>
-                  <Text style={styles.statValue}>{user?.money_spent||0}</Text>
+                  <Text style={styles.statValue}>{user?.money_spent || 0}</Text>
                   <Text style={styles.statLabel}>Money Earned</Text>
                 </View>
                 <View style={styles.statBox}>
@@ -192,7 +219,7 @@ useEffect(() => {
                 style={{ marginLeft: 5 }}
               />
             </View>
-            <Text style={styles.infoText2}>{user.about}</Text>
+            <Text style={styles.infoText2}>{user.profile_title_employee}</Text>
           </View>
           <View style={styles.infoBox}>
             <View style={styles.iconbox}>
@@ -205,11 +232,10 @@ useEffect(() => {
               />
             </View>
             <Text style={styles.infoText2}>
-              Hi I am Gabrilla from USA and I am UI/UX and Graphic Designer and
-              also I am Developer. So let’s do work.
+              {user?.about}
             </Text>
           </View>
-          <View style={styles.calendarBox}>
+          {/* <View style={styles.calendarBox}>
             <View style={styles.calendarHeader}>
               <Text style={styles.calendarTitle}>My Services Calendar</Text>
               <Text style={styles.calendarTimezone}>GMT+05:30</Text>
@@ -226,6 +252,33 @@ useEffect(() => {
                 </Text>
               ))}
             </View>
+          </View> */}
+          <View style={styles.infoBox}> 
+            <View style={styles.iconbox}>
+                <Text style={styles.infoTitle}>Employee Category</Text>
+                <FontAwesome
+                  name="question-circle"
+                  size={16}
+                  color="#ffffff"
+                  style={{ marginLeft: 5 }}
+                />
+            </View>
+          </View>
+          <View style={styles.pillsWrapper}>
+            <TouchableOpacity style={styles.addBtn} onPress={() => removeCategory(item.subid)}>
+              <Ionicons name="add" size={18} color="#000" />
+              <Text style={styles.addText}>Add Category</Text>
+            </TouchableOpacity>
+
+            {subcategory.map((item) => (
+              <View key={item.subid} style={styles.categoryPill}>
+                <Text style={styles.categoryText}>{item.subname}</Text>
+
+                <TouchableOpacity onPress={() => removeCategory(item.subid)}>
+                  <Ionicons name="close" size={16} color="#fff" style={{ marginLeft: 6 }} />
+                </TouchableOpacity>
+              </View>
+            ))}
           </View>
         </ScrollView>
       </View>
@@ -236,15 +289,15 @@ useEffect(() => {
         visible={copyModel}
         onRequestClose={() => setCopyModel(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
+        <View style={[styles.modalOverlay]}>
+          <View style={[styles.modalContainer,{ paddingBottom: insets.bottom }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Copy Link</Text>
               <TouchableOpacity onPress={() => setCopyModel(false)}>
                 <Ionicons name="close" size={26} color="#303030" />
               </TouchableOpacity>
             </View>
-            
+
             <Text style={styles.modalSubTitle}>
               Here you can copy a link to any of your profiles.
             </Text>
@@ -253,14 +306,15 @@ useEffect(() => {
               <TouchableOpacity
                 style={[
                   styles.tab,
-                  activeTab === "employee" && styles.activeTabEmployee  ,
+                  activeTab === "employee" && styles.activeTabEmployee,
                 ]}
                 onPress={() => setActiveTab("employee")}
               >
                 <Text
                   style={
                     activeTab === "employee"
-                      ?  styles.activeTabTextEmployee : styles.tabText
+                      ? styles.activeTabTextEmployee
+                      : styles.tabText
                   }
                 >
                   Employee’s Profile
@@ -276,7 +330,9 @@ useEffect(() => {
               >
                 <Text
                   style={
-                    activeTab === "jobs" ? styles.activeTabTextEmployer : styles.tabText
+                    activeTab === "jobs"
+                      ? styles.activeTabTextEmployer
+                      : styles.tabText
                   }
                 >
                   Employer’s Profile
@@ -285,9 +341,7 @@ useEffect(() => {
             </View>
             {activeTab === "employee" ? (
               <View style={styles.inputRow}>
-                <Text style={styles.linkText}>
-                 {copyText}
-                </Text>
+                <Text style={styles.linkText}>{copyText}</Text>
                 <TouchableOpacity style={styles.copyBtn}>
                   <Text style={styles.copyText}>Copy Link</Text>
                   <Ionicons
@@ -300,9 +354,7 @@ useEffect(() => {
               </View>
             ) : (
               <View style={styles.inputRow}>
-                <Text style={styles.linkText}>
-                  {copyText}
-                </Text>
+                <Text style={styles.linkText}>{copyText}</Text>
                 <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
                   <Text style={styles.copyText}>Copy Link</Text>
                   <Ionicons
@@ -316,8 +368,7 @@ useEffect(() => {
             )}
           </View>
         </View>
-      </Modal>
-      {/* Dowload Model */}
+      </Modal> 
       <Modal
         animationType="slide"
         transparent={true}
@@ -325,7 +376,7 @@ useEffect(() => {
         onRequestClose={() => setDownloadModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
+          <View style={[styles.modalContainer,{ paddingBottom: insets.bottom }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Download PDF</Text>
               <TouchableOpacity onPress={() => setDownloadModal(false)}>
@@ -334,12 +385,21 @@ useEffect(() => {
             </View>
 
             <Text style={styles.modalSubTitle}>
-             Please download a live PDF-version of your Profile where you can present your great work experience along with the reviews, verifications and all the other unique aspects of your service. You can use this PDF for an interview or as a certificate which proves your qualification.
+              Please download a live PDF-version of your Profile where you can
+              present your great work experience along with the reviews,
+              verifications and all the other unique aspects of your service.
+              You can use this PDF for an interview or as a certificate which
+              proves your qualification.
             </Text>
-          <View style={styles.button}>
-            <GradientButton title="Download Colored Print"/>
-            <BorderButton  borderColor="#000"  color="#000" fontSize={19} title="Download Black & White Print" />
-          </View>
+            <View style={styles.button}>
+              <GradientButton title="Download Colored Print" />
+              <BorderButton
+                borderColor="#000"
+                color="#000"
+                fontSize={19}
+                title="Download Black & White Print"
+              />
+            </View>
           </View>
         </View>
       </Modal>
@@ -374,7 +434,6 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginRight: 12,
   },
-
   name: {
     color: "#fff",
     fontSize: 18,
@@ -453,7 +512,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     width: "100%",
     paddingVertical: 25,
-    paddingHorizontal:15,
+    paddingHorizontal: 15,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
@@ -502,7 +561,7 @@ const styles = StyleSheet.create({
     outlineWidth: 1,
     borderRadius: 10,
   },
-   activeTabEmployer: {
+  activeTabEmployer: {
     backgroundColor: "#FABB05",
     padding: 10,
     outlineColor: "#FABB05",
@@ -515,7 +574,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_600SemiBold",
     fontSize: 16,
   },
-   activeTabTextEmployer: {
+  activeTabTextEmployer: {
     color: "#303030",
     fontFamily: "Montserrat_600SemiBold",
     fontSize: 16,
@@ -533,7 +592,7 @@ const styles = StyleSheet.create({
     width: "70%",
     color: "#000",
     fontSize: 15,
-    fontFamily:"Montserrat_500Medium",
+    fontFamily: "Montserrat_500Medium",
     paddingHorizontal: 10,
   },
   copyBtn: {
@@ -551,5 +610,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
- 
+  pillsWrapper: {
+  flexDirection: "row",
+  flexWrap: "wrap",         
+  alignItems: "flex-start",
+  gap: 8,                   
+  paddingVertical: 8,
+  paddingHorizontal: 4,
+},
+
+addBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#ffff",
+  paddingVertical: 5,
+  paddingHorizontal: 14,
+  borderRadius: 20,
+  marginRight: 10,
+  marginBottom: 8,        
+},
+addText: {
+  color: "#000",
+  marginLeft: 4,
+  fontSize: 14,
+},
+categoryPill: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#ffffff1a",
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderRadius: 20,
+  marginBottom: 5,         
+},
+categoryText: {
+  color: "#fff",
+  fontSize: 14,
+},
+infoTitle: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "600",
+},
 });

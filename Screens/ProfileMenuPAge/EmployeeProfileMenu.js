@@ -18,6 +18,7 @@ import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import Footer from "../../components/Footer";
 import CustomSwitch from "../../components/CustomSwitch";
+import EmployerFooter from "../../components/EmployerFooter";
 
 const EmployeeProfileMenu = () => {
   const navigation = useNavigation();
@@ -136,8 +137,14 @@ const EmployeeProfileMenu = () => {
                   ) : (
                     <MenuItem icon="add-circle-outline" title="Create a Job" onPress={() => navigation.navigate("CreateJob")}/>
                   )}
-                  <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("Dashboard")}/>
-                  <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployeeAccount", { name: user?.name })}/>
+                   {user?.admin == 0 ? (
+                     <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("Dashboard")}/>
+                     
+                    ):(
+                      <MenuItem icon="grid-outline" title="Dashborad" onPress={() => navigation.navigate("EmployerDashboard")}/>
+                      
+                    )}
+                    <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployeeAccount", { name: user?.name })}/>
                   <MenuItem icon="star-outline" title="Reviews"  onPress={()=> navigation.navigate("ProfileReviewPage")}/>
                   <MenuItem icon="checkmark-done-outline" title="Verification" onPress={()=> navigation.navigate("EmployeeVerification")} />
                   <MenuItem icon="wallet-outline" title="Wallet" onPress={()=> navigation.navigate("Wallet")} />
@@ -146,7 +153,7 @@ const EmployeeProfileMenu = () => {
                   <MenuItem icon="chatbubble-ellipses-outline" title="Chat"  onPress={()=> navigation.navigate("FeedChat")}/>
                   <MenuItem icon="document-outline" title="Blog" onPress={()=>navigation.navigate("BlogPage")} />
                 </View>
-                <TouchableOpacity style={styles.logoutContainer}>
+                <TouchableOpacity style={styles.logoutContainer} onPress={()=>navigation.navigate("Login")}>
                   <Text style={styles.logoutLabel}>Logout</Text>
                   <MaterialIcons name="logout" size={24} color="#ffffff" />
                 </TouchableOpacity>
@@ -155,7 +162,14 @@ const EmployeeProfileMenu = () => {
           )
         }
       </View>
-      <Footer accountType={accountType}/>
+      {user?.admin == 2 ?(
+        <EmployerFooter/>
+
+      ):(
+        
+        <Footer/>
+        
+      )}
     </SafeAreaView>
   );
 };

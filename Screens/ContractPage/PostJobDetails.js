@@ -9,9 +9,11 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
-
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -20,7 +22,7 @@ import { truncateWords } from "../../api/TruncateWords";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ReviewPage from "../JobCreatePage/ReviewPage";
-import Footer from "../../components/Footer";
+import EmployerFooter from "../../components/EmployerFooter";
 
 const PostJobDetails = () => {
   const navigation = useNavigation();
@@ -33,11 +35,11 @@ const PostJobDetails = () => {
   const [postJob, setPostJob] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
   const [gigId, setGigId] = useState(null);
+  const insets = useSafeAreaInsets();
 
   const fetchEmployerJob = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(
         `${API_URL}/employer-job-details-api/${jobId}`,
         {
@@ -77,7 +79,6 @@ const PostJobDetails = () => {
       setShowPayHireModal(true);
     } catch (err) {
       console.log(err);
-
       setError(err.message);
     } finally {
       setModalLoading(false);
@@ -100,7 +101,7 @@ const PostJobDetails = () => {
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
       setShowDeactivateModal(false);
-      navigation.navigate("EmployerContracts ");
+      navigation.navigate("EmployerContracts");
     } catch (err) {
       console.log(err);
 
@@ -121,7 +122,6 @@ const PostJobDetails = () => {
   function closeDeactivateModal() {
     setShowDeactivateModal(false);
   }
-  if (loading) return <Loading />;
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
@@ -129,181 +129,197 @@ const PostJobDetails = () => {
           <View style={styles.header}>
             <PageNameHeaderBar title="Details" navigation={navigation} />
           </View>
-          <ScrollView>
-            <View style={styles.titleContainer}>
-              <Text style={styles.jobTitle}>{postJob.details?.subject}</Text>
-              <Text style={styles.postedTime}>upload at {postJob.details?.created}</Text>
-            </View>
-
-            <View style={styles.cardContainer}>
-              <View style={styles.categoriesContainer}>
-                <Text style={styles.cardHeading}>Categories</Text>
-                <View style={styles.chipRow}>
-                  {postJob?.category?.length > 0 &&
-                    postJob.category.map((cat, i) => (
-                      <View key={i} style={styles.chip}>
-                        <Text style={styles.chipText}>{cat.subname}</Text>
-                      </View>
-                    ))}
-                </View>
-              </View>
-            </View>
-            <View style={styles.cardContainer}>
-              <View style={styles.pricingContainer}>
-                <Text style={styles.cardHeading}>Pricing</Text>
-                <Text style={styles.pricingInfo}>
-                  Total Price:{" "}
-                  <Text style={styles.pricingHighlight}>
-                    CAD {postJob.details?.fixed_minimum}
+          {loading ? (
+            <Loading />
+          ) : (
+            <>
+              <ScrollView>
+                <View style={styles.titleContainer}>
+                  <Text style={styles.jobTitle}>
+                    {postJob.details?.subject}
                   </Text>
-                  {"  "}
-                  Hourly Rate:{" "}
-                  <Text style={styles.pricingHighlight}>
-                    CAD {postJob.details?.hour_minimum}
-                  </Text>
-                </Text>
-                <Text style={styles.projectDuration}>
-                  Project Length:{" "}
-                  <Text style={styles.pricingHighlight}>NA</Text>
-                </Text>
-                <View style={styles.hourInfoRow}>
-                  <Text style={styles.hourInfo}>
-                    {postJob.details?.expected_hour} Hours{" "}
-                  </Text>
-                  <Text style={styles.isInfo}>
-                    is expected for the job to be done.
+                  <Text style={styles.postedTime}>
+                    upload at {postJob.details?.created}
                   </Text>
                 </View>
-              </View>
-            </View>
 
-            <View style={styles.cardContainer}>
-              <View style={styles.descriptionContainer}>
-                <Text style={styles.cardHeading}>Description</Text>
-                <Text style={styles.cardText}>
-                  {postJob.details?.description}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.cardContainer}>
-              <Text style={styles.cardHeading}>Requirnment</Text>
-              <View style={styles.requirementContainer}>
-                {postJob?.requirement?.map((req, index) => (
-                  <View key={index} style={styles.requirementItem}>
-                    <View style={styles.circleNumber}>
-                      <Text style={styles.circleNumberText}>{index + 1}</Text>
-                    </View>
-                    <Text style={styles.requirementText}>
-                      {req.requirement}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.cardContainer}>
-              <Text style={styles.cardHeading}>Language</Text>
-              <View style={styles.requirementContainer}>
-                {postJob?.language?.map((req, index) => (
-                  <View key={index} style={styles.requirementItem}>
-                    <View style={styles.circleNumber}>
-                      <Text style={styles.circleNumberText}>{index + 1}</Text>
-                    </View>
-                    <Text style={styles.requirementText}>
-                      {req.language_name}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-            <View style={styles.cardContainer} />
-            {postJob?.gigs?.length > 0 && (
-              <>
-                <View style={styles.biddingsHeaderRow}>
-                  <Text style={styles.biddingsTitle}>Biddings</Text>
-                  <TouchableOpacity>
-                    <Text style={styles.biddingsSortBy}>Sort By</Text>
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.biddingsSubText}>
-                  {" "}
-                  6 Candidate is bidding for this job{" "}
-                </Text>
-                <View style={styles.biddingsGrid}>
-                  {postJob?.gigs?.map((gig, index) => (
-                    <View key={index} style={styles.biddingCard}>
-                      <View style={styles.biddingCardHeader}>
-                        <Image
-                          source={{ uri: gig.photo }}
-                          style={styles.avatarCircle}
-                        />
-
-                        <View style={styles.candidateInfo}>
-                          <Text style={styles.candidateName}>
-                            {truncateWords(gig.full_name, 3)}
-                          </Text>
-
-                          <View style={styles.starsRow}>
-                            {[...Array(5)].map((_, i) => (
-                              <FontAwesome
-                                key={i}
-                                name="star"
-                                size={10}
-                                color="#EBBE56"
-                              />
-                            ))}
+                <View style={styles.cardContainer}>
+                  <View style={styles.categoriesContainer}>
+                    <Text style={styles.cardHeading}>Categories</Text>
+                    <View style={styles.chipRow}>
+                      {postJob?.category?.length > 0 &&
+                        postJob.category.map((cat, i) => (
+                          <View key={i} style={styles.chip}>
+                            <Text style={styles.chipText}>{cat.subname}</Text>
                           </View>
+                        ))}
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.cardContainer}>
+                  <View style={styles.pricingContainer}>
+                    <Text style={styles.cardHeading}>Pricing</Text>
+                    <Text style={styles.pricingInfo}>
+                      Total Price:{" "}
+                      <Text style={styles.pricingHighlight}>
+                        CAD {postJob.details?.fixed_minimum}
+                      </Text>
+                      {"  "}
+                      Hourly Rate:{" "}
+                      <Text style={styles.pricingHighlight}>
+                        CAD {postJob.details?.hour_minimum}
+                      </Text>
+                    </Text>
+                    <Text style={styles.projectDuration}>
+                      Project Length:{" "}
+                      <Text style={styles.pricingHighlight}>NA</Text>
+                    </Text>
+                    <View style={styles.hourInfoRow}>
+                      <Text style={styles.hourInfo}>
+                        {postJob.details?.expected_hour} Hours{" "}
+                      </Text>
+                      <Text style={styles.isInfo}>
+                        is expected for the job to be done.
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.cardContainer}>
+                  <View style={styles.descriptionContainer}>
+                    <Text style={styles.cardHeading}>Description</Text>
+                    <Text style={styles.cardText}>
+                      {postJob.details?.description}
+                    </Text>
+                  </View>
+                </View>
+                {postJob?.requirement?.length > 0 && (
+                  <View style={styles.cardContainer}>
+                    <Text style={styles.cardHeading}>Requirnment</Text>
+                    <View style={styles.requirementContainer}>
+                      {postJob?.requirement?.map((req, index) => (
+                        <View key={index} style={styles.requirementItem}>
+                          <View style={styles.circleNumber}>
+                            <Text style={styles.circleNumberText}>
+                              {index + 1}
+                            </Text>
+                          </View>
+                          <Text style={styles.requirementText}>
+                            {req.requirement}
+                          </Text>
                         </View>
-                        <TouchableOpacity style={styles.moreCircle}>
-                          <Ionicons
-                            name="arrow-forward-circle"
-                            size={23}
-                            color="#fdbf2d"
-                          />
-                        </TouchableOpacity>
-                      </View>
-                      <View style={styles.biddingDetailsRow}>
-                        <View style={styles.biddingDetailsCol}>
-                          <Text style={styles.biddingDetailsLabel}>
-                            Total Price
-                          </Text>
-                          <Text style={styles.biddingDetailsValue}>
-                            {gig.bid_price} CAD
-                          </Text>
-                        </View>
-                        <View style={styles.verticalDivider} />
-                        <View style={styles.biddingDetailsCol}>
-                          <Text style={styles.biddingDetailsLabel}>
-                            Hourly Rate
-                          </Text>
-                          <Text style={styles.biddingDetailsValue}>
-                            {gig.prop_hourly_rate} CAD
+                      ))}
+                    </View>
+                  </View>
+                )}
+                {postJob?.language?.length > 0 && (
+                  <View style={styles.cardContainer}>
+                    <Text style={styles.cardHeading}>Language</Text>
+                    <View style={styles.requirementContainer}>
+                      {postJob?.language?.map((req, index) => (
+                        <View key={index} style={styles.requirementItem}>
+                          <View style={styles.circleNumber}>
+                            <Text style={styles.circleNumberText}>
+                              {index + 1}
+                            </Text>
+                          </View>
+                          <Text style={styles.requirementText}>
+                            {req.language_name}
                           </Text>
                         </View>
-                      </View>
-                      <TouchableOpacity
-                        style={styles.biddingPayHireBtn}
-                        onPress={() => fetchUserAppliedDetials(gig.prp_id)}
-                      >
-                        <Text style={styles.biddingPayHireBtnText}>
-                          Pay & Hire
-                        </Text>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                <View style={styles.cardContainer} />
+                {postJob?.gigs?.length > 0 && (
+                  <>
+                    <View style={styles.biddingsHeaderRow}>
+                      <Text style={styles.biddingsTitle}>Biddings</Text>
+                      <TouchableOpacity>
+                        <Text style={styles.biddingsSortBy}>Sort By</Text>
                       </TouchableOpacity>
                     </View>
-                  ))}
-                </View>
-              </>
-            )}
-            <TouchableOpacity
-              style={styles.deactivateBtn}
-              onPress={() => openDeactivateModal()}
-            >
-              <Text style={styles.deactivateBtnText}>
-                Deactivate & Archive this job
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
+                    <Text style={styles.biddingsSubText}>
+                      {" "}
+                      6 Candidate is bidding for this job{" "}
+                    </Text>
+                    <View style={styles.biddingsGrid}>
+                      {postJob?.gigs?.map((gig, index) => (
+                        <View key={index} style={styles.biddingCard}>
+                          <View style={styles.biddingCardHeader}>
+                            <Image
+                              source={{ uri: gig.photo }}
+                              style={styles.avatarCircle}
+                            />
+
+                            <View style={styles.candidateInfo}>
+                              <Text style={styles.candidateName}>
+                                {truncateWords(gig.full_name, 3)}
+                              </Text>
+
+                              <View style={styles.starsRow}>
+                                {[...Array(5)].map((_, i) => (
+                                  <FontAwesome
+                                    key={i}
+                                    name="star"
+                                    size={10}
+                                    color="#EBBE56"
+                                  />
+                                ))}
+                              </View>
+                            </View>
+                            <TouchableOpacity style={styles.moreCircle}>
+                              <Ionicons
+                                name="arrow-forward-circle"
+                                size={23}
+                                color="#fdbf2d"
+                              />
+                            </TouchableOpacity>
+                          </View>
+                          <View style={styles.biddingDetailsRow}>
+                            <View style={styles.biddingDetailsCol}>
+                              <Text style={styles.biddingDetailsLabel}>
+                                Total Price
+                              </Text>
+                              <Text style={styles.biddingDetailsValue}>
+                                {gig.bid_price} CAD
+                              </Text>
+                            </View>
+                            <View style={styles.verticalDivider} />
+                            <View style={styles.biddingDetailsCol}>
+                              <Text style={styles.biddingDetailsLabel}>
+                                Hourly Rate
+                              </Text>
+                              <Text style={styles.biddingDetailsValue}>
+                                {gig.prop_hourly_rate} CAD
+                              </Text>
+                            </View>
+                          </View>
+                          <TouchableOpacity
+                            style={styles.biddingPayHireBtn}
+                            onPress={() => fetchUserAppliedDetials(gig.prp_id)}
+                          >
+                            <Text style={styles.biddingPayHireBtnText}>
+                              Pay & Hire
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  </>
+                )}
+                <TouchableOpacity
+                  style={styles.deactivateBtn}
+                  onPress={() => openDeactivateModal()}
+                >
+                  <Text style={styles.deactivateBtnText}>
+                    Deactivate & Archive this job
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </>
+          )}
           <View>
             <View style={styles.buttonRow}>
               <TouchableOpacity
@@ -329,7 +345,7 @@ const PostJobDetails = () => {
             </View>
           </View>
         </View>
-        <Footer />
+
         <Modal
           visible={showPayHireModal}
           animationType="slide"
@@ -340,7 +356,12 @@ const PostJobDetails = () => {
             <ActivityIndicator color="#000" size="large" />
           ) : (
             <View style={styles.payHireModalOverlay}>
-              <View style={styles.payHireModalCard}>
+              <View
+                style={[
+                  styles.payHireModalCard,
+                  { paddingBottom: insets.bottom },
+                ]}
+              >
                 <View style={styles.payHireModalHeader}>
                   <Image
                     source={{
@@ -441,7 +462,12 @@ const PostJobDetails = () => {
           onRequestClose={closeDeactivateModal}
         >
           <View style={styles.deActivateModalOverlay}>
-            <View style={styles.deActivateModalImageCard}>
+            <View
+              style={[
+                styles.deActivateModalImageCard,
+                { paddingBottom: insets.bottom },
+              ]}
+            >
               <Text style={styles.deActivateModalTitle}>
                 Are you sure you want to deactivate{"\n"}this job post?
               </Text>
@@ -468,7 +494,7 @@ const PostJobDetails = () => {
             </View>
           </View>
         </Modal>
-        <Footer/>
+        <EmployerFooter />
       </SafeAreaView>
     </>
   );
@@ -533,13 +559,14 @@ const styles = StyleSheet.create({
 
   pricingInfo: {
     color: "#ffffff",
-    fontFamily: "Montserrat_400Regular",
-    fontSize: 10,
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    paddingVertical: 3,
   },
   pricingHighlight: {
     color: "#ffffff",
-    fontFamily: "Montserrat_600SemiBold",
-    fontSize: 10,
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 14,
   },
   projectDuration: {
     color: "#ffffff",
@@ -562,11 +589,13 @@ const styles = StyleSheet.create({
   hourInfo: {
     color: "#ffffff",
     fontFamily: "Montserrat_500Medium",
+    fontStyle: "italic",
     fontSize: 12,
   },
   isInfo: {
     color: "#ffffff",
-    fontFamily: "Montserrat_400Regular",
+    fontFamily: "Montserrat_500Medium",
+    fontStyle: "italic",
     fontSize: 12,
   },
 
@@ -871,7 +900,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 16,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
-    width: "100%",  
+    width: "100%",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 28,

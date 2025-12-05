@@ -11,10 +11,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import Footer from "../../components/Footer";
+import { useNavigation } from "@react-navigation/native";
 
 export default function BlogPage() {
   const [openDropdown, setOpenDropdown] = useState(false);
   const [selected, setSelected] = useState("Blog Categories");
+  const navigation = useNavigation();
 
   const categories = [
     "All",
@@ -29,7 +31,7 @@ export default function BlogPage() {
     <SafeAreaView style={{flex:1}}>
     <View style={styles.container}>
         <View>
-            <PageNameHeaderBar title="Blog"/>
+            <PageNameHeaderBar title="Blog" navigation={navigation}/>
         </View>
       <View style={styles.dropdownWrapper}>
         <TouchableOpacity

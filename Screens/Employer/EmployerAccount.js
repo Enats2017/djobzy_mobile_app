@@ -88,7 +88,7 @@ const EmployerAccount = () => {
   const fetchEmployer = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(`${API_URL}/employer_profile/${name}`, {
+      const response = await fetch(`${API_URL}/employer-profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",

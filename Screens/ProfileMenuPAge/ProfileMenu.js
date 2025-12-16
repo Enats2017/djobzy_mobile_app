@@ -20,7 +20,7 @@ import Footer from "../../components/Footer";
 import CustomSwitch from "../../components/CustomSwitch";
 import EmployerFooter from "../../components/EmployerFooter";
 
-const EmployeeProfileMenu = () => {
+const ProfileMenu = () => {
   const navigation = useNavigation();
   const [isEmployer, setIsEmployer] = useState(false);
   const [loading, setLoading] = useState(false)
@@ -85,23 +85,21 @@ const EmployeeProfileMenu = () => {
   };
   const toggleSwitch = async (newValue, delay = false) => {
     setIsEmployer(newValue);
-     if (delay) {
+    if (delay) {
       setTimeout(async () => {
         await handleSwitchAccount();
-     }, 500);
+      }, 500);
     } else {
-       await handleSwitchAccount();
-     }
+      await handleSwitchAccount();
+    }
   };
 
-
-   if (loading) return <Loading />
-   if (switchLoading) return <Loading />
+  if (switchLoading) return <Loading />
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {
-          loading ? (<Loading/>) : (
+          loading ? (<Loading />) : (
             <>
               <PageNameHeaderBar title={user?.admin == 2 ? "Employer Profile" : "Employee Profile"} navigation={navigation} />
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
@@ -135,25 +133,25 @@ const EmployeeProfileMenu = () => {
                   {user?.admin == 0 ? (
                     <MenuItem icon="add-circle-outline" title="Promote Services" onPress={() => navigation.navigate("PromoteService")} />
                   ) : (
-                    <MenuItem icon="add-circle-outline" title="Create a Job" onPress={() => navigation.navigate("CreateJob")}/>
+                    <MenuItem icon="add-circle-outline" title="Create a Job" onPress={() => navigation.navigate("CreateJob")} />
                   )}
-                   {user?.admin == 0 ? (
-                     <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("Dashboard")}/>
-                     
-                    ):(
-                      <MenuItem icon="grid-outline" title="Dashborad" onPress={() => navigation.navigate("EmployerDashboard")}/>
-                      
-                    )}
-                    <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployeeAccount", { name: user?.name })}/>
-                  <MenuItem icon="star-outline" title="Reviews"  onPress={()=> navigation.navigate("ProfileReviewPage")}/>
-                  <MenuItem icon="checkmark-done-outline" title="Verification" onPress={()=> navigation.navigate("EmployeeVerification")} />
-                  <MenuItem icon="wallet-outline" title="Wallet" onPress={()=> navigation.navigate("Wallet")} />
-                  <MenuItem icon="settings-outline" title="Setting" onPress={()=> navigation.navigate("GeneralSetting")} />
-                  <MenuItem icon="gift-outline" title="Referral wallet" onPress={()=> navigation.navigate("ReferralWallet")}/>
-                  <MenuItem icon="chatbubble-ellipses-outline" title="Chat"  onPress={()=> navigation.navigate("FeedChat")}/>
-                  <MenuItem icon="document-outline" title="Blog" onPress={()=>navigation.navigate("BlogPage")} />
+                  {user?.admin == 0 ? (
+                    <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("Dashboard")} />
+
+                  ) : (
+                    <MenuItem icon="grid-outline" title="Dashborad" onPress={() => navigation.navigate("EmployerDashboard")} />
+
+                  )}
+                  <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployeeAccount", { name: user?.name })} />
+                  <MenuItem icon="star-outline" title="Reviews" onPress={() => navigation.navigate("ProfileReviewPage")} />
+                  <MenuItem icon="checkmark-done-outline" title="Verification" onPress={() => navigation.navigate("EmployeeVerification")} />
+                  <MenuItem icon="wallet-outline" title="Wallet" onPress={() => navigation.navigate("Wallet")} />
+                  <MenuItem icon="settings-outline" title="Setting" onPress={() => navigation.navigate("GeneralSetting")} />
+                  <MenuItem icon="gift-outline" title="Referral wallet" onPress={() => navigation.navigate("ReferralWallet")} />
+                  <MenuItem icon="chatbubble-ellipses-outline" title="Chat" onPress={() => navigation.navigate("FeedChat")} />
+                  <MenuItem icon="document-outline" title="Blog" onPress={() => navigation.navigate("BlogPage")} />
                 </View>
-                <TouchableOpacity style={styles.logoutContainer} onPress={()=>navigation.navigate("Login")}>
+                <TouchableOpacity style={styles.logoutContainer} onPress={() => navigation.navigate("Login")}>
                   <Text style={styles.logoutLabel}>Logout</Text>
                   <MaterialIcons name="logout" size={24} color="#ffffff" />
                 </TouchableOpacity>
@@ -162,13 +160,13 @@ const EmployeeProfileMenu = () => {
           )
         }
       </View>
-      {user?.admin == 2 ?(
-        <EmployerFooter/>
+      {user?.admin == 2 ? (
+        <EmployerFooter />
 
-      ):(
-        
-        <Footer/>
-        
+      ) : (
+
+        <Footer />
+
       )}
     </SafeAreaView>
   );
@@ -300,4 +298,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default EmployeeProfileMenu;
+export default ProfileMenu;

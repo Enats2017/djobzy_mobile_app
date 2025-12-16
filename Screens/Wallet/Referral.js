@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import NoTransactions from "./NoTransactions";
 
-export default function Incomes({ data }) {
+export default function Referral({ data }) {
   const hasData = data?.data?.length > 0;
   // console.log(hasData);
 
@@ -13,47 +13,33 @@ export default function Incomes({ data }) {
             <View style={styles.visualTableRow}>
               <Text style={styles.visualTableLabel}>Date</Text>
               <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.award_date}</Text>
-            </View>
-            <View style={styles.visualTableHorizontalLine} />
-
-            <View style={styles.visualTableRow}>
-              <Text style={styles.visualTableLabel}>Employer</Text>
-              <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.full_name}</Text>
-            </View>
-            <View style={styles.visualTableHorizontalLine} />
-
-            <View style={styles.visualTableRow}>
-              <Text style={styles.visualTableLabel}>Job Name</Text>
-              <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.subject}</Text>
+              <Text style={styles.visualTableValue}>{item.created_at}</Text>
             </View>
             <View style={styles.visualTableHorizontalLine} />
 
             <View style={styles.visualTableRow}>
               <Text style={styles.visualTableLabel}>Status</Text>
               <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.payment_release_status == 0 ? "In Escrow Account" : "Completed"}</Text>
+              <Text style={styles.visualTableValue}>Completed</Text>
             </View>
             <View style={styles.visualTableHorizontalLine} />
 
             <View style={styles.visualTableRow}>
               <Text style={styles.visualTableLabel}>Amount</Text>
               <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.actual_price_amount}</Text>
+              <Text style={styles.visualTableValue}>{item.amount}</Text>
             </View>
             <View style={styles.visualTableHorizontalLine} />
 
             <View style={styles.visualTableRowLast}>
               <Text style={styles.visualTableLabel}>ID</Text>
               <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.order_reference_id}</Text>
+              <Text style={styles.visualTableValue}>{item.reference_id}</Text>
             </View>
           </View>
         ))
       ) : (
-        <NoTransactions />
+        <NoTransactions title="No Referral yet" />
       )}
     </View>
   );

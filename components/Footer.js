@@ -54,7 +54,7 @@ const Footer = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tab}
-            onPress={() => navigation.navigate("EmployeeProfileMenu")}
+            onPress={() => navigation.navigate("ProfileMenu")}
           >
             <Ionicons
               name="person-outline"

@@ -41,7 +41,7 @@ import CurrentJobPaymentPage from "./Screens/EmployeeJobs/CurrentJobPaymentPage"
 import Details from "./Screens/EmployerJobs/Details";
 import VerificationPage from "./Screens/VerificationPage/VerificationPage";
 import PasswordResert from "./Screens/PasswordResertPage/PasswordResert";
-import EmployeeProfileMenu from "./Screens/ProfileMenuPAge/EmployeeProfileMenu";
+import ProfileMenu from "./Screens/ProfileMenuPAge/ProfileMenu";
 import PromoteService from "./Screens/PromoteServicesPage/PromoteService";
 import PromoteCategoryPage from "./Screens/PromoteServicesPage/PromoteCategoryPage";
 import EmployeeAccount from "./Screens/PromoteServicesPage/EmployeeAccount";
@@ -136,7 +136,7 @@ const App = () => {
           <Stack.Screen name="Details" component={Details} />
           <Stack.Screen name="VerificationPage" component={VerificationPage} />
           <Stack.Screen name="PasswordResert" component={PasswordResert} />
-          <Stack.Screen name="EmployeeProfileMenu" component={EmployeeProfileMenu} />
+          <Stack.Screen name="ProfileMenu" component={ProfileMenu} />
           <Stack.Screen name="PromoteService" component={PromoteService} />
           <Stack.Screen name="PromoteCategoryPage" component={PromoteCategoryPage} />
           <Stack.Screen name="EmployeeAccount" component={EmployeeAccount} />

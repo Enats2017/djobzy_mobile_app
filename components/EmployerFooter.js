@@ -43,7 +43,7 @@ const EmployerFooter = () => {
               Alerts
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("EmployeeProfileMenu")}>
+          <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("ProfileMenu")}>
             <MaterialIcons name="person" size={24} color="black" />
             <Text
               style={[styles.label, active === "Profile" && styles.activeText]}

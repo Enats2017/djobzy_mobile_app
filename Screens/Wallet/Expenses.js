@@ -1,99 +1,67 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, StyleSheet } from "react-native";
+import NoTransactions from "./NoTransactions";
 
-export default function Expenses() {
+export default function Expenses({ data }) {
+  const hasData = data?.data?.length > 0;
+  // console.log(hasData);
+
   return (
     <View style={styles.pageBackground}>
-      <View style={styles.visualTableWrapper}>
-        <View style={styles.visualTableRow}>
-          <Text style={styles.visualTableLabel}>Date</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>2024-11-01</Text>
-        </View>
-        <View style={styles.visualTableHorizontalLine} />
+      {hasData ? (
+        data.data.map((item, index) => (
+          <View key={index} style={styles.visualTableWrapper}>
+            <View style={styles.visualTableRow}>
+              <Text style={styles.visualTableLabel}>Date</Text>
+              <View style={styles.visualTableVerticalAbsolute} />
+              <Text style={styles.visualTableValue}>{item.payment_date}</Text>
+            </View>
+            <View style={styles.visualTableHorizontalLine} />
 
-        <View style={styles.visualTableRow}>
-          <Text style={styles.visualTableLabel}>Employer</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>John Smith</Text>
-        </View>
-        <View style={styles.visualTableHorizontalLine} />
+            <View style={styles.visualTableRow}>
+              <Text style={styles.visualTableLabel}>Employee Name</Text>
+              <View style={styles.visualTableVerticalAbsolute} />
+              <Text style={styles.visualTableValue}>{item.full_name}</Text>
+            </View>
+            <View style={styles.visualTableHorizontalLine} />
 
-        <View style={styles.visualTableRow}>
-          <Text style={styles.visualTableLabel}>Job Name</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>
-            Website Redesign & SEO Optimization Project
-          </Text>
-        </View>
-        <View style={styles.visualTableHorizontalLine} />
+            <View style={styles.visualTableRow}>
+              <Text style={styles.visualTableLabel}>Job Name</Text>
+              <View style={styles.visualTableVerticalAbsolute} />
+              <Text style={styles.visualTableValue}>{item.subject}</Text>
+            </View>
+            <View style={styles.visualTableHorizontalLine} />
 
-        <View style={styles.visualTableRow}>
-          <Text style={styles.visualTableLabel}>Status</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>Completed</Text>
-        </View>
-        <View style={styles.visualTableHorizontalLine} />
+            <View style={styles.visualTableRow}>
+              <Text style={styles.visualTableLabel}>Status</Text>
+              <View style={styles.visualTableVerticalAbsolute} />
+              <Text style={styles.visualTableValue}>{item.payment_release_status == 0 ? "In Escrow Account" : "Completed"}</Text>
+            </View>
+            <View style={styles.visualTableHorizontalLine} />
 
-        <View style={styles.visualTableRow}>
-          <Text style={styles.visualTableLabel}>Amount</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>CAD 250.00</Text>
-        </View>
-        <View style={styles.visualTableHorizontalLine} />
+            <View style={styles.visualTableRow}>
+              <Text style={styles.visualTableLabel}>Amount</Text>
+              <View style={styles.visualTableVerticalAbsolute} />
+              <Text style={styles.visualTableValue}>{item.p} CAD</Text>
+            </View>
+            <View style={styles.visualTableHorizontalLine} />
 
-        <View style={styles.visualTableRowLast}>
-          <Text style={styles.visualTableLabel}>ID</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>#12345678910</Text>
-        </View>
-      </View>
+            <View style={styles.visualTableRow}>
+              <Text style={styles.visualTableLabel}>Processing Fee</Text>
+              <View style={styles.visualTableVerticalAbsolute} />
+              <Text style={styles.visualTableValue}>{item.processing_fee} CAD</Text>
+            </View>
+            <View style={styles.visualTableHorizontalLine} />
 
-      <View style={styles.visualTableWrapper}>
-        <View style={styles.visualTableRow}>
-          <Text style={styles.visualTableLabel}>Date</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>2024-11-01</Text>
-        </View>
-        <View style={styles.visualTableHorizontalLine} />
-
-        <View style={styles.visualTableRow}>
-          <Text style={styles.visualTableLabel}>Employer</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>John Smith</Text>
-        </View>
-        <View style={styles.visualTableHorizontalLine} />
-
-        <View style={styles.visualTableRow}>
-          <Text style={styles.visualTableLabel}>Job Name</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>
-            Website Redesign & SEO Optimization Project
-          </Text>
-        </View>
-        <View style={styles.visualTableHorizontalLine} />
-
-        <View style={styles.visualTableRow}>
-          <Text style={styles.visualTableLabel}>Status</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>Completed</Text>
-        </View>
-        <View style={styles.visualTableHorizontalLine} />
-
-        <View style={styles.visualTableRow}>
-          <Text style={styles.visualTableLabel}>Amount</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>CAD 250.00</Text>
-        </View>
-        <View style={styles.visualTableHorizontalLine} />
-
-        <View style={styles.visualTableRowLast}>
-          <Text style={styles.visualTableLabel}>ID</Text>
-          <View style={styles.visualTableVerticalAbsolute} />
-          <Text style={styles.visualTableValue}>#12345678910</Text>
-        </View>
-      </View>
+            <View style={styles.visualTableRowLast}>
+              <Text style={styles.visualTableLabel}>ID</Text>
+              <View style={styles.visualTableVerticalAbsolute} />
+              <Text style={styles.visualTableValue}>{item.payment_reference_id}</Text>
+            </View>
+          </View>
+        ))
+      ) : (
+        <NoTransactions title="No Expenses yet" />
+      )}
     </View>
   );
 }
@@ -102,7 +70,6 @@ const styles = StyleSheet.create({
   pageBackground: {
     flex: 1,
     backgroundColor: "#222222",
-    // padding: 15
   },
   visualTableWrapper: {
     backgroundColor: "#00000033",

@@ -6,7 +6,6 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import Feather from "@expo/vector-icons/Feather";

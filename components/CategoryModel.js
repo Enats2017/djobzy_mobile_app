@@ -1,33 +1,31 @@
-import { Ionicons } from "@expo/vector-icons";
-import Entypo from "@expo/vector-icons/Entypo";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import {
-  Image,
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Alert
+  Image,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
-import { API_ICON, API_URL } from "../../api/ApiUrl";
-import { SafeAreaView } from "react-native-safe-area-context";
-import PageNameHeaderBar from "../../components/PageNameHeaderBar";
-import GradientButton from "../../components/GradientButton";
-import Footer from "../../components/Footer";
-import Loading from "../../components/Loading";
-import { useServiceGlobalStore } from "./ServiceGlobalStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons, Entypo } from "@expo/vector-icons";
+import { API_URL, API_ICON } from "../api/ApiUrl";
+import { useServiceGlobalStore } from "../Screens/PromoteServicesPage/ServiceGlobalStore";
+import Loading from "./Loading";
+import GradientButton from "./GradientButton";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
-const PromoteCategoryPage = () => {
-  const navigation = useNavigation();
-  const {
-    categories,
-    addCategory,
-    removeCategory,
-  } = useServiceGlobalStore();
+const CategoryModel = ({ visible, onClose, type }) => {
+  const insets = useSafeAreaInsets();
+
+  const { categories, addCategory, removeCategory } = useServiceGlobalStore();
 
   const [search, setSearch] = useState("");
   const [services, setServices] = useState([]);
@@ -68,86 +66,62 @@ const PromoteCategoryPage = () => {
   const handleRemoveSub = (subId) => {
     removeCategory(subId);
   };
-
   const toggleExpand = (serviceId) => {
     setExpandedServices((prev) => ({
       ...prev,
       [serviceId]: !prev[serviceId],
     }));
   };
-
   const handlePublish = async () => {
-  const token = await AsyncStorage.getItem("token");
-
-  const {
-    title,
-    description,
-    hourlyRate,
-    totalPrice,
-    expectedTime,
-    images,
-    categories
-  } = useServiceGlobalStore.getState();
-
-  if (!title || !description || categories.length === 0) {
-    Alert.alert("Missing Info", "Please fill all required fields.");
-    return;
-  }
-
-  const services = categories.map(c => c.subId).join(",");
-
-  let formData = new FormData();
-  formData.append("title", title);
-  formData.append("description", description);
-  formData.append("services", services);
-  formData.append("hour_minimum_price", hourlyRate);
-  formData.append("fixed_minimum_price", totalPrice);
-  formData.append("time_hours", expectedTime);
-  formData.append("select_calendar", "no-calendar");
-  formData.append("price_negotiable", 0);
-  formData.append("page_type", 0);
-  formData.append("service_type", 2);
-
-  images.forEach((img, index) => {
-    formData.append("attach_service_file[]", {
-      uri: img.uri,
-      type: "image/jpeg",
-      name: `image_${index}.jpg`
-    });
-  });
-
-  try {
     setLoading(true);
-    const response = await fetch(`${API_URL}/save-promote-service`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-      body: formData,
-    });
-    const result = await response.json();
-    if (result.status === 200) {
-      Alert.alert("Success", "Service Published Successfully!");
-      useServiceGlobalStore.getState().reset();
-      navigation.navigate("EmployeeAccount")
-    } else {
-      Alert.alert("Error", result.message);
+    const token = await AsyncStorage.getItem("token");
+
+    const { categories } = useServiceGlobalStore.getState();
+
+    const services = categories.map((c) => c.subId).join(",");
+
+    let formData = new FormData();
+
+    formData.append("services", services);
+    formData.append("type", type);
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/save-category-service`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+      const result = await response.json();
+      console.log(result);
+
+      if (result.status === 200) {
+        Alert.alert("Success", "Service Published Successfully!");
+        useServiceGlobalStore.getState().reset();
+        onClose();
+      } else {
+        Alert.alert("Error", result.message);
+      }
+    } catch (error) {
+      Alert.alert("Error", "API Network Error");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.log("ERROR:", error);
-    Alert.alert("Error", "API Network Error");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
-    <SafeAreaView style={{ backgroundColor: "#222222", flex: 1 }}>
-      <View style={styles.container}>
-        <PageNameHeaderBar title="Choose the Categories" navigation={navigation} />
-        {
-          loading ? (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <View style={[styles.modalOverlay]}>
+        <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
+          {loading ? (
             <Loading />
           ) : (
             <View style={styles.Choosecontainer}>
@@ -155,13 +129,13 @@ const PromoteCategoryPage = () => {
                 <Ionicons
                   name="search"
                   size={19}
-                  color="#FFFFFF"
+                  color="#000"
                   style={{ paddingHorizontal: 10 }}
                 />
                 <TextInput
                   style={styles.input}
                   placeholder="Find Categories"
-                  placeholderTextColor="#fff"
+                  placeholderTextColor="#000"
                   value={search}
                   onChangeText={(text) => setSearch(text)}
                 />
@@ -176,15 +150,17 @@ const PromoteCategoryPage = () => {
                   {categories.map((sub) => (
                     <View key={sub.subId} style={styles.selectedPill}>
                       <Text style={styles.selectedText}>{sub.name}</Text>
-                      <TouchableOpacity onPress={() => handleRemoveSub(sub.subId)}>
-                        <Entypo name="cross" size={17} color="#c3c3c3" />
+                      <TouchableOpacity
+                        onPress={() => handleRemoveSub(sub.subId)}
+                      >
+                        <Entypo name="cross" size={17} color="#000" />
                       </TouchableOpacity>
                     </View>
                   ))}
                 </ScrollView>
               </View>
               <ScrollView
-                style={styles.scrolContainer}
+                contentContainerStyle={{ paddingBottom: 0 }}
                 showsVerticalScrollIndicator={false}
               >
                 <Text style={styles.catText}>Categories</Text>
@@ -213,7 +189,7 @@ const PromoteCategoryPage = () => {
                             : "chevron-down"
                         }
                         size={20}
-                        color="#c3c3c3"
+                        color="#000"
                         style={{ marginLeft: "auto" }}
                       />
                     </TouchableOpacity>
@@ -227,7 +203,9 @@ const PromoteCategoryPage = () => {
                             <TouchableOpacity
                               key={sub.subid}
                               style={
-                                isSelected ? styles.selectedSubBox : styles.subBox
+                                isSelected
+                                  ? styles.selectedSubBox
+                                  : styles.subBox
                               }
                               onPress={() => handleSelectSub(service, sub)}
                             >
@@ -248,31 +226,42 @@ const PromoteCategoryPage = () => {
                   </View>
                 ))}
               </ScrollView>
+
               <View style={styles.categoryBtn}>
-               <GradientButton
+                <GradientButton
                   title="Save and Publish"
                   onPress={handlePublish}
                 />
               </View>
             </View>
-          )
-        }
+          )}
+        </View>
       </View>
-      <Footer />
-    </SafeAreaView>
+    </Modal>
   );
 };
 
+export default CategoryModel;
+
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 15,
+  modalOverlay: {
     flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "flex-end",
   },
+  modalContainer: {
+    backgroundColor: "#fff",
+    width: "100%",
+    maxHeight: "66%",
+    paddingHorizontal: 15,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+
   Choosecontainer: {
-    height: "85%",
-
+    height: 510,
+    paddingTop: 15,
   },
-
   heading: {
     fontSize: 18,
     fontWeight: "700",
@@ -285,7 +274,7 @@ const styles = StyleSheet.create({
     fontFamily: "DegularDisplay_600SemiBold",
     fontSize: 22,
     paddingVertical: 12,
-    color: "#FFFFFF",
+    color: "#0000",
   },
 
   searchContainer: {
@@ -293,13 +282,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 10,
     paddingHorizontal: 16,
-    backgroundColor: "#ffffff10",
+    backgroundColor: "#ecedef",
     height: 43,
   },
   input: {
     fontFamily: "Montserrat_400Regular",
     fontSize: 14,
-    color: "#ffff",
+    color: "#000",
   },
   mainCategory: {
     flexDirection: "row",
@@ -307,7 +296,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   iconimage: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#888",
     padding: 8,
     borderRadius: 100,
   },
@@ -318,7 +307,7 @@ const styles = StyleSheet.create({
   mainText: {
     fontSize: 16,
     fontFamily: "Montserrat_500Medium",
-    color: "#f3ededff",
+    color: "#000",
   },
   subCategories: {
     flexDirection: "row",
@@ -329,34 +318,33 @@ const styles = StyleSheet.create({
   },
 
   subBox: {
-    borderColor: "#ffffff1a",
+    borderColor: "#ecedef",
     borderWidth: 1,
-    backgroundColor: "#ffffff1a",
+    backgroundColor: "#ecedef",
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 60,
   },
-
   selectedSubBox: {
-    borderColor: "#ffffff",
+    borderColor: "#000",
     borderWidth: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#000",
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 60,
-    color: "#ffffff1a",
+    color: "#000",
   },
 
   subText: {
     fontFamily: "Montserrat_500Medium",
     fontSize: 11,
-    color: "#ffffff",
+    color: "#000",
     textAlign: "center",
   },
   selectedSubText: {
     fontFamily: "Montserrat_500Medium",
     fontSize: 11,
-    color: "#111010ff",
+    color: "#fff",
     textAlign: "center",
   },
 
@@ -368,9 +356,8 @@ const styles = StyleSheet.create({
   selectedPill: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#ffffff1A",
-    borderColor: "#f3efefff",
-
+    backgroundColor: "#ecedef",
+    borderColor: "#ecedef",
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -378,36 +365,12 @@ const styles = StyleSheet.create({
   selectedText: {
     fontSize: 11,
     fontFamily: "Montserrat_500Medium",
-    color: "#f7f1f1ff",
+    color: "#000",
     marginRight: 5,
   },
   sectionBtn: {
     flexDirection: "column",
     gap: 15,
     marginTop: 13,
-    paddingBottom: 70,
   },
-  button: {
-    marginHorizontal: 5,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#f7f3f3ff",
-    fontSize: 20,
-    fontFamily: "Montserrat_700Bold",
-  },
-  loadingContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    flexDirection: "row",
-  },
-  categoryBtn: {
-    paddingBottom: 47,
-    paddingTop: 4,
-  },
-
 });
-
-export default PromoteCategoryPage;

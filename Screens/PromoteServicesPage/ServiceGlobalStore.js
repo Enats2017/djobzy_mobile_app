@@ -8,13 +8,15 @@ export const useServiceGlobalStore = create((set) => ({
     expectedTime: 0,
     images: [],
     categories: [],
-
+    isEdit: false,
+    editingId: null,
+    
     setField: (field, value) => set({ [field]: value }),
     setExpectedTime: (hours) => set({ expectedTime: hours }),
     addCategory: (category) =>
         set((state) => {
             if (state.categories.some((c) => c.subId === category.subId)) {
-                return state; // prevent duplicates
+                return state; 
             }
             return { categories: [...state.categories, category] };
         }),
@@ -26,7 +28,6 @@ export const useServiceGlobalStore = create((set) => ({
 
     clearCategories: () => set({ categories: [] }),
 
-    // IMAGE FUNCTIONS
     addImage: (img) =>
         set((state) => ({ images: [...state.images, img] })),
 
@@ -35,7 +36,9 @@ export const useServiceGlobalStore = create((set) => ({
             images: state.images.filter((_, i) => i !== index),
         })),
 
-    // RESET EVERYTHING AFTER PUBLISH
+        setEditMode: (id) => set({ isEdit: true, editingId: id }),
+        resetEditMode: () => set({ isEdit: false, editingId: null }),
+
     reset: () =>
         set({
             title: "",

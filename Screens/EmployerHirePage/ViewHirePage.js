@@ -18,6 +18,7 @@ import { useRoute } from "@react-navigation/native";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import EmployerFooter from "../../components/EmployerFooter";
+import Loading from "../../components/Loading";
 
 export default function ViewHirePage() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -25,15 +26,17 @@ export default function ViewHirePage() {
   const [profile, setProfile] = useState({});
   const [gigs, setGigs] = useState([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
   const { jobId } = route.params || [];
+  console.log(jobId);
+  
 
   const fetchEmployerJob = async () => {
     try {
+      setLoading(true)
       const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(`${API_URL}/employer_hire/${jobId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -80,99 +83,107 @@ export default function ViewHirePage() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.hireContainer}>
-        <PageNameHeaderBar navigation={navigation} title="John Deo" />
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.cardBox}>
-            <View style={styles.profileRow}>
-              <Image
-                style={styles.avatar}
-                source={{
-                  uri: "https://randomuser.me/api/portraits/men/47.jpg",
-                }}
-              />
-              <View style={styles.profileTextContent}>
-                <Text style={styles.profileName}>{profile?.full_name}</Text>
-                <View style={styles.verificationRow}>
-                  <View style={styles.iconTextRow}>
-                    <MaterialIcons name="verified" size={18} color="#c3c3c3" />
-                    <Text style={styles.verificationText}>
-                      Verification Level: {profile?.verification_count}/7
-                    </Text>
-                  </View>
-                  <View style={styles.iconTextRow}>
-                    <FontAwesome6
-                      name="location-dot"
-                      size={18}
-                      color="#c3c3c3"
-                    />
-                    <Text style={styles.locationText}>USA</Text>
+        {
+          loading?(
+            <Loading/>
+          ):(
+            <>
+            <PageNameHeaderBar navigation={navigation} title={profile.name} />        
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+              <View style={styles.cardBox}>
+                <View style={styles.profileRow}>
+                  <Image
+                    style={styles.avatar}
+                    source={{
+                      uri: "https://randomuser.me/api/portraits/men/47.jpg",
+                    }}
+                  />
+                  <View style={styles.profileTextContent}>
+                    <Text style={styles.profileName}>{profile?.full_name}</Text>
+                    <View style={styles.verificationRow}>
+                      <View style={styles.iconTextRow}>
+                        <MaterialIcons name="verified" size={18} color="#c3c3c3" />
+                        <Text style={styles.verificationText}>
+                          Verification Level: {profile?.verification_count}/7
+                        </Text>
+                      </View>
+                      <View style={styles.iconTextRow}>
+                        <FontAwesome6
+                          name="location-dot"
+                          size={18}
+                          color="#c3c3c3"
+                        />
+                        <Text style={styles.locationText}>USA</Text>
+                      </View>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-          </View>
-          <View style={styles.hireStatsContainer}>
-            <View style={styles.hireStatsBox}>
-              <Text style={styles.hireStatsLabel}>Total Contracts</Text>
-              <Text style={styles.hireStatsNumber}>9</Text>
-            </View>
-            <View style={styles.hireVerticalDivider} />
-            <View style={styles.hireStatsBox}>
-              <Text style={styles.hireStatsLabel}>Money Earn</Text>
-              <Text style={styles.hireStatsNumber}>189 CAD</Text>
-            </View>
-          </View>
-          <View style={styles.offerSection}>
-            <Text style={styles.offerTitle}>Send a job offer</Text>
-            <Text style={styles.dropdownLabel}>Choose A Job</Text>
-            <View
-              style={[
-                styles.dropdownFullBox,
-                dropdownOpen && styles.dropdownFullBoxActive,
-              ]}
-            >
-              <TouchableOpacity
-                style={styles.dropdownField}
-                onPress={() => setDropdownOpen(!dropdownOpen)}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={
-                    selectedJob
-                      ? styles.dropdownTextSelected
-                      : styles.dropdownTextPlaceholder
-                  }
+              <View style={styles.hireStatsContainer}>
+                <View style={styles.hireStatsBox}>
+                  <Text style={styles.hireStatsLabel}>Total Contracts</Text>
+                  <Text style={styles.hireStatsNumber}>9</Text>
+                </View>
+                <View style={styles.hireVerticalDivider} />
+                <View style={styles.hireStatsBox}>
+                  <Text style={styles.hireStatsLabel}>Money Earn</Text>
+                  <Text style={styles.hireStatsNumber}>189 CAD</Text>
+                </View>
+              </View>
+              <View style={styles.offerSection}>
+                <Text style={styles.offerTitle}>Send a job offer</Text>
+                <Text style={styles.dropdownLabel}>Choose A Job</Text>
+                <View
+                  style={[
+                    styles.dropdownFullBox,
+                    dropdownOpen && styles.dropdownFullBoxActive,
+                  ]}
                 >
-                  {selectedJob ? selectedJob : "Choose A Job"}
-                </Text>
-                <FontAwesome
-                  name={dropdownOpen ? "chevron-up" : "chevron-down"}
-                  size={16}
-                  color="#666666"
-                />
-              </TouchableOpacity>
-              <View style={styles.dropdownDivider} />
-              {dropdownOpen && (
-                <ScrollView style={styles.dropdownScrollArea}>
-                  {gigs?.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => handleSelectJob(item)}
-                      style={[
-                        styles.dropdownOption,
-                        index === gigs.length - 1 && styles.dropdownOptionLast,
-                      ]}
+                  <TouchableOpacity
+                    style={styles.dropdownField}
+                    onPress={() => setDropdownOpen(!dropdownOpen)}
+                    activeOpacity={0.8}
+                  >
+                    <Text
+                      style={
+                        selectedJob
+                          ? styles.dropdownTextSelected
+                          : styles.dropdownTextPlaceholder
+                      }
                     >
-                      <Text style={styles.dropdownOptionText}>
-                        {item.subject}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          </View>
-        </ScrollView>
+                      {selectedJob ? selectedJob : "Choose A Job"}
+                    </Text>
+                    <FontAwesome
+                      name={dropdownOpen ? "chevron-up" : "chevron-down"}
+                      size={16}
+                      color="#666666"
+                    />
+                  </TouchableOpacity>
+                  <View style={styles.dropdownDivider} />
+                  {dropdownOpen && (
+                    <ScrollView style={styles.dropdownScrollArea}>
+                      {gigs?.map((item, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          onPress={() => handleSelectJob(item)}
+                          style={[
+                            styles.dropdownOption,
+                            index === gigs.length - 1 && styles.dropdownOptionLast,
+                          ]}
+                        >
+                          <Text style={styles.dropdownOptionText}>
+                            {item.subject}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  )}
+                </View>
+              </View>
+            </ScrollView>
+            </>
+          )
+        }
         {/* {selectedJob !== "" && (
           <View style={styles.fixedContinueContainer}>
             <TouchableOpacity

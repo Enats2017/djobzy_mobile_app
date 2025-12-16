@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   View,
@@ -23,132 +23,203 @@ import {
 } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import Footer from "../../components/Footer";
+import { useNavigation } from "@react-navigation/native";
+import { API_URL, API_ICON } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Followers = () => {
   const route = useRoute();
   const initialTab = route.params?.activeTab || "following";
   const [activeTab, setActiveTab] = useState(initialTab);
-  const followingData = [
-    {
-      id: 1,
-      name: "Sushi",
-      rating: 5,
-      jobs: 3,
-      img:  "https://randomuser.me/api/portraits/men/44.jpg",
-    },
-    {
-      id: 2,
-      name: "Aman",
-      rating: 4,
-      jobs: 3,
-      img: "https://randomuser.me/api/portraits/men/5.jpg",
-    },
-    {
-      id: 3,
-      name: "Nabil",
-      rating: 4,
-      jobs: 2,
-      img: "https://randomuser.me/api/portraits/men/6.jpg",
-    },
-     {
-      id: 4,
-      name: "Swaym",
-      rating: 4,
-      jobs: 2,
-      img: "https://randomuser.me/api/portraits/men/7.jpg",
-    },
-     {
-      id: 5,
-      name: "Sashi",
-      rating: 4,
-      jobs: 2,
-      img: "https://randomuser.me/api/portraits/women/20.jpg",
-    },
-     {
-      id: 6,
-      name: "Sashi",
-      rating: 4,
-      jobs: 2,
-      img: "https://randomuser.me/api/portraits/women/21.jpg",
-    },
-     {
-      id: 7,
-      name: "Sashi",
-      rating: 4,
-      jobs: 2,
-      img: "https://randomuser.me/api/portraits/women/22.jpg",
-    },
-  ];
+  const navigation = useNavigation();
+  const [followingData, setFollowingData] = useState([]);
+  const [followersData, setFollowersData] = useState([]);
+  const [profile, setProfile] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const followersData = [
-    {
-      id: 1,
-      name: "Sushi",
-      rating: 5,
-      jobs: 3,
-      img: "https://randomuser.me/api/portraits/women/12.jpg",
-    },
-    {
-      id: 2,
-      name: "Ayaush",
-      rating: 4,
-      jobs: 3,
-      img: "https://randomuser.me/api/portraits/men/10.jpg",
-    },
-    {
-      id: 3,
-      name: "Abhishek",
-      rating: 4,
-      jobs: 2,
-      img: "https://randomuser.me/api/portraits/men/15.jpg",
-    },
-     {
-      id: 4,
-      name: "Gulzar",
-      rating: 4,
-      jobs: 2,
-      img: "https://randomuser.me/api/portraits/men/15.jpg",
-    },
-     {
-      id: 5,
-      name: "Sashi",
-      rating: 4,
-      jobs: 2,
-      img: "https://randomuser.me/api/portraits/men/15.jpg",
-    },
-  ];
+  const renderStars = (rating) => {
+    if (!rating || rating <= 0) return "⭐";
+    return "⭐".repeat(Math.round(rating));
+  };
+
+  // const followingData = [
+  //   {
+  //     id: 1,
+  //     name: "Sushi",
+  //     rating: 5,
+  //     jobs: 3,
+  //     img:  "https://randomuser.me/api/portraits/men/44.jpg",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Aman",
+  //     rating: 4,
+  //     jobs: 3,
+  //     img: "https://randomuser.me/api/portraits/men/5.jpg",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Nabil",
+  //     rating: 4,
+  //     jobs: 2,
+  //     img: "https://randomuser.me/api/portraits/men/6.jpg",
+  //   },
+  //    {
+  //     id: 4,
+  //     name: "Swaym",
+  //     rating: 4,
+  //     jobs: 2,
+  //     img: "https://randomuser.me/api/portraits/men/7.jpg",
+  //   },
+  //    {
+  //     id: 5,
+  //     name: "Sashi",
+  //     rating: 4,
+  //     jobs: 2,
+  //     img: "https://randomuser.me/api/portraits/women/20.jpg",
+  //   },
+  //    {
+  //     id: 6,
+  //     name: "Sashi",
+  //     rating: 4,
+  //     jobs: 2,
+  //     img: "https://randomuser.me/api/portraits/women/21.jpg",
+  //   },
+  //    {
+  //     id: 7,
+  //     name: "Sashi",
+  //     rating: 4,
+  //     jobs: 2,
+  //     img: "https://randomuser.me/api/portraits/women/22.jpg",
+  //   },
+  // ];
+
+  // const followersData = [
+  //   {
+  //     id: 1,
+  //     name: "Sushi",
+  //     rating: 5,
+  //     jobs: 3,
+  //     img: "https://randomuser.me/api/portraits/women/12.jpg",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Ayaush",
+  //     rating: 4,
+  //     jobs: 3,
+  //     img: "https://randomuser.me/api/portraits/men/10.jpg",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Abhishek",
+  //     rating: 4,
+  //     jobs: 2,
+  //     img: "https://randomuser.me/api/portraits/men/15.jpg",
+  //   },
+  //    {
+  //     id: 4,
+  //     name: "Gulzar",
+  //     rating: 4,
+  //     jobs: 2,
+  //     img: "https://randomuser.me/api/portraits/men/15.jpg",
+  //   },
+  //    {
+  //     id: 5,
+  //     name: "Sashi",
+  //     rating: 4,
+  //     jobs: 2,
+  //     img: "https://randomuser.me/api/portraits/men/15.jpg",
+  //   },
+  // ];
+
+  const fetchFollowersAndFollowing = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const followingRes = await fetch(`${API_URL}/followings`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const followingJson = await followingRes.json();
+      const followersRes = await fetch(`${API_URL}/followers`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const followersJson = await followersRes.json();
+
+      if (followingJson.status === 200) {
+        setFollowingData(followingJson.liked_users);
+        setProfile(followingJson.profile)
+      }
+      if (followersJson.status === 200) {
+        setFollowersData(followersJson.followers);
+      }
+    } catch (error) {
+      console.log("Followers API error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchFollowersAndFollowing();
+  }, []);
 
   const currentList = activeTab === "following" ? followingData : followersData;
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <View style={styles.row}>
-        <Image source={{ uri: item.img }} style={styles.imglogo} />
-        <View style={{ marginLeft: 8 }}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.rating}>
-            ⭐ {item.rating} 🟢 {item.jobs}
-          </Text>
+        <Image
+          source={{
+            uri: item.profile_image
+              ? item.profile_image
+              : "https://via.placeholder.com/150",
+          }}
+          style={styles.imglogo}
+        />
+
+        <View style={styles.ratingsection}>
+          <View style={styles.ratingrow}>
+            <Text style={styles.name}>{item.full_name}</Text>
+            <Text style={styles.rating}>{renderStars(item.rating)}</Text>
+          </View>
+          <View style={styles.iconbox}>
+            <MaterialIcons name="verified" size={18} color="#34A853" />
+            <Text style={styles.infoText}>{item.verification_count}</Text>
+          </View>  
         </View>
       </View>
 
       {activeTab === "following" ? (
-        <TouchableOpacity style={styles.unfollowBtn}>
+        <TouchableOpacity
+          style={styles.unfollowBtn}
+          // onPress={() => handleUnfollow(item.id)}
+        >
           <Text style={styles.unfollowText}>Unfollow</Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity style={styles.followBtn}>
-          <Text style={styles.followText}>Follow</Text>
-        </TouchableOpacity>
+        !item.is_followed_by_auth_user && (
+          <TouchableOpacity
+            style={styles.followBtn}
+            // onPress={() => handleFollow(item.id)}
+          >
+            <Text style={styles.followText}>Follow</Text>
+          </TouchableOpacity>
+        )
       )}
     </View>
   );
+
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           <View style={styles.Header}>
-            <PageNameHeaderBar />
+            <PageNameHeaderBar navigation={navigation} />
             <SearchBar
               placeholder="My Followers"
               showFilter={false}
@@ -165,7 +236,7 @@ const Followers = () => {
                   style={styles.avatar}
                 />
                 <View style={styles.profileInfoRow}>
-                  <Text style={styles.name}>Aman Yadav</Text>
+                  <Text style={styles.name}>{profile?.full_name}</Text>
                   <View style={styles.iconbox}>
                     <Octicons name="clock-fill" size={12} color="#c3c3c3c3" />
                     <Text style={styles.infoText}>GMT+05:30</Text>
@@ -245,11 +316,11 @@ const Followers = () => {
             data={currentList}
             keyExtractor={(item) => item.id.toString()}
             renderItem={renderItem}
-              ItemSeparatorComponent={() => <LineDivider />}
+            ItemSeparatorComponent={() => <LineDivider />}
             contentContainerStyle={{ paddingBottom: 30 }}
           />
         </View>
-        <Footer/>  
+        <Footer />
       </SafeAreaView>
     </>
   );
@@ -271,20 +342,12 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingVertical: 20,
     paddingHorizontal: 20,
-    marginBottom:15
+    marginBottom: 15,
   },
-  profileinfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+
   profileRow: {
     flexDirection: "row",
-  },
-  avatar: {
-    width: 84,
-    height: 84,
-    borderRadius: 60,
-    marginRight: 12,
+    gap: 10,
   },
 
   name: {
@@ -308,6 +371,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
   },
+  ratingrow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 5,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+
+    gap: 8,
+  },
   statBox: {
     backgroundColor: "#C97863",
     paddingVertical: 16,
@@ -329,8 +403,8 @@ const styles = StyleSheet.create({
   tabWrapper: {
     flexDirection: "row",
     borderRadius: 8,
-    borderColor:"#fff",
-    borderWidth:1,
+    borderColor: "#fff",
+    borderWidth: 1,
     padding: 4,
     marginBottom: 14,
   },
@@ -338,15 +412,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 9.5,
     alignItems: "center",
-     justifyContent: "center",
-    
+    justifyContent: "center",
   },
   activeTab: {
     backgroundColor: "#34A853",
-     borderRadius:5,
+    borderRadius: 5,
     outlineColor: "#34A853",
-    outlineWidth: 6.2
-
+    outlineWidth: 6.2,
   },
   tabText: {
     color: "#aaa",
@@ -361,14 +433,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+
   imglogo: {
-    width: 48,
-    height: 48,
-    borderRadius: 26,
+    width: 52,
+    height: 52,
+    borderRadius: 100,
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  avatar: {
+    width: 84,
+    height: 84,
+    borderRadius: 100,
+    borderWidth: 2,
+    borderColor: "#fff",
   },
   name: {
     color: "#fff",

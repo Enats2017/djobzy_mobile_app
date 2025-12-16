@@ -20,7 +20,7 @@ import Footer from "../../components/Footer";
 import CustomSwitch from "../../components/CustomSwitch";
 import EmployerFooter from "../../components/EmployerFooter";
 
-const ProfileMenu = () => {
+const EmployeeProfileMenu = () => {
   const navigation = useNavigation();
   const [isEmployer, setIsEmployer] = useState(false);
   const [loading, setLoading] = useState(false)
@@ -94,6 +94,8 @@ const ProfileMenu = () => {
     }
   };
 
+
+  if (loading) return <Loading />
   if (switchLoading) return <Loading />
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -137,12 +139,20 @@ const ProfileMenu = () => {
                   )}
                   {user?.admin == 0 ? (
                     <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("Dashboard")} />
-
                   ) : (
                     <MenuItem icon="grid-outline" title="Dashborad" onPress={() => navigation.navigate("EmployerDashboard")} />
-
                   )}
-                  <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployeeAccount", { name: user?.name })} />
+
+                  {user?.admin == 0 ? (
+                    <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployeeAccount", { name: user?.name })} />
+
+                  ) : (
+                    <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployerAccount", { name: user?.name })} />
+
+                  )
+
+                  }
+
                   <MenuItem icon="star-outline" title="Reviews" onPress={() => navigation.navigate("ProfileReviewPage")} />
                   <MenuItem icon="checkmark-done-outline" title="Verification" onPress={() => navigation.navigate("EmployeeVerification")} />
                   <MenuItem icon="wallet-outline" title="Wallet" onPress={() => navigation.navigate("Wallet")} />
@@ -298,4 +308,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default ProfileMenu;
+export default EmployeeProfileMenu;

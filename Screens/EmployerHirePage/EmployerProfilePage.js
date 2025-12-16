@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -29,21 +30,20 @@ import EmployerFooter from "../../components/EmployerFooter";
 export default function EmployerProfilePage({ route }) {
   const navigation = useNavigation();
   const { name } = route?.params ?? {};
+  const [promote, setPromote] = useState([]);
+  const [user, setUser] = useState([]);
+  const [feeds, setFeeds] = useState([]);
+  const [profile, setProfile] = useState([]);
   const [isEmployer, setIsEmployer] = useState(false);
-  const [profile, setProfile] = useState(null);
-  const [gigs, setGigs] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [attachments, setAttachments] = useState([]);
-  const [jobCount, setJobCount] = useState(0);
-  const [moneyEarned, setMoneyEarned] = useState(0);
+  const [subcategory, setSubcategory] = useState([]);
   const [isFollowed, setIsFollowed] = useState(false);
-  const [loading , setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   const fetchEmployeeProfile = async () => {
     try {
-      setLoading(true);
       const token = await AsyncStorage.getItem("token");
-      const res = await fetch(`${API_URL}/employer-profile/${name}`, {
+      const res = await fetch(`${API_URL}/employee/${name}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -51,14 +51,11 @@ export default function EmployerProfilePage({ route }) {
         },
       });
       const data = await res.json();
-      if (data.status === "success") {
-        setProfile(data.profile);
-        setJobCount(data.job_count ?? 0);
-        setMoneyEarned(data.total_price ?? 0);
-        setGigs(data.gigs || []);
-        setCategories(data.subcategories || []);
-        setAttachments(data.user_attachments || []);
-      }
+      setProfile(data);
+      setUser(data.editprofile);
+      setPromote(data.promote);
+      setSubcategory(data.subcategory);
+      setFeeds(data.feeds.data ?? []);
     } catch (e) {
       console.log("ERROR:", e);
     } finally {
@@ -70,211 +67,304 @@ export default function EmployerProfilePage({ route }) {
     if (name) fetchEmployeeProfile();
   }, [name]);
 
-  
-if (loading) return <Loading />
+  const handleSendOffer = async () => {
+  try {
+    setLoading(true);
+    const token = await AsyncStorage.getItem("token");
+    const isLoggedIn = !!token;
+    const formData = new FormData();
+    formData.append("user_check", isLoggedIn);
+    formData.append("serviceId", service?.sid);
+    formData.append("services_title", service?.title);
+    formData.append("hourMinimum", service?.hour_minimum ?? 0);
+    formData.append("hourMaximum", service?.hour_maximum ?? 0);
+    formData.append("priceMinValue", service?.fixed_minimum ?? 0);
+    formData.append("priceMaxValue", service?.fixed_maximum ?? "");
+    formData.append("service_selected_time", service?.selected_time ?? "no-calendar");
+    formData.append("price_negotiable", service?.price_negotiable ?? 0);
+    formData.append("admin_fee", 1.1);
+    // convert array → comma separated
+    if (service?.subcategory_ids?.length) {
+      formData.append(
+        "allSubcategoryIds",
+        service.subcategory_ids.join(",")
+      );
+    }
+
+    // if (!isLoggedIn) {
+    //   formData.append("hiring_job_url", "/login");
+    // }
+
+    const response = await fetch(`${API_URL}/autoJobCreate`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        ...(isLoggedIn && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (data.status === 200) {
+      //navigation.navigate("HiringJobDetails");
+      Alert.alert("Successfully send the data ");
+    } else {
+      Alert.alert("Error", data.message || "Something went wrong");
+    }
+
+  } catch (error) {
+    console.log("Send Offer error:", error);
+    Alert.alert("Error", "Network error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const displayedCategories = showAllCategories
+    ? subcategory
+    : subcategory.slice(0, 5);
+
+  if (loading) return <Loading />;
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.employeeContainer}>
-        <PageNameHeaderBar
-          navigation={navigation}
-          title={profile?.full_name || profile?.name || "Profile"}
-        />
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
-          <View style={styles.cardBox}>
-            <View style={styles.profileRow}>
-              <Image
-                style={styles.avatar}
-                source={{
-                  uri: profile?.photo
-                    ? profile.photo
-                    : "https://dummyimage.com/150x150/ccc/fff.png&text=No+Photo",
-                }}
-              />
-
-              <View style={styles.profileTextContent}>
-                <Text style={styles.profileName}>
-                  {profile?.full_name || profile?.name || "No Name"}
-                </Text>
-
-                <View style={styles.verificationRow}>
-                  <View style={styles.iconTextRow}>
-                    <MaterialIcons name="verified" size={18} color="#c3c3c3" />
-                    <Text style={styles.verificationText}>
-                      Verification Level: {profile?.verification_count || 0}/7
-                    </Text>
-                  </View>
-
-                  <View style={styles.iconTextRow}>
-                    <FontAwesome6
-                      name="location-dot"
-                      size={18}
-                      color="#c3c3c3"
-                    />
-                    <Text style={styles.locationText}>
-                      {profile?.address ?? "Unknown"}
-                    </Text>
+        <PageNameHeaderBar navigation={navigation} title={user.full_name} />
+        {loading ? (
+          <Loading />
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
+          >
+            <View style={styles.cardBox}>
+              <View style={styles.profileRow}>
+                <Image
+                  style={styles.avatar}
+                  source={{
+                    uri:
+                      user?.photo ||
+                      "https://dummyimage.com/150x150/ccc/fff.png&text=No+Photo",
+                  }}
+                />
+                <View style={styles.profileTextContent}>
+                  <Text style={styles.profileName}>{user?.full_name}</Text>
+                  <View style={styles.verificationRow}>
+                    <View style={styles.iconTextRow}>
+                      <MaterialIcons
+                        name="verified"
+                        size={18}
+                        color="#c3c3c3"
+                      />
+                      <Text style={styles.verificationText}>
+                        Verification Level: {user?.verification_count || 0}/7
+                      </Text>
+                    </View>
+                    <View style={styles.iconTextRow}>
+                      <FontAwesome6
+                        name="location-dot"
+                        size={18}
+                        color="#c3c3c3"
+                      />
+                      <Text style={styles.locationText}>
+                        {user?.address ?? "Unknown"}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-
-            <View style={styles.horizontalDivider} />
-
-            <View style={styles.switchRow}>
-              <Text style={styles.switchText}>
-                Switch to {profile?.full_name || "User"}'s Employer Profile
-              </Text>
-
-              <TouchableOpacity onPress={() => setIsEmployer(!isEmployer)}>
-                {isEmployer ? (
-                  <MaterialCommunityIcons
-                    name="toggle-switch"
-                    size={50}
-                    color="#d17b68"
-                  />
-                ) : (
-                  <MaterialCommunityIcons
-                    name="toggle-switch-off"
-                    size={50}
-                    color="#c3c3c3"
-                  />
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.buttonsRow}>
-              <TouchableOpacity
-                style={[styles.btnFollow, isFollowed && styles.btnUnfollow]}
-                onPress={() => setIsFollowed(!isFollowed)}
-              >
-                <Text
-                  numberOfLines={1}
-                  ellipsizeMode="clip"
-                  style={[
-                    styles.btnFollowText,
-                    isFollowed && styles.btnUnfollowText,
-                  ]}
+              <View style={styles.horizontalDivider} />
+              <View style={styles.switchRow}>
+                <Text style={styles.switchText}>
+                  Switch to {user?.full_name || "User"}'s Employer Profile
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsEmployer(!isEmployer);
+                    navigation.replace("PublicEmployeeProfile", {
+                      name: user?.name,
+                    });
+                  }}
                 >
-                  {isFollowed ? "Unfollow" : "Follow"}
+                  {isEmployer ? (
+                    <MaterialCommunityIcons
+                      name="toggle-switch"
+                      size={50}
+                      color="#d17b68"
+                    />
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="toggle-switch-off"
+                      size={50}
+                      color="#c3c3c3"
+                    />
+                  )}
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonsRow}>
+                <TouchableOpacity
+                  style={[styles.btnFollow, isFollowed && styles.btnUnfollow]}
+                  onPress={() => setIsFollowed(!isFollowed)}
+                >
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode="clip"
+                    style={[
+                      styles.btnFollowText,
+                      isFollowed && styles.btnUnfollowText,
+                    ]}
+                  >
+                    {isFollowed ? "Unfollow" : "Follow"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.btnHire}
+                  onPress={() =>
+                    navigation.navigate("ViewHirePage", {
+                      jobId: user.id || [],
+                    })
+                  }
+                >
+                  <Text style={styles.btnHireText}>Hire</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.btnChat}>
+                  <Text style={styles.btnChatText}>Chat</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.statsContainer}>
+              <View style={styles.statsBox}>
+                <Text style={styles.statsLabel}>Number of jobs</Text>
+                <Text style={styles.statsNumber}>{profile?.count}</Text>
+              </View>
+              <View style={styles.verticalDivider} />
+              <View style={styles.statsBox}>
+                <Text style={styles.statsLabel}>Money Earn</Text>
+                <Text style={styles.statsNumber}>{profile?.earned} CAD</Text>
+              </View>
+            </View>
+            <View style={styles.infoOuterContainer}>
+              <View style={styles.infoSection}>
+                <Text style={styles.sectionLabel}>Profile Title</Text>
+                <Text style={styles.profileTitleText}>
+                  {user?.profile_title_employee || "No Title Added"}
                 </Text>
+              </View>
+              <View style={styles.dividerLine} />
+              <View style={styles.infoSection}>
+                <Text style={styles.sectionLabel}>About Me</Text>
+                <Text style={styles.aboutMeText}>
+                  {user?.about ?? "No about info available."}
+                </Text>
+              </View>
+              <View style={styles.dividerLine} />
+            </View>
+            <FlatList
+              data={feeds}
+              keyExtractor={(item) => item.id.toString()}
+              scrollEnabled={feeds.length > 5 ? true : false}
+              renderItem={({ item }) => (
+                <FeedPost
+                  author={item.full_name}
+                  subtitle={item.profile_title_employer ?? "No title"}
+                  text={item?.message}
+                  avatar={{ uri: item.photo }}
+                  image={{ uri: item.file_name }}
+                  likes={item.likes_count}
+                  comments={item.comment_count}
+                  share="0"
+                />
+              )}
+            />
+
+            <View style={styles.category}>
+              <Text style={styles.sectionLabel}>Involved Category</Text>
+              <View style={styles.categoryWrapper}>
+                {displayedCategories.map((item) => (
+                  <View key={item.subid} style={styles.categoryPill}>
+                    <Text style={styles.categoryText}>{item.subname}</Text>
+                  </View>
+                ))}
+                {subcategory.length > 5 && (
+                  <TouchableOpacity
+                    onPress={() => setShowAllCategories((prev) => !prev)}
+                    style={styles.showMoreBtn}
+                  >
+                    <Text style={styles.showMoreText}>
+                      {showAllCategories ? "Show Less" : "Show More"}
+                    </Text>
+
+                    <Ionicons
+                      name={showAllCategories ? "chevron-up" : "chevron-down"}
+                      size={14}
+                      color="#000"
+                      style={{ marginLeft: 5 }}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            <View style={styles.pillsWrapper}>
+              <Text style={styles.sectionLabel}>My Promoted Services</Text>
+              <TouchableOpacity style={styles.plusbtn}>
+                <AntDesign name="plus" size={18} color="#030303" />
+                <Text style={styles.plustext}>Promote Services</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.btnHire}
-                onPress={() => navigation.navigate("ViewHirePage",{jobId:profile.id||[]})}
+              <ScrollView
+                horizontal={true}
+                contentContainerStyle={styles.promatewrapper}
               >
-                <Text style={styles.btnHireText}>Hire</Text>
-              </TouchableOpacity>
+                {promote.map((item, index) => (
+                  <View style={styles.wrapper} key={index}>
+                    <View style={styles.iconContainer}>
+                      <Ionicons name="logo-android" size={28} color="#000" />
+                    </View>
+                    <View style={styles.card}>
+                      <Text style={styles.title}>{item?.subject}</Text>
+                      <Text style={styles.price}>{item?.hour_minimum} CAD</Text>
+                      <Text style={styles.perHour}>/hour</Text>
+                      <GradientButton
+                        title="View"
+                        fontSize={15}
+                        paddingVertical={10}
+                        paddingHorizontal={35}
+                        onPress={() =>
+                          navigation.navigate("PromoteServicesDetails", {
+                            id: item.sid,
+                            type: 2,
+                            price_negotiable: item.price_negotiable,
+                            selected_time: item.selected_time,
+                          })
+                        }
+                      />
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
 
-              <TouchableOpacity style={styles.btnChat}>
-                <Text style={styles.btnChatText}>Chat</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.statsContainer}>
-            <View style={styles.statsBox}>
-              <Text style={styles.statsLabel}>Number of jobs</Text>
-              <Text style={styles.statsNumber}>{jobCount}</Text>
-            </View>
-
-            <View style={styles.verticalDivider} />
-
-            <View style={styles.statsBox}>
-              <Text style={styles.statsLabel}>Money Earn</Text>
-              <Text style={styles.statsNumber}>
-                {profile?.total_price ?? 0} CAD
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.infoOuterContainer}>
-            <View style={styles.infoSection}>
-              <Text style={styles.sectionLabel}>Profile Title</Text>
-
-              <Text style={styles.profileTitleText}>
-                {profile?.profile_title_employee ||
-                  profile?.profile_title_employer ||
-                  "No Title Added"}
-              </Text>
-            </View>
-
-            <View style={styles.dividerLine} />
-
-            <View style={styles.infoSection}>
-              <Text style={styles.sectionLabel}>About Me</Text>
-
-              <Text style={styles.aboutMeText}>
-                {profile?.about ??
-                  profile?.employer_about ??
-                  "No about info available."}
-              </Text>
-            </View>
-            <View style={styles.dividerLine} />
-          </View>
-          <FeedPost />
-          <View style={styles.promote}>
-            <Text style={styles.sectionLabel}>My Promoted Services</Text>
-            <TouchableOpacity style={styles.plusbtn}>
-              <AntDesign name="plus" size={18} color="#030303" />
-              <Text style={styles.plustext}>Promote Services</Text>
-            </TouchableOpacity>
-            <View style={styles.wrapper}>
-              <View style={styles.iconContainer}>
-                <Ionicons name="logo-android" size={28} color="#000" />
+              <LineDivider />
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>Attachments</Text>
+                <Text style={styles.profileTitleText}>.........</Text>
               </View>
-              <View style={styles.card}>
-                <Text style={styles.title}>
-                  I can create mobile application
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>Current Work</Text>
+                <Text style={styles.profileTitleText}>.........</Text>
+              </View>
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>
+                  Work History And Reviews
                 </Text>
-                <Text style={styles.price}>50.00 CAD</Text>
-                <Text style={styles.perHour}>/hour</Text>
-                <GradientButton
-                  title="View"
-                  fontSize={15}
-                  paddingVertical={10}
-                  paddingHorizontal={35}
-                />
-              </View>
-              <View style={styles.iconContainer}>
-                <Ionicons name="logo-android" size={28} color="#000" />
-              </View>
-              <View style={styles.card}>
-                <Text style={styles.title}>
-                  I can create mobile application
-                </Text>
-                <Text style={styles.price}>50.00 CAD</Text>
-                <Text style={styles.perHour}>/hour</Text>
-                <GradientButton
-                  title="View"
-                  fontSize={15}
-                  paddingVertical={10}
-                  paddingHorizontal={35}
-                />
+                <Text style={styles.profileTitleText}>.........</Text>
               </View>
             </View>
-            <LineDivider />
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Attachments</Text>
-              <Text style={styles.profileTitleText}>.........</Text>
-            </View>
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Current Work</Text>
-              <Text style={styles.profileTitleText}>.........</Text>
-            </View>
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Work History And Reviews</Text>
-              <Text style={styles.profileTitleText}>.........</Text>
-            </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        )}
       </View>
 
-      <EmployerFooter/>
+      <EmployerFooter />
     </SafeAreaView>
   );
 }
@@ -288,7 +378,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 15,
   },
-
   cardBox: {
     backgroundColor: "#ffffff1a",
     borderRadius: 10,
@@ -478,16 +567,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     width: "50%",
     paddingVertical: 5,
-    marginBottom: 28,
+    marginBottom: 15,
   },
   plustext: {
     color: "#030303",
     fontFamily: "Montserrat_400Regular",
     fontSize: 14,
   },
-  wrapper: {
+  promatewrapper: {
     flexDirection: "row",
     alignItems: "center",
+    paddingTop: 18,
     gap: 10,
   },
 
@@ -529,14 +619,14 @@ const styles = StyleSheet.create({
   price: {
     color: "#25dd4dff",
     fontSize: 16,
-    fontFamily:"Montserrat_600SemiBold",
+    fontFamily: "Montserrat_600SemiBold",
     marginTop: 6,
   },
 
   perHour: {
     color: "#30D354",
     fontSize: 12,
-    fontFamily:"Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
   },
 
   btn: {
@@ -551,5 +641,42 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "600",
+  },
+  categoryWrapper: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+  },
+
+  categoryPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ffffff1a",
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginBottom: 4,
+  },
+  categoryText: {
+    color: "#fff",
+    fontSize: 14,
+    fontFamily: "Montserrat_400Regular",
+  },
+
+  showMoreBtn: {
+    marginTop: 10,
+    paddingVertical: 7.5,
+    paddingHorizontal: 12,
+    backgroundColor: "#ececec",
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  showMoreText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#000",
   },
 });

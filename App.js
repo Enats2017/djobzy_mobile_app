@@ -74,6 +74,10 @@ import SendJobOffer from "./Screens/EmployerHirePage/SendJobOffer";
 import DeactivedDetailsPage from "./Screens/ContractPage/DeactivedDetailsPage";
 import ViewBoostJobs from "./Screens/ContractPage/ViewBoostJobs";
 import ProfileSetting from "./Screens/GeneralSetting/ProfileSetting";
+import EmployerAccount from "./Screens/Employer/EmployerAccount";
+import PublicEmployeeProfile from "./Screens/Employee/PublicEmployeeProfile";
+import PromoteServicesDetails from "./Screens/PromoteServicesPage/PromoteServicesDetails";
+import EditPromoteSevices from "./Screens/PromoteServicesPage/EditPromoteSevices";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -169,6 +173,10 @@ const App = () => {
           <Stack.Screen name="ActiveContract" component={ActiveContract} />
           <Stack.Screen name="ViewBoostJobs" component={ViewBoostJobs} />
           <Stack.Screen name="ProfileSetting" component={ProfileSetting} />
+          <Stack.Screen name="EmployerAccount" component={EmployerAccount} />
+          <Stack.Screen name="PublicEmployeeProfile" component={PublicEmployeeProfile} />
+          <Stack.Screen name="PromoteServicesDetails" component={PromoteServicesDetails} />
+          <Stack.Screen name="EditPromoteSevices" component={EditPromoteSevices} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

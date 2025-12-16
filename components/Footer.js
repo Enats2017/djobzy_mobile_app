@@ -1,13 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+const ACTIVE_COLOR = "#CB7767";
+const INACTIVE_COLOR = "#000";
+
 const Footer = () => {
-  const [active, setActive] = useState(0);
   const navigation = useNavigation();
-  
-  
+  const route = useRoute();
+  const isActive = (routeName) => route.name === routeName;
   return (
     <>
       <View style={styles.bottomContainer}>
@@ -17,11 +19,14 @@ const Footer = () => {
             onPress={() => navigation.navigate("Dashboard")}
           >
             <Ionicons
-              name="briefcase-outline"
+              name="briefcase"
               size={24}
-              color={active === "Jobs" ? "#007bff" : "#000000"}
+              color={isActive("Dashboard") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
-            <Text style={[styles.label, active === "Jobs" && styles.activeText]}>
+            <Text style={[
+              styles.label,
+              isActive("Dashboard") && styles.activeText,
+            ]}>
               Jobs
             </Text>
           </TouchableOpacity>
@@ -31,24 +36,30 @@ const Footer = () => {
             onPress={() => navigation.navigate("CreateJob")}
           >
             <Ionicons
-              name="add-circle-outline"
+              name="add-circle"
               size={24}
-              color={active === "Post" ? "#f49676" : "#000000"}
+              color={isActive("CreateJob") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
-            <Text style={[styles.label, active === "Post" && styles.activeText]}>
+            <Text style={[
+              styles.label,
+              isActive("CreateJob") && styles.activeText,
+            ]}>
               Post
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tab}
-            onPress={()=>navigation.navigate("NotificationScreen")}
+            onPress={() => navigation.navigate("NotificationScreen")}
           >
             <Ionicons
-              name="notifications-outline"
+              name="notifications"
               size={24}
-              color={active === "Alerts" ? "#007bff" : "#000000ff"}
+              color={isActive("NotificationScreen") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
-            <Text style={[styles.label, active === "Alerts" && styles.activeText]}>
+            <Text style={[
+              styles.label,
+              isActive("NotificationScreen") && styles.activeText,
+            ]}>
               Alerts
             </Text>
           </TouchableOpacity>
@@ -57,11 +68,14 @@ const Footer = () => {
             onPress={() => navigation.navigate("ProfileMenu")}
           >
             <Ionicons
-              name="person-outline"
+              name="person"
               size={24}
-              color={active === "Profile" ? "#007bff" : "#000000ff"}
+              color={isActive("ProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
-            <Text style={[styles.label, active === "Profile" && styles.activeText]}>
+            <Text style={[
+              styles.label,
+              isActive("ProfileMenu") && styles.activeText,
+            ]}>
               Profile
             </Text>
           </TouchableOpacity>

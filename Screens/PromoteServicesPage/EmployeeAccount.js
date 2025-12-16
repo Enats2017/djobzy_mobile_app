@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useCallback } from "react";
 import {
   View,
   Text,
@@ -13,12 +13,16 @@ import {
 } from "react-native";
 import Octicons from "@expo/vector-icons/Octicons";
 import Entypo from "@expo/vector-icons/Entypo";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import {
   Ionicons,
   Feather,
   FontAwesome,
   MaterialIcons,
+  AntDesign,
 } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
@@ -30,33 +34,36 @@ import * as Clipboard from "expo-clipboard";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
+import CategoryModel from "../../components/CategoryModel";
+import { useServiceGlobalStore } from "./ServiceGlobalStore";
+import Delete_Category from "../../components/Delete_Category";
 
 const EmployeeAccount = () => {
+  const route = useRoute();
+  const { name } = route.params || [];
+  const employeeLink = `${API_URL}/employee-profile/${name}`;
+  const employerLink = `${API_URL}/employer-profile/${name}`;
   const [copyModel, setCopyModel] = useState(false);
-  const [copyText, setCopyText] = useState("");
+  const [copyText, setCopyText] = useState(employeeLink);
+  const [modalVisible, setModalVisible] = useState(false);
   const [subcategory, setSubcategory] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [shareModel, setShareModel] = useState(false);
+  const [promote, setPromote] = useState([]);
   const [downloadModal, setDownloadModal] = useState(false);
   const [user, setUser] = useState([]);
   const [activeTab, setActiveTab] = useState("employee");
+  const [profile, setProfile] = useState([]);
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [selectedName, setSelectedName] = useState("");
+
   const navigation = useNavigation();
-  const route = useRoute();
-  const { name } = route.params || [];
   const insets = useSafeAreaInsets();
-
-
-  //   function openCopyModel() {
-  //   setCopyModel(true);
-  // }
-  // function closeCopyModel() {
-  //   setCopyModel(false);
-  // }
   const handleCopy = async () => {
-    const link = "https://test.djobzy.com/employee/4545";
     try {
-      setCopyText(link);
-      await Clipboard.setStringAsync(link);
+      await Clipboard.setStringAsync(copyText);
       if (Platform.OS === "android") {
         ToastAndroid.show("Copied to clipboard!", ToastAndroid.SHORT);
       } else {
@@ -68,10 +75,10 @@ const EmployeeAccount = () => {
     }
   };
   const fetchEmployee = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(`${API_URL}/employee-profile/${name}`, {
+      const response = await fetch(`${API_URL}/employee-profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
@@ -79,7 +86,9 @@ const EmployeeAccount = () => {
       });
       const data = await response.json();
       setUser(data.editprofile);
-       setSubcategory(data.subcategory);
+      setSubcategory(data.subcategory);
+      setPromote(data.promote);
+      setProfile(data);
     } catch (err) {
       setError(err.message);
       console.log(err);
@@ -90,15 +99,36 @@ const EmployeeAccount = () => {
   useEffect(() => {
     fetchEmployee();
   }, []);
-  
+  const handleOpenDelete = (id, name) => {
+    setSelectedId(id);
+    setSelectedName(name);
+    setDeleteModalVisible(true);
+  };
+
+  const handleCloseDelete = () => {
+    setSelectedId(null);
+    setDeleteModalVisible(false);
+  };
+  const handleDeleted = (deletedId) => {
+    setSubcategory((prev) => prev.filter((item) => item.subid !== deletedId));
+    fetchEmployee();
+    handleCloseDelete();
+  };
+
   const removeCategory = (id) => {
-  setSubcategory((prev) => prev.filter((c) => c.subid !== id));
-};
+    setSubcategory((prev) => prev.filter((c) => c.subid !== id));
+  };
+
+  // const onCategoryDeleted = (id) => {
+  //   // remove locally so UI updates immediately
+  //   setSubcategory((prev) => prev.filter((c) => c.subid !== id));
+  //   // optionally refetch from server: fetchEmployee();
+  // };
 
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Hey! Use my referral code:`,
+        message: `Hey! Use my referral code: ${employeeLink}`,
       });
     } catch (error) {
       if (Platform.OS === "android") {
@@ -108,153 +138,222 @@ const EmployeeAccount = () => {
       }
     }
   };
-  if (loading) return <Loading/>;
+  const displayedCategories = showAllCategories
+    ? subcategory
+    : subcategory.slice(0, 5);
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.header}>
           <PageNameHeaderBar title="My Account" navigation={navigation} />
         </View>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.profileCard}>
-            <View style={styles.profileinfo}>
-              <View style={styles.profileRow}>
-                <Image
-                  source={{
-                    uri:
-                      user.photo ||
-                      "https://randomuser.me/api/portraits/women/44.jpg",
-                  }}
-                  style={styles.avatar}
-                />
-                <View style={styles.profileInfoRow}>
-                  <Text style={styles.name}>{user?.full_name}</Text>
-                  <View style={styles.iconbox}>
-                    <Octicons name="clock-fill" size={12} color="#c3c3c3c3" />
-                    <Text style={styles.infoText}>GMT+05:30</Text>
-                  </View>
-                  <View style={styles.iconbox}>
-                    <MaterialIcons
-                      name="verified"
-                      size={14}
-                      color="#c3c3c3c3"
-                    />
-                    <Text style={styles.infoText}>
-                      Verification Level: {user?.verification_count}/7
-                    </Text>
-                  </View>
-                  <View style={styles.iconbox}>
-                    <Entypo name="location-pin" size={14} color="#c3c3c3c3" />
-                    <Text style={styles.infoText}>{user?.address}</Text>
+        {loading ? (
+          <Loading />
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
+          >
+            <View style={styles.profileCard}>
+              <View style={styles.profileinfo}>
+                <View style={styles.profileRow}>
+                  <Image
+                    source={{
+                      uri:
+                        user.photo ||
+                        "https://randomuser.me/api/portraits/women/44.jpg",
+                    }}
+                    style={styles.avatar}
+                  />
+                  <View style={styles.profileInfoRow}>
+                    <Text style={styles.name}>{user?.full_name}</Text>
+                    <View style={styles.iconbox}>
+                      <Octicons name="clock-fill" size={12} color="#c3c3c3c3" />
+                      <Text style={styles.infoText}>GMT+05:30</Text>
+                    </View>
+                    <View style={styles.iconbox}>
+                      <MaterialIcons
+                        name="verified"
+                        size={14}
+                        color="#c3c3c3c3"
+                      />
+                      <Text style={styles.infoText}>
+                        Verification Level: {user?.verification_count}/7
+                      </Text>
+                    </View>
+                    <View style={styles.iconbox}>
+                      <Entypo name="location-pin" size={14} color="#c3c3c3c3" />
+                      <Text style={styles.infoText}>{user?.address}</Text>
+                    </View>
                   </View>
                 </View>
               </View>
+              <LineDivider />
+              <View style={styles.iconRow}>
+                <TouchableOpacity
+                  style={styles.iconBtn}
+                  onPress={() => setCopyModel(true)}
+                >
+                  <Ionicons name="copy" size={20} color="#ffffff" />
+                  <Text style={styles.iconText}>Copy</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.iconBtn} onPress={handleShare}>
+                  <FontAwesome
+                    name="share-square-o"
+                    size={20}
+                    color="#ffffff"
+                  />
+                  <Text style={styles.iconText}>Share</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.iconBtn}
+                  onPress={() => setDownloadModal(true)}
+                >
+                  <MaterialIcons name="download" size={20} color="#ffffff" />
+                  <Text style={styles.iconText}>Download</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.iconBtn}
+                  onPress={() =>
+                    navigation.navigate("ProfileBoostPage", {
+                      categories: subcategory,
+                    })
+                  }
+                >
+                  <Ionicons name="rocket" size={20} color="#ffffff" />
+                  <Text style={styles.iconText}>Boost</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.iconBtn}
+                  onPress={() => navigation.navigate("ProfileEditPage")}
+                >
+                  <Feather name="edit-3" size={20} color="#fff" />
+                  <Text style={styles.iconText}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              >
+                <View style={styles.statsRow}>
+                  <View style={styles.statBox}>
+                    <Text style={styles.statValue}>{profile?.count}</Text>
+                    <Text style={styles.statLabel}>Number of Jobs</Text>
+                  </View>
+                  <View style={styles.statBox}>
+                    <Text style={styles.statValue}>{profile?.earned}</Text>
+                    <Text style={styles.statLabel}>Money Earned</Text>
+                  </View>
+                  <View style={styles.statBox}>
+                    <Text style={styles.statValue}>
+                      {" "}
+                      {profile?.likes?.length}
+                    </Text>
+                    <Text style={styles.statLabel}>My Followers</Text>
+                  </View>
+                </View>
+              </ScrollView>
             </View>
-            <LineDivider />
-            <View style={styles.iconRow}>
-              <TouchableOpacity
-                style={styles.iconBtn}
-                onPress={() => setCopyModel(true)}
-              >
-                <Ionicons name="copy" size={20} color="#ffffff" />
-                <Text style={styles.iconText}>Copy</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.iconBtn} onPress={handleShare}>
-                <FontAwesome name="share-square-o" size={20} color="#ffffff" />
-                <Text style={styles.iconText}>Share</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.iconBtn}
-                onPress={() => setDownloadModal(true)}
-              >
-                <MaterialIcons name="download" size={20} color="#ffffff" />
-                <Text style={styles.iconText}>Download</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.iconBtn}
-                onPress={() => navigation.navigate("ProfileBoostPage")}
-              >
-                <Ionicons name="rocket" size={20} color="#ffffff" />
-                <Text style={styles.iconText}>Boost</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.iconBtn}
-                onPress={() => navigation.navigate("ProfileEditPage")}
-              >
-                <Feather name="edit-3" size={20} color="#fff" />
-                <Text style={styles.iconText}>Edit</Text>
-              </TouchableOpacity>
+            <View style={styles.infoBox}>
+              <View style={styles.iconbox}>
+                <Text style={styles.infoTitle}>Profile Title</Text>
+                <FontAwesome
+                  name="question-circle"
+                  size={16}
+                  color="#ffffff"
+                  style={{ marginLeft: 5 }}
+                />
+              </View>
+              <Text style={styles.infoText2}>
+                {user.profile_title_employee}
+              </Text>
             </View>
+            <View style={styles.infoBox}>
+              <View style={styles.iconbox}>
+                <Text style={styles.infoTitle}>About Me</Text>
+                <FontAwesome
+                  name="question-circle"
+                  size={16}
+                  color="#ffffff"
+                  style={{ marginLeft: 5 }}
+                />
+              </View>
+              <Text style={styles.infoText2}>{user?.about}</Text>
+            </View>
+            {/* <View style={styles.calendarBox}>
+              <View style={styles.calendarHeader}>
+                <Text style={styles.calendarTitle}>My Services Calendar</Text>
+                <Text style={styles.calendarTimezone}>GMT+05:30</Text>
+              </View>
+
+              <View style={styles.dateBox}>
+                <Text style={styles.dateText}>September 23, 2025</Text>
+              </View>
+
+              <View style={styles.timeSlots}>
+                {["01:00", "02:00", "03:00", "04:00"].map((time, index) => (
+                  <Text key={index} style={styles.timeText}>
+                    {time}
+                  </Text>
+                ))}
+              </View>
+            </View> */}
+            <View style={styles.infoBox}>
+              <View style={styles.iconbox}>
+                <Text style={styles.infoTitle}>Pomate Services</Text>
+                <FontAwesome
+                  name="question-circle"
+                  size={16}
+                  color="#ffffff"
+                  style={{ marginLeft: 5 }}
+                />
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.plusbtn}
+              onPress={() => navigation.navigate("PromoteService")}
+            >
+              <AntDesign name="plus" size={18} color="#030303" />
+              <Text style={styles.plustext}>Promote Services</Text>
+            </TouchableOpacity>
             <ScrollView
               horizontal={true}
+              contentContainerStyle={styles.promatewrapper}
               showsHorizontalScrollIndicator={false}
             >
-              <View style={styles.statsRow}>
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>2</Text>
-                  <Text style={styles.statLabel}>Number of Jobs</Text>
+              {promote.map((item, index) => (
+                <View key={index} style={styles.wrapper}>
+                  <View style={styles.iconContainer}>
+                    <Ionicons name="logo-android" size={28} color="#000" />
+                  </View>
+                  <View style={styles.card}>
+                    <Text style={styles.title}>{item.subject}</Text>
+                    <Text style={styles.price}>{item.hour_minimum} CAD</Text>
+                    <Text style={styles.perHour}>/hour</Text>
+                    <GradientButton
+                      title="View"
+                      fontSize={15}
+                      paddingVertical={10}
+                      paddingHorizontal={35}
+                      onPress={() =>
+                        navigation.navigate("EditPromoteSevices", {
+                          id: item.sid,
+                          type: 2,
+                        })
+                      }
+                    />
+                  </View>
                 </View>
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>{user?.money_spent || 0}</Text>
-                  <Text style={styles.statLabel}>Money Earned</Text>
-                </View>
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>12</Text>
-                  <Text style={styles.statLabel}>My Followers</Text>
-                </View>
-              </View>
-            </ScrollView>
-          </View>
-          <View style={styles.infoBox}>
-            <View style={styles.iconbox}>
-              <Text style={styles.infoTitle}>Profile Title</Text>
-              <FontAwesome
-                name="question-circle"
-                size={16}
-                color="#ffffff"
-                style={{ marginLeft: 5 }}
-              />
-            </View>
-            <Text style={styles.infoText2}>{user.profile_title_employee}</Text>
-          </View>
-          <View style={styles.infoBox}>
-            <View style={styles.iconbox}>
-              <Text style={styles.infoTitle}>About Me</Text>
-              <FontAwesome
-                name="question-circle"
-                size={16}
-                color="#ffffff"
-                style={{ marginLeft: 5 }}
-              />
-            </View>
-            <Text style={styles.infoText2}>
-              {user?.about}
-            </Text>
-          </View>
-          {/* <View style={styles.calendarBox}>
-            <View style={styles.calendarHeader}>
-              <Text style={styles.calendarTitle}>My Services Calendar</Text>
-              <Text style={styles.calendarTimezone}>GMT+05:30</Text>
-            </View>
-
-            <View style={styles.dateBox}>
-              <Text style={styles.dateText}>September 23, 2025</Text>
-            </View>
-
-            <View style={styles.timeSlots}>
-              {["01:00", "02:00", "03:00", "04:00"].map((time, index) => (
-                <Text key={index} style={styles.timeText}>
-                  {time}
-                </Text>
               ))}
-            </View>
-          </View> */}
-          <View style={styles.infoBox}> 
-            <View style={styles.iconbox}>
+            </ScrollView>
+            <View style={styles.infoBox}>
+              <View style={styles.iconbox}>
                 <Text style={styles.infoTitle}>Employee Category</Text>
                 <FontAwesome
                   name="question-circle"
@@ -262,27 +361,78 @@ const EmployeeAccount = () => {
                   color="#ffffff"
                   style={{ marginLeft: 5 }}
                 />
-            </View>
-          </View>
-          <View style={styles.pillsWrapper}>
-            <TouchableOpacity style={styles.addBtn} onPress={() => removeCategory(item.subid)}>
-              <Ionicons name="add" size={18} color="#000" />
-              <Text style={styles.addText}>Add Category</Text>
-            </TouchableOpacity>
-
-            {subcategory.map((item) => (
-              <View key={item.subid} style={styles.categoryPill}>
-                <Text style={styles.categoryText}>{item.subname}</Text>
-
-                <TouchableOpacity onPress={() => removeCategory(item.subid)}>
-                  <Ionicons name="close" size={16} color="#fff" style={{ marginLeft: 6 }} />
-                </TouchableOpacity>
               </View>
-            ))}
-          </View>
-        </ScrollView>
+            </View>
+            <View style={styles.pillsWrapper}>
+              <TouchableOpacity
+                style={styles.addBtn}
+                onPress={() => setModalVisible(true)}
+              >
+                <Ionicons name="add" size={18} color="#000" />
+                <Text style={styles.addText}>Add Category</Text>
+              </TouchableOpacity>
+
+              {displayedCategories.map((item) => (
+                <View key={item.subid} style={styles.categoryPill}>
+                  <Text style={styles.categoryText}>{item.subname}</Text>
+
+                  <TouchableOpacity
+                    onPress={() =>
+                      handleOpenDelete(item.service_id, item.subname)
+                    }
+                  >
+                    <Ionicons
+                      name="close"
+                      size={16}
+                      color="#fff"
+                      style={{ marginLeft: 6 }}
+                    />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              {subcategory.length > 5 && (
+                <TouchableOpacity
+                  onPress={() => setShowAllCategories((prev) => !prev)}
+                  style={styles.showMoreBtn}
+                >
+                  <Text style={styles.showMoreText}>
+                    {showAllCategories ? "Show Less" : "Show More"}
+                  </Text>
+
+                  <Ionicons
+                    name={showAllCategories ? "chevron-up" : "chevron-down"}
+                    size={14}
+                    color="#000"
+                    style={{ marginLeft: 5 }}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.boostbtn}>
+              <GradientButton
+                title="Boost"
+                onPress={() =>
+                  navigation.navigate("ProfileBoostPage", {
+                    categories: subcategory,
+                  })
+                }
+              />
+              <Text style={styles.category}>Boosted Categories</Text>
+            </View>
+            <View style={styles.dotssection}>
+              <Text style={styles.infoTitle}>Attachments</Text>
+              <Text style={styles.dots}>.........</Text>
+              <Text style={styles.infoTitle}>Current Work</Text>
+              <Text style={styles.dots}>.........</Text>
+              <Text style={styles.infoTitle}>Works History And Reviews</Text>
+              <Text style={styles.dots}>.........</Text>
+              <Text style={styles.infoTitle}>Other Experience</Text>
+              <Text style={styles.dots}>.........</Text>
+            </View>
+          </ScrollView>
+        )}
       </View>
-      <Footer />
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -290,7 +440,9 @@ const EmployeeAccount = () => {
         onRequestClose={() => setCopyModel(false)}
       >
         <View style={[styles.modalOverlay]}>
-          <View style={[styles.modalContainer,{ paddingBottom: insets.bottom }]}>
+          <View
+            style={[styles.modalContainer, { paddingBottom: insets.bottom }]}
+          >
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Copy Link</Text>
               <TouchableOpacity onPress={() => setCopyModel(false)}>
@@ -308,7 +460,10 @@ const EmployeeAccount = () => {
                   styles.tab,
                   activeTab === "employee" && styles.activeTabEmployee,
                 ]}
-                onPress={() => setActiveTab("employee")}
+                onPress={() => {
+                  setActiveTab("employee");
+                  setCopyText(employeeLink);
+                }}
               >
                 <Text
                   style={
@@ -326,7 +481,10 @@ const EmployeeAccount = () => {
                   styles.tab,
                   activeTab === "employer" && styles.activeTabEmployer,
                 ]}
-                onPress={() => setActiveTab("employer")}
+                onPress={() => {
+                  setActiveTab("employer");
+                  setCopyText(employerLink);
+                }}
               >
                 <Text
                   style={
@@ -342,7 +500,7 @@ const EmployeeAccount = () => {
             {activeTab === "employee" ? (
               <View style={styles.inputRow}>
                 <Text style={styles.linkText}>{copyText}</Text>
-                <TouchableOpacity style={styles.copyBtn}>
+                <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
                   <Text style={styles.copyText}>Copy Link</Text>
                   <Ionicons
                     name="copy-outline"
@@ -368,7 +526,7 @@ const EmployeeAccount = () => {
             )}
           </View>
         </View>
-      </Modal> 
+      </Modal>
       <Modal
         animationType="slide"
         transparent={true}
@@ -376,7 +534,9 @@ const EmployeeAccount = () => {
         onRequestClose={() => setDownloadModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContainer,{ paddingBottom: insets.bottom }]}>
+          <View
+            style={[styles.modalContainer, { paddingBottom: insets.bottom }]}
+          >
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Download PDF</Text>
               <TouchableOpacity onPress={() => setDownloadModal(false)}>
@@ -403,6 +563,22 @@ const EmployeeAccount = () => {
           </View>
         </View>
       </Modal>
+      <CategoryModel
+        visible={modalVisible}
+        type={0}
+        onClose={() => {
+          setModalVisible(false);
+          fetchEmployee();
+        }}
+      />
+      <Delete_Category
+        visible={deleteModalVisible}
+        id={selectedId}
+        onClose={handleCloseDelete}
+        onDeleted={handleDeleted}
+        name={selectedName}
+      />
+      <Footer />
     </SafeAreaView>
   );
 };
@@ -419,7 +595,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff1a",
     borderRadius: 15,
     paddingVertical: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
   },
   profileinfo: {
     flexDirection: "row",
@@ -427,12 +603,15 @@ const styles = StyleSheet.create({
   },
   profileRow: {
     flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   avatar: {
     width: 84,
     height: 84,
     borderRadius: 60,
-    marginRight: 12,
+    borderWidth: 1.5,
+    borderColor: "#c3c3c3",
   },
   name: {
     color: "#fff",
@@ -448,6 +627,7 @@ const styles = StyleSheet.create({
   infoText: {
     color: "#c3c3c3c3",
     fontSize: 16,
+    width: "80%",
     fontFamily: "Montserrat_400Regular",
   },
   iconRow: {
@@ -469,8 +649,14 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 18,
   },
+  sectionLabel: {
+    color: "#ffffff",
+    fontSize: 16,
+    marginBottom: 6,
+    fontFamily: "Montserrat_700Bold",
+  },
   statBox: {
-    backgroundColor: "#C97863",
+    backgroundColor: "#46A282",
     paddingVertical: 16,
     paddingHorizontal: 25,
     borderRadius: 10,
@@ -488,7 +674,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   infoBox: {
-    paddingTop: 17,
+    paddingTop: 12,
   },
   infoTitle: {
     color: "#fff",
@@ -501,8 +687,6 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
     lineHeight: 18,
   },
-
-  //Copy Model
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -611,45 +795,163 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   pillsWrapper: {
-  flexDirection: "row",
-  flexWrap: "wrap",         
-  alignItems: "flex-start",
-  gap: 8,                   
-  paddingVertical: 8,
-  paddingHorizontal: 4,
-},
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "flex-start",
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
 
-addBtn: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#ffff",
-  paddingVertical: 5,
-  paddingHorizontal: 14,
-  borderRadius: 20,
-  marginRight: 10,
-  marginBottom: 8,        
-},
-addText: {
-  color: "#000",
-  marginLeft: 4,
-  fontSize: 14,
-},
-categoryPill: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#ffffff1a",
-  paddingVertical: 8,
-  paddingHorizontal: 14,
-  borderRadius: 20,
-  marginBottom: 5,         
-},
-categoryText: {
-  color: "#fff",
-  fontSize: 14,
-},
-infoTitle: {
-  color: "#fff",
-  fontSize: 16,
-  fontWeight: "600",
-},
+  addBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ffff",
+    paddingVertical: 5,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginRight: 10,
+    marginBottom: 8,
+  },
+  addText: {
+    color: "#000",
+    marginLeft: 4,
+    fontSize: 14,
+  },
+  categoryPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ffffff1a",
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginBottom: 4,
+  },
+  categoryText: {
+    color: "#fff",
+    fontSize: 14,
+    fontFamily: "Montserrat_400Regular",
+  },
+  infoTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  promatewrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: 20,
+    gap: 10,
+  },
+
+  iconContainer: {
+    position: "absolute",
+    top: -15,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    left: 60,
+    paddingBottom: 4.2,
+    borderRadius: 22.5,
+    backgroundColor: "#E7C1AF",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#3D3D3D",
+  },
+
+  card: {
+    width: 160,
+    paddingTop: 27,
+    paddingBottom: 18,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#ffffff1a",
+  },
+
+  title: {
+    color: "#ffffff",
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: 10,
+    lineHeight: 17,
+  },
+
+  price: {
+    color: "#25dd4dff",
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    marginTop: 6,
+  },
+
+  perHour: {
+    color: "#30D354",
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+  },
+
+  btn: {
+    backgroundColor: "#CC6C52",
+    marginTop: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+  },
+
+  btnText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  plusbtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    paddingHorizontal: 8,
+    width: "50%",
+    paddingVertical: 5,
+    marginTop: 10,
+  },
+  plustext: {
+    color: "#030303",
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+  },
+  boostbtn: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 17,
+    paddingBottom: 12,
+  },
+  category: {
+    color: "#fff",
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 15,
+  },
+  dots: {
+    color: "#ffffff",
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  showMoreBtn: {
+    marginTop: 10,
+    paddingVertical: 7.5,
+    paddingHorizontal: 12,
+    backgroundColor: "#ececec",
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  showMoreText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#000",
+  },
 });

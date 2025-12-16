@@ -59,12 +59,52 @@ export default function MyJobPost() {
 
       if (data.status) {
         setDeactivate((prev) => prev.filter((job) => job.gid !== gid));
-        navigation.navigate("MyJobPost");
+        navigation.navigate("EmployerJobPost");
       }
     } catch (error) {
       console.log("Reactivate Error:", error);
     }
   };
+
+  const fetchFollowersAndFollowing = async () => {
+  try {
+    setLoading(true);
+    const token = await AsyncStorage.getItem("token");
+
+    /* FOLLOWING API */
+    const followingRes = await fetch(`${API_URL}/followings`, {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const followingJson = await followingRes.json();
+
+    /* FOLLOWERS API */
+    const followersRes = await fetch(`${API_URL}/followers`, {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const followersJson = await followersRes.json();
+
+    if (followingJson.status === 200) {
+      setFollowingData(followingJson.data.liked_users);
+    }
+
+    if (followersJson.status === 200) {
+      setFollowersData(followersJson.data.followers);
+    }
+  } catch (error) {
+    console.log("Followers API error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.jobpostcontainer}>

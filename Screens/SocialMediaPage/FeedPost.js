@@ -12,7 +12,7 @@ import {
 import { Ionicons, FontAwesome, Feather, MaterialIcons } from "@expo/vector-icons";
 import LineDivider from "../../components/LineDivider";
 const { width } = Dimensions.get("window");
-const CARD_PADDING = 14;
+const CARD_PADDING = 15;
 const CARD_WIDTH = width - CARD_PADDING * 2;
 
 export default function FeedPost({
@@ -97,13 +97,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+    gap:10
   },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    marginRight: 10,
-  },
+   avatar: {
+        width: 55,
+        height: 55,
+        borderRadius: 100,
+        borderWidth: 1.5,     
+        borderColor: "#fff",
+    },
   nameBlock: {
     flexShrink: 1,
   },

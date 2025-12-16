@@ -8,10 +8,10 @@ import {
   StyleSheet,
   Modal,
   TextInput,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FontAwesome, MaterialIcons,Entypo } from "@expo/vector-icons";
+import { FontAwesome, MaterialIcons, Entypo } from "@expo/vector-icons";
 import GroupJobPost from "../../assets/images/GroupJobPost.png";
 import GroupNext from "../../assets/images/GroupNext.png";
 import { useNavigation } from "@react-navigation/native";
@@ -26,7 +26,6 @@ import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
 import LineDivider from "../../components/LineDivider";
 
-
 export default function EmployerDashboard() {
   const [activeTab, setActiveTab] = useState("jobs");
   const [employees, setEmployees] = useState([]);
@@ -36,6 +35,7 @@ export default function EmployerDashboard() {
   const [loading, setLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const navigation = useNavigation();
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const closeModal = () => setEmpDashModal(false);
   const fetchEmployees = async () => {
     try {
@@ -52,9 +52,7 @@ export default function EmployerDashboard() {
       const data = await res.json();
       setEmployees(data.suggested_profiles);
     } catch (e) {
-
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -66,10 +64,10 @@ export default function EmployerDashboard() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContainer, { paddingBottom: 100, }]}
+        contentContainerStyle={[styles.scrollContainer, { paddingBottom: 100 }]}
       >
         <HeaderBar onMenuPress={() => setMenuVisible(true)} />
-          <Modal transparent visible={menuVisible} animationType="fade">
+        <Modal transparent visible={menuVisible} animationType="fade">
           <TouchableOpacity
             style={styles.overlay}
             activeOpacity={1}
@@ -85,7 +83,7 @@ export default function EmployerDashboard() {
               >
                 <Text style={styles.text}>Followers</Text>
               </TouchableOpacity>
-              <LineDivider marginVertical={12}/>
+              <LineDivider marginVertical={12} />
 
               <TouchableOpacity
                 style={styles.row}
@@ -97,7 +95,7 @@ export default function EmployerDashboard() {
                 <Text style={styles.text}>Following</Text>
               </TouchableOpacity>
 
-              <LineDivider  marginVertical={12}/>
+              <LineDivider marginVertical={12} />
 
               <TouchableOpacity
                 style={styles.row}
@@ -108,16 +106,14 @@ export default function EmployerDashboard() {
               >
                 <Text style={styles.text}>Posts</Text>
               </TouchableOpacity>
-             
-
             </View>
           </TouchableOpacity>
-          </Modal>
-            <Employees
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              tabs={{ feeds: "Social Feed", jobs: "Employees" }}
-            />
+        </Modal>
+        <Employees
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          tabs={{ feeds: "Social Feed", jobs: "Employees" }}
+        />
         {activeTab === "feeds" && (
           <ScrollView
             contentContainerStyle={{ paddingBottom: 80 }}
@@ -223,95 +219,96 @@ export default function EmployerDashboard() {
                 <Text style={styles.tabText}>Favourite Employees</Text>
               </TouchableOpacity>
             </View>
-            {loading ?(
-               <ActivityIndicator
+            {loading ? (
+              <ActivityIndicator
                 size="large"
                 color="#fff"
                 style={styles.loaderOverlay}
               />
-            ):(
-            <View style={styles.cardContainer}>
-              {employees.map((emp, index) => (
-                <View style={styles.employeeCard} key={index}>
-                  <View style={styles.cardHeader}>
-                    <Image
-                      source={{
-                        uri: "https://randomuser.me/api/portraits/women/44.jpg",
-                      }}
-                      style={styles.avatar}
-                    />
+            ) : (
+              <View style={styles.cardContainer}>
+                {employees.map((emp, index) => (
+                  <View style={styles.employeeCard} key={index}>
+                    <View style={styles.cardHeader}>
+                      <Image
+                        source={{
+                          uri: "https://randomuser.me/api/portraits/women/44.jpg",
+                        }}
+                        style={styles.avatar}
+                      />
 
-                    <View style={styles.infoWrapper}>
-                      <View
-                        style={[
-                          styles.nameStarRow,
-                          { justifyContent: "flex-start" },
-                        ]}
-                      >
-                        <Text style={styles.name}>
-                          {emp?.full_name || "No Name"}
-                        </Text>
-
+                      <View style={styles.infoWrapper}>
                         <View
                           style={[
                             styles.nameStarRow,
                             { justifyContent: "flex-start" },
                           ]}
                         >
-                         
+                          <Text style={styles.name}>
+                            {emp?.full_name || "No Name"}
+                          </Text>
+
                           <View
-                            style={{
-                              flexDirection: "row",
-                              alignItems: "center",
-                              marginLeft: 6,
-                            }}
+                            style={[
+                              styles.nameStarRow,
+                              { justifyContent: "flex-start" },
+                            ]}
                           >
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <FontAwesome
-                                key={star}
-                                name={
-                                  emp.avg_rating >= star ? "star" : "star-o"
-                                }
-                                size={14}
-                                color="#EBBE56"
-                                style={{ marginRight: 2 }}
-                              />
-                            ))}
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                marginLeft: 6,
+                              }}
+                            >
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <FontAwesome
+                                  key={star}
+                                  name={
+                                    emp.avg_rating >= star ? "star" : "star-o"
+                                  }
+                                  size={14}
+                                  color="#EBBE56"
+                                  style={{ marginRight: 2 }}
+                                />
+                              ))}
+                            </View>
                           </View>
+                        </View>
+
+                        <View style={styles.verification}>
+                          <MaterialIcons
+                            name="verified"
+                            size={16}
+                            color="#c3c3c3"
+                          />
+                          <Text style={styles.verificationText}>
+                            Verification Level: {emp?.verification_count || 0}/7
+                          </Text>
                         </View>
                       </View>
 
-                      <View style={styles.verification}>
-                        <MaterialIcons
-                          name="verified"
-                          size={16}
-                          color="#c3c3c3"
+                      <TouchableOpacity
+                        onPress={() => {
+                          toggleLike(emp.id);
+                        }}
+                        style={styles.heartTouchable}
+                      >
+                        <FontAwesome
+                          name={liked[emp.id] ? "heart" : "heart-o"}
+                          size={20}
+                          color={liked[emp.id] ? "#ff0000" : "#c3c3c3"}
                         />
-                        <Text style={styles.verificationText}>
-                          Verification Level: {emp?.verification_count || 0}/7
-                        </Text>
-                      </View>
+                      </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity
-                      onPress={() => {
-                        toggleLike(emp.id);
-                      }}
-                      style={styles.heartTouchable}
-                    >
-                      <FontAwesome
-                        name={liked[emp.id] ? "heart" : "heart-o"}
-                        size={20}
-                        color={liked[emp.id] ? "#ff0000" : "#c3c3c3"}
-                      />
-                    </TouchableOpacity>
-                  </View>
+                    <View style={styles.divider} />
 
-                  <View style={styles.divider} />
-
-                  <View style={styles.skills}>
-                    {(emp?.seller_services_for_search || []).map(
-                      (service, i) => (
+                    <View style={styles.skills}>
+                      {(showAllCategories
+                        ? emp?.seller_services_for_search || []
+                        : (emp?.seller_services_for_search || []).slice(0, 5)
+                      ).map((service, i) => (
                         <View style={styles.skill} key={i}>
                           <Text style={styles.skillText}>
                             {service?.sub_services?.ss_service_name ||
@@ -319,22 +316,35 @@ export default function EmployerDashboard() {
                               "Account"}
                           </Text>
                         </View>
-                      )
-                    )}
+                      ))}
+
+                      {emp?.seller_services_for_search?.length > 5 && (
+                        <TouchableOpacity
+                          onPress={() =>
+                            setShowAllCategories(!showAllCategories)
+                          }
+                          style={styles.showMoreBtn}
+                        >
+                          <Text style={styles.showMoreText}>
+                            {showAllCategories ? "Show less" : "Show more"}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+
+                    <TouchableOpacity
+                      style={styles.profileBtn}
+                      onPress={() =>
+                        navigation.navigate("EmployerProfilePage", {
+                          name: emp.name,
+                        })
+                      }
+                    >
+                      <Text style={styles.profileBtnText}>View Profile</Text>
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity
-                    style={styles.profileBtn}
-                    onPress={() =>
-                      navigation.navigate("EmployerProfilePage", {
-                        name: emp.name,
-                      })
-                    }
-                  >
-                    <Text style={styles.profileBtnText}>View Profile</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>   
+                ))}
+              </View>
             )}
           </>
         )}
@@ -434,7 +444,7 @@ export default function EmployerDashboard() {
           </View>
         </View>
       </Modal>
-     <EmployerFooter/>
+      <EmployerFooter />
     </SafeAreaView>
   );
 }
@@ -693,7 +703,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF1a",
     marginTop: 25,
     borderRadius: 10,
-    marginBottom:25
+    marginBottom: 25,
   },
   postBox: {
     padding: 7,
@@ -746,7 +756,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_600SemiBold",
     color: "#fff",
   },
-   overlay: {
+  overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.05)",
     justifyContent: "flex-start",
@@ -759,17 +769,33 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 8,
     paddingVertical: 7,
-    paddingHorizontal:8,
+    paddingHorizontal: 8,
     elevation: 7,
   },
- 
+
   text: {
     fontSize: 15,
     color: "#000",
   },
-    loaderOverlay: {
+  loaderOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  showMoreBtn: {
+    marginTop: 10,
+    paddingVertical: 7.5,
+    paddingHorizontal: 12,
+    backgroundColor: "#ececec",
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  showMoreText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#000",
   },
 });

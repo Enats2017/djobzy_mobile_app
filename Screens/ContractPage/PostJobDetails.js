@@ -88,7 +88,6 @@ const PostJobDetails = () => {
   const fetchachiveJob = async (id) => {
     try {
       const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(`${API_URL}/archieve`, {
         method: "POST",
         headers: {

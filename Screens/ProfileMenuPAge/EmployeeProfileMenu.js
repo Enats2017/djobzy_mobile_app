@@ -144,7 +144,17 @@ const EmployeeProfileMenu = () => {
                       <MenuItem icon="grid-outline" title="Dashborad" onPress={() => navigation.navigate("EmployerDashboard")}/>
                       
                     )}
-                    <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployeeAccount", { name: user?.name })}/>
+
+                    { user?.admin == 0 ?(
+                      <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployeeAccount", { name: user?.name })}/>
+
+                    ):(
+                      <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployerAccount", { name: user?.name })}/>
+
+                    )
+
+                    }
+                    
                   <MenuItem icon="star-outline" title="Reviews"  onPress={()=> navigation.navigate("ProfileReviewPage")}/>
                   <MenuItem icon="checkmark-done-outline" title="Verification" onPress={()=> navigation.navigate("EmployeeVerification")} />
                   <MenuItem icon="wallet-outline" title="Wallet" onPress={()=> navigation.navigate("Wallet")} />

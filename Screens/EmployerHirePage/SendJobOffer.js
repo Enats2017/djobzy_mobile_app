@@ -28,6 +28,8 @@ export default function SendJobOffer() {
   const [loading, setLoading] = useState(false);
   const route = useRoute();
   const { jobDetails } = route.params || {};
+
+  
   const handleHourlyChange = (value) => {
     setHourlyRate(value);
     const total = parseInt(totalPrice);
@@ -121,10 +123,10 @@ export default function SendJobOffer() {
         >
           <View style={styles.sendOfferTitleBlock}>
             <Text style={styles.sendOfferJobTitle}>
-              {jobDetails?.gig_details.subject}
+              {jobDetails?.gig_details?.subject}
             </Text>
             <Text style={styles.sendOfferPostedTime}>
-              {jobDetails.gig_details.created}
+              {jobDetails.gig_details?.created}
             </Text>
           </View>
           <View style={styles.sendOfferCardSection}>
@@ -162,7 +164,7 @@ export default function SendJobOffer() {
                       Total Price:{" "}
                     </Text>
                     <Text style={styles.sendOfferPricingHighlight}>
-                      CAD {jobDetails.gig_details.fixed_minimum || 0}
+                      CAD {jobDetails.gig_details?.fixed_minimum || 0}
                     </Text>
                   </Text>
                 </View>
@@ -172,7 +174,7 @@ export default function SendJobOffer() {
                       Hourly Rate:{" "}
                     </Text>
                     <Text style={styles.sendOfferPricingHighlight}>
-                      CAD:{jobDetails.gig_details.hour_minimum || 0}
+                      CAD:{jobDetails.gig_details?.hour_minimum || 0}
                     </Text>
                   </Text>
                 </View>
@@ -180,12 +182,12 @@ export default function SendJobOffer() {
               <Text style={styles.sendOfferProjectDuration}>
                 Project Length:{" "}
                 <Text style={styles.sendOfferPricingHighlight}>
-                  {jobDetails.gig_details.duration_days || []}
+                  {jobDetails.gig_details?.duration_days || []}
                 </Text>
               </Text>
               <View style={styles.sendOfferHourInfoRow}>
                 <Text style={styles.sendOfferHourInfo}>
-                  {jobDetails.gig_details.expected_hour} Hours{" "}
+                  {jobDetails.gig_details?.expected_hour} Hours{" "}
                 </Text>
                 <Text style={styles.sendOfferIsInfo}>
                   is expected for the job to be done.
@@ -259,7 +261,7 @@ export default function SendJobOffer() {
                 Description
               </Text>
               <Text style={styles.sendOfferCardText}>
-                {jobDetails.gig_details.description}
+                {jobDetails.gig_details?.description}
               </Text>
             </View>
           </View>

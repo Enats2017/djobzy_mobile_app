@@ -70,16 +70,16 @@ const Footer = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tab}
-            onPress={() => navigation.navigate("EmployeeProfileMenu")}
+            onPress={() => navigation.navigate("ProfileMenu")}
           >
             <Ionicons
               name="person"
               size={24}
-               color={isActive("EmployeeProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
+               color={isActive("ProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
             <Text  style={[
             styles.label,
-            isActive("EmployeeProfileMenu") && styles.activeText,
+            isActive("ProfileMenu") && styles.activeText,
           ]}>
               Profile
             </Text>

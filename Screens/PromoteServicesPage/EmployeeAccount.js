@@ -46,7 +46,6 @@ const EmployeeAccount = () => {
   const [copyModel, setCopyModel] = useState(false);
   const [copyText, setCopyText] = useState(employeeLink);
   const [modalVisible, setModalVisible] = useState(false);
-
   const [subcategory, setSubcategory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [shareModel, setShareModel] = useState(false);
@@ -59,8 +58,6 @@ const EmployeeAccount = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedName, setSelectedName] = useState("");
-
-  // remove the deleted item from local list
 
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();

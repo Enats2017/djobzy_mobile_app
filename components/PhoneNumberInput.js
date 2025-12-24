@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,13 +15,28 @@ const PhoneNumberInput = ({
   value = "",  
   onChange = () => {},
   placeholder = "Enter phone number",
+   defaultFlag = "🇮🇳",
+  defaultCallingCode = "+91",
+   
 }) => {
   const [showPicker, setShowPicker] = useState(false);
-  const [flag, setFlag] = useState("🇮🇳");
-  const [callingCode, setCallingCode] = useState("+91");
+  const [flag, setFlag] = useState(defaultFlag);
+  const [callingCode, setCallingCode] = useState(defaultCallingCode);
   const [phoneNumber, setPhoneNumber] = useState(value);
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => {
+    if (value) {
+      const digits = value.replace(/[^0-9]/g, "");
+      const code = callingCode.replace("+", "");
+
+      if (digits.startsWith(code)) {
+        setPhoneNumber(digits.slice(code.length));
+      } else {
+        setPhoneNumber(digits);
+      }
+    }
+  }, [value, callingCode]);
 
   const handleChange = (text) => {
     const digits = text.replace(/[^0-9]/g, "");

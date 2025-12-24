@@ -21,50 +21,101 @@ import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { useNavigation, useStateForPath } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "../../components/Footer";
+import { API_URL } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Loading from "../../components/Loading";
 
 const GeneralSetting = () => {
   const navigation = useNavigation();
+  const [setting, setSetting] = useState([]);
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(false);
+  const [employee, setEmployee] = useState([]);
+  const [employer, setEmployer] = useState([]);
+  const [details, setDetails] = useState([]);
+  const[phone, setPhone] = useState([]);
+
+
+  const fetchSetting = async () => {
+    setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const response = await fetch(`${API_URL}/setting`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+    const data = await response.json(); 
+    setSetting(data);  
+    setUsers(data.userDetails);
+    setEmployee(data.employee_services);
+    setEmployer(data.employer_services);
+    setDetails(data.mobileCountryDetails);
+    
+  } catch (error) {
+    console.log("API Error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+ useEffect(() => {
+    fetchSetting();
+  }, []);
+
+  
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           <PageNameHeaderBar title="General Settings" navigation={navigation} />
-          <View style={styles.menuContainer}>
-            <MenuItem
-              type="material"
-              icon="account-circle"
-              title="Account"
-              onPress={() => navigation.navigate("AccountSetting")}
-            />
-            <MenuItem
-              type="AntDesign"
-              icon="profile"
-              title="Profile Settings"
-              onPress={() => navigation.navigate("ProfileSetting")}
-            />
-            <MenuItem type="Font" icon="contact-book" title="Contact Info" onPress={()=>navigation.navigate("UserContactInfo")} />
-            <MenuItem
-              type="ion"
-              icon="wallet-outline"
-              title="Billing Methods"
-              onPress={()=>navigation.navigate("UserPaymentPage")}
-              
-            />
-            <MenuItem
-              type="ion"
-              icon="notifications-outline"
-              title="Notifications"
-              onPress={()=>navigation.navigate("UserNotification")}
-            />
-            <MenuItem type="material" icon="security" title="Security"  onPress={()=>navigation.navigate("UserSecurity")}/>
-            <MenuItem
-              type="ion"
-              icon="finger-print"
-              title="Identity Verification"
-              onPress={()=>navigation.navigate("IDVerificationUploadScreen")}
-            />
-            <MenuItem type="Octicons" icon="verified" title="Verification" />
-          </View>
+           {
+            loading?(
+              <Loading/>
+            ):(
+            <View style={styles.menuContainer}>
+              <MenuItem
+                type="material"
+                icon="account-circle"
+                title="Account"
+                onPress={() => navigation.navigate("AccountSetting", {user:users})}
+              />
+              <MenuItem
+                type="AntDesign"
+                icon="profile"
+                title="Profile Settings"
+                onPress={() => navigation.navigate("ProfileSetting",
+                  { employee:employee,
+                    employer:employer,
+                    
+                })}
+              />
+              <MenuItem type="Font" icon="contact-book" title="Contact Info" onPress={()=>navigation.navigate("UserContactInfo",{details:details, user:users})} />
+              <MenuItem
+                type="ion"
+                icon="wallet-outline"
+                title="Billing Methods"
+                onPress={()=>navigation.navigate("UserPaymentPage")}
+                
+              />
+              <MenuItem
+                type="ion"
+                icon="notifications-outline"
+                title="Notifications"
+                onPress={()=>navigation.navigate("UserNotification")}
+              />
+              <MenuItem type="material" icon="security" title="Security"  onPress={()=>navigation.navigate("UserSecurity")}/>
+              <MenuItem
+                type="ion"
+                icon="finger-print"
+                title="Identity Verification"
+                onPress={()=>navigation.navigate("IDVerificationUploadScreen")}
+              />
+              <MenuItem type="Octicons" icon="verified" title="Verification" onPress={() => navigation.navigate("EmployeeVerification")} />
+            </View>
+
+            )
+           }
           
         </View>
 

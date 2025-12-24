@@ -1,32 +1,111 @@
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, StyleSheet, Text, TextInput , TouchableOpacity} from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import GradientButton from "../../components/GradientButton";
 import { Ionicons } from "@expo/vector-icons";
 import BorderButton from "../../components/BorderButton";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { API_URL } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AccountSetting = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [email, setEmail] = useState("");
-  const[name, setName] = useState("");
+  const [name, setName] = useState("");
+  const [ username, setUsername] = useState("");
   const [code, setCode] = useState("");
   const [codeEnabled, setCodeEnabled] = useState(false);
   const [password, setPassword] = useState([]);
   const navigation = useNavigation();
-  const handleSend = () => {
-    if (!email) return;
-    setCodeEnabled(true);
-    // you can trigger API call here
+  const route = useRoute();
+  const { user } = route.params || {};
+
+  const handleConfirmPassword = async () => {
+    try {
+      if (!password) {
+        Alert.alert("Error", "Please enter your password");
+        return;
+      }
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/set-confirm-pass`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          setting_password: password,
+        }),
+      });
+      const data = await res.json();
+      console.log(data);
+      if (data.status === 200) {
+        setEmail(user?.email || "");
+        setName(user?.full_name || "");
+        setUsername(user?.name || "");
+        setActiveTab(1);
+      } else {
+        Alert.alert("Error", data.message);
+      }
+    } catch (error) {
+      console.log("Password confirm error:", error);
+      Alert.alert("Error", "Something went wrong");
+    }
   };
+
+  const handleSendEmailOtp = async () => {
+  try {
+    if (!email) {
+      Alert.alert("Error", "Please enter email");
+      return;
+    }
+
+    const token = await AsyncStorage.getItem("token");
+    const res = await fetch(`${API_URL}/send-email-link`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        email: email,
+      }),
+    });
+
+    const data = await res.json();
+    console.log("Send Email OTP:", data);
+
+    if (data.status === 200) {
+      Alert.alert("Success", "OTP sent to your email");
+      setCodeEnabled(true); 
+    } else {
+      Alert.alert("Error", data.message);
+    }
+  } catch (error) {
+    console.log("Send email OTP error:", error);
+    Alert.alert("Error", "Something went wrong");
+  }
+};
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           {activeTab == 0 && (
             <View style={styles.Section}>
-              <PageNameHeaderBar title="Account Setting" navigation={navigation} />
+              <PageNameHeaderBar
+                title="Account Setting"
+                navigation={navigation}
+              />
               <View style={styles.header}>
                 <Text style={styles.label}>Confirm Password</Text>
                 <Text style={styles.info}>
@@ -49,26 +128,23 @@ const AccountSetting = () => {
 
           {activeTab == 1 && (
             <View style={styles.Section}>
-              <PageNameHeaderBar title="Account" />
-              <Text style={styles.label}>Email</Text>
-                <View style={styles.emailContainer}>
-                    <TextInput
-                    style={styles.emailInput}
-                    placeholder="info.got@gmail.com"
-                    placeholderTextColor="#999"
-                    value={email}
-                    onChangeText={setEmail}
-                    />
+              <PageNameHeaderBar title="Account"  navigation={navigation}
+                 setActiveTab={setActiveTab} />
+               <Text style={styles.label}>Email</Text>
+              <View style={styles.emailContainer}>
+                <TextInput
+                  style={styles.emailInput}
+                  placeholder="info.got@gmail.com"
+                  placeholderTextColor="#999"
+                  value={email}
+                  onChangeText={setEmail}
+                />
 
-                    <TouchableOpacity
-                    style={styles.sendButton}
-                    onPress={handleSend}
-                    >
-                    <Ionicons name="paper-plane" size={20} color="#fff" />
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity style={styles.sendButton}  onPress={handleSendEmailOtp}>
+                  <Ionicons name="paper-plane" size={20} color="#fff" />
+                </TouchableOpacity>
+              </View>
 
-             
               <TextInput
                 style={[
                   styles.codeInput,
@@ -79,49 +155,41 @@ const AccountSetting = () => {
                 value={code}
                 onChangeText={setCode}
                 editable={codeEnabled}
-              /> 
+              />
               <View style={styles.namesection}>
                 <Text style={styles.label}>Full Name</Text>
                 <TextInput
-                    style={styles.passwordInput}
-                    placeholder="info.got"
-                    placeholderTextColor="#999"
-                    value={name}
-                    onChangeText={setName}
-                    />
-                    
-                    
-                </View>  
-                <View style={styles.namesection}>
+                  style={styles.passwordInput}
+                  placeholder="info.got"
+                  placeholderTextColor="#999"
+                  value={name}
+                  onChangeText={setName}
+                />
+              </View>
+              <View style={styles.namesection}>
                 <Text style={styles.label}>Username</Text>
                 <TextInput
-                    style={styles.passwordInput}
-                    placeholder="info.got@gmail.coom"
-                    placeholderTextColor="#999"
-                    value={name}
-                    onChangeText={setName}
-                    />
-                    
-                    
-                </View>  
+                  style={styles.passwordInput}
+                  placeholder="info.got@gmail.coom"
+                  placeholderTextColor="#999"
+                  value={username}
+                  onChangeText={setUsername}
+                />
+              </View>
             </View>
           )}
           <View style={styles.button}>
-           <GradientButton
-                title={activeTab === 0 ? "Continue" : "Save Changes"}
-                onPress={() => {
+            <GradientButton
+              title={activeTab === 0 ? "Continue" : "Save Changes"}
+              onPress={() => {
                 if (activeTab === 0) {
-                    setActiveTab(1);   // move to next tab
+                  handleConfirmPassword();
                 } else {
-                    
-                    console.log("Save API call here");
+                  console.log("Save API call here");
                 }
-                }}
+              }}
             />
-            {activeTab== 1 && (
-                <BorderButton title="Close your account"/>
-
-            )}
+            {activeTab == 1 && <BorderButton title="Close your account" />}
           </View>
         </View>
       </SafeAreaView>
@@ -157,8 +225,7 @@ const styles = StyleSheet.create({
   emailContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap:7, 
-    
+    gap: 7,
   },
   emailInput: {
     flex: 1,
@@ -166,8 +233,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     height: 45,
     borderRadius: 8,
-     backgroundColor: "#fff",
-    fontFamily: "Montserrat_400Regular"
+    backgroundColor: "#fff",
+    fontFamily: "Montserrat_400Regular",
   },
   sendButton: {
     width: 45,
@@ -175,7 +242,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: "#29a37d",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   codeInput: {
     marginTop: 12,
@@ -183,14 +250,14 @@ const styles = StyleSheet.create({
     height: 45,
     paddingHorizontal: 10,
     color: "#000",
-    fontFamily: "Montserrat_400Regular"
+    fontFamily: "Montserrat_400Regular",
   },
-  namesection:{
-    paddingTop:15
+  namesection: {
+    paddingTop: 15,
   },
-  button:{
-    paddingTop:20
-  }
+  button: {
+    paddingTop: 20,
+  },
 });
 
 export default AccountSetting;

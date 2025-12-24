@@ -7,7 +7,7 @@ import {
   Image,
   StyleSheet,
   Alert,
-
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +17,10 @@ import GradientButton from "../../components/GradientButton";
 import Footer from "../../components/Footer";
 import { useServiceGlobalStore } from "./ServiceGlobalStore";
 import * as ImagePicker from "expo-image-picker";
+import { useState } from "react";
+import Entypo from "@expo/vector-icons/Entypo";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../api/ApiUrl";
 
 const PromoteService = () => {
   const navigation = useNavigation();
@@ -29,9 +33,16 @@ const PromoteService = () => {
     images,
     setField,
     addImage,
-    removeImage,
+    removeImage,  
+    setCategories,
+    setSubcategories
+    
   } = useServiceGlobalStore();
   const { expectedTime, setExpectedTime } = useServiceGlobalStore();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [titleModal, setTitleModal] = useState(false);
+  const [templates, setTemplates] = useState([]);
 
   const titleLimit = 60;
   const descLimit = 500;
@@ -84,7 +95,6 @@ const PromoteService = () => {
     setExpectedTime(Math.ceil(expected));
   };
 
-
   // ---------------------------
   // Pick Image from Gallery
   // ---------------------------
@@ -103,6 +113,85 @@ const PromoteService = () => {
     }
   };
 
+  const fetchTemplates = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/get-template`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          type: 2,
+          page_type: 0,
+        }),
+      });
+      const data = await res.json();
+      
+      
+      if (data.status === 200) {
+        setTemplates(data.result);
+      }
+    } catch (error) {
+      console.log("Template API error:", error);
+    }
+  };
+
+  const handleTemplateSelect = async (item) => {
+  try {
+    
+    setSelectedTemplate(item.title);
+
+    const token = await AsyncStorage.getItem("token");
+
+    const res = await fetch(`${API_URL}/fetchDetails`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        id: item.id,
+        type: 2,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.status === 200) {
+      const result = data.result;
+
+      setField("title", result.title || "");
+      setField("description", result.description || "");
+      setField("hourlyRate", result.hour_minimum?.toString() || "");
+      setField("totalPrice", result.price?.toString() || "");
+      store.setExpectedTime(result.time_hours || 0);
+       result.subcategories?.forEach((name, i) => {
+      store.addCategory({ subId: i + 1, name });
+    });
+
+   
+
+      // OPTIONAL: Images
+      if (result.attachment?.length) {
+        result.attachment.forEach((img) => {
+          addImage({ uri: img.attach });
+        });
+      }
+
+      setShowDropdown(false);
+      
+    }
+  } catch (err) {
+    console.log("Template detail error:", err);
+  } 
+};
+
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -116,7 +205,19 @@ const PromoteService = () => {
           showsVerticalScrollIndicator={false}
         >
           {/* Title */}
-          <Text style={styles.label}>Service Title</Text>
+
+          <View style={styles.template}>
+            <Text style={styles.label}>Service Title</Text>
+
+            <TouchableOpacity
+              onPress={() => {
+                setTitleModal(true);
+                fetchTemplates();
+              }}
+            >
+              <Text style={styles.templatetext}>Use Template</Text>
+            </TouchableOpacity>
+          </View>
           <TextInput
             style={styles.input}
             value={title}
@@ -189,7 +290,14 @@ const PromoteService = () => {
               placeholderTextColor="#999"
             />
           </View>
-          <Text style={{ color: "#fff", marginTop: 10, fontSize: 12, fontStyle: "italic", }}>
+          <Text
+            style={{
+              color: "#fff",
+              marginTop: 10,
+              fontSize: 12,
+              fontStyle: "italic",
+            }}
+          >
             Expected Time Range: {expectedTime} hours
           </Text>
 
@@ -224,7 +332,103 @@ const PromoteService = () => {
           />
         </View>
       </View>
+      <Modal
+        visible={titleModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setTitleModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                Use template to make it easy
+              </Text>
 
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedTemplate(null);
+                  setShowDropdown(false);
+                  setTitleModal(false);
+                }}
+              >
+                <Ionicons name="close" size={24} color="#303030" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalSubtitle}>
+              You can use any your previously created job post as a template
+            </Text>
+
+            <TouchableOpacity
+              style={[
+                styles.dropdown,
+                { marginBottom: 12 },
+                selectedTemplate && { borderColor: "#000000" },
+              ]}
+              onPress={() => setShowDropdown(!showDropdown)}
+            >
+              <Text
+                style={[
+                  styles.dropdownText,
+                  selectedTemplate
+                    ? { color: "#000000" }
+                    : { color: "#666666" },
+                ]}
+              >
+                {selectedTemplate ? selectedTemplate : "Choose Template"}
+              </Text>
+
+              <Entypo name="chevron-small-down" size={22} color="#666666" />
+            </TouchableOpacity>
+
+            {showDropdown && (
+              <View style={styles.dropdownList}>
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  {templates.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.dropdownItem}
+                      onPress={() =>{ handleTemplateSelect(item);
+                        setShowDropdown(false);
+
+                      }}
+                    >
+                      <Text style={styles.dropdownItemText}>{item.title}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            <TouchableOpacity
+              disabled={!selectedTemplate}
+              style={[
+                styles.useTemplateButton,
+                !selectedTemplate && { opacity: 0.5 },
+              ]}
+               onPress={() => {
+                setSelectedTemplate(null);
+                setShowDropdown(false);
+                setTitleModal(false);
+              }}
+            >
+              <Text style={styles.useTemplateButtonText}>Use a template</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.newJobButton}
+              onPress={() => {
+                setSelectedTemplate(null);
+                setShowDropdown(false);
+                setTitleModal(false);
+              }}
+            >
+              <Text style={styles.newJobButtonText}>Start a New Job</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <Footer />
     </SafeAreaView>
   );
@@ -235,7 +439,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollView: {
-    paddingBottom: 100
+    paddingBottom: 100,
   },
   container: {
     flex: 1,
@@ -270,7 +474,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginTop: 15,
-
   },
   inlineInputContainer: {
     flexDirection: "row",
@@ -306,8 +509,118 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_600SemiBold",
   },
   categoryBtn: {
-    paddingBottom: 90
+    paddingBottom: 90,
+  },
+  template: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  templatetext: {
+    color: "#ebbe56",
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ebbe56",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+  },
+  modalContainer: {
+    backgroundColor: "#ffffff",
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontFamily: "Montserrat_600SemiBold",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#303030",
+  },
+  closeIcon: {
+    fontSize: 20,
+    color: "#000000",
+  },
+  modalSubtitle: {
+    marginTop: 6,
+    fontSize: 14,
+    fontFamily: "Montserrat_400Regular",
+    color: "#303030",
+    marginBottom: 20,
+  },
+  dropdown: {
+    borderWidth: 1,
+    borderColor: "#00000033",
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 15,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  dropdownText: {
+    color: "#666666",
+    fontSize: 16,
+    fontFamily: "Montserrat_500Medium",
+  },
+  chevron: {
+    fontSize: 16,
+    color: "#666",
+  },
+  useTemplateButton: {
+    backgroundColor: "#d17b68",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  useTemplateButtonText: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontFamily: "Montserrat_700Bold",
+  },
+  newJobButton: {
+    borderWidth: 1,
+    borderColor: "#000000",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  newJobButtonText: {
+    color: "#000000",
+    fontSize: 20,
+    fontFamily: "Montserrat_600SemiBold",
   },
 
+  dropdownList: {
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    overflow: "hidden",
+    marginBottom: 8,
+  },
+
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+
+  dropdownItemText: {
+    fontSize: 15,
+    color: "#444",
+    fontFamily: "Montserrat_500Medium",
+  },
 });
 export default PromoteService;

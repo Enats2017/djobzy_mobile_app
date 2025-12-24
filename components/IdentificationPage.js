@@ -1,17 +1,15 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-} from "react-native";
+import React,{useState} from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { Ionicons, Foundation } from "@expo/vector-icons";
+
 import { Picker } from "@react-native-picker/picker";
 
 const Identity = ({
   heading = "Update Identity Verification",
   documentTypes = ["Driving license", "Passport", "Aadhar Card"],
   selectedType,
+  openDropdown,
+  setOpenDropdown =()=>{},
   onSelectType = () => {},
   onUploadPersonal = () => {},
   onUploadFront = () => {},
@@ -26,24 +24,43 @@ const Identity = ({
 
       {/* Dropdown */}
       <View style={styles.dropdownWrapper}>
-        <Picker
-          selectedValue={selectedType}
-          onValueChange={(itemValue) => onSelectType(itemValue)}
-          style={styles.dropdown}
-        >
-          {documentTypes.map((item, index) => (
-            <Picker.Item label={item} value={item} key={index} />
-          ))}
-        </Picker>
-      </View>
+          <TouchableOpacity
+            style={styles.dropdownHeader}
+            onPress={() => setOpenDropdown(!openDropdown)}
+          >
+            <Text style={styles.dropdownText}>{selectedType}</Text>
+            <Ionicons
+              name={openDropdown ? "chevron-up" : "chevron-down"}
+              size={22}
+            />
+          </TouchableOpacity>
+          {openDropdown && (
+            <View style={styles.dropdownBody}>
+              {documentTypes.map((item, index) => (
+                <View key={index}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      onSelectType(item);
+                      setOpenDropdown(false);
+                    }}
+                    style={styles.dropdownItem}
+                  >
+                    <Text style={styles.dropdownItemText}>{item}</Text>
+                  </TouchableOpacity>
+                  {index !== documentTypes.length - 1 && <View style={styles.divider} />}
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
 
       {/* Personal Photo Upload */}
       <View style={styles.uploadBox}>
-        <TouchableOpacity style={styles.uploadButton} onPress={onUploadPersonal}>
-          <Image
-            source={{ uri: "https://img.icons8.com/ios/50/upload--v1.png" }}
-            style={styles.uploadIcon}
-          />
+        <TouchableOpacity
+          style={styles.uploadButton}
+          onPress={onUploadPersonal}
+        >
+          <Foundation name="upload" size={24} color="#fff" />
           <Text style={styles.uploadText}>Upload File</Text>
         </TouchableOpacity>
       </View>
@@ -51,20 +68,28 @@ const Identity = ({
       {/* Front & Back */}
       <View style={styles.row}>
         <View style={styles.uploadBoxSmall}>
-          <TouchableOpacity style={styles.uploadButton} onPress={onUploadFront}>
-            <Image
-              source={{ uri: "https://img.icons8.com/ios/50/upload--v1.png" }}
-              style={styles.uploadIcon}
-            />
+          <TouchableOpacity
+            style={styles.uploadButton}
+            onPress={() => {
+              console.log("BUTTON ` `");
+              onUploadFront();
+            }}
+          >
+                      <Foundation name="upload" size={24} color="#fff" />
+
             <Text style={styles.uploadText}>Upload File</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.uploadBoxSmall}>
-          <TouchableOpacity style={styles.uploadButton} onPress={onUploadBack}>
-            <Image
-              source={{ uri: "https://img.icons8.com/ios/50/upload--v1.png" }}
-              style={styles.uploadIcon}
-            />
+          <TouchableOpacity
+            style={styles.uploadButton}
+            onPress={() => {
+              console.log("Back Button Pressed");
+              onUploadBack();
+            }}
+          >
+                      <Foundation name="upload" size={24} color="#fff" />
+
             <Text style={styles.uploadText}>Upload File</Text>
           </TouchableOpacity>
         </View>
@@ -89,20 +114,67 @@ const Identity = ({
 export default Identity;
 
 const styles = StyleSheet.create({
-
   heading: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#fff",
-    fontWeight: "600",
+    
     marginBottom: 15,
+    fontFamily: "Montserrat_600SemiBold",
   },
   dropdownWrapper: {
+    width: "100%",
+  },
+  dropdownHeader: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: "#444",
+  },
+  dropdownBody: {
+    marginTop: 6,
     backgroundColor: "#fff",
     borderRadius: 8,
-    marginBottom: 18,
+    paddingVertical: 4,
+    elevation: 4,
   },
-  dropdown: {
-    height: 45,
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    color: "#222",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#ddd",
+    marginHorizontal: 10,
+  },
+  
+  uploadButton: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  uploadBoxSmall: {
+    borderStyle: "dashed",
+    borderWidth: 2,
+    borderColor: "#777",
+    borderRadius: 8,
+    height: 95,
+    width: "48%",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden", // IMPORTANT
   },
   uploadBox: {
     borderStyle: "dashed",
@@ -113,17 +185,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 18,
+    overflow: "hidden", // IMPORTANT
   },
-  uploadBoxSmall: {
-    borderStyle: "dashed",
-    borderWidth: 2,
-    borderColor: "#777",
-    borderRadius: 8,
-    height: 95,
-    width: "48%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+
   row: {
     flexDirection: "row",
     justifyContent: "space-between",

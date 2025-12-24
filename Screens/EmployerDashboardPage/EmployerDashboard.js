@@ -81,7 +81,7 @@ export default function EmployerDashboard() {
                   navigation.navigate("Followers", { activeTab: "following" });
                 }}
               >
-                <Text style={styles.text}>Followers</Text>
+                <Text style={styles.text}>Following</Text>
               </TouchableOpacity>
               <LineDivider marginVertical={12} />
 
@@ -92,7 +92,7 @@ export default function EmployerDashboard() {
                   navigation.navigate("Followers", { activeTab: "follower" });
                 }}
               >
-                <Text style={styles.text}>Following</Text>
+                <Text style={styles.text}>Follower</Text>
               </TouchableOpacity>
 
               <LineDivider marginVertical={12} />

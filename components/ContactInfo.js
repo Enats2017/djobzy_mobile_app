@@ -5,6 +5,9 @@ import PhoneNumberInput from "./PhoneNumberInput";
 const ContactInfo = ({
   phoneValue,
   onChangePhone,
+   countryFlag,
+  countryCode,
+
   postalCodeValue,
   onChangePostalCode,
   locationValue,
@@ -22,14 +25,15 @@ const ContactInfo = ({
     <View style={[styles. infosection, containerStyle]}>
       {showPhone && (
         <>
-          <Text style={styles.label}>{label}</Text>
-          <PhoneNumberInput value={phoneValue} onChangeText={onChangePhone} />
+          <Text style={styles.label}></Text>
+          <PhoneNumberInput value={phoneValue} onChangeText={onChangePhone} defaultFlag={countryFlag}
+        defaultCallingCode={countryCode}  />
         </>
       )}
 
       {showPostal && (
         <View style={styles.field}>
-          <Text style={styles.label}>{label}</Text>
+          <Text style={styles.label}>Postal Code</Text>
           <TextInput
             style={[styles.input, inputStyle]}
             placeholder={postalPlaceholder}
@@ -42,7 +46,7 @@ const ContactInfo = ({
 
       {showLocation && (
         <View style={styles.field}>
-          <Text style={styles.label}>{label}</Text>
+          <Text style={styles.label}>Location</Text>
           <TextInput
             style={[styles.input, inputStyle]}
             placeholder={locationPlaceholder}

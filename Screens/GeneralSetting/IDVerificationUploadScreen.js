@@ -1,128 +1,129 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  StatusBar,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { Dropdown } from "react-native-element-dropdown";
-import { Ionicons, Foundation } from "@expo/vector-icons";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import PageNameHeaderBar from "../../components/PageNameHeaderBar";
+import { Ionicons } from "@expo/vector-icons";
 import UploadBox from "../../components/UploadBox";
 import GradientButton from "../../components/GradientButton";
+import { API_URL } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import PageNameHeaderBar from "../../components/PageNameHeaderBar";
+import { useNavigation } from "@react-navigation/native";
 
 export default function IDVerificationUploadScreen() {
   const [openDropdown, setOpenDropdown] = useState(false);
-  const [selected, setSelected] = useState("Blog Categories");
-  const [method, setMethod] = useState(null);
-  const [isFocus, setIsFocus] = useState(false);
+  const [selected, setSelected] = useState("Select Document Type");
+  const [personalPhoto, setPersonalPhoto] = useState(null);
+  const [docFront, setDocFront] = useState(null);
+  const [docBack, setDocBack] = useState(null);
   const navigation = useNavigation();
 
-  const data = ["Driving license", "Passport", "National ID"];
+  const data = ["Driving License", "Passport", "National ID"];
+
+  const handleVerify = async () => {
+    if (
+      !personalPhoto ||
+      !docFront ||
+      !docBack ||
+      selected === "Select Document Type"
+    ) {
+      Alert.alert("Error", "Please upload all required images");
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("card_type", selected);
+
+    formData.append("FacePhoto", {
+      uri: personalPhoto.uri,
+       name: "face.jpg",
+      type: "image/jpeg",
+    });
+
+    formData.append("DocumentFront", {
+      uri: docFront.uri,
+       name: "front.jpg",
+      type: "image/jpeg",
+    });
+
+    formData.append("DocumentBack", {
+      uri: docBack.uri,
+        name: "back.jpg",
+      type: "image/jpeg",
+    });
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/doc-verify`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      console.log("API RESPONSE:", data);
+      if (data.status == 200) {
+        Alert.alert("Success", "Document verified successfully");
+      } else {
+        Alert.alert("Error", data.message);
+      }
+
+    } catch (err) {
+      console.log("UPLOAD ERROR:", err);
+      Alert.alert("Error", "Upload failed");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <PageNameHeaderBar
-          title="Identity Verification"
-          navigation={navigation}
-        />
-        <Text style={styles.title}>Update Identity Verification</Text>
-        <View style={styles.dropdownWrapper}>
+        <PageNameHeaderBar title="Identity Verification" navigation={navigation} />
+        <View>
+          <Text style={styles.title}>Identity Verification</Text>
+
+          {/* Dropdown */}
           <TouchableOpacity
             style={styles.dropdownHeader}
             onPress={() => setOpenDropdown(!openDropdown)}
           >
             <Text style={styles.dropdownText}>{selected}</Text>
-            <Ionicons
-              name={openDropdown ? "chevron-up" : "chevron-down"}
-              size={22}
-            />
+            <Ionicons name="chevron-down" size={20} />
           </TouchableOpacity>
+
           {openDropdown && (
             <View style={styles.dropdownBody}>
               {data.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelected(item);
-                      setOpenDropdown(false);
-                    }}
-                    style={styles.dropdownItem}
-                  >
-                    <Text style={styles.dropdownItemText}>{item}</Text>
-                  </TouchableOpacity>
-                  {index !== data.length - 1 && <View style={styles.divider} />}
-                </View>
+                <TouchableOpacity
+                  key={index}
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setSelected(item);
+                    setOpenDropdown(false);
+                  }}
+                >
+                  <Text>{item}</Text>
+                </TouchableOpacity>
               ))}
             </View>
           )}
-        </View>
-        {/* <Dropdown
-          style={[styles.dropdown, isFocus && {borderColor: '#e27f73'}]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          data={data}
-          maxHeight={200}
-          labelField="label"
-          valueField="value"
-          placeholder={!isFocus ? 'Select document type' : '...'}
-          value={method}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={item => {
-            setMethod(item.value);
-            setIsFocus(false);
-          }}
-          renderRightIcon={() => <Text style={styles.chev}>▾</Text>}
-        /> */}
-        <View style={{ paddingTop: 20 }}>
+
+          {/* Personal Photo */}
           <Text style={styles.sectionLabel}>Personal Photo</Text>
-          <UploadBox
-            label="Upload Personal Photo"
-            type="image"
-            onSelect={(file) => {
-              console.log("Selected image:", file);
-            }}
-          />
+          <UploadBox label="Upload Personal Photo" onSelect={setPersonalPhoto} />
 
-          <Text style={[styles.sectionLabel, { marginTop: 14 }]}>
-            Document Image (Front)* & (Back)
-          </Text>
+          {/* Document Images */}
+          <Text style={styles.sectionLabel}>Document Images (Front & Back)</Text>
           <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.uploadBox, styles.smallBox]}
-              activeOpacity={0.8}
-            >
-              <Foundation name="upload" size={24} color="#fff" />
-              <Text style={styles.uploadText}>Upload File</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.uploadBox, styles.smallBox]}
-              activeOpacity={0.8}
-            >
-              <Foundation name="upload" size={24} color="#fff" />
-              <Text style={styles.uploadText}>Upload File</Text>
-            </TouchableOpacity>
+            <UploadBox label="Front Image" small onSelect={setDocFront} />
+            <UploadBox label="Back Image" small onSelect={setDocBack} />
           </View>
 
-            <GradientButton title="Verify Identity"/>
-          <View style={styles.badgesRow}>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>ID Verification</Text>
-              <Text style={styles.badgeTick}>✔</Text>
-            </View>
-
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>Interview</Text>
-              <Text style={styles.badgeTick}>✔</Text>
-            </View>
-          </View>
         </View>
+
+        <GradientButton title="Verify Identity" onPress={handleVerify} />
       </View>
     </SafeAreaView>
   );
@@ -130,7 +131,7 @@ export default function IDVerificationUploadScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  container: { paddingHorizontal: 20, flex: 1, backgroundColor: "#222222" },
+  container: { paddingHorizontal: 15, flex: 1, backgroundColor: "#222222" },
   title: {
     color: "#fff",
     fontSize: 18,
@@ -146,6 +147,7 @@ const styles = StyleSheet.create({
 
   dropdownWrapper: {
     width: "100%",
+    marginBottom:15,
   },
   dropdownHeader: {
     backgroundColor: "#f5f5f5",
@@ -154,6 +156,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+     marginBottom:15,
   },
   dropdownText: {
     fontSize: 16,

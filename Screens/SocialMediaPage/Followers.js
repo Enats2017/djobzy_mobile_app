@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Text,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import SearchBar from "../../components/SearchBar";
@@ -26,6 +27,7 @@ import Footer from "../../components/Footer";
 import { useNavigation } from "@react-navigation/native";
 import { API_URL, API_ICON } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Loading from "../../components/Loading";
 
 const Followers = () => {
   const route = useRoute();
@@ -36,101 +38,15 @@ const Followers = () => {
   const [followersData, setFollowersData] = useState([]);
   const [profile, setProfile] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingUserId, setLoadingUserId] = useState(null);
+
+  const [count, setCount] = useState([]);
+  const [user, setUser] = useState();
 
   const renderStars = (rating) => {
     if (!rating || rating <= 0) return "⭐";
     return "⭐".repeat(Math.round(rating));
   };
-
-  // const followingData = [
-  //   {
-  //     id: 1,
-  //     name: "Sushi",
-  //     rating: 5,
-  //     jobs: 3,
-  //     img:  "https://randomuser.me/api/portraits/men/44.jpg",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Aman",
-  //     rating: 4,
-  //     jobs: 3,
-  //     img: "https://randomuser.me/api/portraits/men/5.jpg",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Nabil",
-  //     rating: 4,
-  //     jobs: 2,
-  //     img: "https://randomuser.me/api/portraits/men/6.jpg",
-  //   },
-  //    {
-  //     id: 4,
-  //     name: "Swaym",
-  //     rating: 4,
-  //     jobs: 2,
-  //     img: "https://randomuser.me/api/portraits/men/7.jpg",
-  //   },
-  //    {
-  //     id: 5,
-  //     name: "Sashi",
-  //     rating: 4,
-  //     jobs: 2,
-  //     img: "https://randomuser.me/api/portraits/women/20.jpg",
-  //   },
-  //    {
-  //     id: 6,
-  //     name: "Sashi",
-  //     rating: 4,
-  //     jobs: 2,
-  //     img: "https://randomuser.me/api/portraits/women/21.jpg",
-  //   },
-  //    {
-  //     id: 7,
-  //     name: "Sashi",
-  //     rating: 4,
-  //     jobs: 2,
-  //     img: "https://randomuser.me/api/portraits/women/22.jpg",
-  //   },
-  // ];
-
-  // const followersData = [
-  //   {
-  //     id: 1,
-  //     name: "Sushi",
-  //     rating: 5,
-  //     jobs: 3,
-  //     img: "https://randomuser.me/api/portraits/women/12.jpg",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Ayaush",
-  //     rating: 4,
-  //     jobs: 3,
-  //     img: "https://randomuser.me/api/portraits/men/10.jpg",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Abhishek",
-  //     rating: 4,
-  //     jobs: 2,
-  //     img: "https://randomuser.me/api/portraits/men/15.jpg",
-  //   },
-  //    {
-  //     id: 4,
-  //     name: "Gulzar",
-  //     rating: 4,
-  //     jobs: 2,
-  //     img: "https://randomuser.me/api/portraits/men/15.jpg",
-  //   },
-  //    {
-  //     id: 5,
-  //     name: "Sashi",
-  //     rating: 4,
-  //     jobs: 2,
-  //     img: "https://randomuser.me/api/portraits/men/15.jpg",
-  //   },
-  // ];
 
   const fetchFollowersAndFollowing = async () => {
     try {
@@ -150,10 +66,10 @@ const Followers = () => {
         },
       });
       const followersJson = await followersRes.json();
-
       if (followingJson.status === 200) {
+        setCount(followersJson);
         setFollowingData(followingJson.liked_users);
-        setProfile(followingJson.profile)
+        setProfile(followingJson.profile);
       }
       if (followersJson.status === 200) {
         setFollowersData(followersJson.followers);
@@ -168,157 +84,274 @@ const Followers = () => {
     fetchFollowersAndFollowing();
   }, []);
 
+  const handleFollow = async (userId) => {
+    setLoadingUserId(userId);
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/followUser`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      const data = await res.json();
+      console.log(data);
+
+      if (data.status === 200) {
+        setFollowingData((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, is_followed_by_auth_user: true } : u
+          )
+        );
+
+        setFollowersData((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, is_followed_by_auth_user: true } : u
+          )
+        );
+      }
+    } catch (err) {
+      console.log("Follow error:", err);
+    } finally {
+      setLoadingUserId(null);
+    }
+  };
+
+  const handleUnfollow = async (userId) => {
+    console.log(userId);
+    setLoadingUserId(userId);
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/unfollowUser`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      const data = await res.json();
+      console.log(data);
+      if (data.status === 200) {
+        setFollowingData((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, is_followed_by_auth_user: false } : u
+          )
+        );
+        setFollowersData((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, is_followed_by_auth_user: false } : u
+          )
+        );
+      }
+    } catch (err) {
+      console.log("Unfollow error:", err);
+    } finally {
+      setLoadingUserId(null);
+    }
+  };
+
   const currentList = activeTab === "following" ? followingData : followersData;
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.row}>
-        <Image
-          source={{
-            uri: item.profile_image
-              ? item.profile_image
-              : "https://via.placeholder.com/150",
-          }}
-          style={styles.imglogo}
-        />
-
-        <View style={styles.ratingsection}>
-          <View style={styles.ratingrow}>
-            <Text style={styles.name}>{item.full_name}</Text>
-            <Text style={styles.rating}>{renderStars(item.rating)}</Text>
+  const renderItem = ({ item }) => {
+    return (
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Image
+            source={{
+              uri: item.profile_image
+                ? item.profile_image
+                : "https://via.placeholder.com/150",
+            }}
+            style={styles.imglogo}
+          />
+          <View style={styles.ratingsection}>
+            <View style={styles.ratingrow}>
+              <Text style={styles.followname}>{item.full_name}</Text>
+              <Text style={styles.rating}>{renderStars(item.rating)}</Text>
+            </View>
+            <View style={styles.iconbox}>
+              <MaterialIcons name="verified" size={18} color="#34A853" />
+              <Text style={styles.infoText}>{item.verification_count}</Text>
+            </View>
           </View>
-          <View style={styles.iconbox}>
-            <MaterialIcons name="verified" size={18} color="#34A853" />
-            <Text style={styles.infoText}>{item.verification_count}</Text>
-          </View>  
         </View>
-      </View>
-
-      {activeTab === "following" ? (
-        <TouchableOpacity
-          style={styles.unfollowBtn}
-          // onPress={() => handleUnfollow(item.id)}
-        >
-          <Text style={styles.unfollowText}>Unfollow</Text>
-        </TouchableOpacity>
-      ) : (
-        !item.is_followed_by_auth_user && (
+        {activeTab === "following" ? (
+          item.is_followed_by_auth_user ? (
+            <TouchableOpacity
+              style={styles.followBtn}
+              onPress={() => handleFollow(item.user_id)}
+            >
+              <Text style={styles.followText}>Follow</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.unfollowBtn}
+              onPress={() => handleUnfollow(item.user_id)}
+            >
+              <Text style={styles.unfollowText}>Unfollow</Text>
+            </TouchableOpacity>
+          )
+        ) : item.is_followed_by_auth_user ? (
+          <TouchableOpacity
+            style={styles.followingBtn}
+            onPress={() => handleUnfollow(item.id)}
+            disabled={loadingUserId === item.id}
+          >
+            {loadingUserId === item.id ? (
+              <ActivityIndicator color="#272626ff" size="small" />
+            ) : (
+              <Text style={styles.followingText}>Following</Text>
+            )}
+          </TouchableOpacity>
+        ) : (
           <TouchableOpacity
             style={styles.followBtn}
-            // onPress={() => handleFollow(item.id)}
+            onPress={() => handleFollow(item.id)}
+            disabled={loadingUserId === item.id}
           >
-            <Text style={styles.followText}>Follow</Text>
+            {loadingUserId === item.id ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Text style={styles.followText}>Follow Back</Text>
+            )}
           </TouchableOpacity>
-        )
-      )}
-    </View>
-  );
+        )}
+      </View>
+    );
+  };
 
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           <View style={styles.Header}>
-            <PageNameHeaderBar navigation={navigation} />
+            <PageNameHeaderBar navigation={navigation} paddingTop={27} />
             <SearchBar
-              placeholder="My Followers"
+              placeholder={
+                activeTab == "follower" ? "My Followers" : "My Following"
+              }
               showFilter={false}
               showDots={false}
             />
           </View>
-          <View style={styles.profileCard}>
-            <View style={styles.profileinfo}>
-              <View style={styles.profileRow}>
-                <Image
-                  source={{
-                    uri: "https://randomuser.me/api/portraits/women/44.jpg",
-                  }}
-                  style={styles.avatar}
-                />
-                <View style={styles.profileInfoRow}>
-                  <Text style={styles.name}>{profile?.full_name}</Text>
-                  <View style={styles.iconbox}>
-                    <Octicons name="clock-fill" size={12} color="#c3c3c3c3" />
-                    <Text style={styles.infoText}>GMT+05:30</Text>
-                  </View>
-                  <View style={styles.iconbox}>
-                    <MaterialIcons
-                      name="verified"
-                      size={14}
-                      color="#c3c3c3c3"
+          {loading ? (
+            <Loading />
+          ) : (
+            <>
+              <View style={styles.profileCard}>
+                <View style={styles.profileinfo}>
+                  <View style={styles.profileRow}>
+                    <Image
+                      source={{
+                        uri: "https://randomuser.me/api/portraits/women/44.jpg",
+                      }}
+                      style={styles.avatar}
                     />
-                    <Text style={styles.infoText}>Verification Level: 5/7</Text>
-                  </View>
-                  <View style={styles.iconbox}>
-                    <Entypo name="location-pin" size={14} color="#c3c3c3c3" />
-                    <Text style={styles.infoText}>Mumbai, Maharshtra</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-            <LineDivider />
-            <ScrollView
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-            >
-              <View style={styles.statsRow}>
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>2</Text>
-                  <Text style={styles.statLabel}>Number of Jobs</Text>
-                </View>
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>12</Text>
-                  <Text style={styles.statLabel}>Money Earned</Text>
-                </View>
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>12</Text>
-                  <Text style={styles.statLabel}>My Followers</Text>
-                </View>
-              </View>
-            </ScrollView>
-          </View>
-          <View style={styles.tabWrapper}>
-            <TouchableOpacity
-              style={[
-                styles.tabBtn,
-                activeTab === "following" && styles.activeTab,
-              ]}
-              onPress={() => setActiveTab("following")}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === "following" && styles.activeText,
-                ]}
-              >
-                Following
-              </Text>
-            </TouchableOpacity>
+                    <View style={styles.profileInfoRow}>
+                      <Text style={styles.name}>{profile?.full_name}</Text>
 
-            <TouchableOpacity
-              style={[
-                styles.tabBtn,
-                activeTab === "follower" && styles.activeTab,
-              ]}
-              onPress={() => setActiveTab("follower")}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === "follower" && styles.activeText,
-                ]}
-              >
-                Followers
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={currentList}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
-            ItemSeparatorComponent={() => <LineDivider />}
-            contentContainerStyle={{ paddingBottom: 30 }}
-          />
+                      <View style={styles.iconbox}>
+                        <Octicons
+                          name="clock-fill"
+                          size={12}
+                          color="#c3c3c3c3"
+                        />
+                        <Text style={styles.infoText}>GMT+05:30</Text>
+                      </View>
+                      <View style={styles.iconbox}>
+                        <MaterialIcons
+                          name="verified"
+                          size={14}
+                          color="#c3c3c3c3"
+                        />
+                        <Text style={styles.infoText}>
+                          Verification Level: {profile.verification_count}/7
+                        </Text>
+                      </View>
+                      <View style={styles.iconbox}>
+                        <Entypo
+                          name="location-pin"
+                          size={14}
+                          color="#c3c3c3c3"
+                        />
+                        <Text style={styles.infoText}>Mumbai, Maharshtra</Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+                <LineDivider />
+                <ScrollView
+                  horizontal={true}
+                  showsHorizontalScrollIndicator={false}
+                >
+                  <View style={styles.statsRow}>
+                    <View style={styles.statBox}>
+                      <Text style={styles.statValue}>2</Text>
+                      <Text style={styles.statLabel}>Number of Jobs</Text>
+                    </View>
+                    <View style={styles.statBox}>
+                      <Text style={styles.statValue}>12</Text>
+                      <Text style={styles.statLabel}>Money Earned</Text>
+                    </View>
+                    <View style={styles.statBox}>
+                      <Text style={styles.statValue}>12</Text>
+                      <Text style={styles.statLabel}>My Followers</Text>
+                    </View>
+                  </View>
+                </ScrollView>
+              </View>
+              <View style={styles.tabWrapper}>
+                <TouchableOpacity
+                  style={[
+                    styles.tabBtn,
+                    activeTab === "following" && styles.activeTab,
+                  ]}
+                  onPress={() => setActiveTab("following")}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeTab === "following" && styles.activeText,
+                    ]}
+                  >
+                    Following
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.tabBtn,
+                    activeTab === "follower" && styles.activeTab,
+                  ]}
+                  onPress={() => setActiveTab("follower")}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeTab === "follower" && styles.activeText,
+                    ]}
+                  >
+                    Followers
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={currentList}
+                keyExtractor={(item) => item?.id?.toString()}
+                renderItem={renderItem}
+                ItemSeparatorComponent={() => <LineDivider />}
+                contentContainerStyle={{ paddingBottom: 100 }}
+                showsVerticalScrollIndicator={false}
+              />
+            </>
+          )}
         </View>
         <Footer />
       </SafeAreaView>
@@ -334,6 +367,7 @@ const styles = StyleSheet.create({
   Header: {
     flexDirection: "row",
     alignItems: "center",
+
     gap: 5,
     width: "85%",
   },
@@ -344,17 +378,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 15,
   },
-
   profileRow: {
     flexDirection: "row",
     gap: 10,
   },
-
   name: {
     color: "#fff",
     fontSize: 18,
+    width: "95%",
     fontFamily: "Montserrat_500Medium",
     marginBottom: 7,
+  },
+  followname: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "Montserrat_500Medium",
   },
   iconbox: {
     flexDirection: "row",
@@ -404,7 +442,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderRadius: 8,
     borderColor: "#fff",
-    borderWidth: 1,
+    borderWidth: 0.7,
     padding: 4,
     marginBottom: 14,
   },
@@ -418,7 +456,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#34A853",
     borderRadius: 5,
     outlineColor: "#34A853",
-    outlineWidth: 6.2,
+    outlineWidth: 5.8,
   },
   tabText: {
     color: "#aaa",
@@ -448,11 +486,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#fff",
   },
-  name: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "600",
-  },
+
   rating: {
     color: "#d9d9d9",
     fontSize: 13,
@@ -469,14 +503,26 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   followBtn: {
-    backgroundColor: "#2ecc71",
+    backgroundColor: "#CB7767",
+    paddingHorizontal: 15,
+    paddingVertical: 7,
+    borderRadius: 6,
+  },
+  followingBtn: {
+    backgroundColor: "#F5F6F7",
     paddingHorizontal: 15,
     paddingVertical: 7,
     borderRadius: 6,
   },
   followText: {
     color: "#fff",
-    fontWeight: "600",
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 12,
+  },
+  followingText: {
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 12,
+    color: "#303030",
   },
 });
 

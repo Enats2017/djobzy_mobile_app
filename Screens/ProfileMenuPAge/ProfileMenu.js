@@ -94,6 +94,29 @@ const EmployeeProfileMenu = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/logout`, {
+        method: "POST",
+        headers: {
+          
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (data.status === 200) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        });      
+      }
+    } catch (error) {
+      console.log("Template API error:", error);
+    }
+  };
+
 
   if (loading) return <Loading />
   if (switchLoading) return <Loading />
@@ -161,7 +184,7 @@ const EmployeeProfileMenu = () => {
                   <MenuItem icon="chatbubble-ellipses-outline" title="Chat" onPress={() => navigation.navigate("FeedChat")} />
                   <MenuItem icon="document-outline" title="Blog" onPress={() => navigation.navigate("BlogPage")} />
                 </View>
-                <TouchableOpacity style={styles.logoutContainer} onPress={() => navigation.navigate("Login")}>
+                <TouchableOpacity style={styles.logoutContainer} onPress={handleLogout}>
                   <Text style={styles.logoutLabel}>Logout</Text>
                   <MaterialIcons name="logout" size={24} color="#ffffff" />
                 </TouchableOpacity>

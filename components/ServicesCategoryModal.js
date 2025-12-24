@@ -14,7 +14,6 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, Entypo } from "@expo/vector-icons";
 import { API_URL, API_ICON } from "../api/ApiUrl";
-import { useServiceGlobalStore } from "../Screens/PromoteServicesPage/ServiceGlobalStore";
 import { useCategoryGlobalStore } from "./CategoryGlobalStore";
 import Loading from "./Loading";
 import GradientButton from "./GradientButton";
@@ -23,11 +22,13 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-const CategoryModel = ({ visible, onClose, type }) => {
+const CategoryModel = ({ visible, onClose }) => {
   const insets = useSafeAreaInsets();
 
-  const { categories, addCategory, removeCategory } = useServiceGlobalStore();
-  
+  const { categories, addCategory, removeCategory, editType, reset } =
+    useCategoryGlobalStore();
+
+  console.log(editType);
 
   const [search, setSearch] = useState("");
   const [services, setServices] = useState([]);
@@ -59,6 +60,9 @@ const CategoryModel = ({ visible, onClose, type }) => {
     item.name.toLowerCase().includes(search.toLowerCase())
   );
   const handleSelectSub = (service, sub) => {
+    const exists = categories.some((c) => c.subId === sub.subid);
+    if (exists) return;
+
     addCategory({
       serviceId: service.id,
       subId: sub.subid,
@@ -75,21 +79,26 @@ const CategoryModel = ({ visible, onClose, type }) => {
     }));
   };
   const handlePublish = async () => {
-    setLoading(true);
-    const token = await AsyncStorage.getItem("token");
-
-    //const { categories } = useServiceGlobalStore.getState();
-
-    const services = categories.map((c) => c.subId).join(",");
-
-    let formData = new FormData();
-
-    formData.append("services", services);
-    formData.append("type", type);
-
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/save-category-service`, {
+
+      const token = await AsyncStorage.getItem("token");
+
+      const formData = new FormData();
+
+      // EXACTLY LIKE WEB: services[]
+      categories.forEach((c) => {
+        formData.append("services[]", c.subId);
+      });
+
+      formData.append("type", editType ?? 1);
+
+    //   console.log("Sending:", {
+    //     services: categories && categories.map((c) => c.subId),
+    //     type: editType,
+    //   });
+
+      const response = await fetch(`${API_URL}/save-service`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -97,18 +106,20 @@ const CategoryModel = ({ visible, onClose, type }) => {
         },
         body: formData,
       });
+
       const result = await response.json();
-      console.log(result);
+      console.log("API RESPONSE:", result);
 
       if (result.status === 200) {
-        Alert.alert("Success", "Service Published Successfully!");
-        useServiceGlobalStore.getState().reset();
+        Alert.alert("Success", "Categories updated successfully");
+        reset();
         onClose();
       } else {
-        Alert.alert("Error", result.message);
+        Alert.alert("Error", result.message || "Something went wrong");
       }
     } catch (error) {
-      Alert.alert("Error", "API Network Error");
+      console.log("API ERROR:", error);
+      Alert.alert("Error", "Network error");
     } finally {
       setLoading(false);
     }
@@ -298,7 +309,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   iconimage: {
-    backgroundColor: "#ecedef",
+    backgroundColor: "#ecedefff",
     padding: 8,
     borderRadius: 100,
   },

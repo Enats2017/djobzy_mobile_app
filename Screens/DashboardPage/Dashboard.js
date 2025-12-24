@@ -2,7 +2,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   FlatList,
@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
   Image,
-  Modal
+  Modal,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import Footer from "../../components/Footer";
@@ -22,6 +22,7 @@ import JobCard from "../EmployeeJobs/JobCard";
 import FeedPost from "../SocialMediaPage/FeedPost";
 import { ScrollView } from "react-native-gesture-handler";
 import LineDivider from "../../components/LineDivider";
+import Loading from "../../components/Loading";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("jobs");
@@ -33,7 +34,11 @@ const Dashboard = () => {
   const [hasMore, setHasMore] = useState(true);
   const onEndReachedCalledDuringMomentum = useRef(false);
   const hasFetched = useRef(false);
-   const [menuVisible, setMenuVisible] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [feeds, setFeeds] = useState([]);
+  const [feedLoading, setFeedLoading] = useState(false);
+  const [user, setUser] = useState([]);
+  const insets = useSafeAreaInsets();
 
   const fetchJobs = useCallback(
     async (pageNum = 1) => {
@@ -66,7 +71,7 @@ const Dashboard = () => {
         setHasMore(data.gigs.length === 10);
         setPage(pageNum);
       } catch (err) {
-        console.log("❌ Error fetching jobs:", err);
+        console.log(" Error fetching jobs:", err);
       } finally {
         setLoading(false);
         setIsFetchingMore(false);
@@ -81,6 +86,34 @@ const Dashboard = () => {
       fetchJobs(1);
     }
   }, [fetchJobs]);
+
+  const fetchFeeds = async () => {
+    try {
+      setFeedLoading(true);
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/feed-post`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      const data = await res.json();
+      setFeeds(data.feeds);
+      setUser(data.editprofile);
+    } catch (err) {
+      console.log(" Feed fetch error:", err);
+    } finally {
+      setFeedLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab == "feeds") {
+      fetchFeeds();
+    }
+  }, [activeTab]);
 
   function renderHeader() {
     return (
@@ -137,58 +170,74 @@ const Dashboard = () => {
     return <JobCard item={item} lastItem={isLastItem} />;
   };
 
+  const renderFeedItem = ({ item }) => {
+    return (
+      <FeedPost
+        author={item.full_name}
+        subtitle={item.profile_title_employee || item.profile_title_employer}
+        time={new Date(item.created_at).toLocaleDateString()}
+        text={item.message}
+        avatar={{ uri: item.photo }}
+        image={item.message_type === 1 ? { uri: item.file_name } : null}
+        video={item.message_type === 2 ? item.signed_url : null}
+        likes={item.likes_count}
+        comments={item.comment_count}
+        onPress={() => navigation.navigate("EmployeeAccount", { name: item?.name })}
+        isCommented={item.is_commented_by_current_user}
+      />
+    );
+  };
+
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           <HeaderBar onMenuPress={() => setMenuVisible(true)} />
           <Modal transparent visible={menuVisible} animationType="fade">
-          <TouchableOpacity
-            style={styles.overlay}
-            activeOpacity={1}
-            onPress={() => setMenuVisible(false)}
-          >
-            <View style={styles.popup}>
-              <TouchableOpacity
-                style={styles.row}
-                onPress={() => {
-                  setMenuVisible(false);
-                  navigation.navigate("Followers", { activeTab: "following" });
-                }}
-              >
-                <Text style={styles.text}>Following</Text>
-              </TouchableOpacity>
-              <LineDivider marginVertical={12}/>
+            <TouchableOpacity
+              style={styles.overlay}
+              activeOpacity={1}
+              onPress={() => setMenuVisible(false)}
+            >
+              <View style={styles.popup}>
+                <TouchableOpacity
+                  style={styles.row}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate("Followers", {
+                      activeTab: "following",
+                    });
+                  }}
+                >
+                  <Text style={styles.text}>Following</Text>
+                </TouchableOpacity>
+                <LineDivider marginVertical={12} />
 
-              <TouchableOpacity
-                style={styles.row}
-                onPress={() => {
-                  setMenuVisible(false);
-                  navigation.navigate("Followers", { activeTab: "follower" });
-                }}
-              >
-                <Text style={styles.text}>Follower</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.row}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate("Followers", { activeTab: "follower" });
+                  }}
+                >
+                  <Text style={styles.text}>Follower</Text>
+                </TouchableOpacity>
 
-              <LineDivider  marginVertical={12}/>
+                <LineDivider marginVertical={12} />
 
-              <TouchableOpacity
-                style={styles.row}
-                onPress={() => {
-                  setMenuVisible(false);
-                  navigation.navigate("PostsPage");
-                }}
-              >
-                <Text style={styles.text}>Posts</Text>
-              </TouchableOpacity>
-             
-
-            </View>
-          </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.row}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    navigation.navigate("PostsPage");
+                  }}
+                >
+                  <Text style={styles.text}>Posts</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
           </Modal>
 
-
-          {/* Tabs inside scroll */}
           <View style={styles.tabContainer}>
             <TouchableOpacity
               style={[styles.tab, activeTab === "feeds" && styles.activeTab]}
@@ -253,85 +302,96 @@ const Dashboard = () => {
             )
           ) : (
             <>
-            <ScrollView contentContainerStyle={{paddingBottom:80}} showsVerticalScrollIndicator={false}>
-              <View style={styles.postcontainer}>
-                <View style={styles.postBox}>
-                  <TouchableOpacity
-                    style={styles.feed}
-                    onPress={() => navigation.navigate("CreateFeedPost")}
-                  >
-                    <Text style={styles.textfeed}>Create Feed/Post</Text>
-                    <View style={styles.anylog}>
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          fontFamily: "Montserrat_500Medium",
-                          color: "#fff",
-                        }}
-                      >
-                        Anyone
-                      </Text>
-                      <Entypo name="chevron-small-down" size={20} color="#fff" />
+              <ScrollView
+                contentContainerStyle={{ paddingBottom: 80 }}
+                showsVerticalScrollIndicator={false}
+              >
+                <View style={styles.postcontainer}>
+                  <View style={styles.postBox}>
+                    <TouchableOpacity
+                      style={styles.feed}
+                      onPress={() =>
+                        navigation.navigate("CreateFeedPost", {
+                          name: user?.full_name,
+                        })
+                      }
+                    >
+                      <Text style={styles.textfeed}>Create Feed/Post</Text>
+                      <View style={styles.anylog}>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontFamily: "Montserrat_500Medium",
+                            color: "#fff",
+                          }}
+                        >
+                          Anyone
+                        </Text>
+                        <Entypo
+                          name="chevron-small-down"
+                          size={20}
+                          color="#fff"
+                        />
+                      </View>
+                    </TouchableOpacity>
+
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Post Something"
+                      placeholderTextColor="#888"
+                    />
+
+                    <View style={styles.buttonRow}>
+                      <TouchableOpacity style={styles.button}>
+                        <Image
+                          source={require("../../assets/images/img.png")}
+                          style={styles.logo}
+                          resizeMode="contain"
+                        />
+                        <Text style={styles.buttonText}>Image</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity style={styles.button}>
+                        <Image
+                          source={require("../../assets/images/vedio.png")}
+                          style={styles.logo}
+                          resizeMode="contain"
+                        />
+                        <Text style={styles.buttonText}>Video</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity style={styles.button}>
+                        <Image
+                          source={require("../../assets/images/ai.png")}
+                          style={styles.logo}
+                          resizeMode="contain"
+                        />
+                        <Text style={styles.buttonText}>
+                          Generate AI {"\n"} Video
+                        </Text>
+                      </TouchableOpacity>
                     </View>
-                  </TouchableOpacity>
-
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Post Something"
-                    placeholderTextColor="#888"
-                  />
-
-                  <View style={styles.buttonRow}>
-                    <TouchableOpacity style={styles.button}>
-                      <Image
-                        source={require("../../assets/images/img.png")}
-                        style={styles.logo}
-                        resizeMode="contain"
-                      />
-                      <Text style={styles.buttonText}>Image</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.button}>
-                      <Image
-                        source={require("../../assets/images/vedio.png")}
-                        style={styles.logo}
-                        resizeMode="contain"
-                      />
-                      <Text style={styles.buttonText}>Video</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.button}>
-                      <Image
-                        source={require("../../assets/images/ai.png")}
-                        style={styles.logo}
-                        resizeMode="contain"
-                      />
-                      <Text style={styles.buttonText}>
-                        Generate AI {"\n"} Video
-                      </Text>
-                    </TouchableOpacity>
                   </View>
                 </View>
-              </View>
-              <View>
-                <FeedPost/>
-                <FeedPost  
-                author="Aman Yadav"
-                subtitle="Full stack developer & UX audit"
-                time="18 Aug, 12 am"
-                text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.."
-               avatar={require("../../assets/images/social-img1.png")}
-               image={require("../../assets/images/image1818.png")}
-                likesNumber={5500}
-                commentsNumber={1300}
-                savesNumber={2100}
-                />
+                <View>
+                  {
+                    feedLoading ? (
+                      <Loading/>
+                    ):(
+                      <FlatList
+                        data={feeds}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={renderFeedItem}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingBottom: 80 }}
+                        scrollEnabled={false}
+                      />
 
-              </View>
-
-            </ScrollView>
+                    )
+                  }
+                </View>
+              </ScrollView>
             </>
-            
           )}
         </View>
 
@@ -418,7 +478,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF1a",
     marginTop: 25,
     borderRadius: 10,
-    marginBottom:25
+    marginBottom: 25,
   },
   postBox: {
     padding: 7,
@@ -483,10 +543,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 8,
     paddingVertical: 7,
-    paddingHorizontal:8,
+    paddingHorizontal: 8,
     elevation: 7,
   },
- 
+
   text: {
     fontSize: 15,
     color: "#000",

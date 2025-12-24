@@ -1,7 +1,7 @@
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // make sure you have @expo/vector-icons installed
 
-const PageNameHeaderBar = ({ navigation, title, activeTab = null, setActiveTab = null }) => {
+const PageNameHeaderBar = ({ navigation, title, activeTab = null, setActiveTab = null, paddingTop=20, marginBottom=20, }) => {
      const handleBackPress = () => {
     // Case 1: If component has tab props → go to previous tab
     if (activeTab !== null && setActiveTab && activeTab > 0) {
@@ -16,7 +16,7 @@ const PageNameHeaderBar = ({ navigation, title, activeTab = null, setActiveTab =
 
     return (
         <TouchableOpacity
-            style={styles.dashboardHeader}
+            style={[styles.dashboardHeader, {paddingTop}]}
             onPress={handleBackPress}
         >
             <View style={styles.arrow}>

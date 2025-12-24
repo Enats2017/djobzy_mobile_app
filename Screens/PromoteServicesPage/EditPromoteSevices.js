@@ -47,6 +47,7 @@ const EditPromoteSevices = () => {
       const data = await response.json();
       if (data.status === 200) {
         setService(data.result);
+        
       } else {
         Alert.alert("Error", result.message || "Unable to fetch details");
       }
@@ -105,6 +106,7 @@ const EditPromoteSevices = () => {
       if (data.status === 200) {
         Alert.alert("Deleted", "Service deleted successfully");
         setDeleteModal(false);
+        navigation.navigate("EmployeeAccount ")
         
       } else {
         Alert.alert("Error", data.message || "Delete failed");

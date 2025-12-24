@@ -20,7 +20,7 @@ import {
 } from "@expo/vector-icons";
 import Footer from "../../components/Footer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_URL } from "../../api/ApiUrl";
+import { API_URL, API_ICON } from "../../api/ApiUrl";
 import FeedPost from "../SocialMediaPage/FeedPost";
 import GradientButton from "../../components/GradientButton";
 import LineDivider from "../../components/LineDivider";
@@ -68,59 +68,120 @@ export default function EmployerProfilePage({ route }) {
   }, [name]);
 
   const handleSendOffer = async () => {
-  try {
-    setLoading(true);
-    const token = await AsyncStorage.getItem("token");
-    const isLoggedIn = !!token;
-    const formData = new FormData();
-    formData.append("user_check", isLoggedIn);
-    formData.append("serviceId", service?.sid);
-    formData.append("services_title", service?.title);
-    formData.append("hourMinimum", service?.hour_minimum ?? 0);
-    formData.append("hourMaximum", service?.hour_maximum ?? 0);
-    formData.append("priceMinValue", service?.fixed_minimum ?? 0);
-    formData.append("priceMaxValue", service?.fixed_maximum ?? "");
-    formData.append("service_selected_time", service?.selected_time ?? "no-calendar");
-    formData.append("price_negotiable", service?.price_negotiable ?? 0);
-    formData.append("admin_fee", 1.1);
-    // convert array → comma separated
-    if (service?.subcategory_ids?.length) {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const isLoggedIn = !!token;
+      const formData = new FormData();
+      formData.append("user_check", isLoggedIn);
+      formData.append("serviceId", service?.sid);
+      formData.append("services_title", service?.title);
+      formData.append("hourMinimum", service?.hour_minimum ?? 0);
+      formData.append("hourMaximum", service?.hour_maximum ?? 0);
+      formData.append("priceMinValue", service?.fixed_minimum ?? 0);
+      formData.append("priceMaxValue", service?.fixed_maximum ?? "");
       formData.append(
-        "allSubcategoryIds",
-        service.subcategory_ids.join(",")
+        "service_selected_time",
+        service?.selected_time ?? "no-calendar"
       );
+      formData.append("price_negotiable", service?.price_negotiable ?? 0);
+      formData.append("admin_fee", 1.1);
+      // convert array → comma separated
+      if (service?.subcategory_ids?.length) {
+        formData.append("allSubcategoryIds", service.subcategory_ids.join(","));
+      }
+
+      // if (!isLoggedIn) {
+      //   formData.append("hiring_job_url", "/login");
+      // }
+
+      const response = await fetch(`${API_URL}/autoJobCreate`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          ...(isLoggedIn && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.status === 200) {
+        //navigation.navigate("HiringJobDetails");
+        Alert.alert("Successfully send the data ");
+      } else {
+        Alert.alert("Error", data.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.log("Send Offer error:", error);
+      Alert.alert("Error", "Network error");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // if (!isLoggedIn) {
-    //   formData.append("hiring_job_url", "/login");
-    // }
+  const handleFollow = async () => {
+    if (loading) return;
+    setLoading(true);
 
-    const response = await fetch(`${API_URL}/autoJobCreate`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        ...(isLoggedIn && { Authorization: `Bearer ${token}` }),
-      },
-      body: formData,
-    });
+    try {
+      const token = await AsyncStorage.getItem("token");
 
-    const data = await response.json();
+      const response = await fetch(`${API_URL}/followUser`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+        }),
+      });
 
-    if (data.status === 200) {
-      //navigation.navigate("HiringJobDetails");
-      Alert.alert("Successfully send the data ");
-    } else {
-      Alert.alert("Error", data.message || "Something went wrong");
+      const data = await response.json();
+      console.log("Follow response:", data);
+
+      if (data.status === 200) {
+        setIsFollowed(true); // ✅ update UI
+      }
+    } catch (error) {
+      console.log("Follow error:", error);
+    } finally {
+      setLoading(false);
     }
+  };
+  const handleUnfollow = async () => {
+    if (loading) return;
+    setLoading(true);
 
-  } catch (error) {
-    console.log("Send Offer error:", error);
-    Alert.alert("Error", "Network error");
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const token = await AsyncStorage.getItem("token");
 
+      const response = await fetch(`${API_URL}/unfollowUser`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Unfollow response:", data);
+
+      if (data.status === 200) {
+        setIsFollowed(false); // ✅ update UI
+      }
+    } catch (error) {
+      console.log("Unfollow error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const displayedCategories = showAllCategories
     ? subcategory
@@ -205,7 +266,8 @@ export default function EmployerProfilePage({ route }) {
               <View style={styles.buttonsRow}>
                 <TouchableOpacity
                   style={[styles.btnFollow, isFollowed && styles.btnUnfollow]}
-                  onPress={() => setIsFollowed(!isFollowed)}
+                  onPress={isFollowed ? handleUnfollow : handleFollow}
+                  disabled={loading}
                 >
                   <Text
                     numberOfLines={1}
@@ -319,7 +381,22 @@ export default function EmployerProfilePage({ route }) {
                 {promote.map((item, index) => (
                   <View style={styles.wrapper} key={index}>
                     <View style={styles.iconContainer}>
-                      <Ionicons name="logo-android" size={28} color="#000" />
+                      
+                      {item?.seekingServices
+                        ?.filter((s) => s?.getSeekServices) 
+                        ?.slice(0, 2) 
+                        ?.map((service, index) => {
+                          console.log("ICON:", service.getSeekServices.icon); 
+                          return (
+                            <Image
+                              key={index}
+                              source={{
+                                uri: `${API_ICON}/images/servicephoto/png-image/${service.getSeekServices.icon}?tr=ef-grayscale`,
+                              }}
+                              style={styles.providesImg}
+                            />
+                          );
+                        })}
                     </View>
                     <View style={styles.card}>
                       <Text style={styles.title}>{item?.subject}</Text>
@@ -679,4 +756,11 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_500Medium",
     color: "#000",
   },
+  providesImg: {
+  width: 22,
+  height: 22,
+ 
+  resizeMode: "contain",
+},
+
 });

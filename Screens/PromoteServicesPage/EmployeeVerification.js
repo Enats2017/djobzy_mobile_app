@@ -14,12 +14,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { API_URL } from "../../api/ApiUrl";
 import Footer from "../../components/Footer";
+import Loading from "../../components/Loading";
 
 const EmployeeVerification = () => {
   const [selected, setSelected] = useState([]);
   const navigation = useNavigation();
   const [userDetails, setUserDetails] = useState([]);
+  const [loading, setLoading] = useState(false);
   const fectchVerfication = async () => {
+    setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/user-verification-step`, {
@@ -52,194 +55,212 @@ const EmployeeVerification = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <PageNameHeaderBar title="Verification" navigation={navigation} />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <Text style={styles.sectionTitle}>Your Verification Level</Text>
-          <Text style={styles.description}>
-            Higher Verification levels increase your chances of landing a job or
-            finding employees, Showing you higher in search results, Enabling
-            you to gain others trust easier, and enhancing your Djobzy
-            Experience.
-          </Text>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[
-                styles.box,
-                isVerified(1) ? styles.verified : styles.unverified,
-              ]}
-            >
-              <View style={styles.topRow}>
-                <Text
-                  style={[styles.label, isVerified(1) && styles.activeText]}
-                >
-                  Email
-                </Text>
-                <MaterialIcons
-                  name="verified"
-                  size={18}
-                  color={isVerified(1) ? "#fff" : "#c3c3c3"}
-                />
-              </View>
-              <Text style={[styles.number, isVerified(1) && styles.activeText]}>
-                01
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.box,
-                isVerified(2) ? styles.verified : styles.unverified,
-              ]}
-            >
-              <View style={styles.topRow}>
-                <Text
-                  style={[styles.label, isVerified(1) && styles.activeText]}
-                >
-                  Phone Number
-                </Text>
-                <MaterialIcons
-                  name="verified"
-                  size={18}
-                  color={isVerified(2) ? "#fff" : "#c3c3c3"}
-                />
-              </View>
-              <Text style={[styles.number, isVerified(1) && styles.activeText]}>
-                02
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[
-                styles.box,
-                isVerified(3) ? styles.verified : styles.unverified,
-              ]}
-            >
-              <View style={styles.topRow}>
-                <Text
-                  style={[styles.label, isVerified(1) && styles.activeText]}
-                >
-                  Social Media Accounts
-                </Text>
-                <MaterialIcons
-                  name="verified"
-                  size={18}
-                  color={isVerified(3) ? "#fff" : "#c3c3c3"}
-                />
-              </View>
-              <Text style={[styles.number, isVerified(1) && styles.activeText]}>
-                03
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.box,
-                isVerified(4) ? styles.verified : styles.unverified,
-              ]}
-            >
-              <View style={styles.topRow}>
-                <Text
-                  style={[styles.label, isVerified(1) && styles.activeText]}
-                >
-                  Address
-                </Text>
-                <MaterialIcons
-                  name="verified"
-                  size={18}
-                  color={isVerified(4) ? "#fff" : "#c3c3c3"}
-                />
-              </View>
-              <Text style={styles.time}>1-2 min</Text>
-              <Text style={[styles.number, isVerified(1) && styles.activeText]}>
-                04
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[
-                styles.box,
-                isVerified(5) ? styles.verified : styles.unverified,
-              ]}
-            >
-              <View style={styles.topRow}>
-                <Text
-                  style={[styles.label, isVerified(1) && styles.activeText]}
-                >
-                  ID Card & Certificates
-                </Text>
-                <MaterialIcons
-                  name="verified"
-                  size={18}
-                  color={isVerified(5) ? "#fff" : "#c3c3c3"}
-                />
-              </View>
-              <Text style={styles.time}>1-2 min</Text>
-              <Text style={[styles.number, isVerified(1) && styles.activeText]}>
-                05
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.box,
-                isVerified(6) ? styles.verified : styles.unverified,
-              ]}
-            >
-              <View style={styles.topRow}>
-                <Text style={styles.label}>
-                  Credit / Debit Card Verification
-                </Text>
-                <MaterialIcons
-                  name="verified"
-                  size={18}
-                  color={isVerified(6) ? "#fff" : "#c3c3c3"}
-                />
-              </View>
-              <Text style={styles.time}>1-2 min</Text>
-              <Text style={[styles.number, isVerified(1) && styles.activeText]}>
-                06
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[
-                styles.box,
-                isVerified(7) ? styles.verified : styles.unverified,
-              ]}
-            >
-              <View style={styles.topRow}>
-                <Text style={styles.label}>Interview & Background Check</Text>
-                <MaterialIcons
-                  name="verified"
-                  size={18}
-                  color={isVerified(7) ? "#fff" : "#c3c3c3"}
-                />
-              </View>
-              <Text style={styles.time}>1-2 min</Text>
-              <Text style={[styles.number, isVerified(1) && styles.activeText]}>
-                07
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.addressSection}>
-            <Text style={styles.sectionTitle}>Address</Text>
+        <PageNameHeaderBar title="Verification Level" navigation={navigation} />
+        {loading ? (
+          <Loading />
+        ) : (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={styles.sectionTitle}>Your Verification Level</Text>
             <Text style={styles.description}>
-              Please provide your official address. Please submit an official
-              bill dated within the past 3 months to verify your address.
+              Higher Verification levels increase your chances of landing a job
+              or finding employees, Showing you higher in search results,
+              Enabling you to gain others trust easier, and enhancing your
+              Djobzy Experience.
             </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Postal code"
-              placeholderTextColor="#aaa"
-            />
-          </View>
-        </ScrollView>
+            <View style={styles.row}>
+              <TouchableOpacity
+                style={[
+                  styles.box,
+                  isVerified(1) ? styles.verified : styles.unverified,
+                ]}
+              >
+                <View style={styles.topRow}>
+                  <Text
+                    style={[styles.label, isVerified(1) && styles.activeText]}
+                  >
+                    Email
+                  </Text>
+                  <MaterialIcons
+                    name="verified"
+                    size={18}
+                    color={isVerified(1) ? "#fff" : "#c3c3c3"}
+                  />
+                </View>
+                <Text
+                  style={[styles.number, isVerified(1) && styles.activeText]}
+                >
+                  01
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.box,
+                  isVerified(2) ? styles.verified : styles.unverified,
+                ]}
+              >
+                <View style={styles.topRow}>
+                  <Text
+                    style={[styles.label, isVerified(1) && styles.activeText]}
+                  >
+                    Phone Number
+                  </Text>
+                  <MaterialIcons
+                    name="verified"
+                    size={18}
+                    color={isVerified(2) ? "#fff" : "#c3c3c3"}
+                  />
+                </View>
+                <Text
+                  style={[styles.number, isVerified(1) && styles.activeText]}
+                >
+                  02
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.row}>
+              <TouchableOpacity
+                style={[
+                  styles.box,
+                  isVerified(3) ? styles.verified : styles.unverified,
+                ]}
+              >
+                <View style={styles.topRow}>
+                  <Text
+                    style={[styles.label, isVerified(1) && styles.activeText]}
+                  >
+                    Social Media Accounts
+                  </Text>
+                  <MaterialIcons
+                    name="verified"
+                    size={18}
+                    color={isVerified(3) ? "#fff" : "#c3c3c3"}
+                  />
+                </View>
+                <Text
+                  style={[styles.number, isVerified(1) && styles.activeText]}
+                >
+                  03
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.box,
+                  isVerified(4) ? styles.verified : styles.unverified,
+                ]}
+              >
+                <View style={styles.topRow}>
+                  <Text
+                    style={[styles.label, isVerified(1) && styles.activeText]}
+                  >
+                    Address
+                  </Text>
+                  <MaterialIcons
+                    name="verified"
+                    size={18}
+                    color={isVerified(4) ? "#fff" : "#c3c3c3"}
+                  />
+                </View>
+                <Text style={styles.time}>1-2 min</Text>
+                <Text
+                  style={[styles.number, isVerified(1) && styles.activeText]}
+                >
+                  04
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.row}>
+              <TouchableOpacity
+                style={[
+                  styles.box,
+                  isVerified(5) ? styles.verified : styles.unverified,
+                ]}
+              >
+                <View style={styles.topRow}>
+                  <Text
+                    style={[styles.label, isVerified(1) && styles.activeText]}
+                  >
+                    ID Card & Certificates
+                  </Text>
+                  <MaterialIcons
+                    name="verified"
+                    size={18}
+                    color={isVerified(5) ? "#fff" : "#c3c3c3"}
+                  />
+                </View>
+                <Text style={styles.time}>1-2 min</Text>
+                <Text
+                  style={[styles.number, isVerified(1) && styles.activeText]}
+                >
+                  05
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.box,
+                  isVerified(6) ? styles.verified : styles.unverified,
+                ]}
+              >
+                <View style={styles.topRow}>
+                  <Text style={styles.label}>
+                    Credit / Debit Card Verification
+                  </Text>
+                  <MaterialIcons
+                    name="verified"
+                    size={18}
+                    color={isVerified(6) ? "#fff" : "#c3c3c3"}
+                  />
+                </View>
+                <Text style={styles.time}>1-2 min</Text>
+                <Text
+                  style={[styles.number, isVerified(1) && styles.activeText]}
+                >
+                  06
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.row}>
+              <TouchableOpacity
+                style={[
+                  styles.box,
+                  isVerified(7) ? styles.verified : styles.unverified,
+                ]}
+              >
+                <View style={styles.topRow}>
+                  <Text style={styles.label}>Interview & Background Check</Text>
+                  <MaterialIcons
+                    name="verified"
+                    size={18}
+                    color={isVerified(7) ? "#fff" : "#c3c3c3"}
+                  />
+                </View>
+                <Text style={styles.time}>1-2 min</Text>
+                <Text
+                  style={[styles.number, isVerified(1) && styles.activeText]}
+                >
+                  07
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.addressSection}>
+              <Text style={styles.sectionTitle}>Address</Text>
+              <Text style={styles.description}>
+                Please provide your official address. Please submit an official
+                bill dated within the past 3 months to verify your address.
+              </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Postal code"
+                placeholderTextColor="#aaa"
+              />
+            </View>
+          </ScrollView>
+        )}
       </View>
-      <Footer/>
+      <Footer />
     </SafeAreaView>
   );
 };
@@ -250,7 +271,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: "#1c1c1c",
+    backgroundColor: "#222222",
     paddingHorizontal: 15,
   },
   headerRow: {
@@ -262,13 +283,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: "#ffffff",
     fontSize: 18,
-      fontFamily:"Montserrat_600SemiBold",
+    fontFamily: "Montserrat_600SemiBold",
     marginBottom: 6,
   },
   description: {
     color: "#c3c3c3c3",
     fontSize: 14,
-    fontFamily:"Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
     lineHeight: 20,
     marginBottom: 18,
   },

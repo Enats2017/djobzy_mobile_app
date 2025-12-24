@@ -12,17 +12,18 @@ import { Ionicons, FontAwesome5, Entypo } from "@expo/vector-icons";
 import PaymentOption from "../../components/PaymentOption";
 import Footer from "../../components/Footer";
 import GradientButton from "../../components/GradientButton";
+import { useNavigation } from "@react-navigation/native";
 
 const UserPaymentPage = () => {
   const [selected, setSelected] = useState("card");
-
   const [remember, setRemember] = useState(false);
+  const navigation = useNavigation();
 
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <PageNameHeaderBar title="Billing Method" />
+          <PageNameHeaderBar title="Billing Method" navigation={navigation} />
           <View style={styles.section}>
             <PaymentOption
               title="Credit / Debit Card"

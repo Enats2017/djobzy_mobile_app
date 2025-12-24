@@ -26,11 +26,12 @@ export default function FeedPost({
   comments = "10K",
   saves = "2.1K",
   share = "10k",
+  onPress,
 }) { 
   return (
       <View style={styles.card}>
         <View style={styles.header}>
-          <View style={styles.profileRow}>
+          <TouchableOpacity style={styles.profileRow} onPress={onPress}>
             <Image source={avatar} style={styles.avatar} />
             <View style={styles.nameBlock}>
               <Text style={styles.name}>{author}</Text>
@@ -38,7 +39,7 @@ export default function FeedPost({
                 {subtitle} · {time}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.moreBtn}>
             <Feather name="more-vertical" size={18} color="#9a9aa0" />
           </TouchableOpacity>

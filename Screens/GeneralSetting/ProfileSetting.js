@@ -6,50 +6,121 @@ import {
   ScrollView,
   StyleSheet,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import LineDivider from "../../components/LineDivider";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useCategoryGlobalStore } from "../../components/CategoryGlobalStore";
+import ServicesCategoryModal from "../../components/ServicesCategoryModal";
+import { API_URL, API_ICON } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import GradientButton from "../../components/GradientButton";
 
 export default function ProfileSetting() {
-  const [employeeCategories, setEmployeeCategories] = useState([
-    "Microbiologist",
-    "Microbiologist",
-  ]);
+  const route = useRoute();
+  const navigation = useNavigation();
+  const { employee, employer } = route.params || [];
+  const [switchLoading, setSwitchLoading] = useState(false);
+  const [adminType, setAdminType] = useState(0);
+  const [emp, setemp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const store = useCategoryGlobalStore();
 
-  //   const handleEditEmployer = () => {
-  //     console.log("Edit Employer Categories clicked");
-  //   };
+  const handleEditEmployer = () => {
+    store.reset();
 
-  //   const handleEditEmployee = () => {
-  //     console.log("Edit Employee Categories clicked");
-  //   };
+    const mapped = employer.map((item) => ({
+      serviceId: item.service_id,
+      subId: item.subid,
+      name: item.subname,
+    }));
 
-  const removeCategory = (item) => {
-    setEmployeeCategories((prev) => prev.filter((cat) => cat !== item));
+    store.setCategories(mapped);
+    store.setEditType(1);
+    setModalVisible(true);
+  };
+
+  const handleEditEmployee = () => {
+    store.reset();
+
+    const mapped = employee.map((item) => ({
+      serviceId: item.service_id,
+      subId: item.subid,
+      name: item.subname,
+    }));
+
+    store.setCategories(mapped);
+    store.setEditType(2); // 1 = Employee
+    setModalVisible(true);
+  };
+
+  const changeUserType = async () => {
+    try {
+      setSwitchLoading(true);
+
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/change-type`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (data.status === 200) {
+        setAdminType(data.result);
+      }
+    } catch (error) {
+      console.log("Change type error:", error);
+    } finally {
+      setSwitchLoading(false);
+    }
+  };
+
+  const removeCategory = (subId) => {
+    setemp((prev) => prev.filter((item) => item.subid !== subId));
   };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <PageNameHeaderBar title="Profile Setting" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
+        <PageNameHeaderBar title="Profile Setting" navigation={navigation} />
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 50 }}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Employer Section */}
           <View style={styles.section}>
             <View style={styles.headerRow}>
               <Text style={styles.heading}>
                 Default Categories for Employer's Profile
               </Text>
-
-              <TouchableOpacity>
+              <TouchableOpacity onPress={handleEditEmployer}>
                 <MaterialIcons name="edit" size={20} color="#fff" />
               </TouchableOpacity>
             </View>
-
             <Text style={styles.desc}>
-              Please choose the categories that you want to employ people on.
+              Please choose the categories that you want to employer people on.
             </Text>
+            <View style={styles.categoryContainer}>
+              {employer.map((item, index) => (
+                <View key={index} style={styles.categoryPill}>
+                  <Text style={styles.categoryText}>{item.subname}</Text>
+                  <TouchableOpacity>
+                    <Ionicons name="close" size={16} color="#000" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
           </View>
           <LineDivider />
 
@@ -60,7 +131,7 @@ export default function ProfileSetting() {
                 Default Categories for Employee's Profile
               </Text>
 
-              <TouchableOpacity>
+              <TouchableOpacity onPress={handleEditEmployee}>
                 <MaterialIcons name="edit" size={20} color="#fff" />
               </TouchableOpacity>
             </View>
@@ -70,11 +141,11 @@ export default function ProfileSetting() {
             </Text>
 
             <View style={styles.categoryContainer}>
-              {employeeCategories.map((item, index) => (
+              {employee.map((item, index) => (
                 <View key={index} style={styles.categoryPill}>
-                  <Text style={styles.categoryText}>{item}</Text>
-                  <TouchableOpacity onPress={() => removeCategory(item)}>
-                    <Ionicons name="close" size={16} color="#fff" />
+                  <Text style={styles.categoryText}>{item.subname}</Text>
+                  <TouchableOpacity onPress={() => removeCategory(item.subId)}>
+                    <Ionicons name="close" size={16} color="#000" />
                   </TouchableOpacity>
                 </View>
               ))}
@@ -87,12 +158,47 @@ export default function ProfileSetting() {
               Your default profile is the one that you use more often. When you
               open Djobzy your default profile will launch first.
             </Text>
-            <TouchableOpacity style={styles.primaryBtn}>
-              <Text style={styles.primaryBtnText}>Employee</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.secondaryBtn}>
-              <Text style={styles.secondaryBtnText}>Change to Employer</Text>
-            </TouchableOpacity>
+            {adminType === 0 ? (
+              <>
+                <GradientButton title="Employee" disabled />
+
+                <TouchableOpacity
+                  style={styles.secondaryBtn}
+                  onPress={changeUserType}
+                  disabled={switchLoading}
+                >
+                  {switchLoading ? (
+                    <View style={styles.loaderWrapper}>
+                      <ActivityIndicator color="#fff" size="small" />
+                    </View>
+                  ) : (
+                    <Text style={styles.secondaryBtnText}>
+                      Change to Employer
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <GradientButton title="Employer" disabled />
+
+                <TouchableOpacity
+                  style={styles.secondaryBtn}
+                  onPress={changeUserType}
+                  disabled={switchLoading}
+                >
+                  {switchLoading ? (
+                    <View style={styles.loaderWrapper}>
+                      <ActivityIndicator color="#fff" size="small" />
+                    </View>
+                  ) : (
+                    <Text style={styles.secondaryBtnText}>
+                      Change to Employee
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
           </View>
           <Text style={styles.heading}>Linked Accounts</Text>
           <View style={styles.googlesection}>
@@ -118,6 +224,10 @@ export default function ProfileSetting() {
           </View>
         </ScrollView>
       </View>
+      <ServicesCategoryModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -156,7 +266,7 @@ const styles = StyleSheet.create({
   categoryPill: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f27d61",
+    backgroundColor: "#EDC8B8",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 20,
@@ -164,9 +274,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   categoryText: {
-    color: "#fff",
+    color: "#000000",
     marginRight: 6,
-    fontSize: 13,
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 11,
   },
 
   /* Buttons */
@@ -188,7 +299,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 10,
     marginTop: 12,
-    marginBottom:15,
+    marginBottom: 15,
     alignItems: "center",
   },
   secondaryBtnText: {
@@ -196,11 +307,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 15,
   },
-  googlesection:{
-    backgroundColor:"#ffffff1a",
-    padding:10,
-    borderRadius:10,
-    marginTop:6,
+  googlesection: {
+    backgroundColor: "#ffffff1a",
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 6,
   },
 
   /* Linked Accounts */
@@ -208,7 +319,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 10,
-   
   },
   googleText: {
     color: "#fff",
@@ -220,5 +330,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 10,
     lineHeight: 17,
+  },
+   loaderWrapper: {
+           // REQUIRED (Android)
+        // REQUIRED (Android)
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

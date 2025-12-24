@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   View,
@@ -15,16 +14,15 @@ import SearchBar from "../../components/SearchBar";
 import { useNavigation } from "@react-navigation/native";
 
 const FeedChat = () => {
-    const navigation = useNavigation();
+  const navigation = useNavigation();
   return (
     <>
-    <SafeAreaView style ={{flex:1}}>
-        <View style ={styles.container}>
-           
-                <PageNameHeaderBar title="Chat"/>
-                <SearchBar/>
-            
-             {/* <View style={styles.topBar}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <PageNameHeaderBar title="Chat" navigation={navigation} />
+          <SearchBar />
+
+          {/* <View style={styles.topBar}>
         <View style={styles.searchWrap}>
           <Ionicons name="search" size={18} style={styles.searchIcon} />
           <TextInput
@@ -44,83 +42,84 @@ const FeedChat = () => {
         </TouchableOpacity>
       </View> */}
 
-      {/* ---------- Row 1 ---------- */}
-      <TouchableOpacity style={styles.row} onPress={()=>navigation.navigate("ChatCommunication")}>
-        <Image
-          source={{ uri: "https://randomuser.me/api/portraits/women/44.jpg" }}
-          style={styles.avatar}
-        />
-        <View style={styles.rowText}>
-          <View style={styles.rowTop}>
-            <Text style={styles.name}>Gabrilla</Text>
-            <Text style={styles.time}>10:00 AM</Text>
+          {/* ---------- Row 1 ---------- */}
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => navigation.navigate("ChatCommunication")}
+          >
+            <Image
+              source={{
+                uri: "https://randomuser.me/api/portraits/women/44.jpg",
+              }}
+              style={styles.avatar}
+            />
+            <View style={styles.rowText}>
+              <View style={styles.rowTop}>
+                <Text style={styles.name}>Gabrilla</Text>
+                <Text style={styles.time}>10:00 AM</Text>
+              </View>
+
+              <View style={styles.rowBottom}>
+                <Text numberOfLines={1} style={styles.subtitle}>
+                  Auctor urna, varius .............
+                </Text>
+
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>1</Text>
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+          {/* ---------- Row 2 ---------- */}
+          <View style={styles.row}>
+            <Image
+              source={{ uri: "https://randomuser.me/api/portraits/men/32.jpg" }}
+              style={styles.avatar}
+            />
+            <View style={styles.rowText}>
+              <View style={styles.rowTop}>
+                <Text style={styles.name}>Ozuka</Text>
+                <Text style={styles.time}>Today</Text>
+              </View>
+
+              <View style={styles.rowBottom}>
+                <Text numberOfLines={1} style={styles.subtitle}>
+                  Start messaging...
+                </Text>
+              </View>
+            </View>
           </View>
 
-          <View style={styles.rowBottom}>
-            <Text numberOfLines={1} style={styles.subtitle}>
-              Auctor urna, varius .............
-            </Text>
+          {/* ---------- Row 3 ---------- */}
+          <View style={styles.row}>
+            <Image
+              source={{ uri: "https://randomuser.me/api/portraits/men/83.jpg" }}
+              style={styles.avatar}
+            />
+            <View style={styles.rowText}>
+              <View style={styles.rowTop}>
+                <Text style={styles.name}>Victor</Text>
+                <Text style={styles.time}>Today</Text>
+              </View>
 
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>1</Text>
+              <View style={styles.rowBottom}>
+                <Text numberOfLines={1} style={styles.subtitle}>
+                  Start messaging...
+                </Text>
+              </View>
             </View>
           </View>
         </View>
-      </TouchableOpacity>
-
-      {/* ---------- Row 2 ---------- */}
-      <View style={styles.row}>
-        <Image
-          source={{ uri: "https://randomuser.me/api/portraits/men/32.jpg" }}
-          style={styles.avatar}
-        />
-        <View style={styles.rowText}>
-          <View style={styles.rowTop}>
-            <Text style={styles.name}>Ozuka</Text>
-            <Text style={styles.time}>Today</Text>
-          </View>
-
-          <View style={styles.rowBottom}>
-            <Text numberOfLines={1} style={styles.subtitle}>
-              Start messaging...
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* ---------- Row 3 ---------- */}
-      <View style={styles.row}>
-        <Image
-          source={{ uri: "https://randomuser.me/api/portraits/men/83.jpg" }}
-          style={styles.avatar}
-        />
-        <View style={styles.rowText}>
-          <View style={styles.rowTop}>
-            <Text style={styles.name}>Victor</Text>
-            <Text style={styles.time}>Today</Text>
-          </View>
-
-          <View style={styles.rowBottom}>
-            <Text numberOfLines={1} style={styles.subtitle}>
-              Start messaging...
-            </Text>
-          </View>
-        </View>
-      </View>
-
-        </View>
-
-    </SafeAreaView>
-      
+      </SafeAreaView>
     </>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#222222",
-    paddingHorizontal:15
+    paddingHorizontal: 15,
   },
   topBar: {
     flexDirection: "row",
@@ -204,4 +203,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeedChat
+export default FeedChat;

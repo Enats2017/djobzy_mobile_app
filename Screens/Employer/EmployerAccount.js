@@ -55,7 +55,7 @@ const EmployerAccount = () => {
   const insets = useSafeAreaInsets();
 
   const handleCopy = async () => {
-    const link = `${API_URL}/employer_profile/${name}`;
+    const link = `${API_URL}/employer_profile`;
     try {
       setCopyText(link);
       await Clipboard.setStringAsync(link);

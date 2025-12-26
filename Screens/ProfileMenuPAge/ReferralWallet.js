@@ -8,7 +8,7 @@ import {
   StyleSheet,
   TextInput,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
@@ -25,12 +25,11 @@ const ReferralWallet = () => {
   const [activeTab, setActiveTab] = useState("referral");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const[sendloading, setSendLoading] = useState(false);
+  const [sendloading, setSendLoading] = useState(false);
   const [tableFilled, setTableFilled] = useState(false);
   const [pendingReferrals, setPendingReferrals] = useState([]);
   const [completedReferrals, setCompletedReferrals] = useState([]);
   const [referralUrl, setReferralUrl] = useState("");
-
 
   const fetchNotifications = async () => {
     try {
@@ -47,14 +46,12 @@ const ReferralWallet = () => {
       setPendingReferrals(data.pendingReferrals);
       setCompletedReferrals(data.completedReferrals);
       setReferralUrl(data.referral_url);
-      
-        if(pendingReferrals.length > 0){
-          setTableFilled(true);
 
-        }else{
-          setTableFilled(false)
-        }
-
+      if (pendingReferrals.length > 0) {
+        setTableFilled(true);
+      } else {
+        setTableFilled(false);
+      }
     } catch (error) {
       console.error("Error fetching User:", error);
     } finally {
@@ -67,50 +64,77 @@ const ReferralWallet = () => {
   }, []);
 
   const sendInvite = async () => {
-  if (!email) {
-    Alert.alert("Error", "Please enter email");
-    return;
-  }
-  try {
-    if (sendloading) return;
-    setSendLoading(true)
-    const token = await AsyncStorage.getItem("token");
-    const response = await fetch(`${API_URL}/invite-user-email`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        invite_with_email: email, 
-      }),
-    });
-    const data = await response.json();
-    if (response.ok) {
-      Alert.alert("Success", data.message);
-      setEmail("");
-    } else {
-      Alert.alert("Error", data.message || "Failed");
+    if (!email) {
+      Alert.alert("Error", "Please enter email");
+      return;
     }
-  } catch (error) {
-    console.log(error);
-    Alert.alert("Error", "Something went wrong");
-  }
-  finally {
-    setSendLoading(false);
-  }
-};
+    try {
+      if (sendloading) return;
+      setSendLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/invite-user-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          invite_with_email: email,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        Alert.alert("Success", data.message);
+        setEmail("");
+      } else {
+        Alert.alert("Error", data.message || "Failed");
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Something went wrong");
+    } finally {
+      setSendLoading(false);
+    }
+  };
 
+  const collectPayments = async () => {
+    try {
+      if (loading) return;
+
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/referral-collect`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      const data = await res.json();
+      if (res.ok && data.status === "success") {
+        Alert.alert("Success", data.message);
+        setCompletedReferrals((prev) => [...pendingReferrals, ...prev]);
+        setPendingReferrals([]);
+        setTableFilled(false);
+      } else {
+        Alert.alert("Error", data.message || "Failed to collect");
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const copyReferralUrl = async () => {
-  if (!referralUrl) {
-    Alert.alert("Error", "Referral link not available");
-    return;
-  }
-
-  await Clipboard.setStringAsync(referralUrl);
-  Alert.alert("Copied", "Referral link copied successfully");
-};
+    if (!referralUrl) {
+      Alert.alert("Error", "Referral link not available");
+      return;
+    }
+    await Clipboard.setStringAsync(referralUrl);
+    Alert.alert("Copied", "Referral link copied successfully");
+  };
 
   return (
     <>
@@ -122,10 +146,9 @@ const ReferralWallet = () => {
               navigation={navigation}
             />
           </View>
-          {
-            loading?(
-              <Loading/>
-            ):(
+          {loading ? (
+            <Loading />
+          ) : (
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.tabContainer}>
                 <TouchableOpacity
@@ -172,13 +195,17 @@ const ReferralWallet = () => {
                       <View key={index} style={styles.tableCard}>
                         <View style={styles.tableRow}>
                           <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>Date for Income</Text>
+                            <Text style={styles.tableLabel}>
+                              Date for Income
+                            </Text>
                           </View>
 
                           <View style={styles.dividerVert} />
 
                           <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>{item?.created}</Text>
+                            <Text style={styles.tableValue}>
+                              {item?.created}
+                            </Text>
                           </View>
                         </View>
 
@@ -191,7 +218,10 @@ const ReferralWallet = () => {
                           <View style={styles.dividerVert} />
                           <View style={styles.tableRightCell}>
                             <View>
-                              <Text style={styles.tableValue}> {item?.get_referred_user?.full_name}</Text>
+                              <Text style={styles.tableValue}>
+                                {" "}
+                                {item?.get_referred_user?.full_name}
+                              </Text>
                             </View>
                           </View>
                         </View>
@@ -218,7 +248,9 @@ const ReferralWallet = () => {
                           </View>
                           <View style={styles.dividerVert} />
                           <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>${item?.amount}</Text>
+                            <Text style={styles.tableValue}>
+                              ${item?.amount}
+                            </Text>
                           </View>
                         </View>
 
@@ -253,13 +285,22 @@ const ReferralWallet = () => {
                   </View>
                   <View>
                     <TouchableOpacity
-                      disabled={!tableFilled}
+                      disabled={!tableFilled || loading}
+                      onPress={collectPayments}
                       style={[
                         styles.button,
-                        { backgroundColor: tableFilled ? "#D17B68" : "#754A42" },
+                        {
+                          backgroundColor: tableFilled ? "#D17B68" : "#754A42",
+                        },
                       ]}
                     >
-                      <Text style={styles.buttonText}>Collect the Payments</Text>
+                      {loading ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : (
+                        <Text style={styles.buttonText}>
+                          Collect the Payments
+                        </Text>
+                      )}
                     </TouchableOpacity>
                   </View>
                 </>
@@ -270,13 +311,17 @@ const ReferralWallet = () => {
                       <View key={index} style={styles.tableCard}>
                         <View style={styles.tableRow}>
                           <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>Date for Income</Text>
+                            <Text style={styles.tableLabel}>
+                              Date for Income
+                            </Text>
                           </View>
 
                           <View style={styles.dividerVert} />
 
                           <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>{item?.created  }</Text>
+                            <Text style={styles.tableValue}>
+                              {item?.created}
+                            </Text>
                           </View>
                         </View>
 
@@ -289,7 +334,10 @@ const ReferralWallet = () => {
                           <View style={styles.dividerVert} />
                           <View style={styles.tableRightCell}>
                             <View>
-                              <Text style={styles.tableValue}> {item?.get_referred_user?.full_name}</Text>
+                              <Text style={styles.tableValue}>
+                                {" "}
+                                {item?.get_referred_user?.full_name}
+                              </Text>
                             </View>
                           </View>
                         </View>
@@ -302,7 +350,10 @@ const ReferralWallet = () => {
                           </View>
                           <View style={styles.dividerVert} />
                           <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>{item?.gigid || "Joined with your invitation"}</Text>
+                            <Text style={styles.tableValue}>
+                              {item?.get_gig?.subject ||
+                                "Joined with your invitation"}
+                            </Text>
                           </View>
                         </View>
 
@@ -316,7 +367,9 @@ const ReferralWallet = () => {
                           </View>
                           <View style={styles.dividerVert} />
                           <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>${item?.amount||  0}</Text>
+                            <Text style={styles.tableValue}>
+                              ${item?.amount || 0}
+                            </Text>
                           </View>
                         </View>
 
@@ -335,7 +388,7 @@ const ReferralWallet = () => {
                     ))
                   ) : (
                     <Text style={{ textAlign: "center", marginTop: 20 }}>
-                      No Completed  referrals found
+                      No Completed referrals found
                     </Text>
                   )}
                 </>
@@ -356,15 +409,16 @@ const ReferralWallet = () => {
                     value={email}
                     onChangeText={setEmail}
                   />
-                  <TouchableOpacity style={styles.iconButton} onPress={sendInvite} disabled={loading}>
-                    {
-                      sendloading ?(
-                          <ActivityIndicator color="#fff" size="small" />
-                      ):(
-
-                        <Feather name="send" size={22} color="#ffffff" />
-                      )
-                    }
+                  <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={sendInvite}
+                    disabled={loading}
+                  >
+                    {sendloading ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <Feather name="send" size={22} color="#ffffff" />
+                    )}
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.title}>Invite with an Link</Text>
@@ -374,16 +428,17 @@ const ReferralWallet = () => {
                     placeholderTextColor="#8F8F8F"
                     style={styles.input}
                     value={referralUrl}
-                    
                   />
-                  <TouchableOpacity style={styles.copyButton} onPress={copyReferralUrl}>
+                  <TouchableOpacity
+                    style={styles.copyButton}
+                    onPress={copyReferralUrl}
+                  >
                     <Ionicons name="copy" size={22} color="#fff" />
                   </TouchableOpacity>
                 </View>
               </View>
             </ScrollView>
-            )
-          }
+          )}
         </View>
         <Footer />
       </SafeAreaView>
@@ -434,13 +489,12 @@ const styles = StyleSheet.create({
   tableCard: {
     backgroundColor: "#000000",
     borderRadius: 5,
-    paddingVertical:5,
-    paddingHorizontal:13,
-    
+    paddingVertical: 5,
+    paddingHorizontal: 13,
+
     borderWidth: 1,
-    marginBottom:12,
+    marginBottom: 12,
     overflow: "hidden",
-    
   },
   tableRow: {
     flexDirection: "row",

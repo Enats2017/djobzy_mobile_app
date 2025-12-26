@@ -20,10 +20,11 @@ const AccountSetting = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [ username, setUsername] = useState("");
+  const [username, setUsername] = useState("");
   const [code, setCode] = useState("");
   const [codeEnabled, setCodeEnabled] = useState(false);
   const [password, setPassword] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
   const { user } = route.params || {};
@@ -63,39 +64,36 @@ const AccountSetting = () => {
   };
 
   const handleSendEmailOtp = async () => {
-  try {
-    if (!email) {
-      Alert.alert("Error", "Please enter email");
-      return;
+    try {
+      if (!email) {
+        Alert.alert("Error", "Please enter email");
+        return;
+      }
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/send-email-link`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: email,
+        }),
+      });
+      const data = await res.json();
+      console.log("Send Email OTP:", data);
+      if (data.status === 200) {
+        Alert.alert("Success", "OTP sent to your email");
+        setCodeEnabled(true);
+      } else {
+        Alert.alert("Error", data.message);
+      }
+    } catch (error) {
+      console.log("Send email OTP error:", error);
+      Alert.alert("Error", "Something went wrong");
     }
-
-    const token = await AsyncStorage.getItem("token");
-    const res = await fetch(`${API_URL}/send-email-link`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        email: email,
-      }),
-    });
-
-    const data = await res.json();
-    console.log("Send Email OTP:", data);
-
-    if (data.status === 200) {
-      Alert.alert("Success", "OTP sent to your email");
-      setCodeEnabled(true); 
-    } else {
-      Alert.alert("Error", data.message);
-    }
-  } catch (error) {
-    console.log("Send email OTP error:", error);
-    Alert.alert("Error", "Something went wrong");
-  }
-};
+  };
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
@@ -113,24 +111,37 @@ const AccountSetting = () => {
                   with anyone.
                 </Text>
               </View>
+              <Text style={styles.label}>Password</Text>
               <View style={styles.passwordsection}>
-                <Text style={styles.label}>Password</Text>
                 <TextInput
                   style={styles.passwordInput}
                   placeholder="*********"
                   placeholderTextColor="#888"
                   value={password}
                   onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
                 />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={18}
+                    color="#888"
+                  />
+                </TouchableOpacity>
               </View>
             </View>
           )}
-
           {activeTab == 1 && (
             <View style={styles.Section}>
-              <PageNameHeaderBar title="Account"  navigation={navigation}
-                 setActiveTab={setActiveTab} />
-               <Text style={styles.label}>Email</Text>
+              <PageNameHeaderBar
+                title="Account"
+                navigation={navigation}
+                setActiveTab={setActiveTab}
+              />
+              <Text style={styles.label}>Email</Text>
               <View style={styles.emailContainer}>
                 <TextInput
                   style={styles.emailInput}
@@ -139,12 +150,13 @@ const AccountSetting = () => {
                   value={email}
                   onChangeText={setEmail}
                 />
-
-                <TouchableOpacity style={styles.sendButton}  onPress={handleSendEmailOtp}>
+                <TouchableOpacity
+                  style={styles.sendButton}
+                  onPress={handleSendEmailOtp}
+                >
                   <Ionicons name="paper-plane" size={20} color="#fff" />
                 </TouchableOpacity>
               </View>
-
               <TextInput
                 style={[
                   styles.codeInput,
@@ -212,16 +224,28 @@ const styles = StyleSheet.create({
     color: "#c3c3c3c3",
     fontFamily: "Montserrat_400Regular",
     fontSize: 14,
+    marginBottom: 5,
   },
-  passwordsection: {
-    paddingTop: 15,
+  passwordSection: {
+    position: "relative",
+    width: "100%",
   },
+
   passwordInput: {
-    backgroundColor: "#ffff",
+    backgroundColor: "#fff",
     borderRadius: 8,
     height: 42,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
+    //
   },
+
+  eyeIcon: {
+    position: "absolute",
+    right: 12,
+    top: "50%",
+    transform: [{ translateY: -9 }],
+  },
+
   emailContainer: {
     flexDirection: "row",
     alignItems: "center",

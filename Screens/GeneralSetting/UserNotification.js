@@ -22,7 +22,7 @@ const UserNotification = () => {
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <PageNameHeaderBar title="Notofications" navigation={navigation} />
+          <PageNameHeaderBar title="Notifications" navigation={navigation} />
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Website Notifications</Text>
 

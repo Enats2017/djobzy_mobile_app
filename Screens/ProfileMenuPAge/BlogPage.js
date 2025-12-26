@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,91 +6,270 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import Footer from "../../components/Footer";
-import { useNavigation } from "@react-navigation/native";
+import { API_URL } from "../../api/ApiUrl";
+
+const getVisiblePages = (current, lastPage) => {
+  if (lastPage <= 3) {
+    return Array.from({ length: lastPage }, (_, i) => i + 1);
+  }
+
+  if (current === 1) return [1, 2, 3];
+  if (current === lastPage)
+    return [lastPage - 2, lastPage - 1, lastPage];
+
+  return [current - 1, current, current + 1];
+};
 
 export default function BlogPage() {
-  const [openDropdown, setOpenDropdown] = useState(false);
-  const [selected, setSelected] = useState("Blog Categories");
   const navigation = useNavigation();
 
-  const categories = [
-    "All",
-    "Trends",
-    "For Employee",
-    "How To Guides",
-    "For Employers",
-    "Tips",
-  ];
+  const [openDropdown, setOpenDropdown] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const [categories, setCategories] = useState([]);
+  const [blogs, setBlogs] = useState([]);
+
+  const [pagination, setPagination] = useState({});
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  /* ================= FETCH BLOG API ================= */
+  const fetchBlogs = async (pageNo = 1) => {
+    try {
+      setLoading(true);
+
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/blog?page=${pageNo}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      const data = await res.json();
+
+      // Categories
+      setCategories([{ id: 0, name: "All" }, ...data.categories]);
+
+      // Blogs
+      setBlogs(data.blogs);
+
+      // Pagination
+      setPagination(data.pagination);
+    } catch (error) {
+      console.log("BLOG API ERROR:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlogs();
+  }, [page]);
+
+  /* ================= BLOG CARD ================= */
+  const renderBlog = ({ item }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() =>
+        navigation.navigate("BlogDetails", {
+          slug: item.blog_slug,
+        })
+      }
+    >
+      <Image source={{ uri: item.front_image }} style={styles.blogImage} />
+
+      <View style={styles.tagBox}>
+        <Text style={styles.tagText}>{item.publisher}</Text>
+      </View>
+
+      <Text style={styles.title}>{item.title}</Text>
+
+      <Text style={styles.description} numberOfLines={3}>
+        {item.meta_desc}
+      </Text>
+    </TouchableOpacity>
+  );
+  const getVisiblePages = (current, lastPage) => {
+    const pages = [];
+
+    if (lastPage <= 3) {
+      for (let i = 1; i <= lastPage; i++) pages.push(i);
+      return pages;
+    }
+
+    if (current === 1) return [1, 2, 3];
+    if (current === lastPage) return [lastPage - 2, lastPage - 1, lastPage];
+
+    return [current - 1, current, current + 1];
+  };
+  /* ================= PAGINATION BUTTON ================= */
+  const renderPageButton = (num) => (
+    <View style={styles.pagination}>
+      {/* LEFT ARROW */}
+      <TouchableOpacity
+        style={[styles.arrowBtn, page === 1 && styles.disabledArrow]}
+        disabled={page === 1}
+        onPress={() => setPage(page - 1)}
+      >
+        <Ionicons name="chevron-back" size={20} />
+      </TouchableOpacity>
+
+      {/* PAGE NUMBERS */}
+      {getVisiblePages(page, pagination.last_page || 1).map((num) => (
+        <TouchableOpacity
+          key={num}
+          style={[styles.pageBtn, page === num && styles.activePageBtn]}
+          onPress={() => setPage(num)}
+        >
+          <Text
+            style={[styles.pageText, page === num && styles.activePageText]}
+          >
+            {num}
+          </Text>
+        </TouchableOpacity>
+      ))}
+
+      {/* RIGHT ARROW */}
+      <TouchableOpacity
+        style={[
+          styles.arrowBtn,
+          page === pagination.last_page && styles.disabledArrow,
+        ]}
+        disabled={page === pagination.last_page}
+        onPress={() => setPage(page + 1)}
+      >
+        <Ionicons name="chevron-forward" size={20} />
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
-    <SafeAreaView style={{flex:1}}>
-    <View style={styles.container}>
-        <View>
-            <PageNameHeaderBar title="Blog" navigation={navigation}/>
-        </View>
-      <View style={styles.dropdownWrapper}>
-        <TouchableOpacity
-          style={styles.dropdownHeader}
-          onPress={() => setOpenDropdown(!openDropdown)}
-        >
-          <Text style={styles.dropdownText}>{selected}</Text>
-          <Ionicons name={openDropdown ? "chevron-up" : "chevron-down"} size={22} />
-        </TouchableOpacity>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <PageNameHeaderBar title="Blog" navigation={navigation} />
 
-        {openDropdown && (
-          <View style={styles.dropdownBody}>
-            {categories.map((item, index) => (
-              <View key={index}>
+        {/* ================= CATEGORY DROPDOWN ================= */}
+        <View style={styles.dropdownWrapper}>
+          <TouchableOpacity
+            style={styles.dropdownHeader}
+            onPress={() => setOpenDropdown(!openDropdown)}
+          >
+            <Text style={styles.dropdownText}>{selectedCategory}</Text>
+            <Ionicons
+              name={openDropdown ? "chevron-up" : "chevron-down"}
+              size={22}
+            />
+          </TouchableOpacity>
+
+          {openDropdown && (
+            <View style={styles.dropdownBody}>
+              {categories.map((item) => (
                 <TouchableOpacity
+                  key={item.id}
+                  style={styles.dropdownItem}
                   onPress={() => {
-                    setSelected(item);
+                    setSelectedCategory(item.name);
                     setOpenDropdown(false);
                   }}
-                  style={styles.dropdownItem}
                 >
-                  <Text style={styles.dropdownItemText}>{item}</Text>
+                  <Text>{item.name}</Text>
                 </TouchableOpacity>
-
-                {/* Divider Line */}
-                {index !== categories.length - 1 && <View style={styles.divider} />}
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
-
-      {/* BLOG CARD */}
-      <View style={styles.card}>
-        <Image
-          source={require("../../assets/images/image1818.png")}
-          style={styles.blogImage}
-        />
-
-        <View style={styles.tagBox}>
-          <Text style={styles.tagText}>TIPS</Text>
+              ))}
+            </View>
+          )}
         </View>
 
-        <Text style={styles.title}>
-          Best Planning Strategies for Both Personal and Business Purposes
-        </Text>
+        {/* ================= BLOG LIST ================= */}
+        {loading ? (
+          <ActivityIndicator size="large" style={{ marginTop: 30 }} />
+        ) : (
+          <FlatList
+            data={blogs}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderBlog}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            showsVerticalScrollIndicator={false}
+            ListFooterComponent={
+              <View style={styles.pagination}>
+          {/* LEFT ARROW */}
+          <TouchableOpacity
+            style={[
+              styles.arrowBtn,
+              page === 1 && styles.disabledArrow,
+            ]}
+            disabled={page === 1}
+            onPress={() => setPage(page - 1)}
+          >
+            <Ionicons name="chevron-back" color="#fff" size={20} />
+          </TouchableOpacity>
 
-        <Text style={styles.description}>
-          If you have a goal without a plan, it is just a wish. Planning is the first step
-          to your achievement because, while planning, you define the timeframe and the
-          resources.
-        </Text>
+          {/* PAGE NUMBERS */}
+          {getVisiblePages(page, pagination.last_page || 1).map(
+            (num) => (
+              <TouchableOpacity
+                key={num}
+                style={[
+                  styles.pageBtn,
+                  page === num && styles.activePageBtn,
+                ]}
+                onPress={() => setPage(num)}
+              >
+                <Text
+                  style={[
+                    styles.pageText,
+                    page === num && styles.activePageText,
+                  ]}
+                >
+                  {num}
+                </Text>
+              </TouchableOpacity>
+            )
+          )}
+
+          {/* RIGHT ARROW */}
+          <TouchableOpacity
+            style={[
+              styles.arrowBtn,
+              page === pagination.last_page &&
+                styles.disabledArrow,
+            ]}
+            disabled={page === pagination.last_page}
+            onPress={() => setPage(page + 1)}
+          >
+            <Ionicons name="chevron-forward"  color="#fff" size={18} />
+          </TouchableOpacity>
+        </View>
+            }
+          />
+        )}
+
+        {/* ================= PAGINATION ================= */}
+        {/* <View style={styles.pagination}>
+          {Array.from(
+            { length: pagination.last_page || 1 },
+            (_, i) => renderPageButton(i + 1)
+          )}
+        </View> */}
       </View>
-    </View>
-    <Footer/>
+
+      <Footer />
     </SafeAreaView>
   );
 }
 
+/* ================= STYLES ================= */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -99,8 +278,9 @@ const styles = StyleSheet.create({
   },
 
   dropdownWrapper: {
-    width: "100%",
+    marginVertical: 12,
   },
+
   dropdownHeader: {
     backgroundColor: "#f5f5f5",
     borderRadius: 8,
@@ -120,60 +300,97 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     elevation: 4,
   },
-  dropdownItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  dropdownItemText: {
-    fontSize: 15,
-    color: "#222",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#ddd",
-    marginHorizontal: 10,
+
+  dropdownBody: {
+    borderWidth: 1,
+    borderTopWidth: 0,
+    backgroundColor: "#fff",
   },
 
-  // Blog Card
+  dropdownItem: {
+    padding: 12,
+    borderBottomWidth: 0.5,
+  },
+
   card: {
     backgroundColor: "#ffffff1a",
-    borderRadius: 12,
-    marginTop: 20,
-  
-    paddingBottom: 20,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
   },
+
   blogImage: {
     width: "100%",
     height: 170,
-    borderRadius:10
+    borderRadius: 10,
   },
+
   tagBox: {
     backgroundColor: "#39c086",
-    paddingVertical: 6,
     paddingHorizontal: 10,
-    alignSelf: "flex-start",
-    borderRadius: 6,
+    paddingVertical: 4,
+    borderRadius: 5,
     marginTop: 10,
-    marginLeft: 10,
+    alignSelf: "flex-start",
   },
+
   tagText: {
     color: "#fff",
-    fontWeight: "600",
+    fontSize: 12,
   },
+
   title: {
     fontSize: 17,
-    paddingHorizontal:10,
+
     color: "#ffffff",
-    fontFamily:"Montserrat_600SemiBold",
+    fontFamily: "Montserrat_600SemiBold",
     marginTop: 10,
-   
   },
+
   description: {
     fontSize: 12,
     color: "#fff",
-    fontFamily:"Montserrat_400Regular",
-    paddingHorizontal: 10,
-    marginTop: 6,
+    fontFamily: "Montserrat_400Regular",
+
+    marginTop: 4,
     lineHeight: 20,
+  },
+
+  pagination: {
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+
+  pageBtn: {
+    borderWidth: 0.6,
+    borderColor:"#fff",
+    paddingHorizontal: 15,
+    paddingVertical: 7,
+    marginHorizontal: 5,
+    borderRadius: 5,
+  },
+
+  activePageBtn: {
+    backgroundColor: "#C96B59",
+    borderWidth:0,
+  },
+
+  pageText: {
+    color: "#fff",
+  },
+
+  activePageText: {
+    color: "#fff",
+  },
+  arrowBtn: {
+    borderWidth: 0.6,
+    padding: 6,
+    borderColor:"#fff",
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+
+  disabledArrow: {
+    opacity: 0.3,
   },
 });

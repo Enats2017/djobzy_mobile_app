@@ -249,7 +249,7 @@ const ReferralWallet = () => {
                           <View style={styles.dividerVert} />
                           <View style={styles.tableRightCell}>
                             <Text style={styles.tableValue}>
-                              ${item?.amount}
+                              {item?.amount} CAD
                             </Text>
                           </View>
                         </View>
@@ -368,7 +368,7 @@ const ReferralWallet = () => {
                           <View style={styles.dividerVert} />
                           <View style={styles.tableRightCell}>
                             <Text style={styles.tableValue}>
-                              ${item?.amount || 0}
+                              {item?.amount || 0} CAD
                             </Text>
                           </View>
                         </View>
@@ -509,8 +509,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "flex-start",
-
-    marginLeft: 20,
+    marginLeft: 10,
   },
   tableLabel: {
     color: "#c3c3c3",

@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   StyleSheet,
   Text,
@@ -186,8 +187,15 @@ const AccountSetup = ({
       {/* {phoneError ? (
         <Text style={{ color: "red", marginTop: 4 }}>{phoneError}</Text>
       ) : null} */}
-      <TouchableOpacity style={styles.verify} onPress={handleAccountSetup}>
-        <Text style={styles.varifytext}>Next</Text>
+      <TouchableOpacity style={styles.verify} onPress={handleAccountSetup} disabled={loading }>
+        {
+          loading ?(
+            <ActivityIndicator size="small" color="#fff"/>
+          ):(
+            
+            <Text style={styles.varifytext}>Next</Text>
+          )
+        }
       </TouchableOpacity>
     </View>
   );
@@ -243,7 +251,7 @@ const styles = StyleSheet.create({
   },
   verify: {
     backgroundColor: "#d98974",
-    padding: 16,
+    padding: 12,
     borderRadius: 12,
     alignItems: "center",
     marginTop: 30,

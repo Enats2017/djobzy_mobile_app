@@ -9,18 +9,24 @@ import {
   StyleSheet,
   TextInput,
 } from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons,FontAwesome, Feather, FontAwesome6, FontAwesome5 } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { API_URL } from "../../api/ApiUrl";
 import Footer from "../../components/Footer";
 import Loading from "../../components/Loading";
+import Identity from "../../components/IdentificationPage";
+import IDVerificationUploadScreen from "../GeneralSetting/IDVerificationUploadScreen";
 
 const EmployeeVerification = () => {
   const [selected, setSelected] = useState([]);
   const navigation = useNavigation();
   const [userDetails, setUserDetails] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [activeStep, setActiveStep] = useState(null);
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
   const fectchVerfication = async () => {
     setLoading(true);
     try {
@@ -50,7 +56,15 @@ const EmployeeVerification = () => {
     return userDetails?.verification_count >= step;
   };
 
-  isVerified(1) ? styles.verified : styles.unverified;
+  const handleStepPress = (step) => {
+    if (isVerified(step)) return;
+    if (step !== userDetails?.verification_count + 1) {
+     // alert("Please complete previous verification first");
+      return;
+    }
+
+    setActiveStep(step);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -73,6 +87,8 @@ const EmployeeVerification = () => {
                   styles.box,
                   isVerified(1) ? styles.verified : styles.unverified,
                 ]}
+                onPress={handleStepPress(1)}
+                
               >
                 <View style={styles.topRow}>
                   <Text
@@ -80,8 +96,8 @@ const EmployeeVerification = () => {
                   >
                     Email
                   </Text>
-                  <MaterialIcons
-                    name="verified"
+                  <FontAwesome
+                    name="envelope"
                     size={18}
                     color={isVerified(1) ? "#fff" : "#c3c3c3"}
                   />
@@ -105,8 +121,8 @@ const EmployeeVerification = () => {
                   >
                     Phone Number
                   </Text>
-                  <MaterialIcons
-                    name="verified"
+                  <Feather
+                    name="phone"
                     size={18}
                     color={isVerified(2) ? "#fff" : "#c3c3c3"}
                   />
@@ -131,8 +147,8 @@ const EmployeeVerification = () => {
                   >
                     Social Media Accounts
                   </Text>
-                  <MaterialIcons
-                    name="verified"
+                  <Ionicons
+                    name="person-sharp"
                     size={18}
                     color={isVerified(3) ? "#fff" : "#c3c3c3"}
                   />
@@ -156,8 +172,8 @@ const EmployeeVerification = () => {
                   >
                     Address
                   </Text>
-                  <MaterialIcons
-                    name="verified"
+                  <FontAwesome6
+                    name="book-bookmark"
                     size={18}
                     color={isVerified(4) ? "#fff" : "#c3c3c3"}
                   />
@@ -176,6 +192,7 @@ const EmployeeVerification = () => {
                   styles.box,
                   isVerified(5) ? styles.verified : styles.unverified,
                 ]}
+                onPress={() => handleStepPress(5)}
               >
                 <View style={styles.topRow}>
                   <Text
@@ -183,8 +200,8 @@ const EmployeeVerification = () => {
                   >
                     ID Card & Certificates
                   </Text>
-                  <MaterialIcons
-                    name="verified"
+                  <FontAwesome6
+                    name="contact-card"
                     size={18}
                     color={isVerified(5) ? "#fff" : "#c3c3c3"}
                   />
@@ -202,13 +219,14 @@ const EmployeeVerification = () => {
                   styles.box,
                   isVerified(6) ? styles.verified : styles.unverified,
                 ]}
+                 
               >
                 <View style={styles.topRow}>
                   <Text style={styles.label}>
                     Credit / Debit Card Verification
                   </Text>
-                  <MaterialIcons
-                    name="verified"
+                  <FontAwesome
+                    name="credit-card-alt"
                     size={18}
                     color={isVerified(6) ? "#fff" : "#c3c3c3"}
                   />
@@ -230,8 +248,8 @@ const EmployeeVerification = () => {
               >
                 <View style={styles.topRow}>
                   <Text style={styles.label}>Interview & Background Check</Text>
-                  <MaterialIcons
-                    name="verified"
+                  <FontAwesome5
+                    name="users"
                     size={18}
                     color={isVerified(7) ? "#fff" : "#c3c3c3"}
                   />
@@ -245,18 +263,13 @@ const EmployeeVerification = () => {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.addressSection}>
-              <Text style={styles.sectionTitle}>Address</Text>
-              <Text style={styles.description}>
-                Please provide your official address. Please submit an official
-                bill dated within the past 3 months to verify your address.
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Postal code"
-                placeholderTextColor="#aaa"
-              />
-            </View>
+           {
+            activeStep == 5 &&(
+              <>
+              </>
+             
+            )
+           }
           </ScrollView>
         )}
       </View>

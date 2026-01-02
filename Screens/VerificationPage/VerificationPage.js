@@ -258,11 +258,11 @@ const styles = StyleSheet.create({
   },
 
   backBtn: {
-    backgroundColor: "#eee8e8ff",
-    padding: 16,
+    backgroundColor: "#ffffff",
+    padding: 10,
     borderRadius: 12,
     alignItems: "center",
-    marginVertical: 15,
+    marginVertical: 12,
     marginBottom: 10,
   },
   backBtnText: {

@@ -13,23 +13,43 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
-
   const navigation = useNavigation();
- const [isLogin, setisLogin] = useState(false);
-   useEffect(() => {
-    AsyncStorage.getItem("token").then((token) => {
-      setisLogin(token);
-    });
-  }, []);
+  const [isLogin, setisLogin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const checkAuth = () => {
-    if (isLogin) {
-         navigation.navigate("Dashboard");
-    } else {
-       navigation.navigate("SliderScreen");
-     
+  const checkAuth = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "SliderScreen" }],
+        });
+        return; //stop the function
+      }
+
+      const userStr = await AsyncStorage.getItem("user");
+      const user = JSON.parse(userStr);
+
+      const { verification_count, admin } = user;
+
+      if (admin == 2) {
+        navigation.navigate("EmployerDashboard");
+      } else {
+        navigation.navigate("Dashboard");
+      }
+    } catch (error) {
+      console.log("Auth error:", error);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "SliderScreen" }],
+      });
+    } finally {
+      setLoading(false);
     }
   };
+
   const { width, height } = useWindowDimensions();
   const isSmall = width < 380;
   const isTablet = width > 768;
@@ -93,8 +113,8 @@ export default function HomeScreen() {
           ]}
         >
           <Image
-             source={require("../../assets/images/djobzy-logo.png")}
-               resizeMode="contain"
+            source={require("../../assets/images/djobzy-logo.png")}
+            resizeMode="contain"
             style={{ width: "80%", height: "80%" }}
           />
         </View>
@@ -108,7 +128,7 @@ export default function HomeScreen() {
               borderRadius: arrowSize / 2,
             },
           ]}
-           onPress={checkAuth}
+          onPress={checkAuth}
         >
           <Ionicons name="arrow-forward" size={iconSize} color="#fff" />
         </TouchableOpacity>

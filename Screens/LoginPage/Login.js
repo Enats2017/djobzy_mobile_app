@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
-  Platform
+  Platform,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
@@ -88,16 +88,39 @@ const Login = ({ navigation }) => {
         },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await response.json();
       setLoading(false);
-      if (response.ok) {
-        if (data.token) {
-          await AsyncStorage.setItem("token", data.token);
-        }
-        Alert.alert("Success", "Login successful ");
-        navigation.navigate("Dashboard");
-      } else {
+
+      if (!response.ok) {
         Alert.alert("Login Failed", data.message || "Invalid credentials");
+        return;
+      }
+      await AsyncStorage.setItem("token", data.token);
+
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
+      Alert.alert("Success", "Login successful");
+      const { verification_count, admin } = data.user;
+
+      if (verification_count < 2) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "VerificationPage" }],
+        });
+        return;
+      }
+
+      if (admin == 2) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "EmployerDashboard" }],
+        });
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Dashboard" }],
+        });
       }
     } catch (error) {
       setLoading(false);
@@ -175,19 +198,19 @@ const Login = ({ navigation }) => {
               <Text style={styles.forgotText}>Forgot Password</Text>
             </TouchableOpacity>
           </View>
-         
-            <TouchableOpacity
-              style={styles.loginBtn}
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.loginText}>Log in</Text>
-              )}
-            </TouchableOpacity>
-          
+
+          <TouchableOpacity
+            style={styles.loginBtn}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginText}>Log in</Text>
+            )}
+          </TouchableOpacity>
+
           <View style={styles.dividerContainer}>
             <View style={styles.line} />
             <Text style={styles.orText}>Or</Text>

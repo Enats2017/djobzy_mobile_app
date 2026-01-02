@@ -20,6 +20,20 @@ const MyCurrentBiddingProfile = () => {
   const route = useRoute();
   const { myOffer, current_user ,award, gig} = route.params || [];
 
+  const handleProfileNavigation = (offer) => {
+  if ( offer?.admin === 2) {
+    navigation.navigate("PublicEmployeeProfile", {
+      name: offer.name,
+    });
+  } else {
+    navigation.navigate("EmployerProfilePage", {
+      name: offer.name,
+    });
+  }
+};
+
+
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.bcontainer}>
@@ -90,7 +104,7 @@ const MyCurrentBiddingProfile = () => {
                 }
                 />
               ) : (
-                <GradientButton title="View" />
+                <GradientButton title="View" onPress={() => handleProfileNavigation(offer)} />
               )}
             </View>
           ))}

@@ -126,7 +126,7 @@ const ViewReceivedOffer = () => {
             <TouchableOpacity style={styles.acceptBtn} onPress={()=>navigation.navigate("AcceptReceivedOfferPage",{offerID})}>
               <Text style={styles.acceptText}>Accept Offer</Text>
             </TouchableOpacity>
-            <GradientButton  title="Make a New Offer" onPress={()=>navigation.navigate("MyNewReceiveOfferPage",{
+            <GradientButton  title="Make a New Offer" onPress={()=>navigation.navigate("MakeNewOffer",{
               offerID ,
               seeOffer
             })}/>

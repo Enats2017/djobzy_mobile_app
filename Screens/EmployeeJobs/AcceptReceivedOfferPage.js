@@ -8,6 +8,9 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TextInput,
+  ActivityIndicator,
+  Alert
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
@@ -19,11 +22,13 @@ const AcceptReceivedOfferPage = () => {
   const route = useRoute();
   const { offerID } = route?.params || {};
   const [seeOffer, setSeeOffer] = useState([]);
+  const [introLetter, setIntroLetter] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchData = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(`${API_URL}/see-offer`, {
+      const response = await fetch(`${API_URL}/see-offer-apply`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -34,19 +39,63 @@ const AcceptReceivedOfferPage = () => {
       });
       const data = await response.json();
       if (data.status == 200) {
-        setSeeOffer(data.offer || []);      
+        setSeeOffer(data.offer || []);
       }
-    
-      
     } catch (error) {
       console.log("API Error:", error);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
   useEffect(() => {
     fetchData();
   }, []);
+
+  const AccpetOffer = async () => {
+    if (!introLetter.trim()) {
+      alert("Please write offer letter");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        navigation.navigate("Login");
+        return;
+      }
+      const payload = {
+        oid: offerID,
+        gid: seeOffer.gid,
+        price: seeOffer.offer_price,
+        hourly_rate: seeOffer.offer_hourly_rate,
+        total_hour: seeOffer.offer_total_hour ?? 0,
+        desc: introLetter, // Offer Letter TextInput
+        title: 1, // 1 = accept offer
+      };
+      console.log(payload);
+
+      const response = await fetch(`${API_URL}/make-new-offer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (result.status === 200) {
+        setIntroLetter("");
+        Alert.alert("Success", "Application submitted");
+      } else {
+        alert(result.message || "Failed to submit proposal");
+      }
+    } catch (err) {
+      alert("Something went wrong. Please try again.");
+      console.log(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -56,7 +105,9 @@ const AcceptReceivedOfferPage = () => {
           <View style={styles.profileContainer}>
             <Image
               source={{
-                uri: seeOffer.photoURL ||"https://randomuser.me/api/portraits/women/44.jpg",
+                uri:
+                  seeOffer.photoURL ||
+                  "https://randomuser.me/api/portraits/women/44.jpg",
               }}
               style={styles.profileImage}
             />
@@ -84,23 +135,27 @@ const AcceptReceivedOfferPage = () => {
                   color="#c3c3c3"
                   style={{ marginRight: 4 }}
                 />
-                <Text style={styles.verification}>Verification Level {seeOffer.verification_count}/7</Text>
+                <Text style={styles.verification}>
+                  Verification Level {seeOffer.verification_count}/7
+                </Text>
               </View>
             </View>
           </View>
 
-          <Text style={styles.jobTitle}>
-            {seeOffer.subject}
-          </Text>
+          <Text style={styles.jobTitle}>{seeOffer.subject}</Text>
 
           <Text style={styles.posted}>Posted: {seeOffer.updated_at}</Text>
 
           <View style={styles.appointmentBox}>
             <Text style={styles.appointmentLabel}>Appointment Date & Time</Text>
             <View style={styles.appointmentValueRow}>
-              <Text style={styles.appointmentDate}>{seeOffer.appointment_date}</Text>
+              <Text style={styles.appointmentDate}>
+                {seeOffer.appointment_date}
+              </Text>
               <Text style={styles.appointmentDivider}> || </Text>
-              <Text style={styles.appointmentTime}>{seeOffer.appointment_time}</Text>
+              <Text style={styles.appointmentTime}>
+                {seeOffer.appointment_time}
+              </Text>
             </View>
           </View>
 
@@ -118,21 +173,31 @@ const AcceptReceivedOfferPage = () => {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Offer Letter</Text>
-            <Text style={styles.sectionText}>
-              {seeOffer.employer_about}
-            </Text>
+            <TextInput
+              style={styles.textArea}
+              placeholder="Write your offer letter here..."
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
+              placeholderTextColor="#c3c3c3c3"
+              value={introLetter}
+              onChangeText={(text) => setIntroLetter(text)}
+            />
           </View>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Job Description</Text>
-            <Text style={styles.sectionText}>
-              {seeOffer.description}
-            </Text>
+            <Text style={styles.sectionText}>{seeOffer.description}</Text>
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.acceptBtn}>
-              <Text style={styles.acceptText}>Accept Offer</Text>
+            <TouchableOpacity style={styles.acceptBtn} onPress={AccpetOffer} disabled={submitting} >
+              
+              {submitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.acceptText}>Accept Offer</Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -336,6 +401,17 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontFamily: "Montserrat_600SemiBold",
     fontSize: 14,
+  },
+  textArea: {
+    backgroundColor: "#FFFFFF0D",
+    color: "#c3c3c3c3",
+    borderRadius: 12,
+    fontFamily: "Montserrat_400Medium",
+    fontStyle: "italic",
+    fontSize: 14,
+    paddingHorizontal: 15,
+    minHeight: 150,
+    marginTop: 6,
   },
 });
 

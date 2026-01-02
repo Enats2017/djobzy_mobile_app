@@ -1,25 +1,36 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 const GradientButton = ({
   title = "Next",
   onPress,
   paddingHorizontal = 55,
-  marginTop=10,
-   paddingVertical=10,
+  marginTop = 10,
+  paddingVertical = 10,
   fontSize = 20,
+  loading = false,
+  disabled = false,
 
-  styleOverride = {}, 
+  styleOverride = {},
 }) => {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}   disabled={disabled || loading}>
       <LinearGradient
-        colors={["#C96B59", "#D17B68",]}
+        colors={["#C96B59", "#D17B68"]}
+        style={[
+          styles.button,
+          { paddingHorizontal, marginTop, paddingVertical },
+          styleOverride,
+           (disabled || loading)
+        ]}
         
-        style={[styles.button, { paddingHorizontal, marginTop,paddingVertical },styleOverride]}
       >
-        <Text style={[styles.buttonText, { fontSize }]}>{title}</Text>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>{title}</Text>
+        )}
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -29,7 +40,7 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 10,
     borderRadius: 12,
-    marginTop:4,
+    marginTop: 4,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -37,7 +48,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 20,
     fontFamily: "Montserrat_700Bold",
-   
   },
 });
 

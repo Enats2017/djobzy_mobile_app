@@ -4,7 +4,7 @@ export const useCategoryGlobalStore = create((set) => ({
   categories: [],
   editType: null,
 
-  addCategory: (category) =>
+  addCategoryFromModal: (category) =>
     set((state) => {
       const exists = state.categories.some(
         (c) => c.subId === category.subId
@@ -13,7 +13,7 @@ export const useCategoryGlobalStore = create((set) => ({
       return { categories: [...state.categories, category] };
     }),
 
-  removeCategory: (subId) =>
+  removeCategoryFromModal: (subId) =>
     set((state) => ({
       categories: state.categories.filter((c) => c.subId !== subId),
     })),

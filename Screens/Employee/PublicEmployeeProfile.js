@@ -123,6 +123,7 @@ export default function PublicEmployeeProfile({ route }) {
               </Text>
               <TouchableOpacity  onPress={() => {
                     setIsEmployer(!isEmployer);
+                     setIsEmployer(false);
                     navigation.replace("EmployerProfilePage", {
                       name: user?.name
                     });
@@ -273,8 +274,8 @@ export default function PublicEmployeeProfile({ route }) {
                         paddingHorizontal={22}
                         marginTop={0}
                          onPress={() =>
-                        navigation.navigate("PostJobDetails", {
-                          jobId: item.request_slug,
+                        navigation.navigate("JobProfile", {
+                          gid: item.request_slug,
                         })
                       }
                     />

@@ -70,9 +70,12 @@ const EditPromoteSevices = () => {
     store.setField("hourlyRate", String(service.hour_minimum || ""));
     store.setField("totalPrice", String(service.price || ""));
     store.setExpectedTime(service.time_hours || 0);
-    service.subcategories?.forEach((name, i) => {
-      store.addCategory({ subId: i + 1, name });
+    service.subcategories.forEach(sub => {
+    store.addCategory({
+      subId: sub.id,
+      name: sub.name,
     });
+  });
     // service.attachment?.forEach((img) => {
     //   store.addImage({ uri: `${API_ICON}/${img.attachment}` });
     // });
@@ -106,7 +109,7 @@ const EditPromoteSevices = () => {
       if (data.status === 200) {
         Alert.alert("Deleted", "Service deleted successfully");
         setDeleteModal(false);
-        navigation.navigate("EmployeeAccount ")
+        navigation.navigate("EmployeeAccount")
         
       } else {
         Alert.alert("Error", data.message || "Delete failed");

@@ -162,7 +162,7 @@ const ProfileSetup = ({ userId, onNext }) => {
           <TextInput
             style={styles.input}
             placeholder="Example: Plumber or Hiring labor workers"
-            placeholderTextColor="#b3afafff"
+            placeholderTextColor="#fff"
             value={title}
             onChangeText={setTitle}
           />
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#FFFFFF0D",
-
+      color:"#fff",
     padding: 10,
     fontFamily: "Montserrat_400Regular",
     fontSize: 12,
@@ -335,6 +335,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     height: 80,
     padding: 10,
+    color:"#fff",
     backgroundColor: "#FFFFFF0D",
     borderRadius: 8,
     fontStyle: "italic",

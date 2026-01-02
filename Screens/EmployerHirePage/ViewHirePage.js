@@ -56,8 +56,8 @@ export default function ViewHirePage() {
   useEffect(() => {
     fetchEmployerJob();
   }, []);
-
-  const handleSelectJob = async (item) => {
+  
+  const handleSelectJob = async (item) => {  
   setDropdownOpen(false);
   try {
     const token = await AsyncStorage.getItem("token");
@@ -70,7 +70,7 @@ export default function ViewHirePage() {
       },
       body: JSON.stringify({
         id: item.gid,
-        emp_id: profile?.id, 
+        emp_id: profile?.user_id, 
       }),
     });
     const data = await res.json();

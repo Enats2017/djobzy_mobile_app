@@ -44,6 +44,11 @@ const ReceivedOffers = () => {
     fetchData();
   }, []);
 
+   const moveToHidden = (offer) => {
+    setPendingOffer((prev) => prev.filter((o) => o.oid !== offer.oid));
+    setHiddenOffer((prev) => [offer, ...prev]);
+  };
+
   return (
     <View style={styles.receiveContainer}>
       <View style={styles.toggleWrapper}>
@@ -84,7 +89,7 @@ const ReceivedOffers = () => {
         ) : activeTab ? (
           pendingOffer.length > 0 ? (
             pendingOffer.map((offer, index) => (
-              <PendingOffer key={index} pendingOffer={offer} />
+              <PendingOffer key={index} pendingOffer={offer}  onHide={moveToHidden} />
             ))
           ) : (
             <NoJobs />

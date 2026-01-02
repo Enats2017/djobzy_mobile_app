@@ -10,6 +10,7 @@ import {
   Share,
   Platform,
   ToastAndroid,
+  TouchableWithoutFeedback
 } from "react-native";
 import Octicons from "@expo/vector-icons/Octicons";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -35,7 +36,7 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import CategoryModel from "../../components/CategoryModel";
-import { useServiceGlobalStore } from "./ServiceGlobalStore";
+
 import Delete_Category from "../../components/Delete_Category";
 
 const EmployeeAccount = () => {
@@ -46,7 +47,7 @@ const EmployeeAccount = () => {
   const [copyModel, setCopyModel] = useState(false);
   const [copyText, setCopyText] = useState(employeeLink);
   const [modalVisible, setModalVisible] = useState(false);
-  const [subcategory, setSubcategory] = useState([]);
+  const [job, setJob] = useState([]);
   const [loading, setLoading] = useState(true);
   const [shareModel, setShareModel] = useState(false);
   const [promote, setPromote] = useState([]);
@@ -86,7 +87,7 @@ const EmployeeAccount = () => {
       });
       const data = await response.json();
       setUser(data.editprofile);
-      setSubcategory(data.subcategory);
+      setJob(data.subcategory);
       setPromote(data.promote);
       setProfile(data);
     } catch (err) {
@@ -111,13 +112,11 @@ const EmployeeAccount = () => {
   };
   const handleDeleted = (deletedId) => {
     setSubcategory((prev) => prev.filter((item) => item.subid !== deletedId));
-    fetchEmployee();
+   fetchEmployee();
     handleCloseDelete();
   };
 
-  const removeCategory = (id) => {
-    setSubcategory((prev) => prev.filter((c) => c.subid !== id));
-  };
+
 
   // const onCategoryDeleted = (id) => {
   //   // remove locally so UI updates immediately
@@ -139,8 +138,8 @@ const EmployeeAccount = () => {
     }
   };
   const displayedCategories = showAllCategories
-    ? subcategory
-    : subcategory.slice(0, 5);
+    ? job
+    : job.slice(0, 5);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -390,7 +389,7 @@ const EmployeeAccount = () => {
                   </TouchableOpacity>
                 </View>
               ))}
-              {subcategory.length > 5 && (
+              {job.length > 5 && (
                 <TouchableOpacity
                   onPress={() => setShowAllCategories((prev) => !prev)}
                   style={styles.showMoreBtn}
@@ -439,6 +438,7 @@ const EmployeeAccount = () => {
         visible={copyModel}
         onRequestClose={() => setCopyModel(false)}
       >
+         <TouchableWithoutFeedback onPress={() => setCopyModel(false)}>
         <View style={[styles.modalOverlay]}>
           <View
             style={[styles.modalContainer, { paddingBottom: insets.bottom }]}
@@ -526,6 +526,7 @@ const EmployeeAccount = () => {
             )}
           </View>
         </View>
+        </TouchableWithoutFeedback>
       </Modal>
       <Modal
         animationType="slide"
@@ -533,6 +534,7 @@ const EmployeeAccount = () => {
         visible={downloadModal}
         onRequestClose={() => setDownloadModal(false)}
       >
+         <TouchableWithoutFeedback onPress={() => setDownloadModal(false)}>
         <View style={styles.modalOverlay}>
           <View
             style={[styles.modalContainer, { paddingBottom: insets.bottom }]}
@@ -562,10 +564,12 @@ const EmployeeAccount = () => {
             </View>
           </View>
         </View>
+        </TouchableWithoutFeedback>
       </Modal>
       <CategoryModel
         visible={modalVisible}
-        type={0}
+        type={1}
+        pageType={0}
         onClose={() => {
           setModalVisible(false);
           fetchEmployee();

@@ -2,8 +2,10 @@ import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { truncateWords } from "../../api/TruncateWords";
+import { useNavigation } from "@react-navigation/native";
 
 const ActiveBiddings = ({ activeBids = [] }) => {
+  const navigation = useNavigation();
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -69,7 +71,11 @@ const ActiveBiddings = ({ activeBids = [] }) => {
       </View>
 
       <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.viewBtn}>
+        <TouchableOpacity style={styles.viewBtn}  onPress={() =>
+                        navigation.navigate("JobProfile", {
+                          gid: activeBids.request_slug,
+                        })
+                      }>
           <Text style={styles.viewBtnText}>View</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.chatBtn}>

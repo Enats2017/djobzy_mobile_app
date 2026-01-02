@@ -19,6 +19,7 @@ const UserContactInfo = () => {
   const [postal, setPostal] = useState("");
   const [location, setLocation] = useState("");
   const countryCode = details?.phonecode ? `+${details.phonecode}` : "+91";
+ const [loading, setLoading] = useState(false);
 
   console.log("PHONE:", phone);
   console.log("LOCATION:", location);
@@ -53,6 +54,7 @@ const UserContactInfo = () => {
      });
 
     try {
+      setLoading(true)
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/contact-save`, {
         method: "POST",
@@ -73,6 +75,9 @@ const UserContactInfo = () => {
     } catch (error) {
       console.error("API Error:", error);
       alert("Network error");
+    }
+    finally{
+      setLoading(false)
     }
   };
 
@@ -103,7 +108,7 @@ const UserContactInfo = () => {
               }}
             />
             <View style={{ paddingBottom: 10 }}>
-              <GradientButton title="Send" onPress={submitContactInfo} />
+              <GradientButton loading={loading} title="Send" onPress={submitContactInfo} />
             </View>
           </ScrollView>
         </View>

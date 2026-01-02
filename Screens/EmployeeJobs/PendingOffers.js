@@ -1,85 +1,152 @@
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+} from "react-native";
 import { truncateWords } from "../../api/TruncateWords";
+import { useNavigation } from "@react-navigation/native";
+import { API_URL } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import ConfirmModal from "../../components/ConfirmModal";
 
-const PendingOffer = ({pendingOffer=[]}) => {
+const PendingOffer = ({ pendingOffer = [] }, onHide) => {
+  const navigation = useNavigation();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  const hidedata = async (oid) => {
+    setSubmitted(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/hide-offer`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: oid }),
+      });
+      const data = await response.json();
+      if (data.status == 200) {
+        setSentOffer((prev) => prev.filter((offer) => offer.oid !== oid));
+        Alert.alert("Success", " Data hide Successfully");
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.log("API Error:", error);
+    } finally {
+      setSubmitted(false);
+    }
+  };
 
   return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <View style={styles.avatarWrapperOuter}>
-          <Image
-            source={{
-              uri: pendingOffer.photo,
-            }}
-            style={styles.avatarImage}
-          />
-        </View>
-
-        <View style={styles.userInfo}>
-          <View style={styles.nameStarsRow}>
-            <Text style={styles.username}>{pendingOffer.full_name}</Text>
-            <View style={styles.starsRow}>
-              {[...Array(5)].map((_, i) => (
-                <FontAwesome
-                  key={i}
-                  name="star"
-                  size={10}
-                  color="#EBBE56"
-                  style={{ marginRight: 2 }}
-                />
-              ))}
+    <>
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={styles.avatarWrapperOuter}>
+            <Image
+              source={{
+                uri: pendingOffer.photo,
+              }}
+              style={styles.avatarImage}
+            />
+          </View>
+          
+          <View style={styles.userInfo}>
+            <View style={styles.nameStarsRow}>
+              <Text style={styles.username}>{pendingOffer.full_name}</Text>
+              <View style={styles.starsRow}>
+                {[...Array(5)].map((_, i) => (
+                  <FontAwesome
+                    key={i}
+                    name="star"
+                    size={10}
+                    color="#EBBE56"
+                    style={{ marginRight: 2 }}
+                  />
+                ))}
+              </View>
+            </View>
+            <View style={styles.verificationRow}>
+              <MaterialIcons
+                name="verified"
+                size={16}
+                color="#C3C3C3"
+                style={{ marginRight: 6 }}
+              />
+              <Text style={styles.verification}>
+                Verification Level: {pendingOffer.verification_count}/7
+              </Text>
             </View>
           </View>
-
-          <View style={styles.verificationRow}>
-            <MaterialIcons
-              name="verified"
-              size={16}
-              color="#C3C3C3"
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.verification}>Verification Level: {pendingOffer.verification_count}/7</Text>
+          <View style={styles.offeredSection}>
+            <Text style={styles.offeredPriceText}>Offered Price</Text>
+            <View style={styles.cadButton}>
+              <Text style={styles.cadButtonText}>
+                CAD {pendingOffer.offer_price}
+              </Text>
+            </View>
           </View>
         </View>
 
-        <View style={styles.offeredSection}>
-          <Text style={styles.offeredPriceText}>Offered Price</Text>
-          <View style={styles.cadButton}>
-            <Text style={styles.cadButtonText}>CAD {pendingOffer.offer_price}</Text>
-          </View>
+        <Text style={styles.title}>{pendingOffer.subject}</Text>
+        <Text style={styles.posted}>Offer Date: {pendingOffer.dated} </Text>
+
+        <View style={styles.sectionBox}>
+          <Text style={styles.sectionTitle}>Introduction Letter</Text>
+          <Text style={styles.sectionText}>{pendingOffer.offer}</Text>
+        </View>
+
+        <View style={styles.sectionBox}>
+          <Text style={styles.sectionTitle}>Job Description</Text>
+          <Text style={styles.sectionText}>
+            {truncateWords(pendingOffer.description, 20)}
+          </Text>
+        </View>
+
+        <View style={styles.actionRow}>
+          <TouchableOpacity
+            style={styles.hideBtn}
+            onPress={() => {
+              setSelectedOffer(pendingOffer);
+              setModalVisible(true);
+            }}
+          >
+            <Text style={styles.hideBtnText}>Hide</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.viewBtn}
+            onPress={() =>
+              navigation.navigate("ViewReceivedOffer", {
+                offerID: pendingOffer?.oid,
+              })
+            }
+          >
+            <Text style={styles.viewBtnText}>View</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.chatBtn}>
+            <Text style={styles.chatBtnText}>Chat</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      <Text style={styles.title}>{pendingOffer.subject}</Text>
-      <Text style={styles.posted}>Offer Date: {pendingOffer.dated} </Text>
-
-      <View style={styles.sectionBox}>
-        <Text style={styles.sectionTitle}>Introduction Letter</Text>
-        <Text style={styles.sectionText}>
-          {pendingOffer.offer}
-        </Text>
-      </View>
-
-      <View style={styles.sectionBox}>
-        <Text style={styles.sectionTitle}>Job Description</Text>
-        <Text style={styles.sectionText}>
-          {truncateWords(pendingOffer.description, 20)}
-        </Text>
-      </View>
-
-      <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.hideBtn}>
-          <Text style={styles.hideBtnText}>Hide</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.viewBtn}>
-          <Text style={styles.viewBtnText}>View</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.chatBtn}>
-          <Text style={styles.chatBtnText}>Chat</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      <ConfirmModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onConfirm={() => hidedata(selectedOffer?.oid)}
+        disabled={submitted}
+        loading={submitted}
+        title="Hide Offer"
+        message="Are you sure you want to hide this offer?"
+        confirmText="Yes, Hide"
+      />
+    </>
   );
 };
 

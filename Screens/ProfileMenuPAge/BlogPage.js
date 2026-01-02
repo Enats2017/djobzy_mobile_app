@@ -21,34 +21,28 @@ const getVisiblePages = (current, lastPage) => {
   if (lastPage <= 3) {
     return Array.from({ length: lastPage }, (_, i) => i + 1);
   }
-
   if (current === 1) return [1, 2, 3];
-  if (current === lastPage)
-    return [lastPage - 2, lastPage - 1, lastPage];
+  if (current === lastPage) return [lastPage - 2, lastPage - 1, lastPage];
 
   return [current - 1, current, current + 1];
 };
 
 export default function BlogPage() {
   const navigation = useNavigation();
-
   const [openDropdown, setOpenDropdown] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
-
   const [categories, setCategories] = useState([]);
   const [blogs, setBlogs] = useState([]);
-
   const [pagination, setPagination] = useState({});
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  /* ================= FETCH BLOG API ================= */
   const fetchBlogs = async (pageNo = 1) => {
     try {
-      setLoading(true);
-
+      if (pageNo === 1) {
+        setLoading(true);
+      }
       const token = await AsyncStorage.getItem("token");
-
       const res = await fetch(`${API_URL}/blog?page=${pageNo}`, {
         method: "GET",
         headers: {
@@ -56,16 +50,9 @@ export default function BlogPage() {
           Accept: "application/json",
         },
       });
-
       const data = await res.json();
-
-      // Categories
       setCategories([{ id: 0, name: "All" }, ...data.categories]);
-
-      // Blogs
       setBlogs(data.blogs);
-
-      // Pagination
       setPagination(data.pagination);
     } catch (error) {
       console.log("BLOG API ERROR:", error);
@@ -75,10 +62,9 @@ export default function BlogPage() {
   };
 
   useEffect(() => {
-    fetchBlogs();
+    fetchBlogs(page );
   }, [page]);
 
-  /* ================= BLOG CARD ================= */
   const renderBlog = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
@@ -88,71 +74,16 @@ export default function BlogPage() {
         })
       }
     >
-      <Image source={{ uri: item.front_image }} style={styles.blogImage} />
-
+      <Image source={{ uri: item.front_image ||  "https://dummyimage.com/150x150/ccc/fff.png&text=No+Photo", }} style={styles.blogImage} resizeMode="cover" />
       <View style={styles.tagBox}>
         <Text style={styles.tagText}>{item.publisher}</Text>
       </View>
-
       <Text style={styles.title}>{item.title}</Text>
 
       <Text style={styles.description} numberOfLines={3}>
         {item.meta_desc}
       </Text>
     </TouchableOpacity>
-  );
-  const getVisiblePages = (current, lastPage) => {
-    const pages = [];
-
-    if (lastPage <= 3) {
-      for (let i = 1; i <= lastPage; i++) pages.push(i);
-      return pages;
-    }
-
-    if (current === 1) return [1, 2, 3];
-    if (current === lastPage) return [lastPage - 2, lastPage - 1, lastPage];
-
-    return [current - 1, current, current + 1];
-  };
-  /* ================= PAGINATION BUTTON ================= */
-  const renderPageButton = (num) => (
-    <View style={styles.pagination}>
-      {/* LEFT ARROW */}
-      <TouchableOpacity
-        style={[styles.arrowBtn, page === 1 && styles.disabledArrow]}
-        disabled={page === 1}
-        onPress={() => setPage(page - 1)}
-      >
-        <Ionicons name="chevron-back" size={20} />
-      </TouchableOpacity>
-
-      {/* PAGE NUMBERS */}
-      {getVisiblePages(page, pagination.last_page || 1).map((num) => (
-        <TouchableOpacity
-          key={num}
-          style={[styles.pageBtn, page === num && styles.activePageBtn]}
-          onPress={() => setPage(num)}
-        >
-          <Text
-            style={[styles.pageText, page === num && styles.activePageText]}
-          >
-            {num}
-          </Text>
-        </TouchableOpacity>
-      ))}
-
-      {/* RIGHT ARROW */}
-      <TouchableOpacity
-        style={[
-          styles.arrowBtn,
-          page === pagination.last_page && styles.disabledArrow,
-        ]}
-        disabled={page === pagination.last_page}
-        onPress={() => setPage(page + 1)}
-      >
-        <Ionicons name="chevron-forward" size={20} />
-      </TouchableOpacity>
-    </View>
   );
 
   return (
@@ -203,54 +134,48 @@ export default function BlogPage() {
             showsVerticalScrollIndicator={false}
             ListFooterComponent={
               <View style={styles.pagination}>
-          {/* LEFT ARROW */}
-          <TouchableOpacity
-            style={[
-              styles.arrowBtn,
-              page === 1 && styles.disabledArrow,
-            ]}
-            disabled={page === 1}
-            onPress={() => setPage(page - 1)}
-          >
-            <Ionicons name="chevron-back" color="#fff" size={20} />
-          </TouchableOpacity>
-
-          {/* PAGE NUMBERS */}
-          {getVisiblePages(page, pagination.last_page || 1).map(
-            (num) => (
-              <TouchableOpacity
-                key={num}
-                style={[
-                  styles.pageBtn,
-                  page === num && styles.activePageBtn,
-                ]}
-                onPress={() => setPage(num)}
-              >
-                <Text
-                  style={[
-                    styles.pageText,
-                    page === num && styles.activePageText,
-                  ]}
+                {/* LEFT ARROW */}
+                <TouchableOpacity
+                  style={[styles.arrowBtn, page === 1 && styles.disabledArrow]}
+                  disabled={page === 1}
+                  onPress={() => setPage(page - 1)}
                 >
-                  {num}
-                </Text>
-              </TouchableOpacity>
-            )
-          )}
+                  <Ionicons name="chevron-back" color="#fff" size={20} />
+                </TouchableOpacity>
 
-          {/* RIGHT ARROW */}
-          <TouchableOpacity
-            style={[
-              styles.arrowBtn,
-              page === pagination.last_page &&
-                styles.disabledArrow,
-            ]}
-            disabled={page === pagination.last_page}
-            onPress={() => setPage(page + 1)}
-          >
-            <Ionicons name="chevron-forward"  color="#fff" size={18} />
-          </TouchableOpacity>
-        </View>
+                {/* PAGE NUMBERS */}
+                {getVisiblePages(page, pagination.last_page || 1).map((num) => (
+                  <TouchableOpacity
+                    key={num}
+                    style={[
+                      styles.pageBtn,
+                      page === num && styles.activePageBtn,
+                    ]}
+                    onPress={() => setPage(num)}
+                  >
+                    <Text
+                      style={[
+                        styles.pageText,
+                        page === num && styles.activePageText,
+                      ]}
+                    >
+                      {num}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+
+                {/* RIGHT ARROW */}
+                <TouchableOpacity
+                  style={[
+                    styles.arrowBtn,
+                    page === pagination.last_page && styles.disabledArrow,
+                  ]}
+                  disabled={page === pagination.last_page}
+                  onPress={() => setPage(page + 1)}
+                >
+                  <Ionicons name="chevron-forward" color="#fff" size={18} />
+                </TouchableOpacity>
+              </View>
             }
           />
         )}
@@ -322,6 +247,7 @@ const styles = StyleSheet.create({
   blogImage: {
     width: "100%",
     height: 170,
+   
     borderRadius: 10,
   },
 
@@ -363,7 +289,7 @@ const styles = StyleSheet.create({
 
   pageBtn: {
     borderWidth: 0.6,
-    borderColor:"#fff",
+    borderColor: "#fff",
     paddingHorizontal: 15,
     paddingVertical: 7,
     marginHorizontal: 5,
@@ -372,7 +298,7 @@ const styles = StyleSheet.create({
 
   activePageBtn: {
     backgroundColor: "#C96B59",
-    borderWidth:0,
+    borderWidth: 0,
   },
 
   pageText: {
@@ -385,7 +311,7 @@ const styles = StyleSheet.create({
   arrowBtn: {
     borderWidth: 0.6,
     padding: 6,
-    borderColor:"#fff",
+    borderColor: "#fff",
     borderRadius: 5,
     marginHorizontal: 5,
   },

@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Resert = ({ onNext }) => {
   const [email, setEmail] = useState("");
@@ -22,30 +23,30 @@ const Resert = ({ onNext }) => {
       setError("Please enter your email address");
       return;
     }
+
     setLoading(true);
     setError("");
-    try {
-      const response = await axios.post(
-        `${API_URL} /forgot-password`,
-        { email: email },
-        { headers: { "Content-Type": "application/json" } }
-      );
 
-      if (response.data.status === true) {
-        Alert.alert("Success", response.data.message);
+    try {
+      const response = await fetch(`${API_URL}/forgot-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json(); // ✅ IMPORTANT
+
+      if (response.ok && data.status === true) {
+        Alert.alert("Success", data.message);
         onNext(email);
       } else {
-        setError(
-          response.data.message || "No account found with this email address"
-        );
+        setError(data.message || "No account found with this email address");
       }
-    } catch (error) {
-      // console.error("API Error:", error);
-      if (error.response && error.response.status === 404) {
-        setError("No account found with this email address");
-      } else {
-        setError("Network error. Please try again.");
-      }
+    } catch (err) {
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -57,7 +58,7 @@ const Resert = ({ onNext }) => {
         <Text style={styles.title}>Reset Password</Text>
         <Text style={styles.subtitle}>
           Enter the email associated with your account and well send
-          instructions to reset your password
+          instructions to reset your
         </Text>
 
         <View style={styles.emalInput}>
@@ -104,11 +105,8 @@ const Resert = ({ onNext }) => {
             )}
           </TouchableOpacity>
         </View>
-        <View>
-          
-        </View>
+        <View></View>
       </View>
-     
     </>
   );
 };
@@ -157,8 +155,6 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   loginText: { color: "#fff", fontWeight: "bold", fontSize: 19 },
-    
- 
 });
 
 export default Resert;

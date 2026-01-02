@@ -1,9 +1,10 @@
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { truncateWords } from "../../api/TruncateWords";
+import { useNavigation } from "@react-navigation/native";
 
 const HiddenOffer = ({hiddenOffer=[]}) => {
-
+  const navigation = useNavigation(); 
   return (
     <View style={styles.card2}>
       <View style={styles.cardHeader2}>
@@ -69,7 +70,7 @@ const HiddenOffer = ({hiddenOffer=[]}) => {
       </View>
 
       <View style={styles.actionRow2}>
-        <TouchableOpacity style={styles.viewBtn2}>
+        <TouchableOpacity style={styles.viewBtn2} onPress={()=>navigation.navigate("ViewReceivedOffer",{offerID:hiddenOffer?.oid})}>
           <Text style={styles.viewBtnText2}>View</Text>
         </TouchableOpacity>
       </View>

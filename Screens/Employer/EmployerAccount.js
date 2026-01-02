@@ -529,6 +529,7 @@ const EmployerAccount = () => {
         <CategoryModel
           visible={modalVisible}
           type={1}
+          pageType={1}
           onClose={() => {
             setModalVisible(false);
             fetchEmployer();

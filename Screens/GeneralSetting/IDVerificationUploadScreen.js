@@ -8,6 +8,7 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { useNavigation } from "@react-navigation/native";
+import FilePreview from "../../components/FilePreview";
 
 export default function IDVerificationUploadScreen() {
   const [openDropdown, setOpenDropdown] = useState(false);
@@ -36,19 +37,19 @@ export default function IDVerificationUploadScreen() {
 
     formData.append("FacePhoto", {
       uri: personalPhoto.uri,
-       name: "face.jpg",
+      name: "face.jpg",
       type: "image/jpeg",
     });
 
     formData.append("DocumentFront", {
       uri: docFront.uri,
-       name: "front.jpg",
+      name: "front.jpg",
       type: "image/jpeg",
     });
 
     formData.append("DocumentBack", {
       uri: docBack.uri,
-        name: "back.jpg",
+      name: "back.jpg",
       type: "image/jpeg",
     });
 
@@ -70,7 +71,6 @@ export default function IDVerificationUploadScreen() {
       } else {
         Alert.alert("Error", data.message);
       }
-
     } catch (err) {
       console.log("UPLOAD ERROR:", err);
       Alert.alert("Error", "Upload failed");
@@ -80,7 +80,10 @@ export default function IDVerificationUploadScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <PageNameHeaderBar title="Identity Verification" navigation={navigation} />
+        <PageNameHeaderBar
+          title="Identity Verification"
+          navigation={navigation}
+        />
         <View>
           <Text style={styles.title}>Identity Verification</Text>
 
@@ -112,15 +115,30 @@ export default function IDVerificationUploadScreen() {
 
           {/* Personal Photo */}
           <Text style={styles.sectionLabel}>Personal Photo</Text>
-          <UploadBox label="Upload Personal Photo" onSelect={setPersonalPhoto} />
+          <UploadBox
+            label="Upload Personal Photo"
+            onSelect={setPersonalPhoto}
+          />
+          <FilePreview
+            file={personalPhoto}
+            onRemove={() => setPersonalPhoto(null)}
+          />
 
           {/* Document Images */}
-          <Text style={styles.sectionLabel}>Document Images (Front & Back)</Text>
+          <Text style={styles.sectionLabel}>
+            Document Images (Front & Back)
+          </Text>
           <View style={styles.row}>
-            <UploadBox label="Front Image" small onSelect={setDocFront} />
+            <UploadBox
+              label="Front Image"
+              type="document"
+              small
+              onSelect={setDocFront}
+            />
+            <FilePreview file={docFront} onRemove={() => setDocFront(null)} />
             <UploadBox label="Back Image" small onSelect={setDocBack} />
+            <FilePreview file={docBack} onRemove={() => setDocBack(null)} />
           </View>
-
         </View>
 
         <GradientButton title="Verify Identity" onPress={handleVerify} />
@@ -147,7 +165,7 @@ const styles = StyleSheet.create({
 
   dropdownWrapper: {
     width: "100%",
-    marginBottom:15,
+    marginBottom: 15,
   },
   dropdownHeader: {
     backgroundColor: "#f5f5f5",
@@ -156,7 +174,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-     marginBottom:15,
+    marginBottom: 15,
   },
   dropdownText: {
     fontSize: 16,

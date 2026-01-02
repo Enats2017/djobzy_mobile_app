@@ -8,7 +8,19 @@ const JobCreate = ({ admin, userId }) => {
   console.log(userId);
   const navigation = useNavigation();
   const handleCreateLater = () => {
-    navigation.navigate("Dashboard", { userId });
+      if (admin == 2) {
+      // Admin / Employer
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "EmployerDashboard", params: { userId } }],
+      });
+    } else {
+      // Normal User
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Dashboard", params: { userId } }],
+      });
+    }
   };
 
   return (
@@ -59,6 +71,7 @@ const styles = StyleSheet.create({
   jobsection: {
     justifyContent: "center",
     alignItems: "center",
+    alignContent:"center",
     marginTop: 25,
   },
   checking: {
@@ -96,6 +109,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: "Montserrat_600SemiBold",
     color: "#fff",
+    textAlign:"center",
     marginBottom: 10,
   },
   subText: {

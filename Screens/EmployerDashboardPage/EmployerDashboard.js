@@ -60,6 +60,18 @@ export default function EmployerDashboard() {
     fetchEmployees();
   }, []);
 
+  const handleProfileNavigation = (emp) => {
+    if (emp?.admin === 2) {
+      navigation.navigate("PublicEmployeeProfile", {
+        name: emp.name,
+      });
+    } else {
+      navigation.navigate("EmployerProfilePage", {
+        name: emp.name,
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
       <ScrollView
@@ -334,11 +346,7 @@ export default function EmployerDashboard() {
 
                     <TouchableOpacity
                       style={styles.profileBtn}
-                      onPress={() =>
-                        navigation.navigate("EmployerProfilePage", {
-                          name: emp.name,
-                        })
-                      }
+                      onPress={() => handleProfileNavigation(emp)}
                     >
                       <Text style={styles.profileBtnText}>View Profile</Text>
                     </TouchableOpacity>
@@ -497,7 +505,7 @@ const styles = StyleSheet.create({
   },
   cardHeader: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
   },
   avatar: {
@@ -508,6 +516,7 @@ const styles = StyleSheet.create({
   infoWrapper: {
     flex: 1,
     justifyContent: "center",
+    
     marginLeft: 10,
   },
   nameStarRow: {

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   Image,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,16 +16,19 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
+import ConfirmModal from "../../components/ConfirmModal";
 
 const EmployerSentOffer = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [sentOffer, setSentOffer] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
 
   const fetchSentOffer = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(`${API_URL}/sent-offer`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -43,6 +47,32 @@ const EmployerSentOffer = () => {
   useEffect(() => {
     fetchSentOffer();
   }, []);
+
+  const hidedata = async (oid) => {
+    setSubmitted(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/hide-offer`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: oid }),
+      });
+      const data = await response.json();
+      if (data.status == 200) {
+        setSentOffer((prev) => prev.filter((offer) => offer.oid !== oid));
+        Alert.alert("Success", " Data hide Successfully");
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.log("API Error:", error);
+    } finally {
+      setSubmitted(false);
+    }
+  };
 
   return (
     <>
@@ -121,7 +151,13 @@ const EmployerSentOffer = () => {
                     </View>
 
                     <View style={styles.actionRow}>
-                      <TouchableOpacity style={styles.hideBtn}>
+                      <TouchableOpacity
+                        style={styles.hideBtn}
+                        onPress={() => {
+                          setSelectedOffer(item);
+                          setModalVisible(true);
+                        }}
+                      >
                         <Text style={styles.hidetext}>Hide</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
@@ -151,6 +187,16 @@ const EmployerSentOffer = () => {
             </ScrollView>
           )}
         </View>
+        <ConfirmModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onConfirm={() => hidedata(selectedOffer?.oid)}
+          disabled={submitted}
+          loading={submitted}
+          title="Hide Offer"
+          message="Are you sure you want to hide this offer?"
+          confirmText="Yes, Hide"
+        />
         <EmployerFooter />
       </SafeAreaView>
     </>

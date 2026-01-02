@@ -26,6 +26,7 @@ const AccountSetting = () => {
   const [password, setPassword] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
   const route = useRoute();
   const { user } = route.params || {};
 
@@ -35,6 +36,7 @@ const AccountSetting = () => {
         Alert.alert("Error", "Please enter your password");
         return;
       }
+       setLoading(true)
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/set-confirm-pass`, {
         method: "POST",
@@ -60,6 +62,9 @@ const AccountSetting = () => {
     } catch (error) {
       console.log("Password confirm error:", error);
       Alert.alert("Error", "Something went wrong");
+    }
+    finally{
+      setLoading(false);
     }
   };
 
@@ -192,6 +197,7 @@ const AccountSetting = () => {
           )}
           <View style={styles.button}>
             <GradientButton
+            loading={loading}
               title={activeTab === 0 ? "Continue" : "Save Changes"}
               onPress={() => {
                 if (activeTab === 0) {

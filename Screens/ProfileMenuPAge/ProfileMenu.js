@@ -97,7 +97,6 @@ const EmployeeProfileMenu = () => {
   const handleLogout = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-
       const res = await fetch(`${API_URL}/logout`, {
         method: "POST",
         headers: {
@@ -107,6 +106,7 @@ const EmployeeProfileMenu = () => {
       });
       const data = await res.json();
       if (data.status === 200) {
+         await AsyncStorage.multiRemove(["token", "user"]);
         navigation.reset({
           index: 0,
           routes: [{ name: "Login" }],

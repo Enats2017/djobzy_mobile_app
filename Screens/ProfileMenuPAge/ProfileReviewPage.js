@@ -18,6 +18,7 @@ import NoReviews from "../../components/NoReviews";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Footer from "../../components/Footer";
+import Loading from "../../components/Loading";
 
 const ProfileReviewPage = () => {
   const navigation = useNavigation();
@@ -26,9 +27,16 @@ const ProfileReviewPage = () => {
   const [employerReview, setEmployerReview] = useState([]);
   const [employeeRating, setEmployeeRating] = useState("0");
   const [employerRating, setEmployerRating] = useState("0");
+  const [loading, setLoading] = useState(false);
+
+   const renderStars = (rating) => {
+    if (!rating || rating <= 0) return "⭐";
+    return "⭐".repeat(Math.round(rating));
+  };
 
   const fetchReviews = async () => {
     try {
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/my-reviews`, {
         headers: {
@@ -52,6 +60,9 @@ const ProfileReviewPage = () => {
   }, []);
 
   const ReviewCard = ({ item }) => {
+     const currentRating =
+    activeTab === "employee" ? employeeRating : employerRating;
+
     return (
       <View style={styles.card}>
         <View style={styles.row}>
@@ -78,9 +89,7 @@ const ProfileReviewPage = () => {
                 )}
               </View>
               <View style={styles.starRow}>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Ionicons key={i} name="star" size={14} color="#FFD700" />
-                ))}
+               <Text style={styles.rating}> {renderStars(currentRating)}</Text>
               </View>
             </View>
           </View>
@@ -98,16 +107,22 @@ const ProfileReviewPage = () => {
         <View style={styles.conatiner}>
           <View style={styles.hedaer}>
             <PageNameHeaderBar title="Reviews" navigation={navigation} />
-            <View style={styles.ratebox}>
-              <Text style={styles.ratetext}>Average Rating</Text>
-              <View style={styles.iconbox}>
-                <Text style={styles.icontext}>
-                  <AntDesign name="star" size={18} />{" "}
-                  {activeTab === "employee" ? employeeRating : employerRating}
-                </Text>
-              </View>
-            </View>
+            {
+              !loading && (
+                <View style={styles.ratebox}>
+                  <Text style={styles.ratetext}>Average Rating</Text>
+                  <View style={styles.iconbox}>
+                    <Text style={styles.icontext}>
+                      <AntDesign name="star" size={18} />{" "}
+                      {activeTab === "employee" ? employeeRating : employerRating}
+                    </Text>
+                  </View>
+                </View>
+              )
+            }
+            
           </View>
+
           <View style={styles.tabContainer}>
             <TouchableOpacity
               style={[styles.tab, activeTab === "employee" && styles.activeTab]}
@@ -128,7 +143,7 @@ const ProfileReviewPage = () => {
             >
               <Text
                 style={
-                  activeTab === "jobs" ? styles.activeTabText : styles.tabText
+                  activeTab === "employer" ? styles.activeTabText : styles.tabText
                 }
               >
                 Employer’s Profile
@@ -144,31 +159,42 @@ const ProfileReviewPage = () => {
             </TouchableOpacity>
           </View>
 
-          {activeTab === "employee" ? (
-            employeeReview.length > 0 ? (
-              <FlatList
-                data={employeeReview}
-                keyExtractor={(item) => item.rid.toString()}
-                renderItem={ReviewCard}
-                contentContainerStyle={{ paddingBottom: 40 }}
-              />
+          {
+            loading ? (
+              <Loading/>
             ) : (
-              <View style={styles.nojobs}>
-                <NoReviews />
-              </View>
+              <>
+              {activeTab === "employee" ? (
+                employeeReview.length > 0 ? (
+                  <FlatList
+                    data={employeeReview}
+                    keyExtractor={(item) => item.rid.toString()}
+                    renderItem={ReviewCard}
+                    contentContainerStyle={{ paddingBottom: 40 }}
+                  />
+                ) : (
+                  <View style={styles.nojobs}>
+                    <NoReviews />
+                  </View>
+                )
+              ) : employerReview.length > 0 ? (
+                <FlatList
+                  data={employerReview}
+                  keyExtractor={(item) => item.rid.toString()}
+                  renderItem={ReviewCard}
+                  contentContainerStyle={{ paddingBottom: 40 }}
+                />
+              ) : (
+                <View style={styles.nojobs}>
+                  <NoReviews />
+                </View>
+              )}
+              
+              </>
+              
             )
-          ) : employerReview.length > 0 ? (
-            <FlatList
-              data={employerReview}
-              keyExtractor={(item) => item.rid.toString()}
-              renderItem={ReviewCard}
-              contentContainerStyle={{ paddingBottom: 40 }}
-            />
-          ) : (
-            <View style={styles.nojobs}>
-              <NoReviews />
-            </View>
-          )}
+          }
+
         </View>
         <Footer/>
       </SafeAreaView>

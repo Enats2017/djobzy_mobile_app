@@ -7,48 +7,45 @@ import * as DocumentPicker from "expo-document-picker";
 export default function UploadBox({
   label,
   type = "image", // "image" | "document"
-  onSelect = () => {}, // returns picked file
+  onSelect,
   small = false,
-  style,
-  showIcon = true,
 }) {
   const handlePress = async () => {
     try {
       if (type === "image") {
         const result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
           quality: 0.8,
         });
 
         if (!result.canceled) {
-          onSelect(result.assets[0]); // return image file
+          onSelect(result.assets[0]);
         }
       } else {
-        const res = await DocumentPicker.pickSingle({
-          type: DocumentPicker.types.allFiles,
+        const result = await DocumentPicker.getDocumentAsync({
+          type: "*/*",
+          copyToCacheDirectory: true,
         });
-        onSelect(res); // return document file
+
+        if (result.assets && result.assets.length > 0) {
+          onSelect(result.assets[0]);
+        }
       }
     } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        console.log("Canceled");
-      } else {
-        console.log("Error:", err);
-      }
+      console.log("Picker error:", err);
     }
   };
 
   return (
     <TouchableOpacity
-      activeOpacity={0.85}
+      style={[styles.box, small && styles.small]}
       onPress={handlePress}
-      style={[styles.box, small && styles.small, style]}
     >
-      {showIcon && <Foundation name="upload" size={24} color="#fff" />}
+      <Foundation name="upload" size={22} color="#fff" />
       <Text style={styles.text}>{label}</Text>
     </TouchableOpacity>
   );
+
 }
 
 const styles = StyleSheet.create({

@@ -34,7 +34,7 @@ import ChangeMyOffer from "./Screens/EmployeeJobs/ChangeMyOffer";
 import ViewCompletedJobPost from "./Screens/EmployeeJobs/ViewCompletedJobPost";
 import CompletedJobPaymentPage from "./Screens/EmployeeJobs/CompletedJobPaymentPage";
 import ViewReceivedOffer from "./Screens/EmployeeJobs/ViewReceivedOffer";
-import MyNewReceiveOfferPage from "./Screens/EmployeeJobs/MyNewReceiveOfferPage";
+import MakeNewOffer from "./Screens/EmployeeJobs/MakeNewOffer";
 import AcceptReceivedOfferPage from "./Screens/EmployeeJobs/AcceptReceivedOfferPage";
 import ViewCurrentJobPost from "./Screens/EmployeeJobs/ViewCurrentJobPost";
 import CurrentJobPaymentPage from "./Screens/EmployeeJobs/CurrentJobPaymentPage";
@@ -133,7 +133,7 @@ const App = () => {
           <Stack.Screen name="ViewCompletedJobPost" component={ViewCompletedJobPost} />
           <Stack.Screen name="CompletedJobPaymentPage" component={CompletedJobPaymentPage} />
           <Stack.Screen name="ViewReceivedOffer" component={ViewReceivedOffer} />
-          <Stack.Screen name="MyNewReceiveOfferPage" component={MyNewReceiveOfferPage} />
+          <Stack.Screen name="MakeNewOffer" component={MakeNewOffer} />
           <Stack.Screen name="AcceptReceivedOfferPage" component={AcceptReceivedOfferPage} />
           <Stack.Screen name="ViewCurrentJobPost" component={ViewCurrentJobPost} />
           <Stack.Screen name="CurrentJobPaymentPage" component={CurrentJobPaymentPage} />

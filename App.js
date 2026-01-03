@@ -7,6 +7,8 @@ import {
   Montserrat_700Bold,
   Montserrat_800ExtraBold,
 } from "@expo-google-fonts/montserrat";
+import Toast from "react-native-toast-message";
+import { toastConfig } from "./utils/toastConfig";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { NavigationContainer } from "@react-navigation/native";
@@ -179,6 +181,7 @@ const App = () => {
           <Stack.Screen name="EditPromoteSevices" component={EditPromoteSevices} />
         </Stack.Navigator>
       </NavigationContainer>
+        <Toast config={toastConfig} />
     </View>
   );
 };

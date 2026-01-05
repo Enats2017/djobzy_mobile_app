@@ -11,6 +11,12 @@ const FilePreview = ({ file, onRemove }) => {
     fileType.startsWith("image") ||
     /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
 
+    const shortFileName = (name, maxLength = 22) => {
+    if (!name) return "";
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength - 3) + "...";
+  };
+
   return (
     <View style={styles.container}>
       {/* Left Icon / Image */}
@@ -20,19 +26,19 @@ const FilePreview = ({ file, onRemove }) => {
         <Ionicons
           name="document-text-outline"
           size={22}
-          color="#444"
+          color="#e63939ff"
           style={styles.icon}
         />
       )}
 
       {/* File Name */}
       <Text numberOfLines={1} style={styles.fileName}>
-        {fileName}
+        {shortFileName(fileName)}
       </Text>
 
       {/* Close Icon */}
       <TouchableOpacity onPress={onRemove}>
-        <Ionicons name="close" size={20} color="#888" />
+        <Ionicons name="close" size={20} color="#d62525ff" />
       </TouchableOpacity>
     </View>
   );
@@ -43,12 +49,11 @@ const FilePreview = ({ file, onRemove }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F2F2F2",
+    alignItems: "center",    
     borderRadius: 6,
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     paddingVertical: 8,
-    marginTop: 10,
+    marginTop: 5,
   },
 
   icon: {
@@ -65,7 +70,7 @@ const styles = StyleSheet.create({
   fileName: {
     flex: 1,
     fontSize: 13,
-    color: "#333",
+    color: "#fff",
   },
 });
 

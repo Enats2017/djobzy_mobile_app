@@ -117,7 +117,7 @@ const Dashboard = () => {
 
   function renderHeader() {
     return (
-      <View>
+      <View style={{paddingTop:"57"}}>
         <Text style={styles.sectionHeader}>My Jobs</Text>
         <View style={styles.chipRow}>
           {["Current jobs", "Received offers", "My biddings"].map(
@@ -238,7 +238,7 @@ const Dashboard = () => {
             </TouchableOpacity>
           </Modal>
 
-          <View style={styles.tabContainer}>
+          {/* <View style={styles.tabContainer}>
             <TouchableOpacity
               style={[styles.tab, activeTab === "feeds" && styles.activeTab]}
               onPress={() => setActiveTab("feeds")}
@@ -264,7 +264,7 @@ const Dashboard = () => {
                 Recommended Jobs
               </Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           {/* Jobs Tab */}
           {activeTab === "jobs" ? (
@@ -441,39 +441,39 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  tabContainer: {
-    flexDirection: "row",
-    borderColor: "#c5c5c591",
-    borderWidth: 1,
-    borderRadius: 12,
-    marginTop: 70,
-  },
+  // tabContainer: {
+  //   flexDirection: "row",
+  //   borderColor: "#c5c5c591",
+  //   borderWidth: 1,
+  //   borderRadius: 12,
+  //   marginTop: 70,
+  // },
 
-  tab: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 14,
-  },
-  tabText: {
-    color: "#c3c3c3c3",
-    fontSize: 16,
-    fontFamily: "Montserrat_500Medium",
-  },
+  // tab: {
+  //   flex: 1,
+  //   flexDirection: "row",
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   paddingVertical: 14,
+  // },
+  // tabText: {
+  //   color: "#c3c3c3c3",
+  //   fontSize: 16,
+  //   fontFamily: "Montserrat_500Medium",
+  // },
 
-  activeTab: {
-    backgroundColor: "#C96B59",
-    padding: 10,
-    outlineColor: "#C96B59",
-    outlineWidth: 1,
-    borderRadius: 10,
-  },
-  activeTabText: {
-    color: "#ffff",
-    fontFamily: "Montserrat_600SemiBold",
-    fontSize: 16,
-  },
+  // activeTab: {
+  //   backgroundColor: "#C96B59",
+  //   padding: 10,
+  //   outlineColor: "#C96B59",
+  //   outlineWidth: 1,
+  //   borderRadius: 10,
+  // },
+  // activeTabText: {
+  //   color: "#ffff",
+  //   fontFamily: "Montserrat_600SemiBold",
+  //   fontSize: 16,
+  // },
   postcontainer: {
     backgroundColor: "#FFFFFF1a",
     marginTop: 25,

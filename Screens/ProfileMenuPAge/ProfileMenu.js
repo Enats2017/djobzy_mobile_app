@@ -27,6 +27,7 @@ const EmployeeProfileMenu = () => {
   const [switchLoading, setSwitchLoading] = useState(false);
   const [accountType, setAccountType] = useState(null);
   const [user, setUser] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchUser = async () => {
     try {
@@ -96,6 +97,7 @@ const EmployeeProfileMenu = () => {
 
   const handleLogout = async () => {
     try {
+      setSubmitting(true);
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/logout`, {
         method: "POST",
@@ -114,6 +116,8 @@ const EmployeeProfileMenu = () => {
       }
     } catch (error) {
       console.log("Template API error:", error);
+    }finally{
+      setSubmitting(false);
     }
   };
 
@@ -182,11 +186,18 @@ const EmployeeProfileMenu = () => {
                   <MenuItem icon="settings-outline" title="Setting" onPress={() => navigation.navigate("GeneralSetting")} />
                   <MenuItem icon="gift-outline" title="Referral wallet" onPress={() => navigation.navigate("ReferralWallet")} />
                   <MenuItem icon="chatbubble-ellipses-outline" title="Chat" onPress={() => navigation.navigate("FeedChat")} />
-                  <MenuItem icon="document-outline" title="Blog" onPress={() => navigation.navigate("BlogPage")} />
+                  {/* <MenuItem icon="document-outline" title="Blog" onPress={() => navigation.navigate("BlogPage")} /> */}
                 </View>
                 <TouchableOpacity style={styles.logoutContainer} onPress={handleLogout}>
                   <Text style={styles.logoutLabel}>Logout</Text>
-                  <MaterialIcons name="logout" size={24} color="#ffffff" />
+                  {
+                    submitting ?(
+                      <ActivityIndicator size="small" color="#fff"/>
+                    ):(
+                      
+                      <MaterialIcons name="logout" size={24} color="#ffffff" />
+                    )
+                  }
                 </TouchableOpacity>
               </ScrollView>
             </>

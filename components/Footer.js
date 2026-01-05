@@ -33,18 +33,18 @@ const Footer = () => {
 
           <TouchableOpacity
             style={styles.tab}
-            onPress={() => navigation.navigate("CreateJob")}
+            onPress={() => navigation.navigate("PromoteService")}
           >
             <Ionicons
               name="add-circle"
               size={24}
-              color={isActive("CreateJob") ? ACTIVE_COLOR : INACTIVE_COLOR}
+              color={isActive("PromoteService") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
             <Text style={[
               styles.label,
-              isActive("CreateJob") && styles.activeText,
+              isActive("PromoteService") && styles.activeText,
             ]}>
-              Post
+              Promote
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -60,7 +60,7 @@ const Footer = () => {
               styles.label,
               isActive("NotificationScreen") && styles.activeText,
             ]}>
-              Alerts
+              Notification
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

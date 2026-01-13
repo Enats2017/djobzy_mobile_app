@@ -38,6 +38,7 @@ import Loading from "../../components/Loading";
 import CategoryModel from "../../components/CategoryModel";
 
 import Delete_Category from "../../components/Delete_Category";
+import QuestionMark from "../../components/QuestionMark";
 
 const EmployeeAccount = () => {
   const route = useRoute();
@@ -219,7 +220,7 @@ const EmployeeAccount = () => {
                   style={styles.iconBtn}
                   onPress={() =>
                     navigation.navigate("ProfileBoostPage", {
-                      categories: subcategory,
+                      categories: job,
                     })
                   }
                 >
@@ -259,7 +260,7 @@ const EmployeeAccount = () => {
               </ScrollView>
             </View>
             <View style={styles.infoBox}>
-              <View style={styles.iconbox}>
+              {/* <View style={styles.iconbox}>
                 <Text style={styles.infoTitle}>Profile Title</Text>
                 <FontAwesome
                   name="question-circle"
@@ -267,13 +268,14 @@ const EmployeeAccount = () => {
                   color="#ffffff"
                   style={{ marginLeft: 5 }}
                 />
-              </View>
+              </View> */}
+              <QuestionMark title="Profile Title" iconColor="#fff"/>
               <Text style={styles.infoText2}>
                 {user.profile_title_employee}
               </Text>
             </View>
             <View style={styles.infoBox}>
-              <View style={styles.iconbox}>
+              {/* <View style={styles.iconbox}>
                 <Text style={styles.infoTitle}>About Me</Text>
                 <FontAwesome
                   name="question-circle"
@@ -281,7 +283,8 @@ const EmployeeAccount = () => {
                   color="#ffffff"
                   style={{ marginLeft: 5 }}
                 />
-              </View>
+              </View> */}
+              <QuestionMark title="About Me" iconColor="#fff"/>
               <Text style={styles.infoText2}>{user?.about}</Text>
             </View>
             {/* <View style={styles.calendarBox}>
@@ -303,7 +306,7 @@ const EmployeeAccount = () => {
               </View>
             </View> */}
             <View style={styles.infoBox}>
-              <View style={styles.iconbox}>
+              {/* <View style={styles.iconbox}>
                 <Text style={styles.infoTitle}>Pomate Services</Text>
                 <FontAwesome
                   name="question-circle"
@@ -311,7 +314,8 @@ const EmployeeAccount = () => {
                   color="#ffffff"
                   style={{ marginLeft: 5 }}
                 />
-              </View>
+              </View> */}
+              <QuestionMark title="Pomate Services" iconColor="#fff"/>
             </View>
 
             <TouchableOpacity
@@ -352,7 +356,7 @@ const EmployeeAccount = () => {
               ))}
             </ScrollView>
             <View style={styles.infoBox}>
-              <View style={styles.iconbox}>
+              {/* <View style={styles.iconbox}>
                 <Text style={styles.infoTitle}>Employee Category</Text>
                 <FontAwesome
                   name="question-circle"
@@ -360,7 +364,8 @@ const EmployeeAccount = () => {
                   color="#ffffff"
                   style={{ marginLeft: 5 }}
                 />
-              </View>
+              </View> */}
+              <QuestionMark title="Employee Category" iconColor="#fff"/>
             </View>
             <View style={styles.pillsWrapper}>
               <TouchableOpacity
@@ -412,7 +417,7 @@ const EmployeeAccount = () => {
                 title="Boost"
                 onPress={() =>
                   navigation.navigate("ProfileBoostPage", {
-                    categories: subcategory,
+                    categories: job,
                   })
                 }
               />
@@ -607,7 +612,7 @@ const styles = StyleSheet.create({
   },
   profileRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 8,
   },
   avatar: {
@@ -626,12 +631,13 @@ const styles = StyleSheet.create({
   iconbox: {
     flexDirection: "row",
     gap: 6,
-    paddingVertical: 2,
+    alignItems:"flex-start",
+    flexWrap:"wrap",
   },
   infoText: {
     color: "#c3c3c3c3",
     fontSize: 16,
-    width: "80%",
+    width: "78%",
     fontFamily: "Montserrat_400Regular",
   },
   iconRow: {

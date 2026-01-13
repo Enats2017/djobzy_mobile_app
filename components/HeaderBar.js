@@ -1,8 +1,39 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { Image, StyleSheet, TouchableOpacity, View, Platform, StatusBar } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Platform,
+  StatusBar,
+  TextInput,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const HeaderBar = ({ onMenuPress }) => {
+const HeaderBar = ({ onMenuPress, showSearch = true }) => {
+  const navigation = useNavigation();
+
+  const goToSearch = async () => {
+  const userStr = await AsyncStorage.getItem("user");
+  const user = JSON.parse(userStr);
+
+  const { admin } = user;
+
+  const search_type = admin == 2 ? 2 : 0;
+  console.log("seracTpye", search_type);
+  
+
+   navigation.navigate("SearchScreen", {
+     search_type,
+   });
+};
+
+
+
+
+
   return (
     <View style={styles.container}>
       <View style={styles.left}>
@@ -12,11 +43,15 @@ const HeaderBar = ({ onMenuPress }) => {
           resizeMode="contain"
         />
       </View>
-
       <View style={styles.right}>
-        <TouchableOpacity style={styles.iconWrapper}>
+        {
+          showSearch && (
+        <TouchableOpacity style={styles.iconWrapper} onPress={goToSearch}>
           <Feather name="search" size={18} color="#fff" />
         </TouchableOpacity>
+
+          )
+        }
         <TouchableOpacity style={styles.iconWrapper}>
           <Ionicons name="chatbubble-outline" size={20} color="#fff" />
         </TouchableOpacity>
@@ -28,7 +63,8 @@ const HeaderBar = ({ onMenuPress }) => {
   );
 };
 
-const STATUSBAR_HEIGHT = Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
+const STATUSBAR_HEIGHT =
+  Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
 
 const styles = StyleSheet.create({
   container: {
@@ -69,6 +105,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+ 
 });
 
 export default HeaderBar;

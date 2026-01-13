@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 
-const SecondPage = () => {
+const SecondPage = ({ onNext }) => {
   const { width, height } = useWindowDimensions();
   const isSmall = width < 380;
   const isTablet = width > 768;
@@ -33,7 +33,7 @@ const SecondPage = () => {
         />
       </View>
       <Text style={[styles.heading, { fontSize: headingSize, marginTop }]}>
-        Gateway to {"\n"} Jobs, Services {"\n"} & Growth
+        Gateway to {"\n"} Jobs, Career {"\n"} & Growth
       </Text>
       <Text
         style={[
@@ -54,6 +54,7 @@ const SecondPage = () => {
             justifyContent: "center",
           },
         ]}
+         onPress={onNext}
         
       >
         <Ionicons name="arrow-forward" size={iconSize} color="#fff" />

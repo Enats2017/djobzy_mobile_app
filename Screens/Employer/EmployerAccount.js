@@ -35,6 +35,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
 import CategoryModel from "../../components/CategoryModel";
+import QuestionMark from "../../components/QuestionMark";
 
 const EmployerAccount = () => {
   const navigation = useNavigation();
@@ -242,7 +243,7 @@ const EmployerAccount = () => {
                 </ScrollView>
               </View>
               <View style={styles.infoBox}>
-                <View style={styles.iconbox}>
+                {/* <View style={styles.iconbox}>
                   <Text style={styles.infoTitle}>Profile Title</Text>
                   <FontAwesome
                     name="question-circle"
@@ -250,12 +251,13 @@ const EmployerAccount = () => {
                     color="#ffffff"
                     style={{ marginLeft: 5 }}
                   />
-                </View>
+                </View> */}
+                <QuestionMark title="Profile Title" iconColor="#fff"/>
                 <Text style={styles.infoText2}>
                   {user.profile_title_employer}
                 </Text>
 
-                <View style={styles.iconbox}>
+                {/* <View style={styles.iconbox}>
                   <Text style={styles.infoTitle}>About Me</Text>
                   <FontAwesome
                     name="question-circle"
@@ -263,7 +265,8 @@ const EmployerAccount = () => {
                     color="#ffffff"
                     style={{ marginLeft: 5 }}
                   />
-                </View>
+                </View> */}
+                <QuestionMark title="About Me" iconColor="#fff"/>
                 <Text style={styles.infoText2}>{user.employer_about}</Text>
               </View>
               <Text style={styles.infoTitle}> MyJobPosts</Text>
@@ -300,7 +303,7 @@ const EmployerAccount = () => {
                 </View>
               ))}
 
-              <View style={styles.iconbox}>
+              {/* <View style={styles.iconbox}>
                 <Text style={styles.infoTitle}>Employee Category</Text>
                 <FontAwesome
                   name="question-circle"
@@ -308,7 +311,8 @@ const EmployerAccount = () => {
                   color="#ffffff"
                   style={{ marginLeft: 5 }}
                 />
-              </View>
+              </View> */}
+              <QuestionMark title="Employee Category" iconColor="#fff"/>
               <View style={styles.pillsWrapper}>
                 <TouchableOpacity
                   style={styles.addBtn}
@@ -579,11 +583,13 @@ const styles = StyleSheet.create({
   iconbox: {
     flexDirection: "row",
     gap: 6,
-    paddingVertical: 2,
+   alignItems:"flex-start",
+    flexWrap:"wrap",
   },
   infoText: {
     color: "#c3c3c3c3",
     fontSize: 16,
+      width: "78%",
     fontFamily: "Montserrat_400Regular",
   },
   iconRow: {

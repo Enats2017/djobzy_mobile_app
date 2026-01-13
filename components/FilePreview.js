@@ -37,8 +37,8 @@ const FilePreview = ({ file, onRemove }) => {
       </Text>
 
       {/* Close Icon */}
-      <TouchableOpacity onPress={onRemove}>
-        <Ionicons name="close" size={20} color="#d62525ff" />
+      <TouchableOpacity onPress={onRemove}  style={styles.removeButton}>
+        <Ionicons name="close" size={17} color="#d66e58" />
       </TouchableOpacity>
     </View>
   );
@@ -69,8 +69,19 @@ const styles = StyleSheet.create({
 
   fileName: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 15,
     color: "#fff",
+  },
+    removeButton: {
+    position: "absolute",
+    top: 8,
+    right: 3,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

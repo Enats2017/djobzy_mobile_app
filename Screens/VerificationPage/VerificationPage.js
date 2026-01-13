@@ -10,8 +10,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  Keyboard,
+  ActivityIndicator,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { API_URL } from "../../api/ApiUrl";
@@ -34,6 +38,7 @@ const VerificationPage = () => {
   const lineProgress = useState(new Animated.Value(0))[0];
   const [services, setServices] = useState([]);
   const [filtered, setFiltered] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Animated.timing(lineProgress, {
@@ -46,6 +51,7 @@ const VerificationPage = () => {
 
   const fetchVerificationData = async () => {
     try {
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
       console.log(token);
       const res = await axios.get(`${API_URL}/user-verification-step`, {
@@ -53,8 +59,9 @@ const VerificationPage = () => {
       });
 
       const user = res.data.userDetails || {};
-      console.log(user);
-
+         const verificationStep = Number(user.verification_step ?? 0);
+         setActiveTab(verificationStep);
+    
       const fetchedServices = res.data.services || [];
       setServices(fetchedServices);
       setFiltered(fetchedServices);
@@ -67,6 +74,8 @@ const VerificationPage = () => {
     } catch (error) {
       console.error("Fetch error:", error.response?.data || error.message);
       Alert.alert("Error", "Failed to load verification data.");
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -75,10 +84,17 @@ const VerificationPage = () => {
 
   return (
     <>
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.container}>
-          <HeaderBar />
-          <ScrollView>
+      <SafeAreaView style={{ flex: 1,  }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.container}
+        >
+          <HeaderBar showSearch={false} />
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 5 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
             <View style={styles.StepContainer}>
               {["Account Setup", "Default Profile", "Profile Setup"].map(
                 (label, index, array) => {
@@ -105,7 +121,7 @@ const VerificationPage = () => {
                             <MaterialIcons
                               name="done"
                               size={15}
-                              color="black"
+                              color="#fff"
                             />
                           )}
                         </View>
@@ -139,17 +155,29 @@ const VerificationPage = () => {
                 }
               )}
             </View>
-            <View style={{ display: activeTab === 0 ? "flex" : "none" }}>
-              <AccountSetup
-                countries={countries}
-                fullName={fullName}
-                username={username}
-                setUsername={setUsername}
-                email={email}
-                emailVerified={emailVerified}
-                onNext={() => setActiveTab(1)}
-              />
+            <View
+              style={{ display: activeTab === 0 ? "flex" : "none",  }}
+            >
+              {loading ? (
+                <View style={styles.loaderWrap}>
+                  <ActivityIndicator size="large" color="#fff" />
+                  <Text style={styles.loadingText}>
+                    Loading account details...
+                  </Text>
+                </View>
+              ) : (
+                <AccountSetup
+                  countries={countries}
+                  fullName={fullName}
+                  username={username}
+                  setUsername={setUsername}
+                  email={email}
+                  emailVerified={emailVerified}
+                  onNext={() => setActiveTab(1)}
+                />
+              )}
             </View>
+
             <View style={{ display: activeTab === 1 ? "flex" : "none" }}>
               <DefaultProfile
                 services={services}
@@ -178,20 +206,17 @@ const VerificationPage = () => {
               </TouchableOpacity>
             )}
           </ScrollView>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: "#222222",
-  },
   container: {
     flex: 1,
-    padding: 18,
+    padding: 15,
+    backgroundColor: "#222222",
   },
   StepContainer: {
     flexDirection: "row",
@@ -243,17 +268,17 @@ const styles = StyleSheet.create({
   },
   line: {
     height: 1.5,
-    width: 60,
+    width: 78,
   },
   completedLine: {
     backgroundColor: "#ff6666",
-    
+    marginBottom: 15,
   },
   inactiveLine: {
     borderWidth: 1,
     marginBottom: 15,
     borderColor: "#aaa",
-    borderStyle:"dashed",
+    borderStyle: "dashed",
     backgroundColor: "transparent",
   },
 
@@ -267,9 +292,21 @@ const styles = StyleSheet.create({
   },
   backBtnText: {
     color: "#303030",
-    fontFamily:"Montserrat_700Bold",
-    fontSize:20
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 20,
   },
+  loaderWrap: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingVertical: 40,
+},
+loadingText: {
+  marginTop: 10,
+  fontSize: 14,
+  color: "#666",
+},
+
 });
 
 export default VerificationPage;

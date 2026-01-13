@@ -18,6 +18,7 @@ import { useNavigation } from "@react-navigation/native";
 import LineDivider from "../../components/LineDivider";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
+import EmployerFooter from "../../components/EmployerFooter";
 
 const NotificationScreen = () => {
   const navigation = useNavigation();
@@ -25,6 +26,7 @@ const NotificationScreen = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [admin, setAdmin] = useState(0);
 
   const fetchNotifications = async () => {
     try {
@@ -55,10 +57,21 @@ const NotificationScreen = () => {
       setLoading(false);
     }
   };
-
+  
+  const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return; 
+    const user = JSON.parse(userStr);
+    console.log("11111",user);
+    setAdmin((user?.admin));     
+  };
   useEffect(() => {
     fetchNotifications();
+    loadUser();
   }, []);
+
+
+   
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -96,7 +109,7 @@ const NotificationScreen = () => {
                   activeTab === "new" ? styles.activeTabText : styles.tabText
                 }
               >
-                New Notifications
+                 Notifications
               </Text>
             </TouchableOpacity>
 
@@ -109,7 +122,7 @@ const NotificationScreen = () => {
                   activeTab === "old" ? styles.activeTabText : styles.tabText
                 }
               >
-                Old Notifications
+               Chat Notifications
               </Text>
             </TouchableOpacity>
           </View>
@@ -165,7 +178,10 @@ const NotificationScreen = () => {
           )}
         </>
       </View>
-      <Footer />
+      {admin == 2 ? <EmployerFooter /> : <Footer />}
+
+     
+     
     </SafeAreaView>
   );
 };

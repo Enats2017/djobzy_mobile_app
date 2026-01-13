@@ -81,7 +81,7 @@ const PostJobDetails = () => {
       console.log(err);
       setError(err.message);
     } finally {
-      setModalLoading(false);
+      setModalLoading(true);
     }
   };
 
@@ -121,6 +121,13 @@ const PostJobDetails = () => {
   function closeDeactivateModal() {
     setShowDeactivateModal(false);
   }
+  const handlePayHire = () => {
+  setShowPayHireModal(false);   
+  navigation.navigate("UserPaymentPage", {
+    profileData:profileData,
+  });
+};
+
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
@@ -298,10 +305,19 @@ const PostJobDetails = () => {
                           <TouchableOpacity
                             style={styles.biddingPayHireBtn}
                             onPress={() => fetchUserAppliedDetials(gig.prp_id)}
+                              disabled={modalLoading == gig?.id}
                           >
+                            {
+                              modalLoading ?(
+                                <ActivityIndicator size="small" colo="#fff"/>
+
+                              ):(
+
                             <Text style={styles.biddingPayHireBtnText}>
                               Pay & Hire
                             </Text>
+                              )
+                            }
                           </TouchableOpacity>
                         </View>
                       ))}
@@ -443,7 +459,7 @@ const PostJobDetails = () => {
                   </Text>
                 </View>
                 <View style={styles.hireButtonRow}>
-                  <TouchableOpacity style={styles.payBtn}>
+                  <TouchableOpacity style={styles.payBtn} onPress={handlePayHire}>
                     <Text style={styles.payBtnEditText}>Pay & Hire</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.buttonBoost}>

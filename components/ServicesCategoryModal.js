@@ -25,7 +25,7 @@ import {
 const CategoryModel = ({ visible, onClose }) => {
   const insets = useSafeAreaInsets();
 
-  const { categories, addCategory, removeCategory, editType, reset } =
+  const { categories, addCategoryFromModal, removeCategoryFromModal, editType, reset } =
     useCategoryGlobalStore();
 
   console.log(editType);
@@ -63,14 +63,14 @@ const CategoryModel = ({ visible, onClose }) => {
     const exists = categories.some((c) => c.subId === sub.subid);
     if (exists) return;
 
-    addCategory({
+    addCategoryFromModal({
       serviceId: service.id,
       subId: sub.subid,
       name: sub.subname,
     });
   };
   const handleRemoveSub = (subId) => {
-    removeCategory(subId);
+    removeCategoryFromModal(subId);
   };
   const toggleExpand = (serviceId) => {
     setExpandedServices((prev) => ({

@@ -80,6 +80,9 @@ import EmployerAccount from "./Screens/Employer/EmployerAccount";
 import PublicEmployeeProfile from "./Screens/Employee/PublicEmployeeProfile";
 import PromoteServicesDetails from "./Screens/PromoteServicesPage/PromoteServicesDetails";
 import EditPromoteSevices from "./Screens/PromoteServicesPage/EditPromoteSevices";
+import SearchScreen from "./Screens/SearchScreen/SearchScreen";
+import Register_Success from "./Screens/RegisterPage/Register_Success";
+
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -90,10 +93,12 @@ const App = () => {
     Montserrat_800ExtraBold,
     Montserrat_700Bold,
     Montserrat_500Medium,
+       
   });
   useEffect(() => {
     if (fontsLoaded) {
       setAppIsReady(true);
+      
     }
   }, [fontsLoaded]);
   const onLayoutRootView = useCallback(async () => {
@@ -105,6 +110,7 @@ const App = () => {
   if (!appIsReady) {
     return null;
   }
+  
   return (
     <View style={{ flex: 1 }}>
       <NavigationContainer>
@@ -179,6 +185,9 @@ const App = () => {
           <Stack.Screen name="PublicEmployeeProfile" component={PublicEmployeeProfile} />
           <Stack.Screen name="PromoteServicesDetails" component={PromoteServicesDetails} />
           <Stack.Screen name="EditPromoteSevices" component={EditPromoteSevices} />
+          <Stack.Screen name ="SearchScreen" component={SearchScreen}/>
+          <Stack.Screen name ="Register_Success" component={Register_Success}/>
+          
         </Stack.Navigator>
       </NavigationContainer>
         <Toast config={toastConfig} />

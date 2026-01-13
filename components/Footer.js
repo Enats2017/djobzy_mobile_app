@@ -16,6 +16,19 @@ const Footer = () => {
         <View style={styles.BottomBar}>
           <TouchableOpacity
             style={styles.tab}
+            
+          >
+            <Ionicons
+              name="home"
+              size={24}
+              color={isActive === "jobs" ? "#007bff" : "#000000"}
+            />
+            <Text style={[styles.label, isActive == 0 && styles.activeText]}>
+              Home
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tab}
             onPress={() => navigation.navigate("Dashboard")}
           >
             <Ionicons
@@ -23,10 +36,9 @@ const Footer = () => {
               size={24}
               color={isActive("Dashboard") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
-            <Text style={[
-              styles.label,
-              isActive("Dashboard") && styles.activeText,
-            ]}>
+            <Text
+              style={[styles.label, isActive("Dashboard") && styles.activeText]}
+            >
               Jobs
             </Text>
           </TouchableOpacity>
@@ -40,10 +52,12 @@ const Footer = () => {
               size={24}
               color={isActive("PromoteService") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
-            <Text style={[
-              styles.label,
-              isActive("PromoteService") && styles.activeText,
-            ]}>
+            <Text
+              style={[
+                styles.label,
+                isActive("PromoteService") && styles.activeText,
+              ]}
+            >
               Promote
             </Text>
           </TouchableOpacity>
@@ -54,12 +68,16 @@ const Footer = () => {
             <Ionicons
               name="notifications"
               size={24}
-              color={isActive("NotificationScreen") ? ACTIVE_COLOR : INACTIVE_COLOR}
+              color={
+                isActive("NotificationScreen") ? ACTIVE_COLOR : INACTIVE_COLOR
+              }
             />
-            <Text style={[
-              styles.label,
-              isActive("NotificationScreen") && styles.activeText,
-            ]}>
+            <Text
+              style={[
+                styles.label,
+                isActive("NotificationScreen") && styles.activeText,
+              ]}
+            >
               Notification
             </Text>
           </TouchableOpacity>
@@ -72,19 +90,20 @@ const Footer = () => {
               size={24}
               color={isActive("ProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
-            <Text style={[
-              styles.label,
-              isActive("ProfileMenu") && styles.activeText,
-            ]}>
+            <Text
+              style={[
+                styles.label,
+                isActive("ProfileMenu") && styles.activeText,
+              ]}
+            >
               Profile
             </Text>
           </TouchableOpacity>
         </View>
       </View>
-
     </>
-  )
-}
+  );
+};
 const styles = StyleSheet.create({
   BottomBar: {
     flexDirection: "row",
@@ -105,13 +124,14 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: "black",
+    color: "#000000ff",
     fontFamily: "Montserrat_400Regular",
     marginTop: 2,
   },
   activeText: {
     color: "#000000ff",
-    fontWeight: "bold",
+
+    fontFamily: "Montserrat_400Regular",
   },
 });
-export default Footer
+export default Footer;

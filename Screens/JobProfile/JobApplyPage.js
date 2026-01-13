@@ -17,13 +17,12 @@ import {
 import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
+import GradientButton from "../../components/GradientButton";
 
 const JobApplyPage = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { gig, award } = route?.params || {};
-
-
   const [agree, setAgree] = useState(false);
   const [myTotalPrice, setMyTotalPrice] = useState("");
   const [myHourlyRate, setMyHourlyRate] = useState("");
@@ -55,6 +54,7 @@ const JobApplyPage = () => {
       const response = await fetch(`${API_URL}/job-apply`, {
         method: "POST",
         headers: {
+           Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -69,6 +69,8 @@ const JobApplyPage = () => {
         navigation.goBack();
       } else {
         alert(result.message || "Failed to submit proposal");
+        console.log(result.message);
+        
       }
     } catch (err) {
       alert("Something went wrong. Please try again.");
@@ -129,6 +131,8 @@ const JobApplyPage = () => {
           <PageNameHeaderBar navigation={navigation} title="Apply to Jobs" />
         <ScrollView
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{paddingBottom:20}}
+          
         >
           <View style={styles.titleheader}>
             <Text style={styles.title}>{gig.subject}</Text>
@@ -161,15 +165,15 @@ const JobApplyPage = () => {
           </Text>
 
           {/* My Offer */}
-          <View style={styles.offerHeader}>
-            <Text style={styles.sectionTitle}>My Offer</Text>
+          <TouchableOpacity style={styles.offerHeader}>
+            <Text style={styles.offerText}>My Offer</Text>
             <FontAwesome
               name="question-circle"
               size={15}
               color="#c3c3c3c3"
-              style={{ marginTop: 2 }}
+              
             />
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.offerRow}>
             <View style={styles.offerBox}>
@@ -244,22 +248,12 @@ const JobApplyPage = () => {
               DJobzy.com
             </Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              submitting && { backgroundColor: "#ccc" },
-            ]}
-            onPress={handleSubmitOffer}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.sendButtonText}>Send</Text>
-            )}
-          </TouchableOpacity>
         </ScrollView>
+        <View style={{paddingBottom:92}}>
+            <GradientButton title="Send" onPress={handleSubmitOffer}
+            disabled={submitting} loading={submitting}/>
+
+        </View>
         </View>
 
         <Footer />
@@ -288,11 +282,18 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_600SemiBold",
     marginBottom: 8,
   },
+  offerText:{
+     color: "#ffffff",
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+
+  },
   offerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     gap: 10,
+   
   },
   offerBox: {
     flex: 1,
@@ -327,7 +328,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     backgroundColor: "#FFFFFF",
     borderRadius: 6,
-    paddingVertical: 14,
+    height:50,
     paddingHorizontal: 10,
   },
    perviousBox:{
@@ -384,6 +385,8 @@ const styles = StyleSheet.create({
   },
   offerHeader: {
     flexDirection: "row",
+    alignItems:"center",
+    marginBottom:"5",  
     gap: 6,
   },
   textArea: {

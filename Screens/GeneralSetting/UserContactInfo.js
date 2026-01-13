@@ -3,7 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import ContactInfo from "../../components/ContactInfo";
-import GoogleMap from "../../components/GoogleMap";
+//import GoogleMap from "../../components/GoogleMap";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Footer from "../../components/Footer";
 import { ScrollView } from "react-native";
@@ -99,14 +99,14 @@ const UserContactInfo = () => {
               locationValue={location}
               onChangeLocation={setLocation}
             />
-            <GoogleMap
+            {/* <GoogleMap
               region={{
                 latitude: 19.076,
                 longitude: 72.8777,
                 latitudeDelta: 0.05,
                 longitudeDelta: 0.05,
               }}
-            />
+            /> */}
             <View style={{ paddingBottom: 10 }}>
               <GradientButton loading={loading} title="Send" onPress={submitContactInfo} />
             </View>

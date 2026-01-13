@@ -39,6 +39,7 @@ const Followers = () => {
   const [profile, setProfile] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingUserId, setLoadingUserId] = useState(null);
+  const [searchText, setSearchText] = useState("");
 
   const [count, setCount] = useState([]);
   const [user, setUser] = useState();
@@ -160,6 +161,10 @@ const Followers = () => {
 
   const currentList = activeTab === "following" ? followingData : followersData;
 
+  const filteredList = currentList.filter((item) =>
+    item?.full_name?.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   const renderItem = ({ item }) => {
     return (
       <View style={styles.card}>
@@ -227,6 +232,8 @@ const Followers = () => {
       </View>
     );
   };
+ 
+  
 
   return (
     <>
@@ -239,7 +246,10 @@ const Followers = () => {
                 activeTab == "follower" ? "My Followers" : "My Following"
               }
               showFilter={false}
+              editable={true}
               showDots={false}
+              value={searchText}
+              onChangeText={(text) => setSearchText(text)}
             />
           </View>
           {loading ? (
@@ -294,15 +304,15 @@ const Followers = () => {
                 >
                   <View style={styles.statsRow}>
                     <View style={styles.statBox}>
-                      <Text style={styles.statValue}>2</Text>
+                      <Text style={styles.statValue}>{count?.job_count}</Text>
                       <Text style={styles.statLabel}>Number of Jobs</Text>
                     </View>
                     <View style={styles.statBox}>
-                      <Text style={styles.statValue}>12</Text>
+                      <Text style={styles.statValue}>{count?.earned}</Text>
                       <Text style={styles.statLabel}>Money Earned</Text>
                     </View>
                     <View style={styles.statBox}>
-                      <Text style={styles.statValue}>12</Text>
+                      <Text style={styles.statValue}>{count?.followed_users?.length || 0}</Text>
                       <Text style={styles.statLabel}>My Followers</Text>
                     </View>
                   </View>
@@ -343,7 +353,7 @@ const Followers = () => {
                 </TouchableOpacity>
               </View>
               <FlatList
-                data={currentList}
+                data={searchText ? filteredList : currentList}
                 keyExtractor={(item) => item?.id?.toString()}
                 renderItem={renderItem}
                 ItemSeparatorComponent={() => <LineDivider />}

@@ -3,13 +3,9 @@ import * as DocumentPicker from "expo-document-picker";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import FilePreview from "../../components/FilePreview";
 
-const FileUpload = ({
- fileData,
- setFileData
-}) => {
-
-
+const FileUpload = ({ fileData, setFileData }) => {
   const pickDocument = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: [
@@ -21,14 +17,19 @@ const FileUpload = ({
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       ],
     });
-    if (result.type === "success") {
-      setFileData({ fileName: result.name, fileUri: result.uri });
+    if (!result.canceled && result.assets?.length > 0) {
+      const file = result.assets[0];
+
+      setFileData({
+        fileName: file.name,
+        fileUri: file.uri,
+        fileType: file.mimeType,
+        fileSize: file.size,
+      });
     }
   };
-  const handleNext = () => {
-    // Pass file data to parent even if null (optional file)
-    onNext(fileData);
-  };
+   console.log("FILE DATA PASSING TO PREVIEW 👉", fileData);
+
 
   return (
     <>
@@ -40,10 +41,15 @@ const FileUpload = ({
           </View>
           <Text style={styles.optionalText}>Optional</Text>
         </TouchableOpacity>
-
-        {fileData.fileName && (
-          <Text style={styles.fileName}>{fileData.fileName}</Text>
+       <View style={{paddingTop:12}}>
+        {fileData?.fileName && (
+          <FilePreview
+            file={fileData}
+            onRemove={() => setFileData({ fileName: null, fileUri: null })}
+          />
         )}
+
+       </View>
 
         <View style={styles.notesContainer}>
           <Text style={styles.note}>• The maximum file size is 30 MB.</Text>
@@ -55,14 +61,11 @@ const FileUpload = ({
           </Text>
         </View>
       </View>
-     
     </>
   );
 };
 
 const styles = StyleSheet.create({
-
-  
   fileinput: {
     borderWidth: 1,
     borderStyle: "dashed",
@@ -120,7 +123,6 @@ const styles = StyleSheet.create({
     color: "#fdfdfdff",
   },
   notesContainer: {
-    
     marginTop: 40,
     paddingHorizontal: 5,
   },
@@ -133,20 +135,18 @@ const styles = StyleSheet.create({
   sectionBtn: {
     flexDirection: "column",
     gap: 15,
-    paddingTop:160
+    paddingTop: 160,
   },
   button: {
     marginHorizontal: 5,
     paddingVertical: 13,
     borderRadius: 10,
     alignItems: "center",
-    
   },
   buttonText: {
     color: "#ebe8e8ff",
     fontSize: 20,
-    fontFamily:"Montserrat_700Bold",
-    
+    fontFamily: "Montserrat_700Bold",
   },
 });
 

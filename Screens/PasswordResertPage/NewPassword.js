@@ -8,10 +8,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import GradientButton from "../../components/GradientButton";
 
 const NewPassword = ({ onNext }) => {
   const [remember, setRemember] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState("");
   return (
     <>
       <View style={styles.heading}>
@@ -40,17 +41,28 @@ const NewPassword = ({ onNext }) => {
             </TouchableOpacity>
           </View>
           <View style={styles.requirementRow}>
-            <MaterialIcons
-              name="done"
-              size={18}
-              color="#0c0c0cff"
-              style={styles.icon}
-            />
-            <Text style={styles.requirementText}>
-              Must have at least 8 characters
-            </Text>
-          </View>
+            <TouchableOpacity
+              style={styles.rememberMe}
+              onPress={() => setRemember(!remember)}
+            >
+              <View
+                style={[styles.checkbox, remember && styles.checkboxChecked]}
+              >
+                {remember && (
+                  <Ionicons
+                    name="checkmark"
                     
+                    color="#fff"
+                  />
+                )}
+              </View>
+              <Text style={styles.requirementText}>
+                {" "}
+                Must have at least 8 characters
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <Text style={[styles.label, { marginTop: 20 }]}>
             Conferm Password
           </Text>
@@ -73,9 +85,7 @@ const NewPassword = ({ onNext }) => {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.loginBtn} onPress={onNext}>
-            <Text style={styles.loginText}>Sign Up</Text>
-          </TouchableOpacity>
+          <GradientButton marginTop={25} title="Send" onPress={onNext} />
         </View>
       </View>
     </>
@@ -84,19 +94,17 @@ const NewPassword = ({ onNext }) => {
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 29,
+    fontSize: 34,
     color: "#fff",
-    fontWeight: "bold",
+    fontFamily: "Montserrat_600SemiBold",
     textAlign: "center",
-    top: 20,
   },
   subtitle: {
-    fontSize: 16,
-    color: "#f6f0f0ff",
+    fontSize: 15,
     textAlign: "center",
-    marginHorizontal: 20,
-    padding: 10,
-    top: 15,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#fff",
+    lineHeight: "24",
   },
   emalInput: {
     margin: 15,
@@ -105,41 +113,33 @@ const styles = StyleSheet.create({
   },
 
   section: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 14,
-    padding: 15,
-    marginTop: 40,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 4,
+    marginTop: 25,
   },
   label: {
     color: "#fff",
+    fontFamily: "Montserrat_600SemiBold",
     fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-    marginHorizontal: 10,
+    padding: 2,
   },
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
+
     backgroundColor: "#fff",
     borderRadius: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 15,
     height: 50,
     width: "100%",
+    marginBottom: 7,
   },
   passwordInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
 
-    color: "#000",
+    fontFamily: "Montserrat_400Regular",
+    color: "#666666",
   },
-  eyeIcon: {
-    padding: 5,
-  },
+
   requirementRow: {
     flexDirection: "row",
     alignItems: "center",

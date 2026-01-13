@@ -48,5 +48,7 @@ export const useServiceGlobalStore = create((set) => ({
             expectedTime: 0,
             images: [],
             categories: [],
+             isEdit: false,        
+    editingId: null,
         }),
 }));

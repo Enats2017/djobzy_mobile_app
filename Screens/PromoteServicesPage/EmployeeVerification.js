@@ -25,7 +25,7 @@ import Loading from "../../components/Loading";
 import Identity from "../../components/IdentificationPage";
 import IDVerificationUploadScreen from "../GeneralSetting/IDVerificationUploadScreen";
 import ContactInfo from "../../components/ContactInfo";
-import GoogleMap from "../../components/GoogleMap";
+//import GoogleMap from "../../components/GoogleMap";
 import GradientButton from "../../components/GradientButton";
 import BorderButton from "../../components/BorderButton";
 import * as DocumentPicker from "expo-document-picker";
@@ -318,7 +318,7 @@ const EmployeeVerification = () => {
                   onChangeLocation={setLocation}
                   showPhone={false}
                 />
-                <GoogleMap />
+                {/* <GoogleMap /> */}
                 <View style={{ paddingBottom: 10 }}>
                   <BorderButton
                     title="Uplaod the document to verify"

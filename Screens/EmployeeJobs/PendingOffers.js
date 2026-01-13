@@ -1,4 +1,5 @@
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { useState } from "react";
 import {
   Image,
   StyleSheet,

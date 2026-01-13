@@ -11,7 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Alert
+  Alert,
 } from "react-native";
 import { API_ICON, API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,11 +23,7 @@ import { useServiceGlobalStore } from "./ServiceGlobalStore";
 
 const PromoteCategoryPage = () => {
   const navigation = useNavigation();
-  const {
-    categories,
-    addCategory,
-    removeCategory,
-  } = useServiceGlobalStore();
+  const { categories, addCategory, removeCategory } = useServiceGlobalStore();
 
   const [search, setSearch] = useState("");
   const [services, setServices] = useState([]);
@@ -77,186 +73,194 @@ const PromoteCategoryPage = () => {
   };
 
   const handlePublish = async () => {
-  const token = await AsyncStorage.getItem("token");
+    const token = await AsyncStorage.getItem("token");
 
-  const {
-    title,
-    description,
-    hourlyRate,
-    totalPrice,
-    expectedTime,
-    images,
-    categories
-  } = useServiceGlobalStore.getState();
+    const {
+      title,
+      description,
+      hourlyRate,
+      totalPrice,
+      expectedTime,
+      images,
+      categories,
+    } = useServiceGlobalStore.getState();
 
-  if (!title || !description || categories.length === 0) {
-    Alert.alert("Missing Info", "Please fill all required fields.");
-    return;
-  }
-
-  const services = categories.map(c => c.subId).join(",");
-
-  let formData = new FormData();
-  formData.append("title", title);
-  formData.append("description", description);
-  formData.append("services", services);
-  formData.append("hour_minimum_price", hourlyRate);
-  formData.append("fixed_minimum_price", totalPrice);
-  formData.append("time_hours", expectedTime);
-  formData.append("select_calendar", "no-calendar");
-  formData.append("price_negotiable", 0);
-  formData.append("page_type", 0);
-  formData.append("service_type", 2);
-
-  images.forEach((img, index) => {
-    formData.append("attach_service_file[]", {
-      uri: img.uri,
-      type: "image/jpeg",
-      name: `image_${index}.jpg`
-    });
-  });
-
-  try {
-    setLoading(true);
-    const response = await fetch(`${API_URL}/save-promote-service`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-      body: formData,
-    });
-    const result = await response.json();
-    if (result.status === 200) {
-      Alert.alert("Success", "Service Published Successfully!");
-      useServiceGlobalStore.getState().reset();
-      navigation.navigate("EmployeeAccount")
-    } else {
-      Alert.alert("Error", result.message);
+    if (!title || !description || categories.length === 0) {
+      Alert.alert("Missing Info", "Please fill all required fields.");
+      return;
     }
-  } catch (error) {
-    console.log("ERROR:", error);
-    Alert.alert("Error", "API Network Error");
-  } finally {
-    setLoading(false);
-  }
-};
+
+    const services = categories.map((c) => c.subId).join(",");
+
+    let formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("services", services);
+    formData.append("hour_minimum_price", hourlyRate);
+    formData.append("fixed_minimum_price", totalPrice);
+    formData.append("time_hours", expectedTime);
+    formData.append("select_calendar", "no-calendar");
+    formData.append("price_negotiable", 0);
+    formData.append("page_type", 0);
+    formData.append("service_type", 2);
+
+    images.forEach((img, index) => {
+      formData.append("attach_service_file[]", {
+        uri: img.uri,
+        type: "image/jpeg",
+        name: `image_${index}.jpg`,
+      });
+    });
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/save-promote-service`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+      const result = await response.json();
+      if (result.status === 200) {
+        Alert.alert("Success", "Service Published Successfully!");
+        useServiceGlobalStore.getState().reset();
+        console.log("AFTER RESET:", useServiceGlobalStore.getState());
+        navigation.replace("EmployeeAccount");
+      } else {
+        Alert.alert("Error", result.message);
+      }
+    } catch (error) {
+      console.log("ERROR:", error);
+      Alert.alert("Error", "API Network Error");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    console.log("ZUSTAND CATEGORIES:", categories);
+  }, [categories]);
 
   return (
     <SafeAreaView style={{ backgroundColor: "#222222", flex: 1 }}>
       <View style={styles.container}>
-        <PageNameHeaderBar title="Choose the Categories" navigation={navigation} />
-        {
-          loading ? (
-            <Loading />
-          ) : (
-            <View style={styles.Choosecontainer}>
-              <View style={styles.searchContainer}>
-                <Ionicons
-                  name="search"
-                  size={19}
-                  color="#FFFFFF"
-                  style={{ paddingHorizontal: 10 }}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Find Categories"
-                  placeholderTextColor="#fff"
-                  value={search}
-                  onChangeText={(text) => setSearch(text)}
-                />
-              </View>
+        <PageNameHeaderBar
+          title="Choose the Categories"
+          navigation={navigation}
+        />
+        {loading ? (
+          <Loading />
+        ) : (
+          <View style={styles.Choosecontainer}>
+            <View style={styles.searchContainer}>
+              <Ionicons
+                name="search"
+                size={19}
+                color="#FFFFFF"
+                style={{ paddingHorizontal: 10 }}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Find Categories"
+                placeholderTextColor="#fff"
+                value={search}
+                onChangeText={(text) => setSearch(text)}
+              />
+            </View>
 
-              <View>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.selectedContainer}
-                >
-                  {categories.map((sub) => (
-                    <View key={sub.subId} style={styles.selectedPill}>
-                      <Text style={styles.selectedText}>{sub.name}</Text>
-                      <TouchableOpacity onPress={() => handleRemoveSub(sub.subId)}>
-                        <Entypo name="cross" size={17} color="#c3c3c3" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
+            <View>
               <ScrollView
-                style={styles.scrolContainer}
-                showsVerticalScrollIndicator={false}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.selectedContainer}
               >
-                <Text style={styles.catText}>Categories</Text>
-                {filteredServices.map((service) => (
-                  <View key={service.id} style={styles.categoryContainer}>
+                {categories.map((sub) => (
+                  <View key={sub.subId} style={styles.selectedPill}>
+                    <Text style={styles.selectedText}>{sub.name}</Text>
                     <TouchableOpacity
-                      style={styles.mainCategory}
-                      onPress={() => toggleExpand(service.id)}
+                      onPress={() => handleRemoveSub(sub.subId)}
                     >
-                      <View style={styles.iconimage}>
-                        {service.icon && (
-                          <Image
-                            source={{
-                              uri: `${API_ICON}/images/servicephoto/png-image/${service.icon}?tr=ef-grayscale`,
-                            }}
-                            style={styles.image}
-                          />
-                        )}
-                      </View>
-
-                      <Text style={styles.mainText}>{service.name}</Text>
-                      <Ionicons
-                        name={
-                          expandedServices[service.id]
-                            ? "chevron-up"
-                            : "chevron-down"
-                        }
-                        size={20}
-                        color="#c3c3c3"
-                        style={{ marginLeft: "auto" }}
-                      />
+                      <Entypo name="cross" size={17} color="#c3c3c3" />
                     </TouchableOpacity>
-                    {expandedServices[service.id] && (
-                      <View style={styles.subCategories}>
-                        {service.subservices.map((sub) => {
-                          const isSelected = categories.some(
-                            (s) => s.subId === sub.subid
-                          );
-                          return (
-                            <TouchableOpacity
-                              key={sub.subid}
-                              style={
-                                isSelected ? styles.selectedSubBox : styles.subBox
-                              }
-                              onPress={() => handleSelectSub(service, sub)}
-                            >
-                              <Text
-                                style={
-                                  isSelected
-                                    ? styles.selectedSubText
-                                    : styles.subText
-                                }
-                              >
-                                {sub.subname}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </View>
-                    )}
                   </View>
                 ))}
               </ScrollView>
-              <View style={styles.categoryBtn}>
-               <GradientButton
-                  title="Save and Publish"
-                  onPress={handlePublish}
-                />
-              </View>
             </View>
-          )
-        }
+            <ScrollView
+              style={styles.scrolContainer}
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={styles.catText}>Categories</Text>
+              {filteredServices.map((service) => (
+                <View key={service.id} style={styles.categoryContainer}>
+                  <TouchableOpacity
+                    style={styles.mainCategory}
+                    onPress={() => toggleExpand(service.id)}
+                  >
+                    <View style={styles.iconimage}>
+                      {service.icon && (
+                        <Image
+                          source={{
+                            uri: `${API_ICON}/images/servicephoto/png-image/${service.icon}?tr=ef-grayscale`,
+                          }}
+                          style={styles.image}
+                        />
+                      )}
+                    </View>
+
+                    <Text style={styles.mainText}>{service.name}</Text>
+                    <Ionicons
+                      name={
+                        expandedServices[service.id]
+                          ? "chevron-up"
+                          : "chevron-down"
+                      }
+                      size={20}
+                      color="#c3c3c3"
+                      style={{ marginLeft: "auto" }}
+                    />
+                  </TouchableOpacity>
+                  {expandedServices[service.id] && (
+                    <View style={styles.subCategories}>
+                      {service.subservices.map((sub) => {
+                        const isSelected = categories.some(
+                          (s) => Number(s.subId) === Number(sub.subid)
+                        );
+
+                        return (
+                          <TouchableOpacity
+                            key={sub.subid}
+                            style={
+                              isSelected ? styles.selectedSubBox : styles.subBox
+                            }
+                            onPress={() => handleSelectSub(service, sub)}
+                          >
+                            <Text
+                              style={
+                                isSelected
+                                  ? styles.selectedSubText
+                                  : styles.subText
+                              }
+                            >
+                              {sub.subname}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
+                </View>
+              ))}
+            </ScrollView>
+            <View style={styles.categoryBtn}>
+              <GradientButton
+                title="Save and Publish"
+                onPress={handlePublish}
+              />
+            </View>
+          </View>
+        )}
       </View>
       <Footer />
     </SafeAreaView>
@@ -270,7 +274,6 @@ const styles = StyleSheet.create({
   },
   Choosecontainer: {
     height: "85%",
-
   },
 
   heading: {
@@ -407,7 +410,6 @@ const styles = StyleSheet.create({
     paddingBottom: 47,
     paddingTop: 4,
   },
-
 });
 
 export default PromoteCategoryPage;

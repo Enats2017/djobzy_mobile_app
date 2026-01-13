@@ -82,6 +82,7 @@ const ThirdScreen = () => {
                 marginRight: -20,
               },
             ]}
+
           >
             <Text style={[styles.arrow, { fontSize: arrowSize }]}> ➝ </Text>
           </View>

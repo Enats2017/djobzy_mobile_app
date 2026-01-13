@@ -1,20 +1,19 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import GradientButton from "../../components/GradientButton";
 
-const EmailCheck = ({onNext , email}) => {
+const EmailCheck = ({ onNext, email, onResend }) => {
   console.log(email);
-  
+
   return (
     <>
       <View style={styles.heading}>
         <Text style={styles.title}>Check Your Email</Text>
         <Text style={styles.subtitle}>We Send a Password reset Link to</Text>
         <Text style={styles.sub}>{email}</Text>
-        <TouchableOpacity style={styles.loginBtn} onPress={onNext}>
-          <Text style={styles.loginText}>Open email app</Text>
-        </TouchableOpacity>
+        <GradientButton title="Open email app" onPress={onNext} />
         <View style={styles.link}>
           <Text style={styles.linktitle}>Didnt receive the email?</Text>
-          <TouchableOpacity >
+          <TouchableOpacity onPress={onResend}>
             <Text style={styles.textlink}>Click to Resend again</Text>
           </TouchableOpacity>
         </View>
@@ -25,49 +24,39 @@ const EmailCheck = ({onNext , email}) => {
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 30,
+    fontSize: 35,
     color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-    top: 30,
+    fontFamily: "Montserrat_600SemiBold",
+
+    marginBottom: 7,
   },
   subtitle: {
-    fontSize: 16,
-    color: "#f6f0f0ff",
+    fontSize: 15,
+    fontFamily: "Montserrat_600SemiBold",
     textAlign: "center",
-    marginHorizontal: 20,
-    padding: 10,
-    top: 25,
+    marginBottom: 5,
+    color: "#fff",
   },
   sub: {
-    color: "#ff6666",
-    fontSize: 16,
-    padding: 15,
-    textAlign: "center",
+    color: "#CE7462",
+    fontSize: 14,
+   textAlign:"center",
+   fontFamily:"Montserrat_700Bold",
+    marginBottom: 5,
   },
-  loginBtn: {
-    width: "100%",
-    height: 50,
-    top: 20,
-    backgroundColor: "#f49696eb",
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  loginText: { color: "#fff", fontWeight: "bold", fontSize: 19 },
+
   link: {
     flexDirection: "row",
     margin: 15,
     justifyContent: "center",
-    gap:2
+    gap: 2,
   },
   linktitle: {
     color: "#fff",
   },
   textlink: {
     color: "#f49696eb",
-    textDecorationLine:"underline"
+    textDecorationLine: "underline",
   },
 });
 

@@ -10,7 +10,11 @@ import {
 import Entypo from "@expo/vector-icons/Entypo";
 import GradientButton from "../../components/GradientButton";
 
-export default function CreditCardWithdraw() {
+export default function CreditCardWithdraw({
+
+  button = "Request a Withdraw"
+}
+) {
   const [fullName, setFullName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expMonth, setExpMonth] = useState("");
@@ -151,7 +155,7 @@ export default function CreditCardWithdraw() {
         />
       </View>
 
-      <GradientButton title="Request a Withdraw" onPress={handleSubmit} />
+      <GradientButton title={button} onPress={handleSubmit} />
     </View>
   );
 }

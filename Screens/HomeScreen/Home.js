@@ -20,22 +20,24 @@ export default function HomeScreen() {
   const checkAuth = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-
+      
       if (!token) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "SliderScreen" }],
-        });
-        return; //stop the function
+        navigation.navigate("SliderScreen");
+        return;
       }
-
       const userStr = await AsyncStorage.getItem("user");
       const user = JSON.parse(userStr);
-
       const { verification_count, admin } = user;
+        if (verification_count < 2) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "VerificationPage" }],
+      });
+      return;
+    }
 
       if (admin == 2) {
-        navigation.navigate("EmployerDashboard");
+        navigation.navigate("DuplicateEmp");
       } else {
         navigation.navigate("Dashboard");
       }

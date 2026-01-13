@@ -2,7 +2,10 @@ import Entypo from "@expo/vector-icons/Entypo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   FlatList,
@@ -39,6 +42,9 @@ const Dashboard = () => {
   const [feedLoading, setFeedLoading] = useState(false);
   const [user, setUser] = useState([]);
   const insets = useSafeAreaInsets();
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const searchTimer = useRef(null);
 
   const fetchJobs = useCallback(
     async (pageNum = 1) => {
@@ -63,6 +69,7 @@ const Dashboard = () => {
           return;
         }
         setJobs((prev) => {
+          if (pageNum === 1) return data.gigs;
           const newGigs = data.gigs.filter(
             (gig) => !prev.some((j) => j.gid === gig.gid)
           );
@@ -115,9 +122,64 @@ const Dashboard = () => {
     }
   }, [activeTab]);
 
+  const fetchSuggestions = async (text) => {
+    if (text.length < 2) {
+      setSearchSuggestions([]);
+      return;
+    }
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/filter-by-keyword`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          keyword: text,
+          action: "search_result",
+          head: 1,
+        }),
+      });
+
+      const data = await res.json();
+      console.log(data);
+   
+      
+    } catch (err) {
+      console.log("Suggestion error:", err);
+    }
+  };
+
+  /* ===================== SUGGESTION CLICK ===================== */
+  const handleSuggestionSelect = (item) => {
+    setSuggestions([]);
+
+    if (item.type === "service") {
+      navigation.navigate("MyFindJobs", {
+        keyword: item.title,
+      });
+    }
+
+    if (item.type === "employee") {
+      navigation.navigate("EmployeeAccount", {
+        name: item.username,
+      });
+    }
+
+    if (item.type === "job") {
+      navigation.navigate("JobDetails", {
+        slug: item.job_slug,
+      });
+    }
+  };
+
   function renderHeader() {
     return (
-      <View style={{paddingTop:"57"}}>
+      <View style={{ paddingTop: "57" }}>
         <Text style={styles.sectionHeader}>My Jobs</Text>
         <View style={styles.chipRow}>
           {["Current jobs", "Received offers", "My biddings"].map(
@@ -182,7 +244,9 @@ const Dashboard = () => {
         video={item.message_type === 2 ? item.signed_url : null}
         likes={item.likes_count}
         comments={item.comment_count}
-        onPress={() => navigation.navigate("EmployeeAccount", { name: item?.name })}
+        onPress={() =>
+          navigation.navigate("EmployeeAccount", { name: item?.name })
+        }
         isCommented={item.is_commented_by_current_user}
       />
     );
@@ -374,21 +438,18 @@ const Dashboard = () => {
                   </View>
                 </View>
                 <View>
-                  {
-                    feedLoading ? (
-                      <Loading/>
-                    ):(
-                      <FlatList
-                        data={feeds}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={renderFeedItem}
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingBottom: 80 }}
-                        scrollEnabled={false}
-                      />
-
-                    )
-                  }
+                  {feedLoading ? (
+                    <Loading />
+                  ) : (
+                    <FlatList
+                      data={feeds}
+                      keyExtractor={(item) => item.id.toString()}
+                      renderItem={renderFeedItem}
+                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={{ paddingBottom: 80 }}
+                      scrollEnabled={false}
+                    />
+                  )}
                 </View>
               </ScrollView>
             </>
@@ -418,7 +479,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     paddingVertical: 10,
-    justifyContent: "space-between",
+    justifyContent: "center",
   },
 
   chip: {
@@ -434,6 +495,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 12,
     fontFamily: "Montserrat_500Medium",
+     textAlign: "center",
   },
   loaderOverlay: {
     flex: 1,

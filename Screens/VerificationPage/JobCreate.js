@@ -4,12 +4,11 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const JobCreate = ({ admin, userId }) => {
-  console.log(admin);
+  console.log("admin",admin);
   console.log(userId);
   const navigation = useNavigation();
   const handleCreateLater = () => {
       if (admin == 2) {
-      // Admin / Employer
       navigation.reset({
         index: 0,
         routes: [{ name: "EmployerDashboard", params: { userId } }],
@@ -47,7 +46,7 @@ const JobCreate = ({ admin, userId }) => {
         </Text> */}
       </View>
       <View style={styles.jobbtn}>
-        {admin === 2 ? (
+        {admin === 0 ? (
           <TouchableOpacity
             style={styles.createBtn}
             onPress={() => navigation.navigate("PromoteService", { userId })}
@@ -55,7 +54,7 @@ const JobCreate = ({ admin, userId }) => {
             <Text style={styles.createBtnText}>Create Promoted Services</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.nextBtn}>
+          <TouchableOpacity style={styles.nextBtn} onPress={() => navigation.navigate("CreateJob", { userId })}>
             <Text style={styles.nextBtnText}>Create Job Post</Text>
           </TouchableOpacity>
         )}

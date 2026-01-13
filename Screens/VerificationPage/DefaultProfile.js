@@ -13,10 +13,12 @@ import {
   View,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
+import GradientButton from "../../components/GradientButton";
+import { toastSuccess } from "../../utils/toast";
 
 const DefaultProfile = ({ services, filtered, onNext }) => {
   const [search, setSearch] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(null);
   const [filteredList, setFilteredList] = useState(filtered);
   const [selectedServices, setSelectedServices] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -43,12 +45,12 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
     }
   };
   const handleSubmit = async () => {
-    if (!role) {
+    if (role == null) {
       Alert.alert("Error", "Please select your profile type.");
       return;
     }
 
-    if (selectedServices.length === 0) {
+    if (selectedServices.length == null) {
       Alert.alert("Error", "Please select at least one category.");
       return;
     }
@@ -72,7 +74,8 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
       });
 
       if (res.data.status === 200) {
-        Alert.alert("Success", "Default profile saved successfully.");
+        console.log(res.data);
+        toastSuccess("Default profile saved successfully.");
         onNext();
       } else {
         Alert.alert("Error", res.data.message || "Something went wrong.");
@@ -94,8 +97,8 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
       </Text>
       <View style={styles.cardRow}>
         <TouchableOpacity
-          style={[styles.card, role == 2 && styles.cardActive]}
-          onPress={() => setRole(2)}
+          style={[styles.card, role == 0 && styles.cardActive]}
+          onPress={() => setRole(0)}
         >
           <View style={styles.cardIcon}>
             <FontAwesome5 name="user" size={20} color="#fff" />
@@ -104,8 +107,8 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
           <Text style={styles.cardSub}>I'm offering services</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.card, role == 1 && styles.cardActive]}
-          onPress={() => setRole(1)}
+          style={[styles.card, role == 2 && styles.cardActive]}
+          onPress={() => setRole(2)}
         >
           <View style={[styles.cardIcon, { backgroundColor: "#444" }]}>
             <Ionicons name="bag" size={20} color="#fff" />
@@ -170,8 +173,8 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
                 <Text style={styles.selectedText}>{item?.subname}</Text>
                 <TouchableOpacity onPress={() => toggleService(id)}>
                   <Ionicons
-                    name="close-circle"
-                    size={12}
+                    name="close"
+                    size={16}
                     color="#303030"
                     style={styles.removeIcon}
                   />
@@ -183,9 +186,13 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
           <Text style={{ color: "#777" }}>No services selected.</Text>
         )}
       </View>
-      <TouchableOpacity style={styles.nextBtn} onPress={handleSubmit}>
-        <Text style={styles.nextBtnText}>Next</Text>
-      </TouchableOpacity>
+     <GradientButton 
+      title="Next" 
+      marginTop={20} 
+      disabled={loading} 
+      loading={loading} 
+      onPress={handleSubmit}
+      />
     </>
   );
 };
@@ -204,8 +211,9 @@ const styles = StyleSheet.create({
   },
   heading: {
     color: "#CB7767",
-    fontSize: 28,
-    fontFamily: "Montserrat_600SemiBold",
+    fontSize: 24,
+    fontFamily: "DegularDisplay_600SemiBold",
+    marginBottom:5,
     marginTop: 7,
   },
   card: {
@@ -267,6 +275,7 @@ const styles = StyleSheet.create({
   searchInput: {
     color: "#ffffff",
     fontSize: 14,
+    width:"100%",
     fontFamily: "Montserrat_400Regular",
     paddingVertical: 10,
   },
@@ -301,6 +310,7 @@ const styles = StyleSheet.create({
   },
   removeIcon: {
     marginLeft: 5,
+
   },
   selectedText: {
     color: "#303030",

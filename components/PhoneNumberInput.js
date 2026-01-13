@@ -80,9 +80,9 @@ const PhoneNumberInput = ({
           onChangeText={handleChange}
         />
         {isValid && (
-          <Icon
-              name="check-circle"
-              size={22}
+          <Ionicons
+              name="checkmark-done-circle-sharp"
+              size={24}
               color="green"
               style={styles.icon}
             />

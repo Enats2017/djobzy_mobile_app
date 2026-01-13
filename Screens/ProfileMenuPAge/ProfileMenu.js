@@ -36,6 +36,7 @@ const EmployeeProfileMenu = () => {
       const response = await fetch(`${API_URL}/profile-menu-list`, {
         method: "GET",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -60,18 +61,22 @@ const EmployeeProfileMenu = () => {
       const response = await fetch(`${API_URL}/user-switch-account`, {
         method: "POST",
         headers: {
+           Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
       const data = await response.json();
+      await AsyncStorage.removeItem("user");         
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
       setAccountType(data?.account_type);
-      if (data?.account_type === 0) {
+      if (data?.account_type == 0) {
         navigation.reset({
           index: 0,
           routes: [{ name: "Dashboard" }],
         });
-      } else if (data?.account_type === 2) {
+      } else if (data?.account_type == 2) {
         navigation.reset({
           index: 0,
           routes: [{ name: "EmployerDashboard" }],
@@ -102,13 +107,14 @@ const EmployeeProfileMenu = () => {
       const res = await fetch(`${API_URL}/logout`, {
         method: "POST",
         headers: {
-          
+           Accept: "application/json",
+            "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
       const data = await res.json();
       if (data.status === 200) {
-         await AsyncStorage.multiRemove(["token", "user"]);
+        await AsyncStorage.clear();
         navigation.reset({
           index: 0,
           routes: [{ name: "Login" }],
@@ -167,7 +173,7 @@ const EmployeeProfileMenu = () => {
                   {user?.admin == 0 ? (
                     <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("Dashboard")} />
                   ) : (
-                    <MenuItem icon="grid-outline" title="Dashborad" onPress={() => navigation.navigate("EmployerDashboard")} />
+                    <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("EmployerDashboard")} />
                   )}
 
                   {user?.admin == 0 ? (
@@ -177,9 +183,7 @@ const EmployeeProfileMenu = () => {
                     <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployerAccount", { name: user?.name })} />
 
                   )
-
                   }
-
                   <MenuItem icon="star-outline" title="Reviews" onPress={() => navigation.navigate("ProfileReviewPage")} />
                   <MenuItem icon="checkmark-done-outline" title="Verification" onPress={() => navigation.navigate("EmployeeVerification")} />
                   <MenuItem icon="wallet-outline" title="Wallet" onPress={() => navigation.navigate("Wallet")} />

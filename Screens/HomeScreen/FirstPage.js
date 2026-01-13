@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 
-export default function FirstPage() {
+export default function FirstPage({ onNext }) {
   const { width, height } = useWindowDimensions();
   const isSmall = width < 380;
   const isTablet = width > 768;
@@ -66,7 +66,7 @@ export default function FirstPage() {
             justifyContent: "center",
           },
         ]}
-       
+        onPress={onNext}
        
       >
         <Ionicons name="arrow-forward" size={iconSize} color="#fff" />
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#e08888ff",
+    backgroundColor: "#C96B59",
     marginBottom: 0,
   },
   logoContainer: {

@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -36,12 +37,17 @@ export default function EmployerProfilePage({ route }) {
   const [profile, setProfile] = useState([]);
   const [isEmployer, setIsEmployer] = useState(false);
   const [subcategory, setSubcategory] = useState([]);
-  const [isFollowed, setIsFollowed] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [submit, setSubmit] = useState(false);
   const [showAllCategories, setShowAllCategories] = useState(false);
-
+  const [followAction, setFollowAction] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const fetchEmployeeProfile = async () => {
+    setLoading(true)
     try {
+      const userStr = await AsyncStorage.getItem("user");
+      const users = JSON.parse(userStr);
+      setCurrentUserId(users?.id);
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/employee/${name}`, {
         method: "GET",
@@ -51,6 +57,7 @@ export default function EmployerProfilePage({ route }) {
         },
       });
       const data = await res.json();
+
       setProfile(data);
       setUser(data.editprofile);
       setPromote(data.promote);
@@ -67,66 +74,66 @@ export default function EmployerProfilePage({ route }) {
     if (name) fetchEmployeeProfile();
   }, [name]);
 
-  const handleSendOffer = async () => {
-    try {
-      setLoading(true);
-      const token = await AsyncStorage.getItem("token");
-      const isLoggedIn = !!token;
-      const formData = new FormData();
-      formData.append("user_check", isLoggedIn);
-      formData.append("serviceId", service?.sid);
-      formData.append("services_title", service?.title);
-      formData.append("hourMinimum", service?.hour_minimum ?? 0);
-      formData.append("hourMaximum", service?.hour_maximum ?? 0);
-      formData.append("priceMinValue", service?.fixed_minimum ?? 0);
-      formData.append("priceMaxValue", service?.fixed_maximum ?? "");
-      formData.append(
-        "service_selected_time",
-        service?.selected_time ?? "no-calendar"
-      );
-      formData.append("price_negotiable", service?.price_negotiable ?? 0);
-      formData.append("admin_fee", 1.1);
-      // convert array → comma separated
-      if (service?.subcategory_ids?.length) {
-        formData.append("allSubcategoryIds", service.subcategory_ids.join(","));
-      }
+  // const handleSendOffer = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const token = await AsyncStorage.getItem("token");
+  //     const isLoggedIn = !!token;
+  //     const formData = new FormData();
+  //     formData.append("user_check", isLoggedIn);
+  //     formData.append("serviceId", service?.sid);
+  //     formData.append("services_title", service?.title);
+  //     formData.append("hourMinimum", service?.hour_minimum ?? 0);
+  //     formData.append("hourMaximum", service?.hour_maximum ?? 0);
+  //     formData.append("priceMinValue", service?.fixed_minimum ?? 0);
+  //     formData.append("priceMaxValue", service?.fixed_maximum ?? "");
+  //     formData.append(
+  //       "service_selected_time",
+  //       service?.selected_time ?? "no-calendar"
+  //     );
+  //     formData.append("price_negotiable", service?.price_negotiable ?? 0);
+  //     formData.append("admin_fee", 1.1);
+  //     // convert array → comma separated
+  //     if (service?.subcategory_ids?.length) {
+  //       formData.append("allSubcategoryIds", service.subcategory_ids.join(","));
+  //     }
 
-      // if (!isLoggedIn) {
-      //   formData.append("hiring_job_url", "/login");
-      // }
+  //     // if (!isLoggedIn) {
+  //     //   formData.append("hiring_job_url", "/login");
+  //     // }
 
-      const response = await fetch(`${API_URL}/autoJobCreate`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          ...(isLoggedIn && { Authorization: `Bearer ${token}` }),
-        },
-        body: formData,
-      });
+  //     const response = await fetch(`${API_URL}/autoJobCreate`, {
+  //       method: "POST",
+  //       headers: {
+  //         Accept: "application/json",
+  //         ...(isLoggedIn && { Authorization: `Bearer ${token}` }),
+  //       },
+  //       body: formData,
+  //     });
 
-      const data = await response.json();
+  //     const data = await response.json();
 
-      if (data.status === 200) {
-        //navigation.navigate("HiringJobDetails");
-        Alert.alert("Successfully send the data ");
-      } else {
-        Alert.alert("Error", data.message || "Something went wrong");
-      }
-    } catch (error) {
-      console.log("Send Offer error:", error);
-      Alert.alert("Error", "Network error");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     if (data.status === 200) {
+  //       //navigation.navigate("HiringJobDetails");
+  //       Alert.alert("Successfully send the data ");
+  //     } else {
+  //       Alert.alert("Error", data.message || "Something went wrong");
+  //     }
+  //   } catch (error) {
+  //     console.log("Send Offer error:", error);
+  //     Alert.alert("Error", "Network error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const isLiked = profile?.like?.is_like === 1;
 
   const handleFollow = async () => {
-    if (loading) return;
-    setLoading(true);
-
     try {
+       setFollowAction("follow");
+      setSubmit(true);
       const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(`${API_URL}/followUser`, {
         method: "POST",
         headers: {
@@ -138,26 +145,25 @@ export default function EmployerProfilePage({ route }) {
           user_id: user.id,
         }),
       });
-
       const data = await response.json();
       console.log("Follow response:", data);
-
       if (data.status === 200) {
-        setIsFollowed(true); // ✅ update UI
+        setProfile((prev) => ({
+          ...prev,
+          like: { ...prev.like, is_like: 1 },
+        }));
       }
     } catch (error) {
       console.log("Follow error:", error);
     } finally {
-      setLoading(false);
+      setSubmit(false)
     }
   };
   const handleUnfollow = async () => {
-    if (loading) return;
-    setLoading(true);
-
     try {
+       setFollowAction("unfollow");
+      setSubmit(true)
       const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(`${API_URL}/unfollowUser`, {
         method: "POST",
         headers: {
@@ -169,23 +175,26 @@ export default function EmployerProfilePage({ route }) {
           user_id: user.id,
         }),
       });
-
       const data = await response.json();
       console.log("Unfollow response:", data);
-
-      if (data.status === 200) {
-        setIsFollowed(false); // ✅ update UI
+      if (data.status == 200) {
+        setProfile((prev) => ({
+          ...prev,
+          like: { ...prev.like, is_like: 0 },
+        }));
       }
     } catch (error) {
       console.log("Unfollow error:", error);
     } finally {
-      setLoading(false);
+      setSubmit(false);
     }
   };
 
+  const safeSubcategory = Array.isArray(subcategory) ? subcategory : [];
+
   const displayedCategories = showAllCategories
-    ? subcategory
-    : subcategory.slice(0, 5);
+    ? safeSubcategory
+    : safeSubcategory.slice(0, 5);
 
   if (loading) return <Loading />;
   return (
@@ -264,22 +273,27 @@ export default function EmployerProfilePage({ route }) {
                 </TouchableOpacity>
               </View>
               <View style={styles.buttonsRow}>
-                <TouchableOpacity
-                  style={[styles.btnFollow, isFollowed && styles.btnUnfollow]}
-                  onPress={isFollowed ? handleUnfollow : handleFollow}
-                  disabled={loading}
-                >
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode="clip"
-                    style={[
-                      styles.btnFollowText,
-                      isFollowed && styles.btnUnfollowText,
-                    ]}
+                {currentUserId !== user?.id && (
+                  <TouchableOpacity
+                    onPress={isLiked ? handleUnfollow : handleFollow}
+                   
+                    style={[styles.btnFollow, isLiked && styles.btnUnfollow]}
                   >
-                    {isFollowed ? "Unfollow" : "Follow"}
-                  </Text>
-                </TouchableOpacity>
+                    {submit ? (
+                      <ActivityIndicator  color={isLiked ? "#FFFFFF" : "#000000"} />
+                    ) : (
+                      <Text
+                        style={[
+                          styles.btnFollowText,
+                          isLiked && styles.btnUnfollowText,
+                        ]}
+                      >
+                        {isLiked ? "Unfollow" : "Follow"}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                )}
+
                 <TouchableOpacity
                   style={styles.btnHire}
                   onPress={() =>
@@ -290,7 +304,7 @@ export default function EmployerProfilePage({ route }) {
                 >
                   <Text style={styles.btnHireText}>Hire</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.btnChat}>
+                <TouchableOpacity style={styles.btnChat} onPress={() => navigation.navigate("FeedChat")}>
                   <Text style={styles.btnChatText}>Chat</Text>
                 </TouchableOpacity>
               </View>
@@ -317,7 +331,7 @@ export default function EmployerProfilePage({ route }) {
               <View style={styles.infoSection}>
                 <Text style={styles.sectionLabel}>About Me</Text>
                 <Text style={styles.aboutMeText}>
-                  {user?.about ?? "No about info available."}
+                  {user?.employer_about || "No about info available."}
                 </Text>
               </View>
               <View style={styles.dividerLine} />
@@ -381,12 +395,11 @@ export default function EmployerProfilePage({ route }) {
                 {promote.map((item, index) => (
                   <View style={styles.wrapper} key={index}>
                     <View style={styles.iconContainer}>
-                      
                       {item?.seekingServices
-                        ?.filter((s) => s?.getSeekServices) 
-                        ?.slice(0, 2) 
+                        ?.filter((s) => s?.getSeekServices)
+                        ?.slice(0, 2)
                         ?.map((service, index) => {
-                          console.log("ICON:", service.getSeekServices.icon); 
+                          console.log("ICON:", service.getSeekServices.icon);
                           return (
                             <Image
                               key={index}
@@ -464,11 +477,11 @@ const styles = StyleSheet.create({
   },
   profileRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   avatar: {
-    width: 90,
-    height: 90,
+    width: 100,
+    height: 100,
     borderRadius: 100,
     borderWidth: 1,
     borderColor: "#c3c3c3",
@@ -486,6 +499,7 @@ const styles = StyleSheet.create({
   verificationRow: {
     flexDirection: "column",
     alignItems: "flex-start",
+    gap:3,
   },
   iconTextRow: {
     flexDirection: "row",
@@ -544,11 +558,14 @@ const styles = StyleSheet.create({
   },
   btnUnfollow: {
     backgroundColor: "#E94235",
+    
   },
 
   btnUnfollowText: {
     color: "#ffffff",
+    fontSize: 15,
     textAlign: "center",
+     fontFamily: "Montserrat_700Bold",
   },
   btnHire: {
     flex: 1,
@@ -757,10 +774,9 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   providesImg: {
-  width: 22,
-  height: 22,
- 
-  resizeMode: "contain",
-},
+    width: 22,
+    height: 22,
 
+    resizeMode: "contain",
+  },
 });

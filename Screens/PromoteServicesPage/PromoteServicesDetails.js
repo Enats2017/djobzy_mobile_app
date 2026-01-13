@@ -10,6 +10,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
+import { toastSuccess } from "../../utils/toast";
 
 const PromoteServicesDetails = () => {
   const navigation = useNavigation();
@@ -17,6 +18,7 @@ const PromoteServicesDetails = () => {
   const [loading, setLoading] = useState(false)
   const { id, type, price_negotiable, selected_time } = route.params || [];
   const [service, setService] = useState(null);
+  const [submit, setSubmit] = useState(false);
   const fetchDetails = async () => {
     try {
       setLoading(true)
@@ -51,7 +53,7 @@ const PromoteServicesDetails = () => {
 
   const handleSendOffer = async () => {
   try {
-    setLoading(true);
+    setSubmit(true);
     const token = await AsyncStorage.getItem("token");
     const isLoggedIn = !!token;
     const formData = new FormData();
@@ -81,6 +83,7 @@ const PromoteServicesDetails = () => {
       method: "POST",
       headers: {
         Accept: "application/json",
+       
         ...(isLoggedIn && { Authorization: `Bearer ${token}` }),
       },
       body: formData,
@@ -90,7 +93,7 @@ const PromoteServicesDetails = () => {
     
     if (data.status === 200) {
          await handleSelectJob(data.gid);
-      Alert.alert("Successfully send the data ");
+       
     } else {
       Alert.alert("Error", data.message || "Something went wrong");
     }
@@ -99,7 +102,7 @@ const PromoteServicesDetails = () => {
     console.log("Send Offer error:", error);
     Alert.alert("Error", "Network error");
   } finally {
-    setLoading(false);
+    setSubmit(false);
   }
 };
 
@@ -184,7 +187,7 @@ const handleSelectJob = async (gid) => {
                   <Text style={styles.buttonEditText}>Edit</Text>
 
                 </TouchableOpacity> */}
-                <GradientButton title="Send Offer"  onPress={handleSendOffer}/>
+                <GradientButton title="Send Offer" disabled={submit} loading={submit}  onPress={handleSendOffer}/>
               </View>
               
               </>

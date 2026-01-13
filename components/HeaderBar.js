@@ -1,13 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { Image, StyleSheet, TouchableOpacity, View, Platform, StatusBar, Text } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Platform,
+  StatusBar,
+  Text,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useNotifications } from "../context/MessageNotificationContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const HeaderBar = ({ onMenuPress }) => {
+const HeaderBar = ({ onMenuPress, showSearch = true }) => {
   const navigation = useNavigation();
   const { messageCount } = useNotifications();
 
+  const goToSearch = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    const user = JSON.parse(userStr);
+    const { admin } = user;
+    const search_type = admin == 2 ? 2 : 0;
+    console.log("seracTpye", search_type);
+    navigation.navigate("SearchScreen", {
+      search_type,
+    });
+  };
   return (
     <View style={styles.container}>
       <View style={styles.left}>
@@ -17,11 +36,14 @@ const HeaderBar = ({ onMenuPress }) => {
           resizeMode="contain"
         />
       </View>
-
       <View style={styles.right}>
-        <TouchableOpacity style={styles.iconWrapper}>
-          <Feather name="search" size={18} color="#fff" />
-        </TouchableOpacity>
+        {
+          showSearch && (
+            <TouchableOpacity style={styles.iconWrapper} onPress={goToSearch}>
+              <Feather name="search" size={18} color="#fff" />
+            </TouchableOpacity>
+          )
+        }
         <TouchableOpacity style={styles.iconWrapper} onPress={() => navigation.navigate("ChatList")}>
           <Ionicons name="chatbubble-outline" size={22} color="#fff" />
           {messageCount > 0 && (
@@ -95,13 +117,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 4,
     zIndex: 10,
-  },  
+  },
   messageBadgeText: {
     color: "#fff",
     fontSize: 11,
     fontFamily: "Montserrat_600SemiBold",
     textAlign: "center",
-  },
+  }
 });
 
 export default HeaderBar;

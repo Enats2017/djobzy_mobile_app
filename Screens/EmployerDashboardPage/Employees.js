@@ -3,7 +3,8 @@ import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 
 export default function TabsHeader({ activeTab, setActiveTab, tabs = {} }) {
   return (
-    <View style={styles.tabContainer}>
+    <>
+  {/* <View style={styles.tabContainer}>
       <TouchableOpacity
         style={[styles.tab, activeTab === "feeds" && styles.activeTab]}
         onPress={() => setActiveTab("feeds")}
@@ -25,7 +26,9 @@ export default function TabsHeader({ activeTab, setActiveTab, tabs = {} }) {
           {tabs.jobs || "Recommended Jobs"}
         </Text>
       </TouchableOpacity>
-    </View>
+    </View>  */}
+    
+    </>
   );
 }
 

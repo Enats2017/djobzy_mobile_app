@@ -18,6 +18,7 @@ import {
 import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Loading from "../../components/Loading";
+import GradientButton from "../../components/GradientButton";
 
 const JobProfile = () => {
   const route = useRoute();
@@ -92,7 +93,7 @@ const JobProfile = () => {
                 </View>
 
                 <View style={styles.locationRow}>
-                  <Ionicons name="location-outline" size={16} color="#c3c3c3" />
+                  <Entypo name="location-pin" size={16} color="#c3c3c3" />
                   <Text style={styles.locationText}>
                     {job.details.preferred_location || "Unknown"}
                   </Text>
@@ -184,35 +185,23 @@ const JobProfile = () => {
               </Text>
             </View>
           </ScrollView>
-          <View>
+          <View style={{paddingBottom:90}}>
             {job.details.request_status < 2 && job?.award != null ? (
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
+              <GradientButton marginTop={5} title="See My Offer"  onPress={() =>
                   navigation.navigate("MyCurrentBiddingProfile", {
                     myOffer: job.my_offer || [],
                     current_user: job.current_user || [],
                     gig: job.details,
                     award: job.award || [],                    
                   })
-                }
-              >
-                <Text style={[styles.buttonText, { color: "#fff" }]}>
-                  See My Offer
-                </Text>
-              </TouchableOpacity>
+                }/>
             ) : (
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
+               <GradientButton marginTop={5} title="Apply First"  onPress={() =>
                   navigation.navigate("JobApply", {
                     gig: job.details,
                     award: job.award || [],
                   })
-                }
-              >
-                <Text style={styles.buttonText}>Apply</Text>
-              </TouchableOpacity>
+                }/>
             )}
           </View>
         </View>
@@ -382,20 +371,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
   },
-  button: {
-    marginBottom: "25%",
-    marginTop: 7,
-    marginHorizontal: 5,
-    paddingVertical: 16,
-    borderRadius: 10,
-    alignItems: "center",
-    backgroundColor: "#cb7767",
-  },
-  buttonText: {
-    color: "#f7f3f3ff",
-    fontSize: 17,
-    fontWeight: "bold",
-  },
+ 
 });
 
 export default JobProfile;

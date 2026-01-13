@@ -18,14 +18,15 @@ import { useNavigation } from "@react-navigation/native";
 import LineDivider from "../../components/LineDivider";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
+import EmployerFooter from "../../components/EmployerFooter";
 
 const NotificationScreen = () => {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState("new");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
-  const [newNotifications, setNewNotifications] = useState([]);
-  const [oldNotifications, setOldNotifications] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [admin, setAdmin] = useState(0);
 
   const fetchNotifications = async () => {
     try {
@@ -39,18 +40,38 @@ const NotificationScreen = () => {
       });
       const data = await res.json();
       // console.log(token);
-      setNewNotifications(data.new_notifications);
-      setOldNotifications(data.old_notifications);
+      const newList =
+        data?.new_notifications?.data?.map((item) => ({
+          ...item,
+          isNew: true,
+        })) || [];
+      const oldList =
+        data?.old_notifications?.data?.map((item) => ({
+          ...item,
+          isNew: false,
+        })) || [];
+      setNotifications([...newList, ...oldList]);
     } catch (error) {
       console.error("Error fetching User:", error);
     } finally {
       setLoading(false);
     }
   };
-
+  
+  const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return; 
+    const user = JSON.parse(userStr);
+    console.log("11111",user);
+    setAdmin((user?.admin));     
+  };
   useEffect(() => {
     fetchNotifications();
+    loadUser();
   }, []);
+
+
+   
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -88,7 +109,7 @@ const NotificationScreen = () => {
                   activeTab === "new" ? styles.activeTabText : styles.tabText
                 }
               >
-                New Notifications
+                 Notifications
               </Text>
             </TouchableOpacity>
 
@@ -101,7 +122,7 @@ const NotificationScreen = () => {
                   activeTab === "old" ? styles.activeTabText : styles.tabText
                 }
               >
-                Old Notifications
+               Chat Notifications
               </Text>
             </TouchableOpacity>
           </View>
@@ -114,28 +135,30 @@ const NotificationScreen = () => {
             >
               <View style={styles.mainContainer}>
                 {activeTab === "new" ? (
-                  newNotifications?.data?.length > 0 ? (
-                    newNotifications?.data?.map((offer, index) => (
+                  notifications?.length > 0 ? (
+                    notifications?.map((offer, index) => (
                       <View key={index}>
                         <View style={styles.notificationContainer}>
                           <View style={styles.headerRow}>
                             <View style={styles.avatarStack}>
-                              <View style={styles.greenDot} />
+                             {offer.isNew && <View style={styles.greenDot} />}
                               <Image
                                 source={{
-                                  uri: offer?.from_user?.photo || "https://randomuser.me/api/portraits/men/62.jpg",
+                                  uri:
+                                    offer?.from_user?.photo ||
+                                    "https://randomuser.me/api/portraits/men/62.jpg",
                                 }}
                                 style={styles.avatar}
                               />
                             </View>
 
                             <View style={styles.nameTimeRow}>
-                              <Text style={styles.name}>{offer.from_user?.full_name}</Text>
+                              <Text style={styles.name}>
+                                {offer.from_user?.full_name}
+                              </Text>
                             </View>
                           </View>
-                          <Text style={styles.message}>
-                            {offer.text}
-                          </Text>
+                          <Text style={styles.message}>{offer.text}</Text>
                         </View>
                         <LineDivider />
                       </View>
@@ -145,51 +168,21 @@ const NotificationScreen = () => {
                       <Text style={styles.emptyText}>No New Notifications</Text>
                     </View>
                   )
-                ) :
-                  oldNotifications?.data?.length > 0 ? (
-                    oldNotifications?.data?.map((offer, index) => (
-                      <View key={index}>
-                        <View style={styles.notificationContainer}>
-                          <View style={styles.headerRow}>
-                            <View style={styles.avatarStack}>
-                              <View style={styles.greenDot} />
-                              <Image
-                                source={{
-                                  uri: offer?.from_user?.photo || "https://randomuser.me/api/portraits/men/62.jpg",
-                                }}
-                                style={styles.avatar}
-                              />
-                            </View>
-
-                            <View style={styles.nameTimeRow}>
-                              <Text style={styles.name}>{offer.from_user?.full_name}</Text>
-                            </View>
-                          </View>
-                          <View style={styles.messageRow}>
-                            <Text style={styles.message}>
-                              {offer.text}..
-                            </Text>
-                            <TouchableOpacity>
-                              <Text style={styles.moreText}>More</Text>
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                        <LineDivider />
-                      </View>
-                    ))
-                  ) : (
-                    <View style={styles.emptyContainer}>
-                      <Text style={styles.emptyText}>No Old Notifications</Text>
-                    </View>
-                  )}
+                ) : (
+                  <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>No Chat Notification Found</Text>
+                  </View>
+                )}
               </View>
             </ScrollView>
           )}
         </>
+      </View>
+      {admin == 2 ? <EmployerFooter /> : <Footer />}
 
-      </View >
-      <Footer />
-    </SafeAreaView >
+     
+     
+    </SafeAreaView>
   );
 };
 
@@ -212,7 +205,7 @@ const styles = StyleSheet.create({
     borderColor: "#c5c5c591",
     borderWidth: 1,
     borderRadius: 12,
-    marginBottom: 5
+    marginBottom: 5,
   },
 
   tab: {
@@ -275,16 +268,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   mainContainer: {
-    paddingTop: 15
+    paddingTop: 15,
   },
   notificationContainer: {
     flexDirection: "column",
-    gap: 10
+    gap: 10,
   },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10
+    gap: 10,
   },
   avatarStack: {
     flexDirection: "column",
@@ -348,7 +341,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 80,   // ensures spacing inside ScrollView
+    paddingTop: 80, // ensures spacing inside ScrollView
   },
   emptyText: {
     fontSize: 16,

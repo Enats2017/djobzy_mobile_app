@@ -12,13 +12,22 @@ const EmployerFooter = () => {
     <>
       <View style={styles.bottomContainer}>
         <View style={styles.BottomBar}>
+           <TouchableOpacity
+            style={styles.tab}
+            onPress={() => navigation.navigate("EmployerDashboard")}
+          >
+            <Ionicons name="home" size={24}  color={active === "jobs" ? "#007bff" : "#000000"} />
+            <Text style={[styles.label, active == 0 && styles.activeText]}>
+              Home
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("EmployerContracts")}
           >
-            <Ionicons name="document-attach-sharp" size={24}  color={active === "Jobs" ? "#007bff" : "#000000"} />
+            <Ionicons name="document-attach-sharp" size={24}  color={active === "jobs" ? "#007bff" : "#000000"} />
             <Text style={[styles.label, active == 0 && styles.activeText]}>
-              Contact
+              Contracts
             </Text>
           </TouchableOpacity>
 
@@ -35,12 +44,12 @@ const EmployerFooter = () => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.tab} onPress={() => {}}>
+          <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("NotificationScreen")}>
             <MaterialCommunityIcons name="bell-badge" size={24} color="black" />
             <Text
               style={[styles.label, active === "Alerts" && styles.activeText]}
             >
-              Alerts
+             Notification
             </Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("ProfileMenu")}>
@@ -76,13 +85,14 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: "black",
+    color: "#000000ff",
     fontFamily: "Montserrat_400Regular",
     marginTop: 2,
   },
   activeText: {
     color: "#000000ff",
-    fontWeight: "bold",
+     fontFamily: "Montserrat_400Regular",
+    
   },
 });
 export default EmployerFooter;

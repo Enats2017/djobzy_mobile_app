@@ -27,7 +27,7 @@ const GradientButton = ({
         
       >
         {loading ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color="#fff"  size={28} />
         ) : (
           <Text style={styles.buttonText}>{title}</Text>
         )}

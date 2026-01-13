@@ -47,7 +47,7 @@ const ReferralWallet = () => {
       setCompletedReferrals(data.completedReferrals);
       setReferralUrl(data.referral_url);
 
-      if (pendingReferrals.length > 0) {
+      if (data.pendingReferrals.length > 0) {
         setTableFilled(true);
       } else {
         setTableFilled(false);
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 11,
     borderRadius: 12,
-    marginTop: 4,
+   
     alignItems: "center",
     justifyContent: "center",
   },

@@ -6,7 +6,7 @@ export default function SearchBar({
   placeholder = "Find anything",
   value = "",
   onChangeText = () => {},
-  editable = false,
+  editable = true,
   showSearch = true,
   showFilter = true,
   showDots = true,

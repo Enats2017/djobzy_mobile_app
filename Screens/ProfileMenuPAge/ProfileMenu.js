@@ -27,6 +27,7 @@ const EmployeeProfileMenu = () => {
   const [switchLoading, setSwitchLoading] = useState(false);
   const [accountType, setAccountType] = useState(null);
   const [user, setUser] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchUser = async () => {
     try {
@@ -35,6 +36,7 @@ const EmployeeProfileMenu = () => {
       const response = await fetch(`${API_URL}/profile-menu-list`, {
         method: "GET",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -59,18 +61,22 @@ const EmployeeProfileMenu = () => {
       const response = await fetch(`${API_URL}/user-switch-account`, {
         method: "POST",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
       const data = await response.json();
+      await AsyncStorage.removeItem("user");
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
       setAccountType(data?.account_type);
-      if (data?.account_type === 0) {
+      if (data?.account_type == 0) {
         navigation.reset({
           index: 0,
           routes: [{ name: "Dashboard" }],
         });
-      } else if (data?.account_type === 2) {
+      } else if (data?.account_type == 2) {
         navigation.reset({
           index: 0,
           routes: [{ name: "EmployerDashboard" }],
@@ -96,24 +102,28 @@ const EmployeeProfileMenu = () => {
 
   const handleLogout = async () => {
     try {
+      setSubmitting(true);
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/logout`, {
         method: "POST",
         headers: {
-          
+          Accept: "application/json",
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
       const data = await res.json();
       if (data.status === 200) {
-         await AsyncStorage.multiRemove(["token", "user"]);
+        await AsyncStorage.clear();
         navigation.reset({
           index: 0,
           routes: [{ name: "Login" }],
-        });      
+        });
       }
     } catch (error) {
       console.log("Template API error:", error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -163,30 +173,32 @@ const EmployeeProfileMenu = () => {
                   {user?.admin == 0 ? (
                     <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("Dashboard")} />
                   ) : (
-                    <MenuItem icon="grid-outline" title="Dashborad" onPress={() => navigation.navigate("EmployerDashboard")} />
+                    <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("EmployerDashboard")} />
                   )}
 
                   {user?.admin == 0 ? (
                     <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployeeAccount", { name: user?.name })} />
-
                   ) : (
                     <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployerAccount", { name: user?.name })} />
-
                   )
-
                   }
-
                   <MenuItem icon="star-outline" title="Reviews" onPress={() => navigation.navigate("ProfileReviewPage")} />
                   <MenuItem icon="checkmark-done-outline" title="Verification" onPress={() => navigation.navigate("EmployeeVerification")} />
                   <MenuItem icon="wallet-outline" title="Wallet" onPress={() => navigation.navigate("Wallet")} />
                   <MenuItem icon="settings-outline" title="Setting" onPress={() => navigation.navigate("GeneralSetting")} />
                   <MenuItem icon="gift-outline" title="Referral wallet" onPress={() => navigation.navigate("ReferralWallet")} />
                   <MenuItem icon="chatbubble-ellipses-outline" title="Chat" onPress={() => navigation.navigate("ChatList")} />
-                  <MenuItem icon="document-outline" title="Blog" onPress={() => navigation.navigate("BlogPage")} />
+                  {/* <MenuItem icon="document-outline" title="Blog" onPress={() => navigation.navigate("BlogPage")} /> */}
                 </View>
                 <TouchableOpacity style={styles.logoutContainer} onPress={handleLogout}>
                   <Text style={styles.logoutLabel}>Logout</Text>
-                  <MaterialIcons name="logout" size={24} color="#ffffff" />
+                  {
+                    submitting ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <MaterialIcons name="logout" size={24} color="#ffffff" />
+                    )
+                  }
                 </TouchableOpacity>
               </ScrollView>
             </>

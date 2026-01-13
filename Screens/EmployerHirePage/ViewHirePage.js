@@ -58,6 +58,7 @@ export default function ViewHirePage() {
   }, []);
   
   const handleSelectJob = async (item) => {  
+     setSelectedJob(item); 
   setDropdownOpen(false);
   try {
     const token = await AsyncStorage.getItem("token");
@@ -74,11 +75,17 @@ export default function ViewHirePage() {
       }),
     });
     const data = await res.json();
+    console.log(data);
+    
+    setDropdownOpen(false);
     navigation.navigate("SendJobOffer", { jobDetails: data});
   } catch (err) {
     console.log("Job details fetch error", err);
   }
 };
+   
+  
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -151,7 +158,7 @@ export default function ViewHirePage() {
                           : styles.dropdownTextPlaceholder
                       }
                     >
-                      {selectedJob ? selectedJob : "Choose A Job"}
+                      {selectedJob ? selectedJob?.subject : "Choose A Job"}
                     </Text>
                     <FontAwesome
                       name={dropdownOpen ? "chevron-up" : "chevron-down"}

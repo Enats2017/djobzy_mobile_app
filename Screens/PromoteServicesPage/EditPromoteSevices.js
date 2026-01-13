@@ -70,12 +70,14 @@ const EditPromoteSevices = () => {
     store.setField("hourlyRate", String(service.hour_minimum || ""));
     store.setField("totalPrice", String(service.price || ""));
     store.setExpectedTime(service.time_hours || 0);
-    service.subcategories.forEach(sub => {
-    store.addCategory({
-      subId: sub.id,
-      name: sub.name,
+   store.clearCategories();
+
+    service.subservice_id?.forEach((id, index) => {
+      store.addCategory({
+        subId: Number(id),
+        name: service.subcategories?.[index],
+      });
     });
-  });
     // service.attachment?.forEach((img) => {
     //   store.addImage({ uri: `${API_ICON}/${img.attachment}` });
     // });
@@ -92,9 +94,7 @@ const EditPromoteSevices = () => {
       const token = await AsyncStorage.getItem("token");
       const formData = new FormData();
       console.log("1111", serviceId);
-
       formData.append("id", serviceId);
-
       const response = await fetch(`${API_URL}/service-delete`, {
         method: "POST",
         headers: {
@@ -105,7 +105,6 @@ const EditPromoteSevices = () => {
       });
 
       const data = await response.json();
-
       if (data.status === 200) {
         Alert.alert("Deleted", "Service deleted successfully");
         setDeleteModal(false);

@@ -33,10 +33,8 @@ const PromoteService = () => {
     images,
     setField,
     addImage,
-    removeImage,  
-    setCategories,
-    setSubcategories
-    
+    removeImage,
+   
   } = useServiceGlobalStore();
   const { expectedTime, setExpectedTime } = useServiceGlobalStore();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -105,8 +103,10 @@ const PromoteService = () => {
         quality: 0.7,
       });
 
-      if (!result.canceled && result.assets) {
-        result.assets.forEach((asset) => addImage(asset));
+      if (!result.canceled && result.assets?.length) {
+        result.assets.forEach((asset) => {
+          addImage({ uri: asset.uri });
+        });
       }
     } catch (err) {
       console.log("Image pick error:", err);
@@ -130,8 +130,7 @@ const PromoteService = () => {
         }),
       });
       const data = await res.json();
-      
-      
+
       if (data.status === 200) {
         setTemplates(data.result);
       }
@@ -140,13 +139,11 @@ const PromoteService = () => {
     }
   };
 
-  const handleTemplateSelect = async (item) => {
+ const handleTemplateSelect = async (item) => {
   try {
-    
     setSelectedTemplate(item.title);
 
     const token = await AsyncStorage.getItem("token");
-
     const res = await fetch(`${API_URL}/fetchDetails`, {
       method: "POST",
       headers: {
@@ -162,33 +159,37 @@ const PromoteService = () => {
 
     const data = await res.json();
 
-    if (data.status === 200) {
-      const result = data.result;
+    if (data.status !== 200) return;
 
-      setField("title", result.title || "");
-      setField("description", result.description || "");
-      setField("hourlyRate", result.hour_minimum?.toString() || "");
-      setField("totalPrice", result.price?.toString() || "");
-      store.setExpectedTime(result.time_hours || 0);
-       result.subcategories?.forEach((name, i) => {
-      store.addCategory({ subId: i + 1, name });
+    const result = data.result; // ✅ DEFINE FIRST
+    const store = useServiceGlobalStore.getState(); // ✅ DEFINE STORE
+    store.setField("title", result.title || "");
+    store.setField("description", result.description || "");
+    store.setField("hourlyRate", result.hour_minimum?.toString() || "");
+    store.setField("totalPrice", result.price?.toString() || "");
+    store.setExpectedTime(0);
+
+
+    store.clearCategories();
+
+    result.subservice_id?.forEach((id, index) => {
+      store.addCategory({
+        subId: Number(id),
+        name: result.subcategories?.[index],
+      });
     });
 
-   
-
-      // OPTIONAL: Images
-      if (result.attachment?.length) {
-        result.attachment.forEach((img) => {
-          addImage({ uri: img.attach });
-        });
-      }
-
-      setShowDropdown(false);
-      
+    // images
+    if (result.attachment?.length) {
+      result.attachment.forEach((img) => {
+        store.addImage({ uri: img.attach });
+      });
     }
+
+    setShowDropdown(false);
   } catch (err) {
     console.log("Template detail error:", err);
-  } 
+  }
 };
 
 
@@ -317,7 +318,7 @@ const PromoteService = () => {
                   onPress={() => removeImage(index)}
                   style={styles.removeButton}
                 >
-                  <Ionicons name="close" size={14} color="#fff" />
+                  <Ionicons name="close" size={15} color="#d66e58" />
                 </TouchableOpacity>
               </View>
             ))}
@@ -389,9 +390,9 @@ const PromoteService = () => {
                     <TouchableOpacity
                       key={item.id}
                       style={styles.dropdownItem}
-                      onPress={() =>{ handleTemplateSelect(item);
+                      onPress={() => {
+                        handleTemplateSelect(item);
                         setShowDropdown(false);
-
                       }}
                     >
                       <Text style={styles.dropdownItemText}>{item.title}</Text>
@@ -407,7 +408,7 @@ const PromoteService = () => {
                 styles.useTemplateButton,
                 !selectedTemplate && { opacity: 0.5 },
               ]}
-               onPress={() => {
+              onPress={() => {
                 setSelectedTemplate(null);
                 setShowDropdown(false);
                 setTitleModal(false);
@@ -446,6 +447,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     backgroundColor: "#222222",
   },
+  imagePreviewContainer: {
+    flexDirection: "row",
+    marginTop: 10,
+    gap: 15,
+    flex: 1,
+    marginBottom: 15,
+  },
+  previewImage: {
+    width: 100,
+    height: 100,
+
+    borderRadius: 8,
+  },
+  imageWrapper: {
+    position: "relative",
+  },
+  removeButton: {
+    position: "absolute",
+    top: 5,
+    right: 3,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   label: {
     color: "#ffffff",
     fontSize: 16,

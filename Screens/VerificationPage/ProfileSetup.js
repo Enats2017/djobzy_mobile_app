@@ -15,8 +15,12 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
+  Platform
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
+import GradientButton from "../../components/GradientButton";
+import { toastSuccess } from "../../utils/toast";
 
 const ProfileSetup = ({ userId, onNext }) => {
   const [photoUri, setPhotoUri] = useState(null);
@@ -29,17 +33,77 @@ const ProfileSetup = ({ userId, onNext }) => {
   const descriptionChars = description.length;
   const maxDescriptionChars = 500;
 
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-    if (!result.canceled) {
-      setPhotoUri(result.assets[0].uri);
-    }
-  };
+  const MIN_WORDS = 18;
+
+  const wordCount = description.replace(/\s/g, "").length;
+
+  const isGenerateEnabled = wordCount >= MIN_WORDS;
+
+  const requestPermissions = async () => {
+  const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+  const galleryPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (
+    cameraPerm.status !== "granted" ||
+    galleryPerm.status !== "granted"
+  ) {
+    Alert.alert(
+      "Permission required",
+      "Camera and Gallery permissions are required"
+    );
+    return false;
+  }
+  return true;
+};
+
+const openCamera = async () => {
+  const hasPermission = await requestPermissions();
+  if (!hasPermission) return;
+
+  const result = await ImagePicker.launchCameraAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.7,
+  });
+
+  if (!result.canceled) {
+    setPhotoUri(result.assets[0].uri);
+  }
+};
+
+const openGallery = async () => {
+  const hasPermission = await requestPermissions();
+  if (!hasPermission) return;
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.7,
+  });
+
+  if (!result.canceled) {
+    setPhotoUri(result.assets[0].uri);
+  }
+};
+
+
+
+ const pickImage = () => {
+  Alert.alert(
+    "Upload Photo",
+    "Choose an option",
+    [
+      { text: "Camera", onPress: openCamera },
+      { text: "Gallery", onPress: openGallery },
+      { text: "Cancel", style: "cancel" },
+    ],
+    { cancelable: true }
+  );
+};
+
+
   const pickResume = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: "application/pdf",
@@ -71,6 +135,7 @@ const ProfileSetup = ({ userId, onNext }) => {
       formData.append("title", title);
       formData.append("about", description);
       formData.append("online_resume_link", onlineResumeLink);
+      formData.append("step_flag",3)
       if (resumeFile) {
         formData.append("resume", {
           uri: resumeFile.uri,
@@ -97,7 +162,8 @@ const ProfileSetup = ({ userId, onNext }) => {
       );
 
       if (response.data.status === 200) {
-        alert("Profile setup successful!");
+        //alert("Profile setup successful!");
+        toastSuccess("Profile setuo successfull!");
         if (onNext) onNext(response.data.user_admin);
       } else {
         alert(response.data.message || "Failed to save data");
@@ -114,126 +180,154 @@ const ProfileSetup = ({ userId, onNext }) => {
     }
   };
 
+  const shortFileName = (name, maxLength = 22) => {
+    if (!name) return "";
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength - 3) + "...";
+  };
+
   return (
     <>
-      <ScrollView
-        style={styles.scrolcontent}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.heading}>Profile Stup</Text>
-        <View style={styles.profileSection}>
-          <View style={styles.titleheading}>
-            <Text style={styles.label}>Profile Picture</Text>
-            <Text style={styles.subLabel}>
-              Try to final a picture that shows clear and visible image of your
-              or your company logo
-            </Text>
-          </View>
-          <View style={styles.photoSection}>
-            {photoUri && (
-              <View style={styles.photoContainer}>
-                <Image source={{ uri: photoUri }} style={styles.photo} />
-                <TouchableOpacity
-                  style={styles.removePhoto}
-                  onPress={removePhoto}
-                >
-                  <Ionicons name="close" size={15} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            )}
-            <View style={styles.photouplaod}>
+      <Text style={styles.heading}>Profile Setup</Text>
+      <View style={styles.profileSection}>
+        <View style={styles.titleheading}>
+          <Text style={styles.label}>Profile Picture</Text>
+          <Text style={styles.subLabel}>
+            Try to final a picture that shows clear and visible image of your or
+            your company logo
+          </Text>
+        </View>
+        <View style={styles.photoSection}>
+          {photoUri && (
+            <View style={styles.photoContainer}>
+              <Image source={{ uri: photoUri }} style={styles.photo} />
               <TouchableOpacity
-                style={styles.uploadPhotoButton}
-                onPress={pickImage}
+                style={styles.removePhoto}
+                onPress={removePhoto}
               >
-                <AntDesign name="camera" size={24} color="#fff" />
-                <Text style={styles.uploadText}>Upload Photo</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <Text style={styles.label}>
-            Profile Title <Text style={styles.subLabel}>(Employer)</Text>{" "}
-          </Text>
-          <Text style={styles.subLabel}>
-            Profile title should shortly describe your main focus on Djobzy.
-            E.g. I am a Plumber or I am hiring labor workers.
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Example: Plumber or Hiring labor workers"
-            placeholderTextColor="#fff"
-            value={title}
-            onChangeText={setTitle}
-          />
-          <Text style={styles.charCount}>{titleCharsLeft} characters left</Text>
-          <Text style={styles.label}>Profile Description</Text>
-          <Text style={styles.subLabel}>
-            Describe your experiences or goals.
-          </Text>
-
-          <TextInput
-            style={styles.aidescription}
-            multiline
-            placeholder="Tell me about your self"
-            value={description}
-            placeholderTextColor="#c3c3c3c3"
-            onChangeText={setDescription}
-          />
-
-          <View style={styles.Count}>
-            <Text style={styles.charCount}>Minimum 18 words</Text>
-            <Text style={styles.charCount}>
-              {descriptionChars}/{maxDescriptionChars}
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={styles.generateButton}
-            // onPress={generateWithAI}
-            // disabled={!isGenerateEnabled}
-          >
-            <Text style={styles.generateText}>✨ Generate with AI</Text>
-          </TouchableOpacity>
-          <Text style={styles.label}>Resume (Optional)</Text>
-          <Text style={styles.subLabel}>
-            Showcase your skills and experience by uploading your resume.
-          </Text>
-          <TouchableOpacity
-            style={styles.uploadResumeButton}
-            onPress={pickResume}
-          >
-            <Foundation name="upload" size={24} color="#fff" />
-            <Text style={styles.uploadText}>Upload Resume</Text>
-          </TouchableOpacity>
-          {resumeFile && (
-            <View style={styles.uploadedFile}>
-              <Text style={styles.fileName}>{resumeFile.name}</Text>
-              <TouchableOpacity onPress={removeResume}>
-                <Text style={styles.removeText}>X</Text>
+                <Ionicons name="close" size={15} color="#d66e58" />
               </TouchableOpacity>
             </View>
           )}
-          <Text style={styles.label}>Online Resume</Text>
-          <Text style={styles.subLabel}>
-            Link your profile from other platform. (e.g. LinkedIn)
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="https://www.linkedin.com/in/..."
-            placeholderTextColor="#c3c3c3"
-            value={onlineResumeLink}
-            onChangeText={setOnlineResumeLink}
-          />
-          <TouchableOpacity onPress={pickResume} style={styles.uploadBtn}>
-            <Text style={styles.uploadText}>
-              {resumeFile ? `📄 ${resumeFile.name}` : "Upload Resume (PDF)"}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.photouplaod}>
+            <TouchableOpacity
+              style={styles.uploadPhotoButton}
+              onPress={pickImage}
+            >
+              <AntDesign name="camera" size={24} color="#fff" />
+              <Text style={styles.uploadText}>Upload Photo</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <TouchableOpacity style={styles.nextBtn} onPress={handleSubmit}>
-          <Text style={styles.nextBtnText}>Next</Text>
+
+        <Text style={styles.label}>
+          Profile Title <Text style={styles.subLabel}>(Employer)</Text>{" "}
+        </Text>
+        <Text style={styles.subLabel}>
+          Profile title should shortly describe your main focus on Djobzy. E.g.
+          I am a Plumber or I am hiring labor workers.
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Example: Plumber or Hiring labor workers"
+          placeholderTextColor="#c3c3c3c3"
+          value={title}
+          onChangeText={setTitle}
+          
+        />
+        <Text style={styles.charCount}>{titleCharsLeft} characters left</Text>
+        <Text style={styles.label}>Profile Description</Text>
+        <Text style={styles.subLabel}>Describe your experiences or goals.</Text>
+
+        <TextInput
+          style={styles.aidescription}
+          multiline
+          placeholder="Tell me about your self"
+          value={description}
+          placeholderTextColor="#c3c3c3c3"
+          onChangeText={setDescription}
+          textAlignVertical="top"
+        />
+
+        <View style={styles.Count}>
+          <Text style={styles.charCount}>
+            {wordCount < MIN_WORDS
+              ? `Minimum ${MIN_WORDS} words`
+              : "You can generate with AI ✨"}
+          </Text>
+          {/* <Text style={styles.charCount}>
+            {descriptionChars}/{maxDescriptionChars}
+          </Text> */}
+        </View>
+        <TouchableOpacity
+          style={[
+            styles.generateButton,
+            !isGenerateEnabled && styles.disabledBtn,
+          ]}
+          disabled={!isGenerateEnabled}
+          onPress={() => {
+            // generateWithAI()
+            console.log("AI generate triggered");
+          }}
+        >
+          <Text style={styles.generateText}>✨ Generate with AI</Text>
         </TouchableOpacity>
-      </ScrollView>
+
+        <Text style={styles.label}>Resume (Optional)</Text>
+        <Text style={styles.subLabel}>
+          Showcase your skills and experience by uploading your resume.
+        </Text>
+        <TouchableOpacity
+          style={styles.uploadResumeButton}
+          onPress={pickResume}
+        >
+          <Foundation name="upload" size={24} color="#fff" />
+          <Text style={styles.uploadText}>Upload Resume</Text>
+        </TouchableOpacity>
+        {resumeFile && (
+          <View style={styles.uploadedFile}>
+            <View style={styles.fileInfo}>
+              <AntDesign name="file-pdf" size={20} color="#e74c3c" />
+              <Text style={styles.fileName}>
+                {shortFileName(resumeFile.name)}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+                style={styles.removePhoto}
+                onPress={removeResume}
+              >
+                <Ionicons name="close" size={15} color="#d66e58" />
+              </TouchableOpacity>
+
+            {/* <TouchableOpacity onPress={removeResume}>
+              <Ionicons name="close-circle" size={20} color="#e74c3c" />
+            </TouchableOpacity> */}
+          </View>
+        )}
+
+        <Text style={styles.label}>Online Resume</Text>
+        <Text style={styles.subLabel}>
+          Link your profile from other platform. (e.g. LinkedIn)
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="https://www.linkedin.com/in/..."
+          placeholderTextColor="#c3c3c3"
+          value={onlineResumeLink}
+          onChangeText={setOnlineResumeLink}
+        />
+        <TouchableOpacity onPress={pickResume} style={styles.uploadBtn}>
+          <Text style={styles.uploadText}></Text>
+        </TouchableOpacity>
+      </View>
+      <GradientButton
+        title="Next"
+        marginTop={25}
+        disabled={loading}
+        loading={loading}
+        onPress={handleSubmit}
+      />
     </>
   );
 };
@@ -241,8 +335,7 @@ const ProfileSetup = ({ userId, onNext }) => {
 const styles = StyleSheet.create({
   profileSection: {
     backgroundColor: "#282828",
-    padding: 12,
-    elevation: 2,
+    padding: 10,
     borderRadius: 5,
   },
   photoSection: {
@@ -263,9 +356,9 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   photo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 8,
   },
   placeholderPhoto: {
     width: 90,
@@ -277,9 +370,9 @@ const styles = StyleSheet.create({
   },
   removePhoto: {
     position: "absolute",
-    top: 0,
-    right: 0,
-    backgroundColor: "#d66e58",
+    top: 5,
+    right: 3,
+    backgroundColor: "#fff",
     borderRadius: 10,
     width: 20,
     height: 20,
@@ -295,6 +388,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF0D",
     padding: 25,
     flex: 1,
+   
     borderRadius: 10,
     borderWidth: 1,
     borderStyle: "dashed",
@@ -302,6 +396,7 @@ const styles = StyleSheet.create({
   },
   uploadPhotoButton: {
     alignItems: "center",
+    // gap:10,
     width: "100%",
   },
   uploadText: {
@@ -322,8 +417,10 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#FFFFFF0D",
-      color:"#fff",
+    color: "#fff",
     padding: 10,
+    height:40,
+    
     fontFamily: "Montserrat_400Regular",
     fontSize: 12,
     fontStyle: "italic",
@@ -335,7 +432,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     height: 80,
     padding: 10,
-    color:"#fff",
+    color: "#fff",
     backgroundColor: "#FFFFFF0D",
     borderRadius: 8,
     fontStyle: "italic",
@@ -359,9 +456,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 15,
   },
-  disabledButton: {
-    backgroundColor: "#666",
+  disabledBtn: {
+    backgroundColor: "#ccc",
   },
+
+  fileInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  fileName: {
+    fontSize: 14,
+    color: "#333",
+    maxWidth: 180,
+  },
+
   generateText: {
     color: "#fff",
     fontWeight: "bold",
@@ -375,13 +485,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: "dashed",
     borderColor: "#FFFFFF33",
-    marginBottom: 15,
+    marginBottom: 10,
   },
   uploadedFile: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e07461ff",
-    padding: 10,
+    paddingRight: 20,
+    marginBottom: 10,
   },
   fileName: {
     color: "#fff",
@@ -389,7 +499,7 @@ const styles = StyleSheet.create({
   },
   nextBtn: {
     backgroundColor: "#C96B59",
-    padding: 16,
+    padding: 12,
     borderRadius: 12,
     alignItems: "center",
     marginTop: 20,

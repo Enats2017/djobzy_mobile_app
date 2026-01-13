@@ -39,6 +39,9 @@ export default function PublicEmployeeProfile({ route }) {
   const [loading, setLoading] = useState(true);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [job, setJob] = useState([]);
+  const [followAction, setFollowAction] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [submit, setSubmit] = useState(false);
 
   const fetchEmployeeProfile = async () => {
     try {
@@ -48,7 +51,7 @@ export default function PublicEmployeeProfile({ route }) {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
-        }, 
+        },
       });
       const data = await res.json();
       setProfile(data);
@@ -66,100 +69,177 @@ export default function PublicEmployeeProfile({ route }) {
   useEffect(() => {
     if (name) fetchEmployeeProfile();
   }, [name]);
-   const displayedCategories = showAllCategories
-    ? subcategory
-    : subcategory.slice(0, 5);
+
+  const isLiked = profile?.like?.is_like === 1;
+
+  const handleFollow = async () => {
+    try {
+      setFollowAction("follow");
+      setSubmit(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/followUser`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+        }),
+      });
+      const data = await response.json();
+      console.log("Follow response:", data);
+      if (data.status === 200) {
+        setProfile((prev) => ({
+          ...prev,
+          like: { ...prev.like, is_like: 1 },
+        }));
+      }
+    } catch (error) {
+      console.log("Follow error:", error);
+    } finally {
+      setSubmit(false);
+    }
+  };
+  const handleUnfollow = async () => {
+    try {
+      setFollowAction("unfollow");
+      setSubmit(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/unfollowUser`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+        }),
+      });
+      const data = await response.json();
+      console.log("Unfollow response:", data);
+      if (data.status == 200) {
+        setProfile((prev) => ({
+          ...prev,
+          like: { ...prev.like, is_like: 0 },
+        }));
+      }
+    } catch (error) {
+      console.log("Unfollow error:", error);
+    } finally {
+      setSubmit(false);
+    }
+  };
+
+  const safeSubcategory = Array.isArray(subcategory) ? subcategory : [];
+
+  const displayedCategories = showAllCategories
+    ? safeSubcategory
+    : safeSubcategory.slice(0, 5);
 
   if (loading) return <Loading />;
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.employeeContainer}>
         <PageNameHeaderBar navigation={navigation} title={user?.full_name} />
-        {
-          loading ?(
-            <Loading/>
-          ):(
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
-          <View style={styles.cardBox}>
-            <View style={styles.profileRow}>
-              <Image
-                style={styles.avatar}
-                source={{
-                  uri:
-                    user?.photo ||
-                    "https://dummyimage.com/150x150/ccc/fff.png&text=No+Photo",
-                }}
-              />
+        {loading ? (
+          <Loading />
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
+          >
+            <View style={styles.cardBox}>
+              <View style={styles.profileRow}>
+                <Image
+                  style={styles.avatar}
+                  source={{
+                    uri:
+                      user?.photo ||
+                      "https://dummyimage.com/150x150/ccc/fff.png&text=No+Photo",
+                  }}
+                />
 
-              <View style={styles.profileTextContent}>
-                <Text style={styles.profileName}>{user?.full_name}</Text>
-                <View style={styles.verificationRow}>
-                  <View style={styles.iconTextRow}>
-                    <MaterialIcons name="verified" size={18} color="#c3c3c3" />
-                    <Text style={styles.verificationText}>
-                      Verification Level: {user?.verification_count || 0}/7
-                    </Text>
-                  </View>
-                  <View style={styles.iconTextRow}>
-                    <FontAwesome6
-                      name="location-dot"
-                      size={18}
-                      color="#c3c3c3"
-                    />
-                    <Text style={styles.locationText}>
-                      {user?.address ?? "Unknown"}
-                    </Text>
+                <View style={styles.profileTextContent}>
+                  <Text style={styles.profileName}>{user?.full_name}</Text>
+                  <View style={styles.verificationRow}>
+                    <View style={styles.iconTextRow}>
+                      <MaterialIcons
+                        name="verified"
+                        size={18}
+                        color="#c3c3c3"
+                      />
+                      <Text style={styles.verificationText}>
+                        Verification Level: {user?.verification_count || 0}/7
+                      </Text>
+                    </View>
+                    <View style={styles.iconTextRow}>
+                      <FontAwesome6
+                        name="location-dot"
+                        size={18}
+                        color="#c3c3c3"
+                      />
+                      <Text style={styles.locationText}>
+                        {user?.address ?? "Unknown"}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-            <View style={styles.horizontalDivider} />
-            <View style={styles.switchRow}>
-              <Text style={styles.switchText}>
-                Switch to {user?.full_name || "User"}'s Employee Profile
-              </Text>
-              <TouchableOpacity  onPress={() => {
-                    setIsEmployer(!isEmployer);
-                     setIsEmployer(false);
-                    navigation.replace("EmployerProfilePage", {
-                      name: user?.name
-                    });
-                  }}>
-                {isEmployer ? (
-                  <MaterialCommunityIcons
-                    name="toggle-switch"
-                    size={50}
-                    color="#d17b68"
-                  />
-                ) : (
-                  <MaterialCommunityIcons
-                    name="toggle-switch-off"
-                    size={50}
-                    color="#c3c3c3"
-                  />
-                )}
-              </TouchableOpacity>
-            </View>
-            <View style={styles.buttonsRow}>
-              <TouchableOpacity
-                style={[styles.btnFollow, isFollowed && styles.btnUnfollow]}
-                onPress={() => setIsFollowed(!isFollowed)}
-              >
-                <Text
-                  numberOfLines={1}
-                  ellipsizeMode="clip"
-                  style={[
-                    styles.btnFollowText,
-                    isFollowed && styles.btnUnfollowText,
-                  ]}
-                >
-                  {isFollowed ? "Unfollow" : "Follow"}
+              <View style={styles.horizontalDivider} />
+              <View style={styles.switchRow}>
+                <Text style={styles.switchText}>
+                  Switch to {user?.full_name || "User"}'s Employee Profile
                 </Text>
-              </TouchableOpacity>
-              {/* <TouchableOpacity
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsEmployer(!isEmployer);
+                    setIsEmployer(false);
+                    navigation.replace("EmployerProfilePage", {
+                      name: user?.name,
+                    });
+                  }}
+                >
+                  {isEmployer ? (
+                    <MaterialCommunityIcons
+                      name="toggle-switch"
+                      size={50}
+                      color="#d17b68"
+                    />
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="toggle-switch-off"
+                      size={50}
+                      color="#c3c3c3"
+                    />
+                  )}
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonsRow}>
+                {currentUserId !== user?.id && (
+                  <TouchableOpacity
+                    onPress={isLiked ? handleUnfollow : handleFollow}
+                    style={[styles.btnFollow, isLiked && styles.btnUnfollow]}
+                  >
+                    {submit ? (
+                      <ActivityIndicator
+                        color={isLiked ? "#FFFFFF" : "#000000"}
+                      />
+                    ) : (
+                      <Text
+                        style={[
+                          styles.btnFollowText,
+                          isLiked && styles.btnUnfollowText,
+                        ]}
+                      >
+                        {isLiked ? "Unfollow" : "Follow"}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                )}
+                {/* <TouchableOpacity
                 style={styles.btnHire}
                  onPress={() => {
                     setIsEmployer(!isEmployer);
@@ -170,137 +250,137 @@ export default function PublicEmployeeProfile({ route }) {
               >
                 <Text style={styles.btnHireText}>Hire</Text>
               </TouchableOpacity> */}
-              <TouchableOpacity style={styles.btnChat}>
-                <Text style={styles.btnChatText}>Chat</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.statsContainer}>
-            <View style={styles.statsBox}>
-              <Text style={styles.statsLabel}>Number of jobs</Text>
-              <Text style={styles.statsNumber}>{profile?.count}</Text>
-            </View>
-            <View style={styles.verticalDivider} />
-            <View style={styles.statsBox}>
-              <Text style={styles.statsLabel}>Money Earn</Text>
-              <Text style={styles.statsNumber}>{profile?.earned} CAD</Text>
-            </View>
-          </View>
-          <View style={styles.infoOuterContainer}>
-            <View style={styles.infoSection}>
-              <Text style={styles.sectionLabel}>Profile Title</Text>
-              <Text style={styles.profileTitleText}>
-                {user?.profile_title_employee || "No Title Added"}
-              </Text>
-            </View>
-            <View style={styles.dividerLine} />
-            <View style={styles.infoSection}>
-              <Text style={styles.sectionLabel}>About Me</Text>
-              <Text style={styles.aboutMeText}>
-                {user?.about ?? "No about info available."}
-              </Text>
-            </View>
-            <View style={styles.dividerLine} />
-          </View>
-          <FlatList
-            data={feeds}
-            keyExtractor={(item) => item.id.toString()}
-            scrollEnabled={feeds.length > 5 ? true : false}
-            renderItem={({ item }) => (
-              <FeedPost
-                author={item.full_name}
-                subtitle={item.profile_title_employer ?? "No title"}
-                time={item.created}
-                text = {item?.message}
-                avatar={{ uri: item.photo }}                
-                image={{ uri: item.file_name }}
-                likes={item.likes_count}
-                comments={item.comment_count}
-                share="0"
-              />
-            )}
-          />
-
-          <View style={styles.category}>
-            <Text style={styles.sectionLabel}>Involved Category</Text>
-            <View style={styles.categoryWrapper}>
-              {displayedCategories.map((item) => (
-                <View key={item.subid} style={styles.categoryPill}>
-                  <Text style={styles.categoryText}>{item.subname}</Text>
-                </View>
-              ))}
-               {subcategory.length > 5 && (
-                <TouchableOpacity
-                  onPress={() => setShowAllCategories((prev) => !prev)}
-                  style={styles.showMoreBtn}
-                >
-                  <Text style={styles.showMoreText}>
-                    {showAllCategories ? "Show Less" : "Show More"}
-                  </Text>
-
-                  <Ionicons
-                    name={showAllCategories ? "chevron-up" : "chevron-down"}
-                    size={14}
-                    color="#000"
-                    style={{ marginLeft: 5 }}
-                  />
+                <TouchableOpacity style={styles.btnChat} onPress={() => navigation.navigate("FeedChat")}>
+                  <Text style={styles.btnChatText}>Chat</Text>
                 </TouchableOpacity>
-              )}
+              </View>
             </View>
-          </View>
-          <View style={styles.pillsWrapper}>
-            <Text style={styles.sectionLabel}> MyJobPosts</Text>
-                {job?.data?.map((item, index) => (
+            <View style={styles.statsContainer}>
+              <View style={styles.statsBox}>
+                <Text style={styles.statsLabel}>Number of jobs</Text>
+                <Text style={styles.statsNumber}>{profile?.count}</Text>
+              </View>
+              <View style={styles.verticalDivider} />
+              <View style={styles.statsBox}>
+                <Text style={styles.statsLabel}>Money Earn</Text>
+                <Text style={styles.statsNumber}>{profile?.earned} CAD</Text>
+              </View>
+            </View>
+            <View style={styles.infoOuterContainer}>
+              <View style={styles.infoSection}>
+                <Text style={styles.sectionLabel}>Profile Title</Text>
+                <Text style={styles.profileTitleText}>
+                  {user?.profile_title_employee || "No Title Added"}
+                </Text>
+              </View>
+              <View style={styles.dividerLine} />
+              <View style={styles.infoSection}>
+                <Text style={styles.sectionLabel}>About Me</Text>
+                <Text style={styles.aboutMeText}>
+                  {user?.employer_about || "No about info available."}
+                </Text>
+              </View>
+              <View style={styles.dividerLine} />
+            </View>
+            <FlatList
+              data={feeds}
+              keyExtractor={(item) => item.id.toString()}
+              scrollEnabled={feeds.length > 5 ? true : false}
+              renderItem={({ item }) => (
+                <FeedPost
+                  author={item.full_name}
+                  subtitle={item.profile_title_employer ?? "No title"}
+                  time={item.created}
+                  text={item?.message}
+                  avatar={{ uri: item.photo }}
+                  image={{ uri: item.file_name }}
+                  likes={item.likes_count}
+                  comments={item.comment_count}
+                  share="0"
+                />
+              )}
+            />
+
+            <View style={styles.category}>
+              <Text style={styles.sectionLabel}>Involved Category</Text>
+              <View style={styles.categoryWrapper}>
+                {displayedCategories.map((item) => (
+                  <View key={item.subid} style={styles.categoryPill}>
+                    <Text style={styles.categoryText}>{item.subname}</Text>
+                  </View>
+                ))}
+                {subcategory.length > 5 && (
+                  <TouchableOpacity
+                    onPress={() => setShowAllCategories((prev) => !prev)}
+                    style={styles.showMoreBtn}
+                  >
+                    <Text style={styles.showMoreText}>
+                      {showAllCategories ? "Show Less" : "Show More"}
+                    </Text>
+
+                    <Ionicons
+                      name={showAllCategories ? "chevron-up" : "chevron-down"}
+                      size={14}
+                      color="#000"
+                      style={{ marginLeft: 5 }}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            <View style={styles.pillsWrapper}>
+              <Text style={styles.sectionLabel}> MyJobPosts</Text>
+              {job?.data?.map((item, index) => (
                 <View key={index} style={styles.card}>
-                    <Text style={styles.heading}>{item.subject}</Text>
-                    <Text style={styles.desc}>{item.description}</Text>
-                    <Text style={styles.row}>
+                  <Text style={styles.heading}>{item.subject}</Text>
+                  <Text style={styles.desc}>{item.description}</Text>
+                  <Text style={styles.row}>
                     <Text style={styles.label}>Total Price:</Text> CAD{" "}
                     {item.fixed_minimum}
                     {"   "}
                     <Text style={styles.label}>Hourly Rate:</Text> CAD{" "}
                     {item.hour_minimum}
-                    </Text>
-                    <Text style={styles.row}>
+                  </Text>
+                  <Text style={styles.row}>
                     <Text style={styles.label}>Project Length:</Text>{" "}
                     {item.expected_hour}
-                    </Text>
-                    <LineDivider />
-                    <View style={styles.gridentbtn}>
+                  </Text>
+                  <LineDivider />
+                  <View style={styles.gridentbtn}>
                     <Text style={styles.row}>Proposals: {item.proposal}</Text>
                     <GradientButton
-                        title="View"
-                        paddingVertical={6}
-                        paddingHorizontal={22}
-                        marginTop={0}
-                         onPress={() =>
+                      title="View"
+                      paddingVertical={6}
+                      paddingHorizontal={22}
+                      marginTop={0}
+                      onPress={() =>
                         navigation.navigate("JobProfile", {
                           gid: item.request_slug,
                         })
                       }
                     />
-                    </View>
+                  </View>
                 </View>
-                ))}
-            
-            <LineDivider />
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Attachments</Text>
-              <Text style={styles.profileTitleText}>.........</Text>
-            </View>
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Current Work</Text>
-              <Text style={styles.profileTitleText}>.........</Text>
-            </View>
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Work History And Reviews</Text>
-              <Text style={styles.profileTitleText}>.........</Text>
-            </View>
-          </View>
-        </ScrollView>
-          )
-        }
+              ))}
 
+              <LineDivider />
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>Attachments</Text>
+                <Text style={styles.profileTitleText}>.........</Text>
+              </View>
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>Current Work</Text>
+                <Text style={styles.profileTitleText}>.........</Text>
+              </View>
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>
+                  Work History And Reviews
+                </Text>
+                <Text style={styles.profileTitleText}>.........</Text>
+              </View>
+            </View>
+          </ScrollView>
+        )}
       </View>
       <EmployerFooter />
     </SafeAreaView>
@@ -592,7 +672,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Montserrat_400Regular",
   },
-   card: {
+  card: {
     borderWidth: 1,
     borderColor: "#ffffff1a",
     borderRadius: 7,

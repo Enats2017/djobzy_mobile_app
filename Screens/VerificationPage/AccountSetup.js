@@ -6,15 +6,18 @@ import {
   Alert,
   StyleSheet,
   Text,
+  KeyboardAvoidingView,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import PhoneNumberInput from "../../components/PhoneNumberInput";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import GradientButton from "../../components/GradientButton";
 
 import Icon from "react-native-vector-icons/Feather";
 import { API_URL } from "../../api/ApiUrl";
+import { toastSuccess } from "../../utils/toast";
 
 const AccountSetup = ({
   countries,
@@ -32,7 +35,9 @@ const AccountSetup = ({
   const [mobileCountryId, setMobileCountryId] = useState("");
   const phoneInputRef = useRef(null);
   const [phoneVerified, setPhoneVerified] = useState(false);
-  const [error, setError] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+
   // const [emailVerified, setEmailVerified] = useState([]);
 
   //  useEffect(() => {
@@ -68,11 +73,16 @@ const AccountSetup = ({
       );
 
       if (response.data.status === 200) {
-        Alert.alert("Success", "Account setup completed!");
+        // Alert.alert("Success", "Account setup completed!");
+        toastSuccess("Account setup completed!");
         onNext();
-      } else {
-        setError(response.data.message);
       }
+        const msg = response.data.message.toLowerCase();
+        if (msg.includes("username")) {
+          setUsernameError(response.data.message);
+        } else if (msg.includes("phone")) {
+          setPhoneError(response.data.message);
+        }
     } catch (error) {
       console.error("Setup error:", error.response?.data || error.message);
       Alert.alert("Error", "Something went wrong during account setup.");
@@ -97,12 +107,15 @@ const AccountSetup = ({
           style={styles.input}
           placeholder="Type your username"
           value={username}
-          onChangeText={(text) =>{ setUsername(text); setError(false);}}
+          onChangeText={(text) => {
+            setUsername(text);
+             setUsernameError(false)
+          }}
         />
-        {error && error ? (
+        {usernameError ? (
           <View style={styles.erromsg}>
             <MaterialIcons name="error-outline" size={18} color="#FF0000" />
-            <Text style={styles.errotext}>{error}</Text>
+            <Text style={styles.errotext}>{usernameError}</Text>
           </View>
         ) : null}
         <Text style={styles.label}>Email</Text>
@@ -116,9 +129,9 @@ const AccountSetup = ({
             editable={!emailVerified}
           />
           {emailVerified && (
-            <Icon
-              name="check-circle"
-              size={20}
+            <Ionicons
+              name="checkmark-done-circle-sharp"
+              size={24}
               color="green"
               style={{
                 position: "absolute",
@@ -133,9 +146,7 @@ const AccountSetup = ({
           <TouchableOpacity
             style={styles.verifyButton}
             onPress={() => handleVerifyEmail(email)}
-          >
-            <Text style={styles.verifyButtonText}>Verify Email</Text>
-          </TouchableOpacity>
+          ></TouchableOpacity>
         ) : null}
         <Text style={styles.label}>Phone Number</Text>
         <PhoneNumberInput
@@ -184,19 +195,17 @@ const AccountSetup = ({
           )}
         </View> */}
       </View>
-      {/* {phoneError ? (
+       {phoneError ? (
         <Text style={{ color: "red", marginTop: 4 }}>{phoneError}</Text>
-      ) : null} */}
-      <TouchableOpacity style={styles.verify} onPress={handleAccountSetup} disabled={loading }>
-        {
-          loading ?(
-            <ActivityIndicator size="small" color="#fff"/>
-          ):(
-            
-            <Text style={styles.varifytext}>Next</Text>
-          )
-        }
-      </TouchableOpacity>
+      ) : null} 
+
+      <GradientButton
+        title="Next"
+        marginTop={25}
+        disabled={loading}
+        loading={loading}
+        onPress={handleAccountSetup}
+      />
     </View>
   );
 };
@@ -212,7 +221,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     marginTop: 18,
     fontFamily: "Montserrat_600SemiBold",
-    marginBottom: 8,
+    marginBottom: 5,
   },
   input: {
     backgroundColor: "#faf6f6ff",

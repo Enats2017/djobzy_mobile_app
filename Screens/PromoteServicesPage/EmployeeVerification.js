@@ -9,7 +9,14 @@ import {
   StyleSheet,
   TextInput,
 } from "react-native";
-import { Ionicons, MaterialIcons,FontAwesome, Feather, FontAwesome6, FontAwesome5 } from "@expo/vector-icons";
+import {
+  Ionicons,
+  MaterialIcons,
+  FontAwesome,
+  Feather,
+  FontAwesome6,
+  FontAwesome5,
+} from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { API_URL } from "../../api/ApiUrl";
@@ -17,6 +24,14 @@ import Footer from "../../components/Footer";
 import Loading from "../../components/Loading";
 import Identity from "../../components/IdentificationPage";
 import IDVerificationUploadScreen from "../GeneralSetting/IDVerificationUploadScreen";
+import ContactInfo from "../../components/ContactInfo";
+//import GoogleMap from "../../components/GoogleMap";
+import GradientButton from "../../components/GradientButton";
+import BorderButton from "../../components/BorderButton";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
+import FilePreview from "../../components/FilePreview";
+import {toastSuccess, toastError, toastInfo, toastWarning} from "../../utils/toast";
 
 const EmployeeVerification = () => {
   const [selected, setSelected] = useState([]);
@@ -26,6 +41,9 @@ const EmployeeVerification = () => {
   const [activeStep, setActiveStep] = useState(null);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [resumeFile, setResumeFile] = useState(null);
+  const [postal, setPostal] = useState("");
+  const [location, setLocation] = useState("");
 
   const fectchVerfication = async () => {
     setLoading(true);
@@ -53,17 +71,93 @@ const EmployeeVerification = () => {
   }, []);
 
   const isVerified = (step) => {
-    return userDetails?.verification_count >= step;
+    return step <= userDetails?.verification_count;
+  };
+
+  const isActive = (step) => {
+    return step === userDetails?.verification_count + 1;
+  };
+
+  const isDisabled = (step) => {
+    return step > userDetails?.verification_count + 1;
   };
 
   const handleStepPress = (step) => {
-    if (isVerified(step)) return;
-    if (step !== userDetails?.verification_count + 1) {
-     // alert("Please complete previous verification first");
-      return;
-    }
+    // allow click only on active step
+    if (!isActive(step)) return;
 
     setActiveStep(step);
+  };
+
+  const getBoxStyle = (step) => {
+    if (isVerified(step)) return styles.verified;
+    if (isActive(step)) return styles.active;
+    return styles.unverified;
+  };
+
+  const getTextStyle = (step) => {
+    if (isVerified(step) || isActive(step)) return styles.activeText;
+    return styles.disabledText;
+  };
+
+  const getIconColor = (step) => {
+    if (isVerified(step) || isActive(step)) return "#fff";
+    return "#c3c3c3";
+  };
+
+  const pickResume = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: "application/pdf",
+    });
+
+    if (!result.canceled && result.assets?.length > 0) {
+      setResumeFile(result.assets[0]);
+    }
+  };
+
+  const removeResume = () => {
+    setResumeFile(null);
+  };
+
+  const submitContactInfo = async () => {
+    if (!postal || !location) {
+      alert("Fill the  all Input");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("postal_code", postal);
+    formData.append("searchInput", location);
+    formData.append("images", {
+      uri: resumeFile.uri,
+      name: resumeFile.name,
+      type: "application/pdf",
+    });
+    try {
+      setSubmitting(true);
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/step4-post`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+
+      const result = await res.json();
+
+      if (result.status == 200) {
+        alert("Contact info saved successfully");
+      } else {
+        alert(result.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.error("API Error:", error);
+      toastWarning("netweork error")
+      
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -73,203 +167,180 @@ const EmployeeVerification = () => {
         {loading ? (
           <Loading />
         ) : (
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: "95" }}
+          >
             <Text style={styles.sectionTitle}>Your Verification Level</Text>
             <Text style={styles.description}>
-              Higher Verification levels increase your chances of landing a job
-              or finding employees, Showing you higher in search results,
-              Enabling you to gain others trust easier, and enhancing your
-              Djobzy Experience.
+              Higher verification levels increase your chances of landing jobs,
+              improve trust, and enhance your Djobzy experience.
             </Text>
             <View style={styles.row}>
               <TouchableOpacity
-                style={[
-                  styles.box,
-                  isVerified(1) ? styles.verified : styles.unverified,
-                ]}
-                onPress={handleStepPress(1)}
-                
+                style={[styles.box, getBoxStyle(1)]}
+                onPress={() => handleStepPress(1)}
+                disabled={isDisabled(1)}
               >
                 <View style={styles.topRow}>
-                  <Text
-                    style={[styles.label, isVerified(1) && styles.activeText]}
-                  >
-                    Email
-                  </Text>
+                  <Text style={[styles.label, getTextStyle(1)]}>Email</Text>
                   <FontAwesome
                     name="envelope"
                     size={18}
-                    color={isVerified(1) ? "#fff" : "#c3c3c3"}
+                    color={getIconColor(1)}
                   />
                 </View>
-                <Text
-                  style={[styles.number, isVerified(1) && styles.activeText]}
-                >
-                  01
-                </Text>
+                <Text style={[styles.number, getTextStyle(1)]}>01</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
-                style={[
-                  styles.box,
-                  isVerified(2) ? styles.verified : styles.unverified,
-                ]}
+                style={[styles.box, getBoxStyle(2)]}
+                onPress={() => handleStepPress(2)}
+                disabled={isDisabled(2)}
               >
                 <View style={styles.topRow}>
-                  <Text
-                    style={[styles.label, isVerified(1) && styles.activeText]}
-                  >
+                  <Text style={[styles.label, getTextStyle(2)]}>
                     Phone Number
                   </Text>
-                  <Feather
-                    name="phone"
-                    size={18}
-                    color={isVerified(2) ? "#fff" : "#c3c3c3"}
-                  />
+                  <Feather name="phone" size={18} color={getIconColor(2)} />
                 </View>
-                <Text
-                  style={[styles.number, isVerified(1) && styles.activeText]}
-                >
-                  02
-                </Text>
+                <Text style={[styles.number, getTextStyle(2)]}>02</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.row}>
               <TouchableOpacity
-                style={[
-                  styles.box,
-                  isVerified(3) ? styles.verified : styles.unverified,
-                ]}
+                style={[styles.box, getBoxStyle(3)]}
+                onPress={() => handleStepPress(3)}
+                disabled={isDisabled(3)}
               >
                 <View style={styles.topRow}>
-                  <Text
-                    style={[styles.label, isVerified(1) && styles.activeText]}
-                  >
+                  <Text style={[styles.label, getTextStyle(3)]}>
                     Social Media Accounts
                   </Text>
                   <Ionicons
                     name="person-sharp"
                     size={18}
-                    color={isVerified(3) ? "#fff" : "#c3c3c3"}
+                    color={getIconColor(3)}
                   />
                 </View>
-                <Text
-                  style={[styles.number, isVerified(1) && styles.activeText]}
-                >
-                  03
-                </Text>
+                <Text style={[styles.number, getTextStyle(3)]}>03</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
-                style={[
-                  styles.box,
-                  isVerified(4) ? styles.verified : styles.unverified,
-                ]}
+                style={[styles.box, getBoxStyle(4)]}
+                onPress={() => handleStepPress(4)}
+                disabled={isDisabled(4)}
               >
                 <View style={styles.topRow}>
-                  <Text
-                    style={[styles.label, isVerified(1) && styles.activeText]}
-                  >
-                    Address
-                  </Text>
+                  <Text style={[styles.label, getTextStyle(4)]}>Address</Text>
                   <FontAwesome6
                     name="book-bookmark"
                     size={18}
-                    color={isVerified(4) ? "#fff" : "#c3c3c3"}
+                    color={getIconColor(4)}
                   />
                 </View>
                 <Text style={styles.time}>1-2 min</Text>
-                <Text
-                  style={[styles.number, isVerified(1) && styles.activeText]}
-                >
-                  04
-                </Text>
+                <Text style={[styles.number, getTextStyle(4)]}>04</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.row}>
               <TouchableOpacity
-                style={[
-                  styles.box,
-                  isVerified(5) ? styles.verified : styles.unverified,
-                ]}
+                style={[styles.box, getBoxStyle(5)]}
                 onPress={() => handleStepPress(5)}
+                disabled={isDisabled(5)}
               >
                 <View style={styles.topRow}>
-                  <Text
-                    style={[styles.label, isVerified(1) && styles.activeText]}
-                  >
+                  <Text style={[styles.label, getTextStyle(5)]}>
                     ID Card & Certificates
                   </Text>
                   <FontAwesome6
                     name="contact-card"
                     size={18}
-                    color={isVerified(5) ? "#fff" : "#c3c3c3"}
+                    color={getIconColor(5)}
                   />
                 </View>
                 <Text style={styles.time}>1-2 min</Text>
-                <Text
-                  style={[styles.number, isVerified(1) && styles.activeText]}
-                >
-                  05
-                </Text>
+                <Text style={[styles.number, getTextStyle(5)]}>05</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
-                style={[
-                  styles.box,
-                  isVerified(6) ? styles.verified : styles.unverified,
-                ]}
-                 
+                style={[styles.box, getBoxStyle(6)]}
+                onPress={() => handleStepPress(6)}
+                disabled={isDisabled(6)}
               >
                 <View style={styles.topRow}>
-                  <Text style={styles.label}>
-                    Credit / Debit Card Verification
+                  <Text style={[styles.label, getTextStyle(6)]}>
+                    Credit / Debit Card
                   </Text>
                   <FontAwesome
                     name="credit-card-alt"
                     size={18}
-                    color={isVerified(6) ? "#fff" : "#c3c3c3"}
+                    color={getIconColor(6)}
                   />
                 </View>
                 <Text style={styles.time}>1-2 min</Text>
-                <Text
-                  style={[styles.number, isVerified(1) && styles.activeText]}
-                >
-                  06
-                </Text>
+                <Text style={[styles.number, getTextStyle(6)]}>06</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.row}>
               <TouchableOpacity
-                style={[
-                  styles.box,
-                  isVerified(7) ? styles.verified : styles.unverified,
-                ]}
+                style={[styles.box, getBoxStyle(7)]}
+                onPress={() => handleStepPress(7)}
+                disabled={isDisabled(7)}
               >
                 <View style={styles.topRow}>
-                  <Text style={styles.label}>Interview & Background Check</Text>
+                  <Text style={[styles.label, getTextStyle(7)]}>
+                    Interview & Background Check
+                  </Text>
                   <FontAwesome5
                     name="users"
                     size={18}
-                    color={isVerified(7) ? "#fff" : "#c3c3c3"}
+                    color={getIconColor(7)}
                   />
                 </View>
                 <Text style={styles.time}>1-2 min</Text>
-                <Text
-                  style={[styles.number, isVerified(1) && styles.activeText]}
-                >
-                  07
-                </Text>
+                <Text style={[styles.number, getTextStyle(7)]}>07</Text>
               </TouchableOpacity>
             </View>
+            {activeStep === 3 && (
+              <View style={styles.inputSection}>
+                <Text style={styles.inputTitle}>Social Media Accounts</Text>
+                <TextInput
+                  placeholder="Enter Facebook / LinkedIn URL"
+                  placeholderTextColor="#9e9e9e"
+                  style={styles.input}
+                />
+              </View>
+            )}
+            {activeStep === 4 && (
+              <View style={styles.inputSection}>
+                <ContactInfo
+                  postalCodeValue={postal}
+                  onChangePostalCode={setPostal}
+                  locationValue={location}
+                  onChangeLocation={setLocation}
+                  showPhone={false}
+                />
+                {/* <GoogleMap /> */}
+                <View style={{ paddingBottom: 10 }}>
+                  <BorderButton
+                    title="Uplaod the document to verify"
+                    onPress={pickResume}
+                  />
+                  <FilePreview file={resumeFile} onPress={removeResume} />
+                  <GradientButton
+                    disabled={submitting}
+                    loading={submitting}
+                    title="Send"
+                    onPress={submitContactInfo}
+                  />
+                </View>
+              </View>
+            )}
+            {activeStep === 5 && (
+              <View style={styles.inputSection}>
+                <Text style={styles.inputTitle}>Upload ID Card</Text>
 
-           {
-            activeStep == 5 &&(
-              <>
-              </>
-             
-            )
-           }
+                <IDVerificationUploadScreen />
+              </View>
+            )}
           </ScrollView>
         )}
       </View>
@@ -318,12 +389,17 @@ const styles = StyleSheet.create({
     padding: 10,
     justifyContent: "space-between",
   },
-  verified: {
-    backgroundColor: "#46A282",
-  },
+  verified: { backgroundColor: "#46A282" },
+  active: { backgroundColor: "#333" },
   unverified: {
-    backgroundColor: "#565656",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
   },
+  activeText: {
+    color: "#fff",
+    fontFamily: "Montserrat_600SemiBold",
+  },
+  disabledText: { color: "#9e9e9e" },
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",

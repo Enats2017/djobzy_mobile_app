@@ -9,7 +9,9 @@ import {
 } from "react-native";
 import GradientButton from "../../components/GradientButton";
 
-export default function PaypalWithdraw() {
+export default function PaypalWithdraw({
+ button = "Request a Withdraw"
+}) {
   const [paypalId, setPaypalId] = useState("");
 
   const handlePaypalSubmit = () => {
@@ -35,7 +37,7 @@ export default function PaypalWithdraw() {
         onChangeText={setPaypalId}
       />
 
-      <GradientButton title="Request a Withdraw" onPress={handlePaypalSubmit} />
+      <GradientButton title={button} onPress={handlePaypalSubmit} />
     </View>
   );
 }

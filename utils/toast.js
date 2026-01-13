@@ -15,13 +15,21 @@ export const toastError = (title, msg = "") => {
     text1: title,
     text2: msg,
     position: "top",
-  
   });
 };
 
 export const toastInfo = (title, msg = "") => {
   Toast.show({
     type: "info",
+    text1: title,
+    text2: msg,
+    position: "top",
+  });
+};
+
+export const toastWarning = (title, msg = "") => {
+  Toast.show({
+    type: "warning",
     text1: title,
     text2: msg,
     position: "top",

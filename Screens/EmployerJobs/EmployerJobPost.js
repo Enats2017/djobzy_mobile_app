@@ -48,7 +48,8 @@ export default function EmployerJobPost() {
             <PageNameHeaderBar navigation={navigation} title="My Job Posts" />
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.viewBoostedJobsBtn} onPress={()=>navigation.navigate("ViewBoostJobs")}>
+            {/* onPress={()=>navigation.navigate("ViewBoostJobs")} */}
+            <TouchableOpacity style={styles.viewBoostedJobsBtn} >
               <Text style={styles.viewBoostedJobsText}>View Boosted Jobs</Text>
             </TouchableOpacity>
           </View>

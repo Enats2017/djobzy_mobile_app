@@ -23,6 +23,7 @@ import ReviewPage from "./ReviewPage";
 import Footer from "../../components/Footer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Loading from "../../components/Loading";
+import EmployerFooter from "../../components/EmployerFooter";
 
 const CreateJob = () => {
   const [titleError, setTitleError] = useState(false);
@@ -419,11 +420,11 @@ const CreateJob = () => {
             style={[styles.button, { borderColor: "#ccc", borderWidth: 1 }]}
             onPress={handleBack}
           >
-            <Text style={styles.buttonText}>Back</Text>
+            <Text style={styles.buttonText}> {activeTab === 0 ? "Cancel the Job Post " : "Back"}</Text>
           </TouchableOpacity>
         </View>
 
-        <Footer />
+        <EmployerFooter/>
       </SafeAreaView>
     </>
   );
@@ -490,21 +491,21 @@ const styles = StyleSheet.create({
   },
   stepText: {
     fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
   },
   activeText: {
     color: "#F9B233",
-    fontWeight: "500",
-    fontFamily: "Montserrat",
+    fontFamily: "Montserrat_500Medium",
     fontSize: 12,
   },
   inactiveText: {
     color: "#999999",
-    fontFamily: "Montserrat",
+    fontFamily: "Montserrat_500Medium",
     fontSize: 12,
   },
   completedText: {
     color: "#F9B233",
-    fontFamily: "Montserrat",
+     fontFamily: "Montserrat_500Medium",
     fontSize: 12,
   },
   line: {
@@ -527,13 +528,11 @@ const styles = StyleSheet.create({
   sectionBtn: {
     flexDirection: "column",
     gap: 15,
-    paddingTop: 5,
+    paddingTop: 15,
     paddingHorizontal: 15,
-
-    paddingBottom: 100,
+    paddingBottom: 95,
   },
   button: {
-    marginHorizontal: 5,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",

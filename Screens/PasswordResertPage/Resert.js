@@ -12,21 +12,22 @@ import {
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import GradientButton from "../../components/GradientButton";
+import { useNavigation } from "@react-navigation/native";
 
 const Resert = ({ onNext }) => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigation = useNavigation();
 
   const handleForgotPassword = async () => {
     if (!email) {
       setError("Please enter your email address");
       return;
     }
-
     setLoading(true);
     setError("");
-
     try {
       const response = await fetch(`${API_URL}/forgot-password`, {
         method: "POST",
@@ -36,9 +37,7 @@ const Resert = ({ onNext }) => {
         },
         body: JSON.stringify({ email }),
       });
-
-      const data = await response.json(); // ✅ IMPORTANT
-
+      const data = await response.json(); 
       if (response.ok && data.status === true) {
         Alert.alert("Success", data.message);
         onNext(email);
@@ -55,11 +54,12 @@ const Resert = ({ onNext }) => {
   return (
     <>
       <View style={styles.heading}>
-        <Text style={styles.title}>Reset Password</Text>
-        <Text style={styles.subtitle}>
-          Enter the email associated with your account and well send
-          instructions to reset your
-        </Text>
+        <View style={ styles.section}>
+          <Text style={styles.title}>Reset Password</Text>
+          <Text style={styles.subtitle}>
+            Enter the email associated with your account and we’ll send instuctions to reset your password.
+          </Text>
+        </View>
 
         <View style={styles.emalInput}>
           <Text style={styles.label}>Email</Text>
@@ -87,55 +87,63 @@ const Resert = ({ onNext }) => {
               />
             )}
           </View>
-
+          
           {error ? (
             <Text style={{ color: "#d81818ff", fontSize: 15, padding: 7 }}>
               {error}
             </Text>
           ) : null}
 
-          <TouchableOpacity
-            style={styles.loginBtn}
+          <GradientButton 
+            marginTop={22} 
+            title="Send Email"  
+            disabled={loading} 
+            loading={loading} 
             onPress={handleForgotPassword}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Send Email</Text>
-            )}
-          </TouchableOpacity>
+          />
         </View>
-        <View></View>
+        <TouchableOpacity style={styles.remember} onPress={()=>navigation.goBack()}>
+          <Text style={styles.rembertext}>Remember Password?{" "}<Text style={{color:"#C96B59"}}>Login</Text></Text>        
+        </TouchableOpacity>
       </View>
     </>
   );
 };
 const styles = StyleSheet.create({
+
+  section:{
+
+   alignItems:"center",
+
+  },
   title: {
-    fontSize: 29,
+    fontSize: 35,
     color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-    top: 30,
+   fontFamily:"Montserrat_600SemiBold",
+   
+    
+    top: 25,
+    marginBottom:12,
   },
   subtitle: {
-    fontSize: 16,
-    color: "#f6f0f0ff",
-    textAlign: "center",
-    marginHorizontal: 20,
+    fontSize: 15,
+    color: "#fff",
+   textAlign:"center",
+    fontFamily:"Montserrat_600SemiBold",
     padding: 10,
-    top: 25,
+    lineHeight:"24"
+  
   },
   emalInput: {
-    margin: 15,
-    padding: 8,
-    top: 30,
+   
+    paddingTop:25
+    
   },
   label: {
     color: "#fff",
-    alignSelf: "flex-start",
-    padding: 5,
-    fontSize: 17,
+    fontFamily:"Montserrat_600SemiBold",
+    fontSize:16,
+    padding:2,  
   },
   input: {
     width: "100%",
@@ -145,16 +153,15 @@ const styles = StyleSheet.create({
 
     paddingHorizontal: 12,
   },
-  loginBtn: {
-    width: "100%",
-    height: 50,
-    backgroundColor: "#f49696eb",
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginVertical: 20,
+  remember:{
+    alignItems:"center",
+    paddingTop:20
   },
-  loginText: { color: "#fff", fontWeight: "bold", fontSize: 19 },
+    rembertext:{
+      fontFamily:"Montserrat_400Regular",
+      fontSize:14,
+      color:"#fff",
+    }
 });
 
 export default Resert;

@@ -55,6 +55,7 @@ const ChangeMyOffer = () => {
       const response = await fetch(`${API_URL}/save-change-apply`, {
         method: "POST",
         headers: {
+           Accept :"application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -127,7 +128,7 @@ const ChangeMyOffer = () => {
       <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
         <View style={styles.container}>
           <PageNameHeaderBar navigation={navigation} title="Change My Offer" />
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:80}}>
             <View style={styles.titleheader}>
               <Text style={styles.title}>{award.subject}</Text>
             </View>
@@ -263,7 +264,7 @@ const ChangeMyOffer = () => {
             </TouchableOpacity>
           </ScrollView>
           <View style={styles.footerbtn}>
-            <GradientButton title="send" onPress={handleSubmitOffer} />
+            <GradientButton title="send" onPress={handleSubmitOffer} disabled={submitting} loading={submitting} />
             <BorderButton title="Revoke My Bid" />
           </View>
         </View>

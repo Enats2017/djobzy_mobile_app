@@ -11,6 +11,7 @@ import Toast from "react-native-toast-message";
 import { toastConfig } from "./utils/toastConfig";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+import { MessageNotificationProvider } from "./context/MessageNotificationContext";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Home from "./Screens/HomeScreen/Home";
@@ -67,8 +68,8 @@ import UserSecurity from "./Screens/GeneralSetting/UserSecurity";
 import IDVerificationUploadScreen from "./Screens/GeneralSetting/IDVerificationUploadScreen";
 import EmployerProfilePage from "./Screens/EmployerHirePage/EmployerProfilePage";
 import ViewHirePage from "./Screens/EmployerHirePage/ViewHirePage";
-import FeedChat from "./Screens/SocialMediaPage/FeedChat";
-import ChatCommunication from "./Screens/SocialMediaPage/ChatCommunication";
+import ChatList from "./Screens/Chat/ChatList";
+import ChatRoom from "./Screens/Chat/ChatRoom";
 import CreateFeedPost from "./Screens/SocialMediaPage/CreateFeedPost";
 import NotificationScreen from "./Screens/Notification/NotificationScreen";
 import Followers from "./Screens/SocialMediaPage/Followers";
@@ -107,81 +108,83 @@ const App = () => {
   }
   return (
     <View style={{ flex: 1 }}>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Home"
-          screenOptions={{ headerShown: false }}
-        >
-          <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="SliderScreen" component={SliderScreen} />
-          <Stack.Screen name="FourthScreen" component={FourthScreen} />
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="Signup" component={Signup} />
-          <Stack.Screen name="Dashboard" component={Dashboard} />
-          <Stack.Screen name="CreateJob" component={CreateJob} />
-          <Stack.Screen name="JobProfile" component={JobProfile} />
-          <Stack.Screen name="JobApply" component={JobApplyPage} />
-          <Stack.Screen name="MyJobPage" component={MyJobPage} />
-          <Stack.Screen name="EmployerDashboard" component={EmployerDashboard} />
-          <Stack.Screen name="EmployerContracts" component={EmployerContracts} />
-          <Stack.Screen name="EmployerJobPost" component={EmployerJobPost} />
-          <Stack.Screen name="DeactivatedJobs" component={DeactivatedJobs} />
-          <Stack.Screen name="Wallet" component={Wallet} />
-          <Stack.Screen name="MyFindJobs" component={MyFindJobs} />
-          <Stack.Screen name="JobPublishedPage" component={JobPublishedPage} />
-          <Stack.Screen name="JobBoostPaymentSection" component={JobBoostPaymentSection} />
-          <Stack.Screen name="MyCurrentBiddingProfile" component={MyCurrentBiddingProfile} />
-          <Stack.Screen name="ChangeMyOffer" component={ChangeMyOffer} />
-          <Stack.Screen name="ViewCompletedJobPost" component={ViewCompletedJobPost} />
-          <Stack.Screen name="CompletedJobPaymentPage" component={CompletedJobPaymentPage} />
-          <Stack.Screen name="ViewReceivedOffer" component={ViewReceivedOffer} />
-          <Stack.Screen name="MakeNewOffer" component={MakeNewOffer} />
-          <Stack.Screen name="AcceptReceivedOfferPage" component={AcceptReceivedOfferPage} />
-          <Stack.Screen name="ViewCurrentJobPost" component={ViewCurrentJobPost} />
-          <Stack.Screen name="CurrentJobPaymentPage" component={CurrentJobPaymentPage} />
-          <Stack.Screen name="Details" component={Details} />
-          <Stack.Screen name="VerificationPage" component={VerificationPage} />
-          <Stack.Screen name="PasswordResert" component={PasswordResert} />
-          <Stack.Screen name="ProfileMenu" component={ProfileMenu} />
-          <Stack.Screen name="PromoteService" component={PromoteService} />
-          <Stack.Screen name="PromoteCategoryPage" component={PromoteCategoryPage} />
-          <Stack.Screen name="EmployeeAccount" component={EmployeeAccount} />
-          <Stack.Screen name="EmployeeVerification" component={EmployeeVerification} />
-          <Stack.Screen name="ProfileReviewPage" component={ProfileReviewPage} />
-          <Stack.Screen name="ReferralWallet" component={ReferralWallet} />
-          <Stack.Screen name="BlogPage" component={BlogPage} />
-          <Stack.Screen name="PostJobDetails" component={PostJobDetails} />
-          <Stack.Screen name="ReceiveApplication" component={ReceiveApplication} />
-          <Stack.Screen name="EmployerSentOffer" component={EmployerSentOffer} />
-          <Stack.Screen name="ProfileEditPage" component={ProfileEditPage} />
-          <Stack.Screen name="ProfileBoostPage" component={ProfileBoostPage} />
-          <Stack.Screen name="GeneralSetting" component={GeneralSetting} />
-          <Stack.Screen name="IdentityVerification" component={IdentityVerification} />
-          <Stack.Screen name="AccountSetting" component={AccountSetting} />
-          <Stack.Screen name="UserContactInfo" component={UserContactInfo} />
-          <Stack.Screen name="UserPaymentPage" component={UserPaymentPage} />
-          <Stack.Screen name="UserNotification" component={UserNotification} />
-          <Stack.Screen name="UserSecurity" component={UserSecurity} />
-          <Stack.Screen name="IDVerificationUploadScreen" component={IDVerificationUploadScreen} />
-          <Stack.Screen name="EmployerProfilePage" component={EmployerProfilePage} />
-          <Stack.Screen name="ViewHirePage" component={ViewHirePage} />
-          <Stack.Screen name="FeedChat" component={FeedChat} />
-          <Stack.Screen name="ChatCommunication" component={ChatCommunication} />
-          <Stack.Screen name="CreateFeedPost" component={CreateFeedPost} />
-          <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
-          <Stack.Screen name="Followers" component={Followers} />
-          <Stack.Screen name="SendJobOffer" component={SendJobOffer} />
-          <Stack.Screen name="DeactivedDetailsPage" component={DeactivedDetailsPage} />
-          <Stack.Screen name="ActiveContract" component={ActiveContract} />
-          <Stack.Screen name="ViewBoostJobs" component={ViewBoostJobs} />
-          <Stack.Screen name="ProfileSetting" component={ProfileSetting} />
-          <Stack.Screen name="EmployerAccount" component={EmployerAccount} />
-          <Stack.Screen name="PublicEmployeeProfile" component={PublicEmployeeProfile} />
-          <Stack.Screen name="PromoteServicesDetails" component={PromoteServicesDetails} />
-          <Stack.Screen name="EditPromoteSevices" component={EditPromoteSevices} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <MessageNotificationProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={{ headerShown: false }}
+          >
+            <Stack.Screen name="Home" component={Home} />
+            <Stack.Screen name="SliderScreen" component={SliderScreen} />
+            <Stack.Screen name="FourthScreen" component={FourthScreen} />
+            <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen name="Signup" component={Signup} />
+            <Stack.Screen name="Dashboard" component={Dashboard} />
+            <Stack.Screen name="CreateJob" component={CreateJob} />
+            <Stack.Screen name="JobProfile" component={JobProfile} />
+            <Stack.Screen name="JobApply" component={JobApplyPage} />
+            <Stack.Screen name="MyJobPage" component={MyJobPage} />
+            <Stack.Screen name="EmployerDashboard" component={EmployerDashboard} />
+            <Stack.Screen name="EmployerContracts" component={EmployerContracts} />
+            <Stack.Screen name="EmployerJobPost" component={EmployerJobPost} />
+            <Stack.Screen name="DeactivatedJobs" component={DeactivatedJobs} />
+            <Stack.Screen name="Wallet" component={Wallet} />
+            <Stack.Screen name="MyFindJobs" component={MyFindJobs} />
+            <Stack.Screen name="JobPublishedPage" component={JobPublishedPage} />
+            <Stack.Screen name="JobBoostPaymentSection" component={JobBoostPaymentSection} />
+            <Stack.Screen name="MyCurrentBiddingProfile" component={MyCurrentBiddingProfile} />
+            <Stack.Screen name="ChangeMyOffer" component={ChangeMyOffer} />
+            <Stack.Screen name="ViewCompletedJobPost" component={ViewCompletedJobPost} />
+            <Stack.Screen name="CompletedJobPaymentPage" component={CompletedJobPaymentPage} />
+            <Stack.Screen name="ViewReceivedOffer" component={ViewReceivedOffer} />
+            <Stack.Screen name="MakeNewOffer" component={MakeNewOffer} />
+            <Stack.Screen name="AcceptReceivedOfferPage" component={AcceptReceivedOfferPage} />
+            <Stack.Screen name="ViewCurrentJobPost" component={ViewCurrentJobPost} />
+            <Stack.Screen name="CurrentJobPaymentPage" component={CurrentJobPaymentPage} />
+            <Stack.Screen name="Details" component={Details} />
+            <Stack.Screen name="VerificationPage" component={VerificationPage} />
+            <Stack.Screen name="PasswordResert" component={PasswordResert} />
+            <Stack.Screen name="ProfileMenu" component={ProfileMenu} />
+            <Stack.Screen name="PromoteService" component={PromoteService} />
+            <Stack.Screen name="PromoteCategoryPage" component={PromoteCategoryPage} />
+            <Stack.Screen name="EmployeeAccount" component={EmployeeAccount} />
+            <Stack.Screen name="EmployeeVerification" component={EmployeeVerification} />
+            <Stack.Screen name="ProfileReviewPage" component={ProfileReviewPage} />
+            <Stack.Screen name="ReferralWallet" component={ReferralWallet} />
+            <Stack.Screen name="BlogPage" component={BlogPage} />
+            <Stack.Screen name="PostJobDetails" component={PostJobDetails} />
+            <Stack.Screen name="ReceiveApplication" component={ReceiveApplication} />
+            <Stack.Screen name="EmployerSentOffer" component={EmployerSentOffer} />
+            <Stack.Screen name="ProfileEditPage" component={ProfileEditPage} />
+            <Stack.Screen name="ProfileBoostPage" component={ProfileBoostPage} />
+            <Stack.Screen name="GeneralSetting" component={GeneralSetting} />
+            <Stack.Screen name="IdentityVerification" component={IdentityVerification} />
+            <Stack.Screen name="AccountSetting" component={AccountSetting} />
+            <Stack.Screen name="UserContactInfo" component={UserContactInfo} />
+            <Stack.Screen name="UserPaymentPage" component={UserPaymentPage} />
+            <Stack.Screen name="UserNotification" component={UserNotification} />
+            <Stack.Screen name="UserSecurity" component={UserSecurity} />
+            <Stack.Screen name="IDVerificationUploadScreen" component={IDVerificationUploadScreen} />
+            <Stack.Screen name="EmployerProfilePage" component={EmployerProfilePage} />
+            <Stack.Screen name="ViewHirePage" component={ViewHirePage} />
+            <Stack.Screen name="ChatList" component={ChatList} />
+            <Stack.Screen name="ChatRoom" component={ChatRoom} />
+            <Stack.Screen name="CreateFeedPost" component={CreateFeedPost} />
+            <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
+            <Stack.Screen name="Followers" component={Followers} />
+            <Stack.Screen name="SendJobOffer" component={SendJobOffer} />
+            <Stack.Screen name="DeactivedDetailsPage" component={DeactivedDetailsPage} />
+            <Stack.Screen name="ActiveContract" component={ActiveContract} />
+            <Stack.Screen name="ViewBoostJobs" component={ViewBoostJobs} />
+            <Stack.Screen name="ProfileSetting" component={ProfileSetting} />
+            <Stack.Screen name="EmployerAccount" component={EmployerAccount} />
+            <Stack.Screen name="PublicEmployeeProfile" component={PublicEmployeeProfile} />
+            <Stack.Screen name="PromoteServicesDetails" component={PromoteServicesDetails} />
+            <Stack.Screen name="EditPromoteSevices" component={EditPromoteSevices} />
+          </Stack.Navigator>
+        </NavigationContainer>
         <Toast config={toastConfig} />
+      </MessageNotificationProvider>
     </View>
   );
 };

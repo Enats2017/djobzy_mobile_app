@@ -181,7 +181,7 @@ const EmployeeProfileMenu = () => {
                   <MenuItem icon="wallet-outline" title="Wallet" onPress={() => navigation.navigate("Wallet")} />
                   <MenuItem icon="settings-outline" title="Setting" onPress={() => navigation.navigate("GeneralSetting")} />
                   <MenuItem icon="gift-outline" title="Referral wallet" onPress={() => navigation.navigate("ReferralWallet")} />
-                  <MenuItem icon="chatbubble-ellipses-outline" title="Chat" onPress={() => navigation.navigate("FeedChat")} />
+                  <MenuItem icon="chatbubble-ellipses-outline" title="Chat" onPress={() => navigation.navigate("ChatList")} />
                   <MenuItem icon="document-outline" title="Blog" onPress={() => navigation.navigate("BlogPage")} />
                 </View>
                 <TouchableOpacity style={styles.logoutContainer} onPress={handleLogout}>

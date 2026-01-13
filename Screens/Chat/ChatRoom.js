@@ -1,4 +1,4 @@
-// ChatScreenHardcodedExact.js
+
 import React from "react";
 import {
   View,
@@ -15,15 +15,24 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "../../components/Footer";
+import { useNavigation } from '@react-navigation/native';
+import { useNotifications } from "../../context/MessageNotificationContext";
 
-export default function ChatCommunication() {
-  
+export default function ChatList() {
+  const navigation = useNavigation();
+  const { messageCount, notifications, loading } = useNotifications();
+
   return (
-       <SafeAreaView style={{flex:1}}>
+    <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
         <View style={styles.header}>
           <View style={styles.headerLeft}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <View style={styles.arrow}>
+                <Ionicons name="chevron-back" size={30} color="#ffffff" />
+              </View>
+            </TouchableOpacity>
             <Image
               source={{ uri: "https://randomuser.me/api/portraits/women/44.jpg" }}
               style={styles.headerAvatar}
@@ -41,7 +50,7 @@ export default function ChatCommunication() {
         <View style={styles.divider} />
         <ScrollView
           style={styles.messagesWrap}
-          contentContainerStyle={{ padding: 16, paddingBottom: 140 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Date label */}
@@ -57,16 +66,6 @@ export default function ChatCommunication() {
                   egestas ut porttitor tortor aliquet massa.
                 </Text>
               </View>
-
-              {/* reaction chip centered on bottom border */}
-              <View style={styles.centerReactionLeft}>
-                <View style={styles.reactionChip}>
-                  <Text style={styles.reactionEmoji}>👍</Text>
-                </View>
-                <View style={[styles.reactionChip, { marginLeft: 8 }]}>
-                  <Text style={styles.reactionEmoji}>🔥</Text>
-                </View>
-              </View>
             </View>
 
             <Text style={styles.msgTimeLeft}>08:23 AM</Text>
@@ -79,13 +78,6 @@ export default function ChatCommunication() {
                 <Text style={styles.bubbleRightText}>
                   Auctor urna, varius duis suspendisse mi in dictum
                 </Text>
-              </View>
-
-              {/* reaction chip centered on bottom border of right bubble */}
-              <View style={styles.centerReactionRight}>
-                <View style={[styles.reactionChipRight]}>
-                  <Text style={[styles.reactionEmoji, { color: "#fff" }]}>👍</Text>
-                </View>
               </View>
             </View>
 
@@ -100,14 +92,8 @@ export default function ChatCommunication() {
                   Auctor urna, varius duis suspendisse mi in
                 </Text>
               </View>
-
-              <View style={styles.centerReactionLeft}>
-                <View style={styles.reactionChip}>
-                  <Text style={styles.reactionEmoji}>😊</Text>
-                </View>
-              </View>
             </View>
-              <Text style={styles.msgTimeLeft}>10:00 AM</Text>
+            <Text style={styles.msgTimeLeft}>10:00 AM</Text>
 
           </View>
           <View style={styles.rowRight}>
@@ -117,13 +103,7 @@ export default function ChatCommunication() {
                   Auctor urna, varius duis suspendisse mi in dictum
                 </Text>
               </View>
-
-              <View style={styles.centerReactionRight}>
-                <View style={[styles.reactionChipRight]}>
-                  <Text style={[styles.reactionEmoji, { color: "#fff" }]}>🔥</Text>
-                </View>
-              </View>
-            <Text style={styles.msgTimeRight}>09:00 AM</Text>
+              <Text style={styles.msgTimeRight}>09:00 AM</Text>
             </View>
           </View>
         </ScrollView>
@@ -141,7 +121,7 @@ export default function ChatCommunication() {
               placeholder="Send your message..."
               placeholderTextColor="rgba(255,255,255,0.6)"
               editable={true}
-              // hard-coded placeholder; you may connect state if desired
+            // hard-coded placeholder; you may connect state if desired
             />
             <TouchableOpacity style={styles.sendBtn} activeOpacity={0.7}>
               <Ionicons name="send" size={18} color="#fff" />
@@ -149,7 +129,6 @@ export default function ChatCommunication() {
           </View>
         </KeyboardAvoidingView>
       </View>
-      
     </SafeAreaView>
   );
 }
@@ -160,6 +139,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#222222",
   },
+  arrow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 25,
+    borderRadius: 100,
+  },
   header: {
     height: 78,
     paddingHorizontal: 16,
@@ -167,12 +153,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  headerLeft: { flex:1,flexDirection: "row", alignItems: "center" },
-  headerAvatar: { width: 44, height: 44, borderRadius: 22 },
+  headerLeft: { flex: 1, flexDirection: "row", alignItems: "center" },
+  headerAvatar: { marginLeft: 10, width: 44, height: 44, borderRadius: 22 },
   headerName: { color: "#fff", fontSize: 16, fontWeight: "600" },
   headerStatus: { color: "#2dd36f", fontSize: 12, marginTop: 2 },
   headerIcon: { padding: 8 },
-  divider: { height: 0.5, backgroundColor: "rgba(255,255,255,0.06)" },
+  divider: { height: 1, backgroundColor: "#ffffff1e" },
 
   messagesWrap: { flex: 1 },
 
@@ -235,7 +221,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderBottomRightRadius: 4,
   },
-  bubbleRightText: { color: "#fff", fontSize: 14, lineHeight: 20 },
+  bubbleRightText: { color: "#fff", fontSize: 10, lineHeight: 20 },
   centerReactionRight: {
     position: "absolute",
     bottom: -12,

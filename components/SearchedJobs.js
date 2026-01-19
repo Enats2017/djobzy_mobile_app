@@ -1,29 +1,59 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { API_ICON } from "../api/ApiUrl";
+import { Ionicons } from "@expo/vector-icons";
 
 const SearchedJobs = ({ data }) => {
   const navigation = useNavigation();
 
+  const orderedData = [
+    ...data.filter(item => item.type === "job"),
+    ...data.filter(item => item.type === "service"),
+  ];
+
   return (
     <View>
-      <Text style={styles.heading}>Jobs</Text>
+      {orderedData.map((item, index) => {
+        if (item.type === "job") {
+          return (
+            <TouchableOpacity
+              key={`job-${index}`}
+              style={styles.row}
+              // onPress={() =>
+              //   navigation.navigate("JobDetails", {
+              //     slug: item.job_url?.split("/").pop(),
+              //   })
+              // }
+            >
+              <View style={styles.iconWrapper}>
+                <Ionicons name="briefcase-outline" size={16} color="#000" />
+              </View>
 
-      {data.map((item, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.row}
-          onPress={() =>
-            navigation.navigate("JobDetails", {
-              slug: item.job_slug,
-            })
-          }
-        >
-         
-          <Text style={styles.title}>{item.title}</Text>
-        </TouchableOpacity>
-      ))}
+              <Text style={styles.title}>{item.subject}</Text>
+            </TouchableOpacity>
+          );
+        }
+
+        if (item.type === "service") {
+          return (
+            <TouchableOpacity
+              key={`service-${index}`}
+              style={styles.row}
+            >
+              <View style={styles.iconWrapper}>
+                <Ionicons name="brush-outline" size={16} color="#000" />
+              </View>
+
+              <View style={styles.textWrapper}>
+                <Text style={styles.title}>{item.text}</Text>
+                <Text style={styles.subTitle}>category</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        }
+
+        return null;
+      })}
     </View>
   );
 };
@@ -31,32 +61,37 @@ const SearchedJobs = ({ data }) => {
 export default SearchedJobs;
 
 const styles = StyleSheet.create({
-  heading: {
-    padding: 10,
-    fontWeight: "600",
-    backgroundColor: "#f5f5f5",
-  },
   row: {
-    padding: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderColor: "#eee",
+    borderColor: "#333",
   },
+
+  iconWrapper: {
+    backgroundColor: "#fff",
+    width: 36,
+    height: 36,
+    borderRadius: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+
+  textWrapper: {
+    flexDirection: "column",
+  },
+
   title: {
-    fontSize: 14,
+    fontSize: 15,
+    color: "#fff",
     fontWeight: "500",
   },
-  location: {
+
+  subTitle: {
     fontSize: 12,
-    color: "#777",
+    color: "#aaa",
+    marginTop: 2,
   },
-    iconimage: {
-    backgroundColor: "#ffffff",
-    padding: 8,
-    borderRadius: 100,
-  },
-  image: {
-    width: 22,
-    height: 22,
-  },
-  
 });

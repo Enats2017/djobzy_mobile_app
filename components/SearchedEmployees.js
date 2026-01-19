@@ -1,74 +1,114 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
 const SearchedEmployees = ({ data }) => {
   const navigation = useNavigation();
- 
-  
+
+  const orderedData = [
+    ...data.filter(item => item.type === "employee"),
+    ...data.filter(item => item.type === "service"),
+  ];
 
   return (
     <View>
-      <Text style={styles.heading}>Employees</Text>
+      {orderedData.map((item, index) => {
+        if (item.type === "service") {
+          return (
+            <TouchableOpacity
+              key={`service-${index}`}
+              style={styles.row}
+            >
+              <View style={styles.iconWrapper}>
+                <Ionicons name="pricetag-outline" size={16} color="#000" />
+              </View>
 
-      {data.map((item, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.row}
-          onPress={() =>{
-              console.log(item);
-              navigation.navigate("PublicEmployeeProfile", {
-                name: item?.username,
-              })
+              <View>
+                <Text style={styles.name}>{item.text}</Text>
+                <Text style={styles.sub}>category</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        }
 
-          }
-          }
-        >
-          <Image source={{ uri: item.photo }} style={styles.avatar} />
-          <View>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.sub}>
-              ⭐ {item.rating} • {item.location}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      ))}
+        if (item.type === "employee") {
+          return (
+            <TouchableOpacity
+              key={`employee-${index}`}
+              style={styles.row}
+              // onPress={() =>
+              //   navigation.navigate("PublicEmployeeProfile", {
+              //     name: item.username,
+              //   })
+              // }
+            >
+              <Image source={{ uri: item.photo }} style={styles.avatar} />
+
+              <View>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.sub}>
+                  ⭐ {item.rating ?? "0"} •{" "}
+                  {item.address ?? "Location not set"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          );
+        }
+
+        return null;
+      })}
     </View>
   );
 };
+
 
 export default SearchedEmployees;
 
 const styles = StyleSheet.create({
   heading: {
-    padding: 10,
-    fontFamily:"Montserrat_700Bold",
-    fontSize:18,
+    paddingVertical: 10,
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 16,
     color: "#fff",
-    
   },
+
   row: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
+    paddingVertical: 12,
     borderBottomWidth: 0.6,
     borderColor: "#ffffff1a",
   },
+
+  iconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+
   avatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
     marginRight: 10,
-    borderColor:"#fff",
-    borderWidth:1,
+    borderColor: "#fff",
+    borderWidth: 1,
   },
+
   name: {
     fontSize: 14,
-    color:"#fff",
-    fontFamily:"Montserrat_400Regular"
+    color: "#fff",
+    fontFamily: "Montserrat_400Regular",
   },
+
   sub: {
     fontSize: 12,
     color: "#777",
+    marginTop: 2,
   },
 });

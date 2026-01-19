@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 
 const PaymentOption = ({ title, icon, selected, onPress }) => {
@@ -10,12 +11,14 @@ const PaymentOption = ({ title, icon, selected, onPress }) => {
       activeOpacity={0.7}
     >
       <View style={styles.left}>
-        {icon}
-        <Text style={styles.title}>{title}</Text>
+         {React.cloneElement(icon, {
+          color: selected ? "#000" : "#fff",
+        })}
+        <Text style={[styles.title, selected && styles.activeText]}>{title}</Text>
       </View>
 
-      <View style={styles.radioOuter}>
-        {selected && <View style={styles.radioInner} />}
+      <View style={[styles.radioOuter , selected && styles.rdiocircle]}>
+        {selected && <MaterialIcons name="done" size={16} color="#fff" />}
       </View>
     </TouchableOpacity>
   );
@@ -33,10 +36,10 @@ const styles = StyleSheet.create({
      marginBottom: 12,
     paddingVertical: 15,
     borderWidth: 1,
-    borderColor: "#fff",
+    borderColor: "#FFFFFF4D",
   },
   active: {
-    borderColor: "#fff",
+    backgroundColor: "#fff",
   },
   left: {
     flexDirection: "row",
@@ -44,25 +47,29 @@ const styles = StyleSheet.create({
     gap: 15,
   },
   title: {
-    fontSize: 15,
+    fontSize: 16,
     color: "#ffffff",
-    fontWeight: "500",
+    fontFamily:"Montserrat_500Medium"
+  },
+  activeText:{
+    color:"#303030"
+
   },
   radioOuter: {
     width: 20,
     height: 20,
     borderRadius: 50,
     borderWidth: 2,
-    borderColor: "#fff",
+    borderColor: "#FFFFFF4D",
     alignItems: "center",
     justifyContent: "center",
   },
-  radioInner: {
-    width: 11,
-    height: 11,
-    borderRadius: 50,
-    backgroundColor: "#fff",
+  rdiocircle:{
+      borderColor: "#303030",
+      backgroundColor:"#303030",
+      
   },
+ 
 });
 
 export default PaymentOption;

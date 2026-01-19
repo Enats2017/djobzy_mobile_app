@@ -22,6 +22,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import Paypal from "../Wallet/PaypalWithdraw";
 import CreditCard from "../Wallet/CreditCardWithdraw";
 import { ScrollView } from "react-native-gesture-handler";
+import QuestionMark from "../../components/QuestionMark";
 
 const UserPaymentPage = () => {
   const [selected, setSelected] = useState("");
@@ -30,6 +31,8 @@ const UserPaymentPage = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { profileData } = route.params || {};
+  console.log("profiledata111",profileData);
+  
 
   const bidAmount = Number(profileData?.bid_price || 0);
 
@@ -47,47 +50,39 @@ const UserPaymentPage = () => {
             contentContainerStyle={{ paddingBottom: 80 }}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Payment Summary */}
-            <View style={styles.summaryCard}>
-              <Text style={styles.summaryTitle}>
-                Make a Payment for{"\n"}
-                <Text style={styles.highlightText}>
-                  {profileData?.subject}
-                </Text>{" "}
-                job boosting
+            <View style={styles.wrapper}>
+              <View style={styles.box}>
+                <Text style={styles.label}>Contract ID</Text>
+                <View style={styles.verticalLine} />
+                <Text style={styles.value}>4297</Text>
+              </View>
+
+              <View style={styles.box}>
+                <Text style={styles.label}>Amount</Text>
+                <View style={styles.verticalLine} />
+                <Text style={styles.value}>0 CAD</Text>
+              </View>
+              <Text style={styles.infoText}>
+                *You save over 40% of fees, Due to your referral status
               </Text>
 
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Contract ID</Text>
-                <Text style={styles.summaryValue}>{profileData?.gid}</Text>
+              <View style={styles.box}>
+                <Text style={styles.label}>Processing Fee</Text>
+                <View style={styles.verticalLine} />
+                <Text style={styles.value}>4297</Text>
               </View>
-
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Amount</Text>
-                <Text style={styles.summaryValue}>
-                  {profileData?.bid_price} CAD
-                </Text>
-              </View>
-
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Processing Fee</Text>
-                <Text style={styles.summaryValue}>
-                  {processingFee.toFixed(2)} CAD
-                </Text>
-              </View>
-
-              <View style={styles.divider} />
-
-              <View style={styles.summaryRow}>
-                <Text style={styles.totalLabel}>Total Payment</Text>
-                <Text style={styles.totalValue}>
-                  {" "}
-                  {TotalAmount?.toFixed(2)} CAD
-                </Text>
+              <View style={styles.box}>
+                <Text style={styles.label}>Total Payment</Text>
+                <View style={styles.verticalLine} />
+                <Text style={styles.value}>0 CAD</Text>
               </View>
             </View>
 
             <View style={styles.section}>
+              <View style={{paddingVertical:7}}>
+
+              <QuestionMark title="Payment Method"/>
+              </View>
               <PaymentOption
                 title="Credit / Debit Card"
                 icon={
@@ -119,7 +114,7 @@ const UserPaymentPage = () => {
                   style={[styles.checkbox, remember && styles.checkboxChecked]}
                 >
                   {remember && (
-                    <Ionicons name="checkmark" size={14} color="#fff" />
+                    <Ionicons name="checkmark" size={14} color="#000"/>
                   )}
                 </View>
                 <Text style={styles.rememberText}>
@@ -153,13 +148,63 @@ const styles = StyleSheet.create({
     backgroundColor: "#222222",
     paddingHorizontal: 15,
   },
+
+  wrapper: {
+    width: "100%",
+  },
+
+  box: {
+    flexDirection: "row",
+    alignItems: "center",
+   
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
+    borderRadius: 8,
+    height: 50,
+    paddingVertical:7,
+    marginBottom: 15,
+    backgroundColor: "#fff",
+  },
+
+  label: {
+   flex:1,
+   paddingLeft:15,
+    fontSize: 16,
+    color: "#D38979", 
+   fontFamily:"Montserrat_700Bold"
+  },
+
+  verticalLine: {
+    width: 1,
+  
+    height: "100%",
+    backgroundColor: "#0000001a",
+  },
+
+  value: {
+    flex:1,
+    paddingLeft: 12,
+    fontSize: 16,
+    fontFamily:"Montserrat_500Medium",
+    color: "#666666",
+    
+  },
+
+  infoText: {
+    fontSize: 12,
+    fontFamily:"Montserrat_400Medium",
+    color: "#ffffff",
+    marginTop: 4,
+    marginBottom:13,
+  },
+
+
   section: {
     marginBottom: 5,
   },
   row: {
     flexDirection: "column",
     flexWrap: "wrap",
-
     paddingHorizontal: 8,
   },
   rememberMe: {
@@ -185,8 +230,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   checkboxChecked: {
-    backgroundColor: "#f76c6c",
-    borderColor: "#f76c6c",
+    backgroundColor: "#fff",
+    borderColor: "#fff",
   },
   button: {
     paddingTop: 10,

@@ -83,7 +83,9 @@ import PromoteServicesDetails from "./Screens/PromoteServicesPage/PromoteService
 import EditPromoteSevices from "./Screens/PromoteServicesPage/EditPromoteSevices";
 import SearchScreen from "./Screens/SearchScreen/SearchScreen";
 import Register_Success from "./Screens/RegisterPage/Register_Success";
-
+import EmployeeHire from "./Screens/ContractPage/EmployeeHire";
+import FavoriteEmployee from "./Screens/EmployerDashboardPage/FavoriteEmployee";
+import EmployerCategory from "./Screens/EmployerDashboardPage/EmployerCategory";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -189,6 +191,9 @@ const App = () => {
             <Stack.Screen name="EditPromoteSevices" component={EditPromoteSevices} />
             <Stack.Screen name="SearchScreen" component={SearchScreen} />
             <Stack.Screen name="Register_Success" component={Register_Success} />
+            <Stack.Screen name="EmployeeHire" component={EmployeeHire}/>
+            <Stack.Screen name="FavoriteEmployee" component={FavoriteEmployee}/>
+            <Stack.Screen name="EmployerCategory" component={EmployerCategory}/>
           </Stack.Navigator>
         </NavigationContainer>
         <Toast config={toastConfig} />

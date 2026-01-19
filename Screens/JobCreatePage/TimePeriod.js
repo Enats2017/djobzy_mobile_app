@@ -7,60 +7,36 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 
-const TimePeriod = ({
-  durationData,
-  setDurationData,
-  timeError,
-  setTimeError,
-}) => {
-  const { selectedTerm, selectedOption, customDays } = durationData;
+const TimePeriod = ({ timeError, setTimeError }) => {
+  const { selectedTerm, selectedOption, customDays, setField } =
+    useCreateJobGlobalStore();
 
-  const setSelectedTerm = (term) => {
-    setTimeError(false); // HIDE ERROR WHEN SWITCHING TABS
-
-    setDurationData({
-      ...durationData,
-      selectedTerm: term,
-      selectedOption: "",
-      customDays: "",
-    });
-  };
-
-  const setSelectedOption = (option) => {
-    let valueLabel = "";
-    if (option === "1") valueLabel = "1 Day or less";
-    else if (option === "1-7") valueLabel = "1–7 Days";
-    else if (option === "10-30") valueLabel = "1 Month or Less";
-    else if (option === "30+") valueLabel = "1–3 Months";
-    else if (option === "custom")
-      valueLabel = `${durationData.customDays || "Custom"} Days`;
-    else if (option === "customEmp")
-      valueLabel = `${durationData.customDays || "Custom"} Months`;
-
+  const handleSelectTerm = (term) => {
     setTimeError(false);
-
-    setDurationData({
-      ...durationData,
-      selectedOption: option,
-      selectedValue: valueLabel,
-    });
+    setField("selectedTerm", term);
+    setField("selectedOption", "");
+    setField("customDays", "");
   };
 
-  const setCustomDays = (days) => {
-    setDurationData({
-      ...durationData,
-      customDays: days,
-    });
+  const handleSelectOption = (option) => {
+    setTimeError(false);
+    setField("selectedOption", option);
+  };
+
+  const handleCustomDays = (value) => {
+    setTimeError(false);
+    setField("customDays", value);
   };
 
   return (
     <View style={styles.duration}>
-      {/* Tabs */}
+      {/* ===== TABS ===== */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tab, selectedTerm === "short" && styles.activeTab]}
-          onPress={() => setSelectedTerm("short")}
+          onPress={() => handleSelectTerm("short")}
         >
           <Text
             style={[
@@ -82,7 +58,7 @@ const TimePeriod = ({
 
         <TouchableOpacity
           style={[styles.tab, selectedTerm === "employee" && styles.activeTab]}
-          onPress={() => setSelectedTerm("employee")}
+          onPress={() => handleSelectTerm("employee")}
         >
           <Text
             style={[
@@ -103,7 +79,7 @@ const TimePeriod = ({
         </TouchableOpacity>
       </View>
 
-      {/* Short-Term Section */}
+      {/* ===== SHORT TERM ===== */}
       {selectedTerm === "short" && (
         <>
           <View style={styles.optionContainer}>
@@ -112,7 +88,7 @@ const TimePeriod = ({
                 styles.optionRow,
                 selectedOption === "1" && styles.optionRowSelected,
               ]}
-              onPress={() => setSelectedOption("1")}
+              onPress={() => handleSelectOption("1")}
             >
               <Text style={styles.optionText}>1 Day or less</Text>
               <View
@@ -122,7 +98,7 @@ const TimePeriod = ({
                 ]}
               >
                 {selectedOption === "1" && (
-                  <MaterialIcons name="done" size={14} color="#000000" />
+                  <MaterialIcons name="done" size={14} color="#000" />
                 )}
               </View>
             </TouchableOpacity>
@@ -132,7 +108,7 @@ const TimePeriod = ({
                 styles.optionRow,
                 selectedOption === "1-7" && styles.optionRowSelected,
               ]}
-              onPress={() => setSelectedOption("1-7")}
+              onPress={() => handleSelectOption("1-7")}
             >
               <Text style={styles.optionText}>1 - 7 Days</Text>
               <View
@@ -142,7 +118,7 @@ const TimePeriod = ({
                 ]}
               >
                 {selectedOption === "1-7" && (
-                  <MaterialIcons name="done" size={14} color="#000000" />
+                  <MaterialIcons name="done" size={14} color="#000" />
                 )}
               </View>
             </TouchableOpacity>
@@ -150,7 +126,7 @@ const TimePeriod = ({
 
           <View style={styles.customRow}>
             <TouchableOpacity
-              onPress={() => setSelectedOption("custom")}
+              onPress={() => handleSelectOption("custom")}
               style={[
                 styles.optionCol,
                 selectedOption === "custom" && styles.optionRowSelected,
@@ -163,41 +139,35 @@ const TimePeriod = ({
                 ]}
               >
                 {selectedOption === "custom" && (
-                  <MaterialIcons name="done" size={14} color="#000000" />
+                  <MaterialIcons name="done" size={14} color="#000" />
                 )}
               </View>
-              <Text style={[{ marginLeft: 7 }, styles.optionText]}>
+              <Text style={[styles.optionText, { marginLeft: 7 }]}>
                 Custom Days
               </Text>
             </TouchableOpacity>
+
             <View style={styles.customInput}>
               <TextInput
                 style={styles.inputBox}
                 value={customDays}
-                onChangeText={setCustomDays}
+                onChangeText={handleCustomDays}
                 keyboardType="numeric"
                 placeholder="15"
-                placeholderTextColor="#000000"
+                placeholderTextColor="#000"
               />
             </View>
           </View>
 
           {timeError && (
-            <Text
-              style={{
-                color: "red",
-                marginTop: 6,
-                fontSize: 12,
-                fontFamily: "Montserrat_500Medium",
-              }}
-            >
+            <Text style={styles.errorText}>
               *Please select at least one option
             </Text>
           )}
         </>
       )}
 
-      {/* Employees Section */}
+      {/* ===== EMPLOYEE ===== */}
       {selectedTerm === "employee" && (
         <>
           <View style={styles.optionContainer}>
@@ -206,7 +176,7 @@ const TimePeriod = ({
                 styles.optionRow,
                 selectedOption === "10-30" && styles.optionRowSelected,
               ]}
-              onPress={() => setSelectedOption("10-30")}
+              onPress={() => handleSelectOption("10-30")}
             >
               <Text style={styles.optionText}>1 Month or Less</Text>
               <View
@@ -216,7 +186,7 @@ const TimePeriod = ({
                 ]}
               >
                 {selectedOption === "10-30" && (
-                  <MaterialIcons name="done" size={14} color="#000000" />
+                  <MaterialIcons name="done" size={14} color="#000" />
                 )}
               </View>
             </TouchableOpacity>
@@ -226,7 +196,7 @@ const TimePeriod = ({
                 styles.optionRow,
                 selectedOption === "30+" && styles.optionRowSelected,
               ]}
-              onPress={() => setSelectedOption("30+")}
+              onPress={() => handleSelectOption("30+")}
             >
               <Text style={styles.optionText}>1–3 Months</Text>
               <View
@@ -236,7 +206,7 @@ const TimePeriod = ({
                 ]}
               >
                 {selectedOption === "30+" && (
-                  <MaterialIcons name="done" size={14} color="#000000" />
+                  <MaterialIcons name="done" size={14} color="#000" />
                 )}
               </View>
             </TouchableOpacity>
@@ -244,7 +214,7 @@ const TimePeriod = ({
 
           <View style={styles.customRow}>
             <TouchableOpacity
-              onPress={() => setSelectedOption("customEmp")}
+              onPress={() => handleSelectOption("customEmp")}
               style={[
                 styles.optionCol,
                 selectedOption === "customEmp" && styles.optionRowSelected,
@@ -257,34 +227,28 @@ const TimePeriod = ({
                 ]}
               >
                 {selectedOption === "customEmp" && (
-                  <MaterialIcons name="done" size={14} color="#000000" />
+                  <MaterialIcons name="done" size={14} color="#000" />
                 )}
               </View>
-              <Text style={[{ marginLeft: 7 }, styles.optionText]}>
+              <Text style={[styles.optionText, { marginLeft: 7 }]}>
                 Custom Months
               </Text>
             </TouchableOpacity>
+
             <View style={styles.customInput}>
               <TextInput
                 style={styles.inputBox}
                 value={customDays}
-                onChangeText={setCustomDays}
+                onChangeText={handleCustomDays}
                 keyboardType="numeric"
                 placeholder="15"
-                placeholderTextColor="#000000"
+                placeholderTextColor="#000"
               />
             </View>
           </View>
 
           {timeError && (
-            <Text
-              style={{
-                color: "red",
-                marginTop: 6,
-                fontSize: 12,
-                fontFamily: "Montserrat_500Medium",
-              }}
-            >
+            <Text style={styles.errorText}>
               *Please select at least one option
             </Text>
           )}

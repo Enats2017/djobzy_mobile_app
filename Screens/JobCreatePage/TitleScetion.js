@@ -11,17 +11,17 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import Entypo from "@expo/vector-icons/Entypo";
 import { ScrollView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 
 const TitleScetion = ({
-  jobData,
-  setJobData,
+  //jobData,
+  //setJobData,
   titleError,
   setTitleError,
   descriptionError,
   setDescriptionError,
 }) => {
-  // const [title, setTitle] = useState("");
-  // const [description, setDescription] = useState("");
+  const { title, description, setField } = useCreateJobGlobalStore();  
   const [titleModal, setTitleModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -45,10 +45,10 @@ const TitleScetion = ({
           {/* TITLE */}
           <TextInput
             style={[styles.input, titleError && { borderColor: "#ff0000" }]}
-            value={jobData.title}
+            value={title}
             onChangeText={(text) => {
-              setJobData({ ...jobData, title: text });
-              if (text.trim().length > 0) setTitleError(false);
+              setField("title", text);
+              if (text.trim()) setTitleError(false);
             }}
             placeholder="What Should be Done?"
           />
@@ -69,11 +69,11 @@ const TitleScetion = ({
               styles.input,
               descriptionError && { borderColor: "#ff0000" },
             ]}
-            value={jobData.description}
-            onChangeText={(text) => {
-              setJobData({ ...jobData, description: text });
-              if (text.trim().length > 0) setDescriptionError(false);
-            }}
+            value={description}
+             onChangeText={(text) => {
+            setField("description", text);
+            if (text.trim()) setDescriptionError(false);
+          }}
             placeholder="What Should be Done?"
           />
 

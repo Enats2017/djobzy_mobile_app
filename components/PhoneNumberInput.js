@@ -8,41 +8,39 @@ import {
   Modal,
 } from "react-native";
 import { CountryPicker } from "react-native-country-codes-picker";
-import { Ionicons } from "@expo/vector-icons"; 
+import { Ionicons } from "@expo/vector-icons";
 import Icon from "react-native-vector-icons/Feather";
 
 const PhoneNumberInput = ({
-  value = "",  
+  value = "",
   onChange = () => {},
   placeholder = "Enter phone number",
-   defaultFlag = "🇮🇳",
+  defaultFlag = "🇮🇳",
   defaultCallingCode = "+91",
-   
 }) => {
   const [showPicker, setShowPicker] = useState(false);
-  const [flag, setFlag] = useState(defaultFlag);
-  const [callingCode, setCallingCode] = useState(defaultCallingCode);
+  const [flag, setFlag] = useState(" ");
+  const [callingCode, setCallingCode] = useState(defaultCallingCode );
   const [phoneNumber, setPhoneNumber] = useState(value);
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState("");
-  useEffect(() => {
-    if (value) {
-      const digits = value.replace(/[^0-9]/g, "");
-      const code = callingCode.replace("+", "");
 
-      if (digits.startsWith(code)) {
-        setPhoneNumber(digits.slice(code.length));
-      } else {
-        setPhoneNumber(digits);
-      }
-    }
-  }, [value, callingCode]);
+ useEffect(() => {
+  setPhoneNumber(value);
+}, [value]);
+
+
 
   const handleChange = (text) => {
     const digits = text.replace(/[^0-9]/g, "");
     setPhoneNumber(digits);
-    onChange(`${callingCode}${digits}`);
-    if (digits.length == 10) {
+
+    onChange({
+      phone: digits,
+      countryCode: callingCode.replace("+", ""),
+    });
+
+    if (digits.length === 10) {
       setIsValid(true);
       setError("");
     } else if (digits.length === 0) {
@@ -70,7 +68,7 @@ const PhoneNumberInput = ({
           <Text style={styles.flag}>{flag}</Text>
           <Text style={styles.callingCode}>{callingCode}</Text>
         </TouchableOpacity>
-  
+
         <TextInput
           style={styles.textInput}
           placeholder={placeholder}
@@ -81,15 +79,15 @@ const PhoneNumberInput = ({
         />
         {isValid && (
           <Ionicons
-              name="checkmark-done-circle-sharp"
-              size={24}
-              color="green"
-              style={styles.icon}
-            />
+            name="checkmark-done-circle-sharp"
+            size={24}
+            color="green"
+            style={styles.icon}
+          />
         )}
       </View>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      <Modal visible={showPicker} transparent animationType="slide">
+      <Modal visible={showPicker}   onRequestClose={() => setCopyModel(false)} transparent animationType="slide">
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContainer}>
             <CountryPicker
@@ -99,6 +97,12 @@ const PhoneNumberInput = ({
               pickerButtonOnPress={(item) => {
                 setFlag(item.flag);
                 setCallingCode(item.dial_code);
+
+                onChange({
+                  phone: phoneNumber,
+                  countryCode: item.dial_code.replace("+", ""),
+                });
+
                 setShowPicker(false);
               }}
               style={{
@@ -121,7 +125,6 @@ const PhoneNumberInput = ({
 export default PhoneNumberInput;
 
 const styles = StyleSheet.create({
-
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -157,7 +160,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 12,
     top: "50%",
-   
+
     transform: [{ translateY: -2 }],
   },
   errorText: {

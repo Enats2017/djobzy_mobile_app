@@ -3,10 +3,6 @@ import { View, StyleSheet, TextInput, Text } from "react-native";
 import PhoneNumberInput from "./PhoneNumberInput";
 
 const ContactInfo = ({
-  phoneValue,
-  onChangePhone,
-   countryFlag,
-  countryCode,
 
   postalCodeValue,
   onChangePostalCode,
@@ -23,13 +19,6 @@ const ContactInfo = ({
 }) => {
   return (
     <View style={[styles. infosection, containerStyle]}>
-      {showPhone && (
-        <>
-          <Text style={styles.label}></Text>
-          <PhoneNumberInput value={phoneValue} onChangeText={onChangePhone} defaultFlag={countryFlag}
-        defaultCallingCode={countryCode}  />
-        </>
-      )}
 
       {showPostal && (
         <View style={styles.field}>

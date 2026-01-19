@@ -9,23 +9,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 
 const SetPrice = ({
-  budgetData,
-  setBudgetData,
   priceError,
   setPriceError,
   hourlyError,
   setHourlyError,
 }) => {
   const navigation = useNavigation();
-  const { hourlyRate, totalPrice, expectedTime, processingFee } = budgetData;
+  const { hourlyRate, totalPrice, expectedTime, processingFee, setField } =
+    useCreateJobGlobalStore();
 
   const handleHourlyChange = (value) => {
     setHourlyError(false);
     const hourly = parseFloat(value || 0);
-    const total = parseFloat(budgetData.totalPrice || 0);
-
+    const total = parseFloat(totalPrice || 0);
     let expected = 0;
     if (total && hourly) {
       if (hourly > total) {
@@ -37,18 +36,14 @@ const SetPrice = ({
         expected = Math.ceil(total / hourly);
       }
     }
-
-    setBudgetData((prev) => ({
-      ...prev,
-      hourlyRate: value,
-      expectedTime: expected,
-    }));
+    setField("hourlyRate", value);
+    setField("expectedTime", expected);
   };
 
   const handleTotalPriceChange = (value) => {
     setPriceError(false);
     const total = parseFloat(value || 0);
-    const hourly = parseFloat(budgetData.hourlyRate || 0);
+    const hourly = parseFloat(hourlyRate || 0);
 
     let expected = 0;
     if (total && hourly) {
@@ -62,12 +57,9 @@ const SetPrice = ({
       finalPayment = total + fee;
     }
 
-    setBudgetData((prev) => ({
-      ...prev,
-      totalPrice: value,
-      expectedTime: expected,
-      processingFee: finalPayment.toFixed(2),
-    }));
+    setField("totalPrice", value);
+    setField("expectedTime", expected);
+    setField("processingFee", finalPayment.toFixed(2));
   };
 
   return (

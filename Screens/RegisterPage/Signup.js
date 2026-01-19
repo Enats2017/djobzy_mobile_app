@@ -87,16 +87,20 @@ const Signup = () => {
               Create an account to explore about our app
             </Text>
             <Text style={styles.label}>Full Name/Company Name</Text>
+              <View style={styles.passwordContainer}>
             <TextInput
-              style={styles.input}
+              style={styles.passwordInput}
               placeholder=" Enter Full Name/Company Name"
               placeholderTextColor="#888"
               value={fullName}
               onChangeText={setFullName}
             />
+
+              </View>
             <Text style={styles.label}>Email</Text>
+             <View style={styles.passwordContainer}>
             <TextInput
-              style={styles.input}
+              style={styles.passwordInput}
               placeholder="xyz@gmail.com"
               placeholderTextColor="#888"
               value={email}
@@ -104,6 +108,8 @@ const Signup = () => {
               keyboardType="email-address"
               autoCapitalize="none"
             />
+
+             </View>
             <Text style={styles.label}>Create a password</Text>
             <View style={styles.passwordContainer}>
               <TextInput

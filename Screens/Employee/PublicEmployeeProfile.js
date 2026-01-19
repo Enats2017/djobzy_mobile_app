@@ -250,7 +250,10 @@ export default function PublicEmployeeProfile({ route }) {
               >
                 <Text style={styles.btnHireText}>Hire</Text>
               </TouchableOpacity> */}
-                <TouchableOpacity style={styles.btnChat} onPress={() => navigation.navigate("FeedChat")}>
+                <TouchableOpacity
+                  style={styles.btnChat}
+                  onPress={() => navigation.navigate("FeedChat")}
+                >
                   <Text style={styles.btnChatText}>Chat</Text>
                 </TouchableOpacity>
               </View>
@@ -286,6 +289,11 @@ export default function PublicEmployeeProfile({ route }) {
               data={feeds}
               keyExtractor={(item) => item.id.toString()}
               scrollEnabled={feeds.length > 5 ? true : false}
+              ListHeaderComponent={
+                <Text style={styles.recentText}>
+                  {feeds[0]?.full_name} Recent Posts
+                </Text>
+              }
               renderItem={({ item }) => (
                 <FeedPost
                   author={item.full_name}
@@ -505,6 +513,12 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_700Bold",
     fontSize: 18,
   },
+   recentText:{
+    color:"#fff",
+    fontFamily:"Montserrat_700Bold",
+    fontSize:16,
+    marginBottom:5,
+  },
   btnChat: {
     flex: 1,
     backgroundColor: "#46a282",
@@ -536,6 +550,7 @@ const styles = StyleSheet.create({
   statsNumber: {
     color: "#ffffff",
     fontSize: 16,
+    textAlign: "center",
     fontFamily: "Montserrat_700Bold",
   },
   statsLabel: {

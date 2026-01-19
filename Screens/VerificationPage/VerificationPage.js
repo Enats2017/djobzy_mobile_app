@@ -169,6 +169,7 @@ const VerificationPage = () => {
                 <AccountSetup
                   countries={countries}
                   fullName={fullName}
+                  setFullName={setFullName}
                   username={username}
                   setUsername={setUsername}
                   email={email}

@@ -9,17 +9,23 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 
-const ReviewPage = ({
-  jobData,
-  selectedSubs,
-  contractData,
-  fileData,
-  durationData,
-  budgetData,
-  setActiveTab,
-  onBack,
-}) => {
+const ReviewPage = ({ setActiveTab }) => {
+const {
+    title,
+    description,
+    totalPrice,
+    hourlyRate,
+    expectedTime,
+    selectedOption,
+    customDays,
+    selectedSubs,
+    requirements,
+    languages,
+    address,
+    fileData,
+  } = useCreateJobGlobalStore();
   const navigation = useNavigation();
 
   return (
@@ -39,7 +45,7 @@ const ReviewPage = ({
               />
             </TouchableOpacity>
           </View>
-          <Text style={styles.value}>{jobData.title || "N/A"}</Text>
+          <Text style={styles.value}>{title || "N/A"}</Text>
         </View>
         <View
           style={{
@@ -61,7 +67,7 @@ const ReviewPage = ({
               />
             </TouchableOpacity>
           </View>
-          <Text style={styles.value}>{jobData.description || "N/A"}</Text>
+          <Text style={styles.value}>{description || "N/A"}</Text>
         </View>
         <View
           style={{
@@ -86,22 +92,24 @@ const ReviewPage = ({
           </View>
           <Text style={styles.value}>
             Total Price:{" "}
-            <Text style={styles.bold}>CAD {budgetData?.totalPrice || "0"}</Text>
+            <Text style={styles.bold}>CAD {totalPrice || "0"}</Text>
           </Text>
           <Text style={styles.value}>
             Hourly Rate:{" "}
             <Text style={styles.bold}>
-              CAD {budgetData?.hourlyRate || "0.00"}
+              CAD {hourlyRate || "0.00"}
             </Text>
           </Text>
           <Text style={styles.value}>
             Estimated Hours:{" "}
-            <Text style={styles.bold}>{budgetData.expectedTime || "0"}h</Text>
+            <Text style={styles.bold}>{expectedTime || "0"}h</Text>
           </Text>
           <Text style={styles.value}>
             Project Length:{" "}
             <Text style={styles.bold}>
-              {durationData?.selectedOption || durationData?.customDays}
+               {selectedOption === "custom" || selectedOption === "customEmp"
+                ? customDays || "—"
+                : selectedOption || "—"}
             </Text>
           </Text>
         </View>
@@ -156,20 +164,21 @@ const ReviewPage = ({
             </TouchableOpacity>
           </View>
           <Text style={styles.sectionText}>
-            Address: <Text style={styles.bold}>{contractData?.address}</Text>
+            Address: <Text style={styles.bold}>{address}</Text>
           </Text>
           <Text style={styles.sectionText}>
             Requirements:{" "}
             <Text style={styles.bold}>
-              {contractData?.requirements?.map((r) => r.value).join(", ")}
+              {requirements.length > 0
+                ? requirements.map((r) => r.value).join(", ")
+                : "—"}
             </Text>
           </Text>
           <Text style={styles.sectionText}>
             Languages:{" "}
             <Text style={styles.bold}>
-              {Array.isArray(contractData?.languages) &&
-              contractData.languages.length > 0
-                ? contractData.languages.map((l) => l.lang?.trim()).join(", ")
+               {languages.length > 0
+                ? languages.map((l) => l.lang).join(", ")
                 : "—"}
             </Text>
           </Text>
@@ -196,7 +205,7 @@ const ReviewPage = ({
             </TouchableOpacity>
           </View>
           <Text style={styles.sectionText}>
-            {fileData?.fileName ? fileData.fileName : "No file uploaded"}
+              {fileData?.fileName || "No file uploaded"}
           </Text>
         </View>
       </ScrollView>

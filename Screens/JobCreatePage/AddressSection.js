@@ -12,40 +12,83 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
+import { API_URL } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const AddressSection = ({ contractData, setContractData }) => {
-  const [requirements, setRequirements] = useState(
-    contractData?.requirements || [{ id: 1, value: "" }]
-  );
-  const [languages, setLanguages] = useState(
-    contractData?.languages || [{ id: 1, lang: "", level: "" }]
-  );
-  const [address, setAddress] = useState(contractData?.address || "");
+const AddressSection = () => {
+  const [languageSuggestions, setLanguageSuggestions] = useState([]);
+  const [activeLangId, setActiveLangId] = useState(null);
+  const [loadingLang, setLoadingLang] = useState(false);
 
-  // ✅ Whenever these change, update parent state
-  useEffect(() => {
-    setContractData({ requirements, languages, address });
-  }, [requirements, languages, address]);
+  const { requirements, languages, address, setField } =
+    useCreateJobGlobalStore();
 
-  // --- existing methods ---
+  const fetchLanguages = async (text, selectedLangs = []) => {
+    if (!text || text.length < 1) {
+      setLanguageSuggestions([]);
+      return;
+    }
+    try {
+      setLoadingLang(true);
+
+      const res = await fetch(`${API_URL}/language`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          keyword: text,
+          existing_lang: selectedLangs,
+        }),
+      });
+
+      const json = await res.json();
+      setLanguageSuggestions(json.data || []);
+    } catch (e) {
+      console.log("Language API error:", e);
+    } finally {
+      setLoadingLang(false);
+    }
+  };
+
   const addRequirement = () => {
-    setRequirements([...requirements, { id: Date.now(), value: "" }]);
+    setField("requirements", [...requirements, { id: Date.now(), value: "" }]);
   };
+
   const removeRequirement = (id) => {
-    setRequirements(requirements.filter((r) => r.id !== id));
+    setField(
+      "requirements",
+      requirements.filter((r) => r.id !== id),
+    );
   };
+
   const updateRequirement = (id, text) => {
-    setRequirements(requirements.map((r) => (r.id === id ? { ...r, value: text } : r)));
+    setField(
+      "requirements",
+      requirements.map((r) => (r.id === id ? { ...r, value: text } : r)),
+    );
   };
 
   const addLanguage = () => {
-    setLanguages([...languages, { id: Date.now(), lang: "", level: "" }]);
+    setField("languages", [
+      ...languages,
+      { id: Date.now(), lang: "", level: "" },
+    ]);
   };
+
   const removeLanguage = (id) => {
-    setLanguages(languages.filter((l) => l.id !== id));
+    setField(
+      "languages",
+      languages.filter((l) => l.id !== id),
+    );
   };
+
   const updateLanguage = (id, field, text) => {
-    setLanguages(languages.map((l) => (l.id === id ? { ...l, [field]: text } : l)));
+    setField(
+      "languages",
+      languages.map((l) => (l.id === id ? { ...l, [field]: text } : l)),
+    );
   };
 
   return (
@@ -78,7 +121,8 @@ const AddressSection = ({ contractData, setContractData }) => {
             ))}
             <TouchableOpacity style={styles.addBtn} onPress={addRequirement}>
               <Text style={styles.addBtnText}>
-                <Entypo name="circle-with-plus" size={18} color="black" /> Add Requirement
+                <Entypo name="circle-with-plus" size={18} color="black" /> Add
+                Requirement
               </Text>
             </TouchableOpacity>
           </View>
@@ -89,28 +133,66 @@ const AddressSection = ({ contractData, setContractData }) => {
           {/* Language Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Language (Optional)</Text>
+
             {languages.map((lang) => (
-              <View key={lang.id} style={styles.languageRow}>
-                <TextInput
-                  style={styles.languageInput}
-                  placeholder="Add Language"
-                  value={lang.lang}
-                  onChangeText={(text) => updateLanguage(lang.id, "lang", text)}
-                />
-                <TextInput
-                  style={styles.languageInput}
-                  placeholder="Add Level"
-                  value={lang.level}
-                  onChangeText={(text) => updateLanguage(lang.id, "level", text)}
-                />
-                <TouchableOpacity onPress={() => removeLanguage(lang.id)} style={styles.levelInput}>
-                  <FontAwesome name="minus-circle" size={18} color="#666666" />
-                </TouchableOpacity>
+              <View key={lang.id} style={{ marginBottom: 12 }}>
+                <View style={styles.languageRow}>
+                  <TextInput
+                    style={styles.languageInput}
+                    placeholder="Add Language"
+                    value={lang.lang}
+                    onFocus={() => setActiveLangId(lang.id)}
+                    onChangeText={(text) => {
+                      updateLanguage(lang.id, "lang", text);
+                      fetchLanguages(
+                        text,
+                        languages.map((l) => l.lang).filter(Boolean),
+                      );
+                    }}
+                  />
+
+                  <TextInput
+                    style={styles.languageInput}
+                    placeholder="Add Level"
+                    value={lang.level}
+                    onChangeText={(text) =>
+                      updateLanguage(lang.id, "level", text)
+                    }
+                  />
+
+                  <TouchableOpacity style={styles.levelInput} onPress={() => removeLanguage(lang.id)}>
+                    <FontAwesome
+                      name="minus-circle"
+                      size={18}
+                      color="#666666"
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* 🔽 Suggestions Dropdown */}
+                {activeLangId === lang.id && languageSuggestions.length > 0 && (
+                  <View style={styles.suggestionBox}>
+                    {languageSuggestions.map((item) => (
+                      <TouchableOpacity
+                        key={item.value}
+                        style={styles.suggestionItem}
+                        onPress={() => {
+                          updateLanguage(lang.id, "lang", item.value);
+                          setLanguageSuggestions([]);
+                          setActiveLangId(null);
+                        }}
+                      >
+                        <Text style={styles.suggestionText}>{item.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
             ))}
+
             <TouchableOpacity style={styles.addBtn} onPress={addLanguage}>
               <Text style={styles.addBtnText}>
-                <Entypo name="circle-with-plus" size={18} color="black" /> Add Language
+                <Entypo name="circle-with-plus" size={18} /> Add Language
               </Text>
             </TouchableOpacity>
           </View>
@@ -125,7 +207,7 @@ const AddressSection = ({ contractData, setContractData }) => {
               style={styles.addressInput}
               placeholder="Write an Address"
               value={address}
-              onChangeText={setAddress}
+              onChangeText={(text) => setField("address", text)}
               placeholderTextColor="#c3c3c3"
             />
             {/* <View style={styles.mapscetion}>
@@ -144,7 +226,7 @@ const AddressSection = ({ contractData, setContractData }) => {
       </KeyboardAwareScrollView>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   mapscetion: {
@@ -182,16 +264,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#ffffff",
   },
-   addressInput: {
+  addressInput: {
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 12,
-     height:45,
-    paddingHorizontal:12,
+    height: 45,
+    paddingHorizontal: 12,
     marginBottom: 10,
     backgroundColor: "#ffffff",
   },
-  
+
   numberCircle: {
     width: 28,
     height: 28,
@@ -215,7 +297,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 11,
     borderRadius: 10,
-    marginBottom:10,
+    marginBottom: 10,
     backgroundColor: "#ebbe56",
   },
   addBtnText: {
@@ -250,6 +332,28 @@ const styles = StyleSheet.create({
 
     marginBottom: 10,
   },
+  suggestionBox: {
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 6,
+  marginTop: 4,
+  maxHeight: 140,
+  elevation: 3,
+},
+
+suggestionItem: {
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+},
+
+suggestionText: {
+  fontSize: 14,
+  color: "#333",
+},
+
 });
 
 export default AddressSection;

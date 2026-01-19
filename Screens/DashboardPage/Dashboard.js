@@ -53,6 +53,8 @@ const Dashboard = () => {
         if (pageNum === 1) setLoading(true);
         else setIsFetchingMore(true);
         const token = await AsyncStorage.getItem("token");
+        console.log(token);
+        
         // console.log("📡 Fetching jobs for page:", pageNum);
         const res = await fetch(
           `${API_URL}/employee-dashboard?page=${pageNum}`,
@@ -130,6 +132,8 @@ const Dashboard = () => {
 
     try {
       const token = await AsyncStorage.getItem("token");
+      console.log(token);
+      
 
       const res = await fetch(`${API_URL}/filter-by-keyword`, {
         method: "POST",
@@ -477,18 +481,17 @@ const styles = StyleSheet.create({
   chipRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingVertical: 10,
+    gap: 6,
+    marginTop:7,
     justifyContent: "center",
   },
 
   chip: {
     backgroundColor: "#ffffff1a",
     flex: 1,
-    alignItems: "center",
-    borderRadius: 60,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    borderRadius:50,
+    padding:12,
+    
   },
 
   chipText: {

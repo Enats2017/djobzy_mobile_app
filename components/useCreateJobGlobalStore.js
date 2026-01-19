@@ -1,0 +1,73 @@
+import { create } from "zustand";
+
+export const useCreateJobGlobalStore = create((set) => ({
+  title: "",
+  description: "",
+  selectedSubs: [],
+  requirements: [{ id: 1, value: "" }],
+  languages: [{ id: 1, lang: "", level: "" }],
+  address: "",
+
+  fileData: {
+    fileName: null,
+    fileUri: null,
+    fileType: null,
+    fileSize: null,
+  },
+  selectedTerm: "short",
+  selectedOption: "1",
+  customDays: "",
+  hourlyRate: "",
+  totalPrice: "",
+  expectedTime: 0,
+  processingFee: "",
+  isEdit: false,
+  editingId: null,
+  activeTab: 0,
+
+  
+
+  setField: (field, value) => set({ [field]: value }),
+  
+
+  addCategory: (cat) =>
+    set((state) => {
+      if (state.selectedSubs.some((s) => s.subId === cat.subId)) return state;
+      return { selectedSubs: [...state.selectedSubs, cat] };
+    }),
+
+  removeCategory: (subId) =>
+    set((state) => ({
+      selectedSubs: state.selectedSubs.filter((s) => s.subId !== subId),
+    })),
+
+  setEditMode: (id) => set({ isEdit: true, editingId: id }),
+  resetEditMode: () => set({ isEdit: false, editingId: null }),
+   
+  setActiveTab: (tab) => set({ activeTab: tab }),
+
+  reset: () =>
+    set({
+      title: "",
+      description: "",
+      selectedSubs: [],
+      requirements: [{ id: 1, value: "" }],
+      languages: [{ id: 1, lang: "", level: "" }],
+      address: "",
+      fileData: {
+        fileName: null,
+        fileUri: null,
+        fileType: null,
+        fileSize: null,
+      },
+      selectedTerm: "short",
+      selectedOption: "1",
+      customDays: "",
+      hourlyRate: "",
+      totalPrice: "",
+      expectedTime: 0,
+      processingFee: "",
+      isEdit: false,
+      editingId: null,
+    }),
+}));

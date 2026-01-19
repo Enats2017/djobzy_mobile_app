@@ -1,23 +1,66 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useCreateJobGlobalStore } from "./useCreateJobGlobalStore";
+
+const ACTIVE_COLOR = "#CB7767";
+const INACTIVE_COLOR = "#000";
+const CONTRACT_SCREENS = [
+  "EmployerContracts",
+  "EmployerJobPost",
+  "ActiveContract",
+  "ReceiveApplication",
+  "EmployerSentOffer",
+  "DeactivatedJobs",
+];
+
+const Home_Screen = [
+  "EmployerDashboard",
+  "EmployerProfilePage",
+  "PublicEmployeeProfile",
+];
+
+const Profile_Screen = [
+  "ReferralWallet",
+  "EmployerAccount,",
+  "ProfileSetting",
+  "EmployeeVerification",
+  "ProfileReviewPage",
+  "Wallet",
+];
 
 const EmployerFooter = () => {
-  const [active, setActive] = useState(0);
   const navigation = useNavigation();
+  const route = useRoute();
+  const isContractsActive = () => CONTRACT_SCREENS.includes(route.name);
+  const isHomeActive = () => Home_Screen.includes(route.name);
+  const isProfile = () => Profile_Screen.includes(route.name);
+  const isActive = (routeName) => route.name === routeName;
+
+  const handleCreateJobNavigation = () => {
+    const store = useCreateJobGlobalStore.getState();
+    store.reset();
+    store.resetEditMode();
+    store.setActiveTab(0);
+    navigation.navigate("CreateJob");
+  };
   return (
     <>
       <View style={styles.bottomContainer}>
         <View style={styles.BottomBar}>
-           <TouchableOpacity
+          <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("EmployerDashboard")}
           >
-            <Ionicons name="home" size={24}  color={active === "jobs" ? "#007bff" : "#000000"} />
-            <Text style={[styles.label, active == 0 && styles.activeText]}>
+            <Ionicons
+              name="home"
+              size={24}
+              color={isHomeActive() ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
+            <Text style={[styles.label, isHomeActive() && styles.activeText]}>
               Home
             </Text>
           </TouchableOpacity>
@@ -25,37 +68,68 @@ const EmployerFooter = () => {
             style={styles.tab}
             onPress={() => navigation.navigate("EmployerContracts")}
           >
-            <Ionicons name="document-attach-sharp" size={24}  color={active === "jobs" ? "#007bff" : "#000000"} />
-            <Text style={[styles.label, active == 0 && styles.activeText]}>
+            <Ionicons
+              name="document-attach-sharp"
+              size={24}
+              color={isContractsActive() ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
+            <Text
+              style={[styles.label, isContractsActive() && styles.activeText]}
+            >
               Contracts
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("CreateJob")}>
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={handleCreateJobNavigation}
+          >
             <MaterialCommunityIcons
               name="plus-circle"
               size={24}
-              color="black"
+              color={isActive("CreateJob") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
             <Text
-              style={[styles.label, active === "Post" && styles.activeText]}
+              style={[styles.label, isActive("CreateJob") && styles.activeText]}
             >
               Post
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("NotificationScreen")}>
-            <MaterialCommunityIcons name="bell-badge" size={24} color="black" />
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => navigation.navigate("NotificationScreen")}
+          >
+            <MaterialCommunityIcons
+              name="bell-badge"
+              size={24}
+              color={
+                isActive("NotificationScreen") ? ACTIVE_COLOR : INACTIVE_COLOR
+              }
+            />
             <Text
-              style={[styles.label, active === "Alerts" && styles.activeText]}
+              style={[
+                styles.label,
+                isActive("NotificationScreen") && styles.activeText,
+              ]}
             >
-             Notification
+              Notification
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate("ProfileMenu")}>
-            <MaterialIcons name="person" size={24} color="black" />
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => navigation.navigate("ProfileMenu")}
+          >
+            <MaterialIcons
+              name="person"
+              size={24}
+              color={isActive("ProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
             <Text
-              style={[styles.label, active === "Profile" && styles.activeText]}
+              style={[
+                styles.label,
+                isActive("ProfileMenu") && styles.activeText,
+              ]}
             >
               Profile
             </Text>
@@ -90,9 +164,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   activeText: {
-    color: "#000000ff",
-     fontFamily: "Montserrat_400Regular",
-    
+    color: "#CB7767",
+    fontFamily: "Montserrat_400Regular",
   },
 });
 export default EmployerFooter;

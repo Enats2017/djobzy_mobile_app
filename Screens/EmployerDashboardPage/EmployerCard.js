@@ -1,46 +1,43 @@
-import React,{useState} from "react";
+import React, { useState } from "react";
 
-import {
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesome, MaterialIcons, Entypo } from "@expo/vector-icons";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../api/ApiUrl";
 
 const EmployerCard = ({ item, isLastItem }) => {
   const navigation = useNavigation();
   const [showAllCategories, setShowAllCategories] = useState(false);
-    const [liked, setLiked] = useState({});
-
-    const handleProfileNavigation = (item) => {
-      console.log("Employer name 👉", item?.name);
+  const [isLiked, setIsLiked] = useState(item?.is_like == 1);
+   const [loading, setLoading] = useState(false);
   
-      if (item?.name?.trim() && item.is_closed == 1 && item.is_spam_user == 1) {
-        Alert.alert(
-          "User unavailable",
-          "User data is unavailable at the moment."
-        );
-        return;
-      }
-  
-      if (item?.admin == 2) {
-        navigation.navigate("PublicEmployeeProfile", {
-          name: item?.name,
-        });
-      } else {
-        navigation.navigate("EmployerProfilePage", {
-          name: item?.name || "",
-        });
-      }
-    };
 
-     const handleFollow = async () => {
+  const handleProfileNavigation = (item) => {
+    console.log("Employer name 👉", item?.name);
+
+    if (item?.name?.trim() && item.is_closed == 1 && item.is_spam_user == 1) {
+      Alert.alert(
+        "User unavailable",
+        "User data is unavailable at the moment.",
+      );
+      return;
+    }
+
+    if (item?.admin == 2) {
+      navigation.navigate("PublicEmployeeProfile", {
+        name: item?.name,
+      });
+    } else {
+      navigation.navigate("EmployerProfilePage", {
+        name: item?.name || "",
+      });
+    }
+  };
+
+  const handleFollow = async () => {
     try {
-      setSubmit(true);
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/followUser`, {
         method: "POST",
@@ -50,27 +47,24 @@ const EmployerCard = ({ item, isLastItem }) => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user_id: user.id,
+          user_id: item?.id,
         }),
       });
       const data = await response.json();
       console.log("Follow response:", data);
       if (data.status === 200) {
-        setProfile((prev) => ({
-          ...prev,
-          like: { ...prev.like, is_like: 1 },
-        }));
+        setIsLiked(true);
       }
     } catch (error) {
       console.log("Follow error:", error);
     } finally {
-      setSubmit(false);
+       setLoading(false);
     }
   };
-  
+
   const handleUnfollow = async () => {
     try {
-      setSubmit(true);
+       setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/unfollowUser`, {
         method: "POST",
@@ -80,131 +74,131 @@ const EmployerCard = ({ item, isLastItem }) => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user_id: user.id,
+          user_id: item?.id,
         }),
       });
       const data = await response.json();
       console.log("Unfollow response:", data);
       if (data.status == 200) {
-        setProfile((prev) => ({
-          ...prev,
-          like: { ...prev.like, is_like: 0 },
-        }));
+        setIsLiked(false);
       }
     } catch (error) {
       console.log("Unfollow error:", error);
     } finally {
-      setSubmit(false);
+       setLoading(false);
     }
   };
 
   return (
     <>
       <View style={styles.cardContainer}>
-          <View style={styles.employeeCard}>
-            <View style={styles.cardHeader}>
-              <Image
-                source={{
-                  uri:
-                    item?.photo ||
-                    "https://randomuser.me/api/portraits/women/44.jpg",
-                }}
-                style={styles.avatar}
-              />
+        <View style={styles.employeeCard}>
+          <View style={styles.cardHeader}>
+            <Image
+              source={{
+                uri:
+                  item?.photo ||
+                  "https://randomuser.me/api/portraits/women/44.jpg",
+              }}
+              style={styles.avatar}
+            />
 
-              <View style={styles.infoWrapper}>
+            <View style={styles.infoWrapper}>
+              <View
+                style={[styles.nameStarRow, { justifyContent: "flex-start" }]}
+              >
+                <Text style={styles.name}>{item?.full_name || "No Name"}</Text>
+
                 <View
                   style={[styles.nameStarRow, { justifyContent: "flex-start" }]}
                 >
-                  <Text style={styles.name}>{item?.full_name || "No Name"}</Text>
-
                   <View
-                    style={[
-                      styles.nameStarRow,
-                      { justifyContent: "flex-start" },
-                    ]}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginLeft: 6,
+                    }}
                   >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginLeft: 6,
-                      }}
-                    >
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <FontAwesome
-                          key={star}
-                          name={item.avg_rating >= star ? "star" : "star-o"}
-                          size={14}
-                          color="#EBBE56"
-                          style={{ marginRight: 2 }}
-                        />
-                      ))}
-                    </View>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <FontAwesome
+                        key={star}
+                        name={item.avg_rating >= star ? "star" : "star-o"}
+                        size={14}
+                        color="#EBBE56"
+                        style={{ marginRight: 2 }}
+                      />
+                    ))}
                   </View>
-                </View>
-
-                <View style={styles.verification}>
-                  <MaterialIcons name="verified" size={16} color="#c3c3c3" />
-                  <Text style={styles.verificationText}>
-                    Verification Level: {item?.verification_count || 0}/7
-                  </Text>
                 </View>
               </View>
 
-              <TouchableOpacity style={styles.heartTouchable}>
-                <FontAwesome
-                  name={liked[item.id] ? "heart" : "heart-o"}
-                  size={20}
-                  color={liked[item.id] ? "#ff0000" : "#c3c3c3"}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.skills}>
-              {(showAllCategories
-                ? item?.seller_services_for_search || []
-                : (item?.seller_services_for_search || []).slice(0, 5)
-              ).map((service, i) => (
-                <View style={styles.skill} key={i}>
-                  <Text style={styles.skillText}>
-                    {service?.sub_services?.subname}
-                  </Text>
-                </View>
-              ))}
-
-              {item?.seller_services_for_search?.length > 5 && (
-                <TouchableOpacity
-                  onPress={() => setShowAllCategories(!showAllCategories)}
-                  style={styles.showMoreBtn}
-                >
-                  <Text style={styles.showMoreText}>
-                    {showAllCategories ? "Show less" : "Show more"}
-                  </Text>
-                </TouchableOpacity>
-              )}
+              <View style={styles.verification}>
+                <MaterialIcons name="verified" size={16} color="#c3c3c3" />
+                <Text style={styles.verificationText}>
+                  Verification Level: {item?.verification_count || 0}/7
+                </Text>
+              </View>
             </View>
 
             <TouchableOpacity
-              style={styles.profileBtn}
-              onPress={() => handleProfileNavigation(item)}
+              style={styles.heartTouchable} 
+              disabled={loading}
+              onPress={() => {
+                if (isLiked) {
+                  handleUnfollow();
+                } else {
+                  handleFollow();
+                }
+              }}
             >
-              <Text style={styles.profileBtnText}>View Profile</Text>
+              <FontAwesome
+                name={isLiked ? "heart" : "heart-o"}
+                size={20}
+                color={isLiked ? "#FF0000" : "#c3c3c3" }
+              />
             </TouchableOpacity>
           </View>
-       
+
+          <View style={styles.divider} />
+
+          <View style={styles.skills}>
+            {(showAllCategories
+              ? item?.seller_services_for_search || []
+              : (item?.seller_services_for_search || []).slice(0, 5)
+            ).map((service, i) => (
+              <View style={styles.skill} key={i}>
+                <Text style={styles.skillText}>
+                  {service?.sub_services?.subname}
+                </Text>
+              </View>
+            ))}
+
+            {item?.seller_services_for_search?.length > 5 && (
+              <TouchableOpacity
+                onPress={() => setShowAllCategories(!showAllCategories)}
+                style={styles.showMoreBtn}
+              >
+                <Text style={styles.showMoreText}>
+                  {showAllCategories ? "Show less" : "Show more"}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={styles.profileBtn}
+            onPress={() => handleProfileNavigation(item)}
+          >
+            <Text style={styles.profileBtnText}>View Profile</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </>
   );
 };
 
-
-
 export default EmployerCard;
 const styles = StyleSheet.create({
-
   employeeCard: {
     backgroundColor: "#1e1e1e",
     borderRadius: 16,
@@ -294,7 +288,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff33",
     marginVertical: 15,
   },
-   loaderOverlay: {
+  loaderOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -315,4 +309,4 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_500Medium",
     color: "#000",
   },
-})
+});

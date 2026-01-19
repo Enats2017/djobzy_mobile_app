@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Animated,
@@ -24,10 +24,10 @@ import Footer from "../../components/Footer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
-import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
+import { useEditJobGlobalStore } from "../../components/useEditJobGlobalStore";
 import { toastSuccess } from "../../utils/toast";
 
-const CreateJob = () => {
+const EditJobPost = () => {
   const {
     title,
     description,
@@ -44,15 +44,12 @@ const CreateJob = () => {
     expectedTime,
     processingFee,
     reset,
-    isEdit,
-    activeTab,
-    setActiveTab
-  } = useCreateJobGlobalStore();
+  } = useEditJobGlobalStore();
 
   const [titleError, setTitleError] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
-  
+  const { activeTab, setActiveTab } = useEditJobGlobalStore();
 
   const [timeError, setTimeError] = useState(false);
   const [priceError, setPriceError] = useState(false);
@@ -60,7 +57,6 @@ const CreateJob = () => {
   const [loading, setLoading] = useState(false);
   const totalSteps = 7;
   const navigation = useNavigation();
-
 
   const handleBack = () => {
     setPriceError(false);
@@ -88,19 +84,19 @@ const CreateJob = () => {
 
     switch (selectedOption) {
       case "1":
-        return { type: 1, days: 0};
+        return { type: 1, days: 1 };
 
       case "1-7":
-        return { type: 2, days: 0 };
+        return { type: 2, days: 1-7 };
 
       case "custom":
         return { type: 3, days: Number(customDays) || 0 };
 
       case "10-30":
-        return { type: 4, days: 0 };
+        return { type: 4, days: 10-30 };
 
       case "30+":
-        return { type: 5, days: 0 };
+        return { type: 5, days: 50 };
 
       case "customEmp":
         return { type: 6, days: Number(customDays) || 0 };
@@ -134,13 +130,13 @@ const CreateJob = () => {
             service: s.serviceId,
             id: s.subId,
             name: s.name,
-          })),
-        ),
+          }))
+        )
       );
 
       formData.append(
         "requirements",
-        JSON.stringify(state.requirements.map((r) => r.value)),
+        JSON.stringify(state.requirements.map((r) => r.value))
       );
 
       formData.append(
@@ -149,12 +145,12 @@ const CreateJob = () => {
           state.languages.map((l) => ({
             language: l.lang,
             level: l.level || 2,
-          })),
-        ),
+          }))
+        )
       );
 
       if (state.address) formData.append("address", state.address);
-
+      
       if (state.fileData?.fileUri) {
         formData.append("file[]", {
           uri: state.fileData.fileUri,
@@ -311,8 +307,8 @@ const CreateJob = () => {
                             isActive
                               ? styles.activeCircle
                               : isCompleted
-                                ? styles.completedCircle
-                                : styles.inactiveCircle,
+                              ? styles.completedCircle
+                              : styles.inactiveCircle,
                           ]}
                         />
                         <Text
@@ -321,8 +317,8 @@ const CreateJob = () => {
                             isActive
                               ? styles.activeText
                               : isCompleted
-                                ? styles.completedText
-                                : styles.inactiveText,
+                              ? styles.completedText
+                              : styles.inactiveText,
                           ]}
                         >
                           {label}
@@ -536,4 +532,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateJob;
+export default EditJobPost;

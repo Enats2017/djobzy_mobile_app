@@ -231,7 +231,7 @@ const EmployerAccount = () => {
                     </View>
                     <View style={styles.statBox}>
                       <Text style={styles.statValue}>{profile?.earned}</Text>
-                      <Text style={styles.statLabel}>Money Earned</Text>
+                      <Text style={styles.statLabel}>Money Spent</Text>
                     </View>
                     <View style={styles.statBox}>
                       <Text style={styles.statValue}>
@@ -390,12 +390,17 @@ const EmployerAccount = () => {
                           title="View"
                           paddingVertical={6}
                           paddingHorizontal={22}
+                           onPress={() =>
+                        navigation.navigate("PostJobDetails", {
+                          jobId: item.request_slug,
+                        })
+                      }
                         />
                       </View>
                     </View>
                   ))
                 ) : (
-                  <Text style={styles.noData}>No current work found.</Text>
+                   <Text style={styles.dots}>.........</Text>
                 )}
 
                 <Text style={styles.infoTitle}>Works History And Reviews</Text>
@@ -656,7 +661,7 @@ const styles = StyleSheet.create({
     borderColor: "#ffffff1a",
     borderRadius: 7,
     padding: 13,
-    marginTop: 8,
+    marginTop: 12,
     marginBottom: 12,
   },
   heading: {

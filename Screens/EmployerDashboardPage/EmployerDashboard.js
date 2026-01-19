@@ -152,7 +152,7 @@ const DuplicateEmp = () => {
               activeTab === "categories" && { backgroundColor: "#C96B59" },
             ]}
             onPress={() => {
-              navigation.navigate("MyFindJobs", { tab: 2 });
+              navigation.navigate("EmployerCategory");
             }}
           >
             <Text style={styles.tabText}>Categories</Text>
@@ -162,7 +162,7 @@ const DuplicateEmp = () => {
               styles.smallTab,
               activeTab === "favourites" && { backgroundColor: "#C96B59" },
             ]}
-            //onPress={() => setActiveTab("favourites")}
+            onPress={() => navigation.navigate("FavoriteEmployee")}
           >
             <Text style={styles.tabText}>Favourite Employees</Text>
           </TouchableOpacity>

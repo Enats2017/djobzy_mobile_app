@@ -10,16 +10,16 @@ const NoJobs = () => {
         resizeMode="contain"
       />
       <Text style={styles.noContractText}>You don't have any contract</Text>
-      <TouchableOpacity style={styles.findJobButton}>
+      {/* <TouchableOpacity style={styles.findJobButton}>
         <Text style={styles.findJobButtonText}>Find a Job</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   noJobContainer: {
-    flex: "1",
+    flex:1,
     justifyContent: "center",
     alignItems: "center",
   

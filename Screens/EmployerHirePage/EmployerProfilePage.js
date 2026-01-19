@@ -7,7 +7,7 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -43,7 +43,7 @@ export default function EmployerProfilePage({ route }) {
   const [followAction, setFollowAction] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
   const fetchEmployeeProfile = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const userStr = await AsyncStorage.getItem("user");
       const users = JSON.parse(userStr);
@@ -72,7 +72,7 @@ export default function EmployerProfilePage({ route }) {
 
   useEffect(() => {
     if (name) fetchEmployeeProfile();
-  }, [name]);
+  }, []);
 
   // const handleSendOffer = async () => {
   //   try {
@@ -131,7 +131,7 @@ export default function EmployerProfilePage({ route }) {
 
   const handleFollow = async () => {
     try {
-       setFollowAction("follow");
+      setFollowAction("follow");
       setSubmit(true);
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/followUser`, {
@@ -156,13 +156,13 @@ export default function EmployerProfilePage({ route }) {
     } catch (error) {
       console.log("Follow error:", error);
     } finally {
-      setSubmit(false)
+      setSubmit(false);
     }
   };
   const handleUnfollow = async () => {
     try {
-       setFollowAction("unfollow");
-      setSubmit(true)
+      setFollowAction("unfollow");
+      setSubmit(true);
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/unfollowUser`, {
         method: "POST",
@@ -200,7 +200,7 @@ export default function EmployerProfilePage({ route }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.employeeContainer}>
-        <PageNameHeaderBar navigation={navigation} title={user.full_name} />
+        <PageNameHeaderBar navigation={navigation} title={user?.full_name} />
         {loading ? (
           <Loading />
         ) : (
@@ -276,11 +276,12 @@ export default function EmployerProfilePage({ route }) {
                 {currentUserId !== user?.id && (
                   <TouchableOpacity
                     onPress={isLiked ? handleUnfollow : handleFollow}
-                   
                     style={[styles.btnFollow, isLiked && styles.btnUnfollow]}
                   >
                     {submit ? (
-                      <ActivityIndicator  color={isLiked ? "#FFFFFF" : "#000000"} />
+                      <ActivityIndicator
+                        color={isLiked ? "#FFFFFF" : "#000000"}
+                      />
                     ) : (
                       <Text
                         style={[
@@ -304,7 +305,10 @@ export default function EmployerProfilePage({ route }) {
                 >
                   <Text style={styles.btnHireText}>Hire</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.btnChat} onPress={() => navigation.navigate("FeedChat")}>
+                <TouchableOpacity
+                  style={styles.btnChat}
+                  onPress={() => navigation.navigate("FeedChat")}
+                >
                   <Text style={styles.btnChatText}>Chat</Text>
                 </TouchableOpacity>
               </View>
@@ -340,6 +344,9 @@ export default function EmployerProfilePage({ route }) {
               data={feeds}
               keyExtractor={(item) => item.id.toString()}
               scrollEnabled={feeds.length > 5 ? true : false}
+              ListHeaderComponent={
+                <Text style={styles.recentText}>{feeds[0]?.full_name} Recent Posts</Text>
+              }
               renderItem={({ item }) => (
                 <FeedPost
                   author={item.full_name}
@@ -499,7 +506,7 @@ const styles = StyleSheet.create({
   verificationRow: {
     flexDirection: "column",
     alignItems: "flex-start",
-    gap:3,
+    gap: 3,
   },
   iconTextRow: {
     flexDirection: "row",
@@ -558,14 +565,13 @@ const styles = StyleSheet.create({
   },
   btnUnfollow: {
     backgroundColor: "#E94235",
-    
   },
 
   btnUnfollowText: {
     color: "#ffffff",
     fontSize: 15,
     textAlign: "center",
-     fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat_700Bold",
   },
   btnHire: {
     flex: 1,
@@ -612,6 +618,7 @@ const styles = StyleSheet.create({
   statsNumber: {
     color: "#ffffff",
     fontSize: 16,
+    textAlign:"center",
     fontFamily: "Montserrat_700Bold",
   },
   statsLabel: {
@@ -637,6 +644,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 4,
     fontFamily: "Montserrat_400Regular",
+  },
+  recentText:{
+    color:"#fff",
+    fontFamily:"Montserrat_700Bold",
+    fontSize:16,
+    marginBottom:5,
   },
   aboutMeText: {
     color: "#c3c3c3",

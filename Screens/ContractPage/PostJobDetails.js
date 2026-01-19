@@ -23,6 +23,7 @@ import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ReviewPage from "../JobCreatePage/ReviewPage";
 import EmployerFooter from "../../components/EmployerFooter";
+import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 
 const PostJobDetails = () => {
   const navigation = useNavigation();
@@ -32,6 +33,8 @@ const PostJobDetails = () => {
   const [profileData, setProfileData] = useState([]);
   const route = useRoute();
   const { jobId } = route.params || [];
+  console.log(jobId);
+
   const [postJob, setPostJob] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
   const [gigId, setGigId] = useState(null);
@@ -40,6 +43,8 @@ const PostJobDetails = () => {
   const fetchEmployerJob = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
+      console.log(token);
+
       const response = await fetch(
         `${API_URL}/employer-job-details-api/${jobId}`,
         {
@@ -47,11 +52,10 @@ const PostJobDetails = () => {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
-      console.log(data);
       setPostJob(data);
     } catch (err) {
       setError(err.message);
@@ -62,6 +66,45 @@ const PostJobDetails = () => {
   useEffect(() => {
     fetchEmployerJob();
   }, []);
+
+  const handleEdit = () => {
+    const store = useCreateJobGlobalStore.getState();
+    store.reset();
+    store.setField("title", postJob.details?.subject || "");
+    store.setField("description", postJob.details?.description || "");
+    store.setField(
+      "selectedSubs",
+      postJob.category.map((c) => ({
+        subId: c.subid,
+        name: c.subname,
+      })),
+    );
+
+    store.setField(
+      "languages",
+      postJob.language?.map((l, i) => ({
+        id: i + 1,
+        lang: l.language_name,
+        level: l.level || "",
+      })) || [{ id: 1, lang: "", level: "" }],
+    );
+    store.setField(
+      "requirements",
+      postJob.requirement?.map((r, i) => ({
+        id: i + 1,
+        value: r.requirement,
+      })) || [{ id: 1, value: "" }],
+    );
+    store.setField("address", postJob.details.preferred_location);
+    store.setField("totalPrice", postJob.details?.fixed_minimum || "");
+    store.setField("hourlyRate", postJob.details?.hour_minimum || "");
+    store.setField("expectedTime", postJob.details?.expected_hour || "");
+
+    store.setEditMode(postJob?.details?.id);
+    store.setActiveTab(6);
+
+    navigation.navigate("CreateJob");
+  };
 
   const fetchUserAppliedDetials = async (id) => {
     try {
@@ -76,12 +119,11 @@ const PostJobDetails = () => {
       });
       const data = await response.json();
       setProfileData(data?.profile);
-      setShowPayHireModal(true);
     } catch (err) {
       console.log(err);
       setError(err.message);
     } finally {
-      setModalLoading(true);
+      setModalLoading(false);
     }
   };
 
@@ -122,11 +164,12 @@ const PostJobDetails = () => {
     setShowDeactivateModal(false);
   }
   const handlePayHire = () => {
-  setShowPayHireModal(false);   
-  navigation.navigate("UserPaymentPage", {
-    profileData:profileData,
-  });
-};
+    setShowPayHireModal(false);
+    navigation.navigate("UserPaymentPage", {
+      profileData: profileData,
+    });
+  };
+  console.log("gigs", postJob.gigs);
 
   return (
     <>
@@ -304,20 +347,17 @@ const PostJobDetails = () => {
                           </View>
                           <TouchableOpacity
                             style={styles.biddingPayHireBtn}
-                            onPress={() => fetchUserAppliedDetials(gig.prp_id)}
-                              disabled={modalLoading == gig?.id}
+                            onPress={() => {
+                              console.log("1111", gig?.id);
+
+                              navigation.navigate("EmployeeHire", {
+                                gid: gig?.prp_id,
+                              });
+                            }}
                           >
-                            {
-                              modalLoading ?(
-                                <ActivityIndicator size="small" colo="#fff"/>
-
-                              ):(
-
                             <Text style={styles.biddingPayHireBtnText}>
                               Pay & Hire
                             </Text>
-                              )
-                            }
                           </TouchableOpacity>
                         </View>
                       ))}
@@ -337,14 +377,7 @@ const PostJobDetails = () => {
           )}
           <View>
             <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={styles.buttonEdit}
-                onPress={() =>
-                  navigation.navigate("CreateJob", {
-                    requestSlug: postJob.details.request_slug,
-                  })
-                }
-              >
+              <TouchableOpacity style={styles.buttonEdit} onPress={handleEdit}>
                 <Text style={styles.buttonEditText}>Edit</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -459,7 +492,10 @@ const PostJobDetails = () => {
                   </Text>
                 </View>
                 <View style={styles.hireButtonRow}>
-                  <TouchableOpacity style={styles.payBtn} onPress={handlePayHire}>
+                  <TouchableOpacity
+                    style={styles.payBtn}
+                    onPress={handlePayHire}
+                  >
                     <Text style={styles.payBtnEditText}>Pay & Hire</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.buttonBoost}>

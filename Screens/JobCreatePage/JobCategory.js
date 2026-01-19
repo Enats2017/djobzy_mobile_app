@@ -14,13 +14,15 @@ import {
   View,
 } from "react-native";
 import { API_ICON, API_URL } from "../../api/ApiUrl";
+import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
+
 
 const JobCategory = ({
-  selectedSubs,
-  setSelectedSubs,
   categoryError,
   setCategoryError,
 }) => {
+    const { selectedSubs, addCategory, removeCategory } =
+    useCreateJobGlobalStore();
   const [search, setSearch] = useState("");
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,20 +54,18 @@ const JobCategory = ({
     item.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleSelectSub = (service, sub) => {
-    const exists = selectedSubs.some((s) => s.subId === sub.subid);
-    if (!exists) {
-      setSelectedSubs([
-        { serviceId: service.id, subId: sub.subid, name: sub.subname },
-        ...selectedSubs,
-      ]);
-      setCategoryError(false);
-    }
+
+
+ const handleSelectSub = (service, sub) => {
+    addCategory({
+      serviceId: service.id,
+      subId: sub.subid,
+      name: sub.subname,
+    });
+    setCategoryError(false);
   };
 
-  const handleRemoveSub = (subId) => {
-    setSelectedSubs(selectedSubs.filter((s) => s.subId !== subId));
-  };
+
 
   const toggleExpand = (serviceId) => {
     setExpandedServices((prev) => ({
@@ -113,7 +113,7 @@ const JobCategory = ({
           {selectedSubs.map((sub) => (
             <View key={sub.subId} style={styles.selectedPill}>
               <Text style={styles.selectedText}>{sub.name}</Text>
-              <TouchableOpacity onPress={() => handleRemoveSub(sub.subId)}>
+              <TouchableOpacity onPress={() =>  removeCategory(sub.subId)}>
                 <Entypo name="cross" size={17} color="#c3c3c3" />
               </TouchableOpacity>
             </View>
@@ -156,7 +156,7 @@ const JobCategory = ({
               <View style={styles.subCategories}>
                 {service.subservices.map((sub) => {
                   const isSelected = selectedSubs.some(
-                    (s) => s.subId === sub.subid
+                    (s) =>  Number(s.subId) === Number(sub.subid)
                   );
                   return (
                     <TouchableOpacity

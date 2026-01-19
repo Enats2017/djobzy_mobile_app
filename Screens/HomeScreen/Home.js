@@ -19,8 +19,7 @@ export default function HomeScreen() {
 
   const checkAuth = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
-      
+      const token = await AsyncStorage.getItem("token");      
       if (!token) {
         navigation.navigate("SliderScreen");
         return;
@@ -28,6 +27,7 @@ export default function HomeScreen() {
       const userStr = await AsyncStorage.getItem("user");
       const user = JSON.parse(userStr);
       const { verification_count, admin } = user;
+      console.log("VERIFICATION COUNT RAW:", user?.verification_count);
         if (verification_count < 2) {
       navigation.reset({
         index: 0,
@@ -37,7 +37,7 @@ export default function HomeScreen() {
     }
 
       if (admin == 2) {
-        navigation.navigate("DuplicateEmp");
+        navigation.navigate("EmployerDashboard");
       } else {
         navigation.navigate("Dashboard");
       }
@@ -124,7 +124,7 @@ export default function HomeScreen() {
           style={[
             styles.arrowButton,
             {
-              bottom: height * 0.14,
+              bottom: height * 0.132,
               width: arrowSize,
               height: arrowSize,
               borderRadius: arrowSize / 2,

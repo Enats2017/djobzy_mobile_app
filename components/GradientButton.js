@@ -7,6 +7,7 @@ const GradientButton = ({
   onPress,
   paddingHorizontal = 55,
   marginTop = 10,
+  borderRadius=12,
   paddingVertical = 10,
   fontSize = 20,
   loading = false,
@@ -20,14 +21,14 @@ const GradientButton = ({
         colors={["#C96B59", "#D17B68"]}
         style={[
           styles.button,
-          { paddingHorizontal, marginTop, paddingVertical },
-          styleOverride,
+          { paddingHorizontal, marginTop, paddingVertical, borderRadius},
+          styleOverride, 
            (disabled || loading)
         ]}
         
       >
         {loading ? (
-          <ActivityIndicator color="#fff"  size={28} />
+          <ActivityIndicator color="#fff"  size={26} />
         ) : (
           <Text style={styles.buttonText}>{title}</Text>
         )}

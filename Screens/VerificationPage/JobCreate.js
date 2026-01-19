@@ -2,6 +2,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import GradientButton from "../../components/GradientButton";
 
 const JobCreate = ({ admin, userId }) => {
   console.log("admin",admin);
@@ -47,16 +48,12 @@ const JobCreate = ({ admin, userId }) => {
       </View>
       <View style={styles.jobbtn}>
         {admin === 0 ? (
-          <TouchableOpacity
-            style={styles.createBtn}
-            onPress={() => navigation.navigate("PromoteService", { userId })}
-          >
-            <Text style={styles.createBtnText}>Create Promoted Services</Text>
-          </TouchableOpacity>
+          
+          <GradientButton title="Create Promoted Services" paddingVertical={15} onPress={() => navigation.navigate("PromoteService", { userId })} />
         ) : (
-          <TouchableOpacity style={styles.nextBtn} onPress={() => navigation.navigate("CreateJob", { userId })}>
-            <Text style={styles.nextBtnText}>Create Job Post</Text>
-          </TouchableOpacity>
+          
+
+          <GradientButton title="Create Job Post" paddingVertical={15} onPress={() => navigation.navigate("CreateJob", { userId })}/>
         )}
         <TouchableOpacity style={styles.leterBtn} onPress={handleCreateLater}>
           <Text style={styles.nextBtnText}>Create Later</Text>
@@ -129,13 +126,7 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 20,
   },
-  nextBtn: {
-    backgroundColor: "#d98974",
-    padding: 16,
-    width: "100%",
-    borderRadius: 12,
-    alignItems: "center",
-  },
+  
   createBtn: {
     backgroundColor: "#f1eeedff",
     padding: 16,
@@ -147,11 +138,7 @@ const styles = StyleSheet.create({
     fontWeight: "700", 
     fontSize: 18
    },
-  createBtnText: {
-    color: "#303030",
-    fontSize: 20,
-    fontFamily: "Montserrat_700Bold",
-  },
+ 
   leterBtn: {
     borderWidth: 1,
     borderColor: "#fff",

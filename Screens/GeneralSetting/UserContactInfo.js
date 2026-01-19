@@ -10,6 +10,7 @@ import { ScrollView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import GradientButton from "../../components/GradientButton";
+import PhoneNumberInput from "../../components/PhoneNumberInput";
 
 const UserContactInfo = () => {
   const navigation = useNavigation();
@@ -18,12 +19,16 @@ const UserContactInfo = () => {
   const [phone, setPhone] = useState(user?.mobile_number || "");
   const [postal, setPostal] = useState("");
   const [location, setLocation] = useState("");
-  const countryCode = details?.phonecode ? `+${details.phonecode}` : "+91";
+  const [countryCode, setCountryCode] = useState(
+ user?.mobile_country_id || ""
+);
+  console.log("11111",countryCode);
+  
  const [loading, setLoading] = useState(false);
 
   console.log("PHONE:", phone);
   console.log("LOCATION:", location);
-  console.log("COUNTRY ID:", user?.mobile_country_id);
+
   console.log(postal);
 
   const submitContactInfo = async () => {
@@ -90,10 +95,15 @@ const UserContactInfo = () => {
             contentContainerStyle={{ paddingBottom: 100 }}
             showsVerticalScrollIndicator={false}
           >
+            <PhoneNumberInput
+             value={phone}
+             defaultCallingCode={countryCode}
+            
+            />
             <ContactInfo
               phoneValue={phone}
               onChangePhone={setPhone}
-              countryCode={countryCode}
+              countryCode={ countryCode}
               postalCodeValue={postal}
               onChangePostalCode={setPostal}
               locationValue={location}

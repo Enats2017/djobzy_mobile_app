@@ -4,32 +4,22 @@ import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import FilePreview from "../../components/FilePreview";
+import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 
-const FileUpload = ({ fileData, setFileData }) => {
+const FileUpload = () => {
+  const { fileData, setField } = useCreateJobGlobalStore();
   const pickDocument = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ],
-    });
-    if (!result.canceled && result.assets?.length > 0) {
-      const file = result.assets[0];
-
-      setFileData({
-        fileName: file.name,
-        fileUri: file.uri,
-        fileType: file.mimeType,
-        fileSize: file.size,
+    const res = await DocumentPicker.getDocumentAsync({});
+    if (!res.canceled) {
+      setField("fileData", {
+        fileName: res.assets[0].name,
+        fileUri: res.assets[0].uri,
+        fileType: res.assets[0].mimeType,
+        fileSize: res.assets[0].size,
       });
     }
   };
-   console.log("FILE DATA PASSING TO PREVIEW 👉", fileData);
-
+  console.log("FILE DATA PASSING TO PREVIEW 👉", fileData);
 
   return (
     <>
@@ -41,15 +31,21 @@ const FileUpload = ({ fileData, setFileData }) => {
           </View>
           <Text style={styles.optionalText}>Optional</Text>
         </TouchableOpacity>
-       <View style={{paddingTop:12}}>
-        {fileData?.fileName && (
-          <FilePreview
-            file={fileData}
-            onRemove={() => setFileData({ fileName: null, fileUri: null })}
-          />
-        )}
-
-       </View>
+        <View style={{ paddingTop: 12 }}>
+          {fileData?.fileName && (
+            <FilePreview
+              file={fileData}
+              onRemove={() =>
+                setField("fileData", {
+                  fileName: null,
+                  fileUri: null,
+                  fileType: null,
+                  fileSize: null,
+                })
+              }
+            />
+          )}
+        </View>
 
         <View style={styles.notesContainer}>
           <Text style={styles.note}>• The maximum file size is 30 MB.</Text>

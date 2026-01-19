@@ -17,12 +17,13 @@ import GradientButton from "../../components/GradientButton";
 
 import Icon from "react-native-vector-icons/Feather";
 import { API_URL } from "../../api/ApiUrl";
-import { toastSuccess } from "../../utils/toast";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const AccountSetup = ({
   countries,
   fullName,
   username,
+  setFullName,
   setUsername,
   email,
   emailVerified,
@@ -46,9 +47,14 @@ const AccountSetup = ({
   //    setEmail(userDetails.email || "");
   //    //setEmailVerified(userDetails.confirmation || 0);
   //  }, []);
+
+  console.log("PHONE:", phoneNumber);
+console.log("COUNTRY CODE:", mobileCountryId);
+
   const handleAccountSetup = async () => {
     if (!fullName || !username || !phoneNumber) {
-      Alert.alert("Error", "Please fill all required fields.");
+      //Alert.alert("Error", "Please fill all required fields.");
+      toastError("Please fill all required fields.");
       return;
     }
     try {
@@ -73,16 +79,28 @@ const AccountSetup = ({
       );
 
       if (response.data.status === 200) {
-        // Alert.alert("Success", "Account setup completed!");
         toastSuccess("Account setup completed!");
         onNext();
+        return;
       }
-        const msg = response.data.message.toLowerCase();
-        if (msg.includes("username")) {
-          setUsernameError(response.data.message);
-        } else if (msg.includes("phone")) {
-          setPhoneError(response.data.message);
+      if (response.data.errors) {
+        const errors = response.data.errors;
+
+        if (errors.username) {
+          setUsernameError(errors.username[0]);
         }
+
+        if (errors.phone_number) {
+          setPhoneError(errors.phone_number[0]);
+        }
+
+        return; // 🔴 VERY IMPORTANT
+      }
+
+      // ✅ ONLY GENERIC ERROR → TOAST
+      if (response.data.message) {
+        toastError(response.data.message);
+      }
     } catch (error) {
       console.error("Setup error:", error.response?.data || error.message);
       Alert.alert("Error", "Something went wrong during account setup.");
@@ -109,7 +127,7 @@ const AccountSetup = ({
           value={username}
           onChangeText={(text) => {
             setUsername(text);
-             setUsernameError(false)
+            setUsernameError(false);
           }}
         />
         {usernameError ? (
@@ -151,9 +169,9 @@ const AccountSetup = ({
         <Text style={styles.label}>Phone Number</Text>
         <PhoneNumberInput
           value={phoneNumber}
-          onChange={(text) => {
-            setPhoneNumber(text);
-            setMobileCountryId("91"); // or whatever you want to set
+          onChange={({ phone, countryCode }) => {
+            setPhoneNumber(phone); // ✅ only digits
+            setMobileCountryId(countryCode); // ✅ 91
           }}
         />
         {/* <View style={{ position: "relative", width: "100%" }}>
@@ -195,9 +213,9 @@ const AccountSetup = ({
           )}
         </View> */}
       </View>
-       {phoneError ? (
+      {phoneError ? (
         <Text style={{ color: "red", marginTop: 4 }}>{phoneError}</Text>
-      ) : null} 
+      ) : null}
 
       <GradientButton
         title="Next"

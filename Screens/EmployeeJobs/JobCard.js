@@ -1,4 +1,5 @@
 import { Feather, FontAwesome } from "@expo/vector-icons";
+import React, { useState } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
     Image,
@@ -12,11 +13,69 @@ import { useNavigation } from "@react-navigation/native";
 import LineDivider from "../../components/LineDivider";
 import GradientButton from "../../components/GradientButton";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../api/ApiUrl";
 
 const JobCard = ({ item, isLastItem }) => {
     const navigation = useNavigation();
     const servicesCount = item.gigServices ? item.gigServices.length : 0;
     const maxVisibleServices = 2;
+     const [isLiked, setIsLiked] = useState(item?.is_like == 1);
+     const [loading, setLoading] = useState(false);
+
+      const handleFollow = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/followUser`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: item?.id,
+        }),
+      });
+      const data = await response.json();
+      console.log("Follow response:", data);
+      if (data.status === 200) {
+        setIsLiked(true);
+      }
+    } catch (error) {
+      console.log("Follow error:", error);
+    } finally {
+       setLoading(false);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    try {
+       setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/unfollowUser`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: item?.id,
+        }),
+      });
+      const data = await response.json();
+      console.log("Unfollow response:", data);
+      if (data.status == 200) {
+        setIsLiked(false);
+      }
+    } catch (error) {
+      console.log("Unfollow error:", error);
+    } finally {
+       setLoading(false);
+    }
+  };
 
     return (
         <>
@@ -60,13 +119,23 @@ const JobCard = ({ item, isLastItem }) => {
                         </View>
 
                         <View>
-                            <TouchableOpacity style={styles.heartTouchable}>
-                                <FontAwesome
-                                    name={"heart-o"}
-                                    size={20}
-                                    color={"#fff"}
-                                />
-                            </TouchableOpacity>
+                             <TouchableOpacity
+                                          style={styles.heartTouchable} 
+                                          disabled={loading}
+                                          onPress={() => {
+                                            if (isLiked) {
+                                              handleUnfollow();
+                                            } else {
+                                              handleFollow();
+                                            }
+                                          }}
+                                        >
+                                          <FontAwesome
+                                            name={isLiked ? "heart" : "heart-o"}
+                                            size={20}
+                                            color={isLiked ? "#ff0000" : "#c3c3c3"}
+                                          />
+                                        </TouchableOpacity>
                         </View>
                     </View>
                 </View>

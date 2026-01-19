@@ -15,7 +15,7 @@ const { width, height } = Dimensions.get("window");
 const FourthScreen = () => {
   const navigation = useNavigation();
   return (
-    <SafeAreaView  style={{flex:1}} >
+    <SafeAreaView  style={{flex:1, backgroundColor:"#222222",}} >
       <View style={styles.container}>
         <View style={styles.content}>
           <View style={styles.imageContainer}>
@@ -67,34 +67,37 @@ const FourthScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "flex-start",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor:"#222222"
+   
+   
     
   },
   content: {
     alignItems: "center",
-    justifyContent:"center",   
+    justifyContent:"center",  
+     paddingHorizontal: 15, 
   },
   
    baseImage:{
     position:"absolute",
-    top: 50,
-    left:54, 
+    top: 35,
+    left:42, 
     width:"90%",  
+   },
+   overlayImage:{
+    top:0,
+    bottom:0
+    
    },
   
 
   section: {
     alignItems: "center",
-    paddingVertical:10,
+    paddingVertical:15,
   },
   heading: {
     fontSize: 48 ,
     fontFamily:"Montserrat_400Regular",
-    color: "#ffffff",
-    
+    color: "#ffffff",  
   },
   bold:{
     fontFamily:"Montserrat_700Bold",
@@ -113,6 +116,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 15,
+    
     
     
   },

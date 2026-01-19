@@ -22,10 +22,7 @@ const HeaderBar = ({ onMenuPress, showSearch = true }) => {
     const user = JSON.parse(userStr);
     const { admin } = user;
     const search_type = admin == 2 ? 2 : 0;
-    console.log("seracTpye", search_type);
-    navigation.navigate("SearchScreen", {
-      search_type,
-    });
+    navigation.navigate("SearchScreen", {search_type});
   };
   return (
     <View style={styles.container}>

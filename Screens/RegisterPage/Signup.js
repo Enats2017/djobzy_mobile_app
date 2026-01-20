@@ -17,6 +17,7 @@ import {
 import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GradientButton from "../../components/GradientButton";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
@@ -70,9 +71,10 @@ const Signup = () => {
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 10}
         >
           <ScrollView
-            contentContainerStyle={{ paddingBottom: 30 }}
+            contentContainerStyle={styles.container}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -87,29 +89,27 @@ const Signup = () => {
               Create an account to explore about our app
             </Text>
             <Text style={styles.label}>Full Name/Company Name</Text>
-              <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              placeholder=" Enter Full Name/Company Name"
-              placeholderTextColor="#888"
-              value={fullName}
-              onChangeText={setFullName}
-            />
-
-              </View>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder=" Enter Full Name/Company Name"
+                placeholderTextColor="#888"
+                value={fullName}
+                onChangeText={setFullName}
+              />
+            </View>
             <Text style={styles.label}>Email</Text>
-             <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              placeholder="xyz@gmail.com"
-              placeholderTextColor="#888"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-
-             </View>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="xyz@gmail.com"
+                placeholderTextColor="#888"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
             <Text style={styles.label}>Create a password</Text>
             <View style={styles.passwordContainer}>
               <TextInput
@@ -141,7 +141,6 @@ const Signup = () => {
                 value={referralUsername}
                 onChangeText={setReferralUsername}
               />
-            
             </View>
             <View style={styles.row}>
               <TouchableOpacity
@@ -168,7 +167,12 @@ const Signup = () => {
               </Text>
             </View>
             <View style={{ width: "100%" }}>
-              <GradientButton title="Sign Up" onPress={handleRegister} disabled={loading} loading={loading} />
+              <GradientButton
+                title="Sign Up"
+                onPress={handleRegister}
+                disabled={loading}
+                loading={loading}
+              />
             </View>
 
             <View style={styles.dividerContainer}>
@@ -183,13 +187,13 @@ const Signup = () => {
               />
               <Text style={styles.socialText}>Sign up with Google</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.facebookBtn}>
+            {/* <TouchableOpacity style={styles.facebookBtn}>
               <Image
                 source={require("../../assets/images/facebook.png")}
                 style={styles.socialIcon}
               />
               <Text style={styles.socialText}>Sign up with Facebook</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <Text style={styles.footerText}>
               Already have an account?{" "}
               <Text
@@ -209,6 +213,7 @@ const styles = StyleSheet.create({
   containers: {
     flex: 1,
     paddingHorizontal: 17,
+    paddingBottom:50,
   },
   // container: {
   //   alignItems: "center",
@@ -216,38 +221,38 @@ const styles = StyleSheet.create({
   //   marginTop: 50,
   //   marginBottom: 20,
   // },
-  logoContainer:{
-    alignItems:"center",
-    paddingTop:20
+  logoContainer: {
+    alignItems: "center",
+    paddingTop: 20,
   },
 
   title: {
     fontSize: 30,
     color: "#fff",
     textAlign: "center",
-      fontFamily:"Montserrat_600SemiBold",
+    fontFamily: "Montserrat_600SemiBold",
   },
   subtitle: {
     fontSize: 15,
     color: "#FFFFFF",
     textAlign: "center",
-    fontFamily:"Montserrat_600SemiBold",
+    fontFamily: "Montserrat_600SemiBold",
     marginBottom: 20,
   },
   label: {
     color: "#fff",
     alignSelf: "flex-start",
     marginBottom: 5,
-    fontFamily:"Montserrat_600SemiBold",
+    fontFamily: "Montserrat_600SemiBold",
     marginTop: 10,
-    fontSize:16,
+    fontSize: 16,
   },
   input: {
     width: "100%",
     height: 48,
-   fontFamily:"Montserrat_400Regular",
-    fontSize:14,
-    color:"#0000",
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+    color: "#0000",
     backgroundColor: "#fff",
     borderRadius: 8,
     paddingHorizontal: 10,
@@ -256,28 +261,32 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 48,
     borderRadius: 6,
-    paddingHorizontal:5,
+    paddingHorizontal: 5,
     backgroundColor: "#fff",
     flexDirection: "row",
     alignItems: "center",
   },
-  passwordInput: { 
+  passwordInput: {
     flex: 1,
-    fontFamily:"Montserrat_400Regular",
-    fontSize:14,
-    color:"#000"
-
-   },
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+    color: "#000",
+  },
   eyeIcon: { paddingHorizontal: 5 },
   row: { flexDirection: "column", width: "100%", marginVertical: 10 },
   rememberMe: { flexDirection: "row", alignItems: "center" },
-  rememberText: { color: "#fff", marginLeft: 5, fontFamily:"Montserrat_400Regular", fontSize:14 },
+  rememberText: {
+    color: "#fff",
+    marginLeft: 5,
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+  },
   forgotText: {
     color: "#CB7767",
     textDecorationLine: "underline",
-    fontFamily:"Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
     marginLeft: 24,
-    fontSize:14,
+    fontSize: 14,
   },
 
   dividerContainer: {
@@ -287,7 +296,11 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   line: { flex: 1, height: 1, backgroundColor: "#888" },
-  orText: { color: "#fff", marginHorizontal: 10, fontFamily:"Montserrat_500Medium" },
+  orText: {
+    color: "#fff",
+    marginHorizontal: 10,
+    fontFamily: "Montserrat_500Medium",
+  },
   checkbox: {
     width: 18,
     height: 18,
@@ -327,8 +340,20 @@ const styles = StyleSheet.create({
     marginLeft: 80,
     textAlign: "center",
   },
-  socialText: { color: "#fff", fontWeight: "600", marginLeft: 10, fontFamily:"Montserrat_600SemiBold" },
-  footerText: { color: "#fff", marginTop: 8, fontSize: 16, fontFamily:"Montserrat_400Regular", textAlign:"center" },
+  socialText: {
+    color: "#fff",
+    fontWeight: "600",
+    marginLeft: 10,
+    fontFamily: "Montserrat_600SemiBold",
+  },
+  footerText: {
+    color: "#fff",
+    marginTop: 8,
+     marginBottom:20,
+    fontSize: 16,
+    fontFamily: "Montserrat_400Regular",
+    textAlign: "center",
+  },
   linkText: {
     color: "#CB7767",
     fontWeight: "600",

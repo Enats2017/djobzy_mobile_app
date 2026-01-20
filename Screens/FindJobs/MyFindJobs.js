@@ -113,15 +113,14 @@ const styles = StyleSheet.create({
   },
   topButton: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    padding:10,
     borderRadius: 20,
   },
   topButtonActive: {
     backgroundColor: "#fff"
   },
   topButtonInactive: { backgroundColor: "#423c3c" },
-  topButtonText: { fontSize: 14, fontFamily: "Montserrat_500Medium", textAlign: "center" },
+  topButtonText: { fontSize: 12, fontFamily: "Montserrat_500Medium", textAlign: "center" },
   topButtonTextActive: { color: "#303030", fontFamily: "Montserrat_600SemiBold" },
   topButtonTextInactive: { color: "#fff", fontWeight: "500" },
   contentContainer: {

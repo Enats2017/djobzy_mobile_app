@@ -490,13 +490,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff1a",
     flex: 1,
     borderRadius:50,
-    padding:12,
+    padding:10,
     
   },
 
   chipText: {
     color: "#ffffff",
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: "Montserrat_500Medium",
      textAlign: "center",
   },

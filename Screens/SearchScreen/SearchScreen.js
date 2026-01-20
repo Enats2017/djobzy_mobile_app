@@ -8,15 +8,24 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Dimensions,
+  Modal,
+  ActivityIndicator
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import SearchedJobs from "../../components/SearchedJobs";
 import SearchedEmployees from "../../components/SearchedEmployees";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Footer from "../../components/Footer";
+import GradientButton from "../../components/GradientButton";
+import { toastError, toastSuccess } from "../../utils/toast";
+import { useGlobalSearch } from "./useGlobalSearch";
+import Loading from "../../components/Loading";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -24,12 +33,18 @@ const SearchScreen = () => {
   const navigation = useNavigation();
   const debounceTimer = useRef(null);
   const latestKeywordRef = useRef("");
+  const { keyword, setKeyword } = useGlobalSearch();
   const route = useRoute();
   const { search_type } = route.params;
-  const [keyword, setKeyword] = useState("");
   const [results, setResults] = useState([]);
   const [searchMode, setSearchMode] = useState(search_type ?? 0);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [categoryModal, setCategoryModal] = useState(false);
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryLoading, setCategoryLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const insets = useSafeAreaInsets();
 
   const handleSearch = (text) => {
     setKeyword(text);
@@ -49,8 +64,8 @@ const SearchScreen = () => {
     // Debounce API call
     debounceTimer.current = setTimeout(async () => {
       try {
+        setLoading(true);
         const token = await AsyncStorage.getItem("token");
-
         const res = await fetch(`${API_URL}/filter-by-keyword`, {
           method: "POST",
           headers: {
@@ -72,8 +87,48 @@ const SearchScreen = () => {
         }
       } catch (error) {
         console.log("Search error:", error);
+      } finally {
+        setLoading(false);
       }
     }, 350);
+  };
+
+  const handleRequestCategory = async () => {
+    if (!categoryName.trim()) {
+      toastSuccess("Please enter category name");
+      return;
+    }
+    try {
+      setCategoryLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/request-category`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: categoryName,
+        }),
+      });
+      const data = await res.json();
+      if (data.status === 200) {
+        toastSuccess("Category request sent successfully");
+        setCategoryName("");
+        setCategoryModal(false);
+      } else {
+        toastError(data.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.log("Request category error:", error);
+      toastError("Server error");
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+  const handleSwitch = () => {
+    setSearchMode((prev) => (prev === 0 ? 2 : 0));
   };
 
   return (
@@ -83,7 +138,6 @@ const SearchScreen = () => {
           {/* SEARCH BAR */}
           <View style={styles.searchSection}>
             <View style={styles.inputWrapper}>
-              {/* DROPDOWN ICON */}
               <View style={styles.dropdownWrapper}>
                 <TouchableOpacity
                   style={styles.dropdownBtn}
@@ -112,7 +166,9 @@ const SearchScreen = () => {
                         }}
                       >
                         <Ionicons name="person" size={16} color="#000" />
-                        <Text style={styles.dropdownItemText}>Search for a people</Text>
+                        <Text style={styles.dropdownItemText}>
+                          Search for a people
+                        </Text>
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity
@@ -125,7 +181,9 @@ const SearchScreen = () => {
                         }}
                       >
                         <Ionicons name="briefcase" size={16} color="#000" />
-                        <Text style={styles.dropdownItemText}>Search for a Jobs</Text>
+                        <Text style={styles.dropdownItemText}>
+                          Search for a Jobs
+                        </Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -133,7 +191,6 @@ const SearchScreen = () => {
               </View>
               <View style={styles.divider} />
 
-              {/* INPUT */}
               <TextInput
                 placeholder={
                   searchMode == 0 ? "Search for a jobs" : "Search for a people"
@@ -144,43 +201,100 @@ const SearchScreen = () => {
                 style={styles.input}
               />
 
-              <Ionicons name="search" size={18} color="#aaa" />
+              <Ionicons name="search" size={15} color="#FFFFFF" />
             </View>
 
             {/* GRID ICON */}
-            <TouchableOpacity style={styles.categoryIcon}>
+            <TouchableOpacity
+              style={styles.categoryIcon}
+              onPress={() => navigation.navigate("SearchCategory")}
+            >
               <Ionicons name="grid-outline" size={18} color="#fff" />
             </TouchableOpacity>
           </View>
 
-          {/* RESULTS */}
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-            {/* {results.length === 0 && keyword.length >= 2 && (
+          {loading ? (
+            <View style={styles.resultLoader}>
+              <ActivityIndicator size="large" color="#fff" />
+            </View>
+          ) : (
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* {results.length === 0 && keyword.length >= 2 && (
               <Text style={styles.noResult}>No results found</Text>
             )} */}
-
-            {searchMode == 0 ? (
-              <SearchedJobs data={results} />
-            ) : (
-              <SearchedEmployees data={results} />
-            )}
-
-            {keyword.length > 0 && (
-              <View style={styles.requestCategory}>
-                <Text style={styles.categoryText}>
-                  Can't find your category?
-                </Text>
-                <TouchableOpacity>
-                  <Text style={styles.requestText}>
-                    Request a new category
+              {keyword.length > 0 && (
+                <View style={styles.requestCategory}>
+                  <Text style={styles.categoryText}>
+                    Search for a {keyword}
                   </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </ScrollView>
+                  <TouchableOpacity onPress={handleSwitch}>
+                    <Text style={styles.requestText}>
+                      Switch to {searchMode == 0 ? "jobs" : "Employee"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {searchMode == 0 ? (
+                <SearchedJobs data={results} />
+              ) : (
+                <SearchedEmployees data={results} />
+              )}
+
+              {keyword.length > 0 && (
+                <View style={styles.requestCategory}>
+                  <Text style={styles.categoryText}>
+                    Can't find your category?
+                  </Text>
+                  <TouchableOpacity onPress={() => setCategoryModal(true)}>
+                    <Text style={styles.requestText}>
+                      Request a new category
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </ScrollView>
+          )}
         </View>
       </TouchableWithoutFeedback>
+      <Modal
+        visible={categoryModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setCategoryModal(false)}
+      >
+        <View style={styles.deleteOverlay}>
+          <View
+            style={[styles.categoryContainer, { paddingBottom: insets.bottom }]}
+          >
+            <View style={styles.header}>
+              <Text style={styles.title}>Request a new category</Text>
+              <TouchableOpacity onPress={() => setCategoryModal(false)}>
+                <Ionicons name="close" size={22} color="#000" />
+              </TouchableOpacity>
+            </View>
 
+            <TextInput
+              placeholder="Enter Category"
+              placeholderTextColor="#666666"
+              style={styles.categoryinput}
+              value={categoryName}
+              onChangeText={setCategoryName}
+            />
+
+            <GradientButton
+              title="Send"
+              disabled={categoryLoading}
+              loading={categoryLoading}
+              onPress={handleRequestCategory}
+            />
+          </View>
+        </View>
+      </Modal>
       <Footer />
     </SafeAreaView>
   );
@@ -192,6 +306,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     backgroundColor: "#222222",
   },
+  resultLoader: {
+  minHeight: 200,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
 
   searchSection: {
     flexDirection: "row",
@@ -296,6 +416,44 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textDecorationLine: "underline",
     textDecorationColor: "#f5b400",
+  },
+
+  deleteOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.2)",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  categoryContainer: {
+    backgroundColor: "#fff",
+    width: "100%",
+    maxHeight: "70%",
+    paddingVertical: 18,
+    paddingHorizontal: 15,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#000",
+  },
+  categoryinput: {
+    height: 46,
+    borderWidth: 1,
+    borderColor: "#000000",
+    borderRadius: 10,
+    fontFamily: "Montserrat_500Medium",
+    paddingHorizontal: 12,
+    fontSize: 16,
+    color: "#666666",
+    marginBottom: 10,
   },
 });
 

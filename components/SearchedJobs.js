@@ -84,9 +84,9 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#fff",
-    fontWeight: "500",
+  fontFamily: "Montserrat_400Regular",
   },
 
   subTitle: {

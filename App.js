@@ -7,6 +7,7 @@ import {
   Montserrat_700Bold,
   Montserrat_800ExtraBold,
 } from "@expo-google-fonts/montserrat";
+import { Text, TextInput } from 'react-native';
 import Toast from "react-native-toast-message";
 import { toastConfig } from "./utils/toastConfig";
 import { useFonts } from "expo-font";
@@ -86,6 +87,8 @@ import Register_Success from "./Screens/RegisterPage/Register_Success";
 import EmployeeHire from "./Screens/ContractPage/EmployeeHire";
 import FavoriteEmployee from "./Screens/EmployerDashboardPage/FavoriteEmployee";
 import EmployerCategory from "./Screens/EmployerDashboardPage/EmployerCategory";
+import SearchCategory from "./Screens/SearchScreen/SearchCategory";
+import SearchResult from "./Screens/SearchScreen/SearchResult";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -114,10 +117,24 @@ const App = () => {
     return null;
   }
 
+   if (Text.defaultProps == null) {
+  Text.defaultProps = {};
+}
+Text.defaultProps.allowFontScaling = false;
+
+if (TextInput.defaultProps == null) {
+  TextInput.defaultProps = {};
+}
+TextInput.defaultProps.allowFontScaling = false;
+
+ 
+
   return (
     <View style={{ flex: 1 }}>
+      
       <MessageNotificationProvider>
         <NavigationContainer>
+          
           <Stack.Navigator
             initialRouteName="Home"
             screenOptions={{ headerShown: false }}
@@ -194,6 +211,8 @@ const App = () => {
             <Stack.Screen name="EmployeeHire" component={EmployeeHire}/>
             <Stack.Screen name="FavoriteEmployee" component={FavoriteEmployee}/>
             <Stack.Screen name="EmployerCategory" component={EmployerCategory}/>
+            <Stack.Screen name="SearchCategory" component={SearchCategory}/>
+            <Stack.Screen name="SearchResult" component={SearchResult}/>
           </Stack.Navigator>
         </NavigationContainer>
         <Toast config={toastConfig} />

@@ -14,6 +14,7 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
@@ -139,16 +140,14 @@ const Login = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient colors={["#444444", "#222222"]} style={styles.containers}>
         <KeyboardAvoidingView
-          style={{ flex: 1 }}
+          style={{ flex: 1 }}          
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 25}
+          
         >
-          <KeyboardAwareScrollView
-            contentContainerStyle={styles.container}
-            enableOnAndroid
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
+           <ScrollView contentContainerStyle={styles.scrolcontent}
+           showsVerticalScrollIndicator={false}
+            > 
             <View style={styles.logoContainer}>
               <Image
                 source={require("../../assets/images/Login-icon.png")}
@@ -235,13 +234,13 @@ const Login = ({ navigation }) => {
               <Text style={styles.socialText}>Sign In with Google</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.socialBtn}>
+            {/* <TouchableOpacity style={styles.socialBtn}>
               <Image
                 source={require("../../assets/images/facebook.png")}
                 style={styles.socialIcon}
               />
               <Text style={styles.socialText}>Sign In with Facebook</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <Text style={styles.footerText}>
               Don’t have an account?{" "}
@@ -252,7 +251,7 @@ const Login = ({ navigation }) => {
                 Create one now
               </Text>
             </Text>
-          </KeyboardAwareScrollView>
+          </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
     </SafeAreaView>
@@ -268,6 +267,13 @@ const styles = StyleSheet.create({
     marginTop,
     marginBottom,
   },
+   scrolcontent:{
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 15,
+
+   },
   logoContainer: { marginTop: 10, alignItems: "center" },
   logo: { width: logoSize, height: logoSize, resizeMode: "contain" },
   title: {
@@ -392,6 +398,9 @@ const styles = StyleSheet.create({
   footerText: {
     color: "#fff",
     marginTop: 10,
+     textAlign: "center",
+
+   
     fontSize: footerTextSize,
     fontFamily: "Montserrat_500Medium",
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   Share,
   Platform,
   ToastAndroid,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
 } from "react-native";
 import Octicons from "@expo/vector-icons/Octicons";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -113,11 +113,9 @@ const EmployeeAccount = () => {
   };
   const handleDeleted = (deletedId) => {
     setSubcategory((prev) => prev.filter((item) => item.subid !== deletedId));
-   fetchEmployee();
+    fetchEmployee();
     handleCloseDelete();
   };
-
-
 
   // const onCategoryDeleted = (id) => {
   //   // remove locally so UI updates immediately
@@ -138,9 +136,7 @@ const EmployeeAccount = () => {
       }
     }
   };
-  const displayedCategories = showAllCategories
-    ? job
-    : job.slice(0, 5);
+  const displayedCategories = showAllCategories ? job : job.slice(0, 5);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -269,7 +265,7 @@ const EmployeeAccount = () => {
                   style={{ marginLeft: 5 }}
                 />
               </View> */}
-              <QuestionMark title="Profile Title" iconColor="#fff"/>
+              <QuestionMark title="Profile Title" iconColor="#fff" />
               <Text style={styles.infoText2}>
                 {user.profile_title_employee}
               </Text>
@@ -284,7 +280,7 @@ const EmployeeAccount = () => {
                   style={{ marginLeft: 5 }}
                 />
               </View> */}
-              <QuestionMark title="About Me" iconColor="#fff"/>
+              <QuestionMark title="About Me" iconColor="#fff" />
               <Text style={styles.infoText2}>{user?.about}</Text>
             </View>
             {/* <View style={styles.calendarBox}>
@@ -315,7 +311,7 @@ const EmployeeAccount = () => {
                   style={{ marginLeft: 5 }}
                 />
               </View> */}
-              <QuestionMark title="Pomate Services" iconColor="#fff"/>
+              <QuestionMark title="Pomate Services" iconColor="#fff" />
             </View>
 
             <TouchableOpacity
@@ -365,7 +361,7 @@ const EmployeeAccount = () => {
                   style={{ marginLeft: 5 }}
                 />
               </View> */}
-              <QuestionMark title="Employee Category" iconColor="#fff"/>
+              <QuestionMark title="Employee Category" iconColor="#fff" />
             </View>
             <View style={styles.pillsWrapper}>
               <TouchableOpacity
@@ -443,7 +439,6 @@ const EmployeeAccount = () => {
         visible={copyModel}
         onRequestClose={() => setCopyModel(false)}
       >
-         <TouchableWithoutFeedback onPress={() => setCopyModel(false)}>
         <View style={[styles.modalOverlay]}>
           <View
             style={[styles.modalContainer, { paddingBottom: insets.bottom }]}
@@ -531,7 +526,6 @@ const EmployeeAccount = () => {
             )}
           </View>
         </View>
-        </TouchableWithoutFeedback>
       </Modal>
       <Modal
         animationType="slide"
@@ -539,7 +533,6 @@ const EmployeeAccount = () => {
         visible={downloadModal}
         onRequestClose={() => setDownloadModal(false)}
       >
-         <TouchableWithoutFeedback onPress={() => setDownloadModal(false)}>
         <View style={styles.modalOverlay}>
           <View
             style={[styles.modalContainer, { paddingBottom: insets.bottom }]}
@@ -569,7 +562,6 @@ const EmployeeAccount = () => {
             </View>
           </View>
         </View>
-        </TouchableWithoutFeedback>
       </Modal>
       <CategoryModel
         visible={modalVisible}
@@ -631,8 +623,8 @@ const styles = StyleSheet.create({
   iconbox: {
     flexDirection: "row",
     gap: 6,
-    alignItems:"flex-start",
-    flexWrap:"wrap",
+    alignItems: "flex-start",
+    flexWrap: "wrap",
   },
   infoText: {
     color: "#c3c3c3c3",

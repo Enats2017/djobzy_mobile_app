@@ -13,14 +13,16 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Octicons from "@expo/vector-icons/Octicons";
 import FindJobs from "../FindJobs/FindJobs";
 import FindEmployees from "../FindJobs/FindEmployees";
+import { useNavigation } from "@react-navigation/native";
 
 const SearchResult = () => {
+  const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState(true);
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <PageNameHeaderBar title="Result" />
+          <PageNameHeaderBar title="Result" navigation={navigation}/>
           <View style={styles.bestmatch}>
             <View style={styles.matchesHeader}>
               <View style={styles.toggleWrapper}>

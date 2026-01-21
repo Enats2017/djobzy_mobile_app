@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation,useRoute } from "@react-navigation/native";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -46,13 +46,16 @@ const CreateJob = () => {
     reset,
     isEdit,
     activeTab,
-    setActiveTab
+    setActiveTab,
+    type
   } = useCreateJobGlobalStore();
 
+  const route = useRoute();
+  const gid = route.params?.gid;
+  console.log(gid);
   const [titleError, setTitleError] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
-  
 
   const [timeError, setTimeError] = useState(false);
   const [priceError, setPriceError] = useState(false);
@@ -88,7 +91,7 @@ const CreateJob = () => {
 
     switch (selectedOption) {
       case "1":
-        return { type: 1, days: 0};
+        return { type: 1, days: 0 };
 
       case "1-7":
         return { type: 2, days: 0 };
@@ -162,7 +165,11 @@ const CreateJob = () => {
           type: state.fileData.fileType,
         });
       }
-      const response = await fetch(`${API_URL}/save-job-data`, {
+      if (gid) {
+        formData.append("gigId", gid);
+      }
+      const url = type === 'edit' ? `${API_URL}/save-edit-job-data` : `${API_URL}/save-job-data`;
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -173,8 +180,13 @@ const CreateJob = () => {
       const data = await response.json();
       if (data.status === 200) {
         reset();
-        navigation.navigate("JobPublishedPage", { gig: data.gig });
-        toastSuccess("Job created SuccessFully");
+        if (type === "edit") {
+          toastSuccess("Job updated SuccessFully");
+          navigation.replace("PostJobDetails", { jobId: data.insert_slug });
+        } else {
+          navigation.navigate("JobPublishedPage", { gig: data.gig });
+          toastSuccess("Job created SuccessFully");
+        }
       } else {
         console.log(data.message);
         Alert.alert("Error", data.message || "Failed to submit job");
@@ -395,15 +407,28 @@ const CreateJob = () => {
           )}
         </View>
         <View style={styles.sectionBtn}>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#D17b68" }]}
-            onPress={handleNext}
-          >
-            <Text style={styles.buttonText}>
-              {" "}
-              {activeTab === totalSteps - 1 ? "Publish" : "Next"}
-            </Text>
-          </TouchableOpacity>
+          {type == 'edit' && activeTab === totalSteps - 1 ? (
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: "#D17b68" }]}
+              onPress={handleNext}
+            >
+              <Text style={styles.buttonText}>
+                {" "}
+                {activeTab === totalSteps - 1 ? "Update" : "Next"}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: "#D17b68" }]}
+              onPress={handleNext}
+            >
+              <Text style={styles.buttonText}>
+                {" "}
+                {activeTab === totalSteps - 1 ? "Publish" : "Next"}
+              </Text>
+            </TouchableOpacity>
+          )
+          }
 
           <TouchableOpacity
             style={[styles.button, { borderColor: "#ccc", borderWidth: 1 }]}

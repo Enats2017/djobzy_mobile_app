@@ -1,6 +1,8 @@
 import { create } from "zustand";
 
 export const useCreateJobGlobalStore = create((set) => ({
+  gid: null,
+  type: "",
   title: "",
   description: "",
   selectedSubs: [],

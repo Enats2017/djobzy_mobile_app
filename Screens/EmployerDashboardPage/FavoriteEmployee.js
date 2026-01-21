@@ -149,7 +149,7 @@ const FavoriteEmployee = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <PageNameHeaderBar title="Favorite Employees" navigation={navigation}/>
+        <PageNameHeaderBar title="Favorite Employees" navigation={navigation} />
         {jobs.length == 0 ? (
           <NoJobs />
         ) : (
@@ -171,12 +171,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#222222",
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
   },
 
   userRow1: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: 10,
     gap: 8,
   },

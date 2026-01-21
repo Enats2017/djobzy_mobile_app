@@ -33,7 +33,6 @@ const PostJobDetails = () => {
   const [profileData, setProfileData] = useState([]);
   const route = useRoute();
   const { jobId } = route.params || [];
-  console.log(jobId);
 
   const [postJob, setPostJob] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
@@ -70,6 +69,7 @@ const PostJobDetails = () => {
   const handleEdit = () => {
     const store = useCreateJobGlobalStore.getState();
     store.reset();
+    store.setField("type", 'edit');
     store.setField("title", postJob.details?.subject || "");
     store.setField("description", postJob.details?.description || "");
     store.setField(
@@ -103,7 +103,7 @@ const PostJobDetails = () => {
     store.setEditMode(postJob?.details?.id);
     store.setActiveTab(6);
 
-    navigation.navigate("CreateJob");
+    navigation.navigate("CreateJob", { gid: postJob.details?.gid });
   };
 
   const fetchUserAppliedDetials = async (id) => {

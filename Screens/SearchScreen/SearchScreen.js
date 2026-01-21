@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -26,6 +26,7 @@ import GradientButton from "../../components/GradientButton";
 import { toastError, toastSuccess } from "../../utils/toast";
 import { useGlobalSearch } from "./useGlobalSearch";
 import Loading from "../../components/Loading";
+import EmployerFooter from "../../components/EmployerFooter";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -33,9 +34,10 @@ const SearchScreen = () => {
   const navigation = useNavigation();
   const debounceTimer = useRef(null);
   const latestKeywordRef = useRef("");
-  const { keyword, setKeyword } = useGlobalSearch();
+  const { keyword, setKeyword, reset } = useGlobalSearch();
+  const categoryCount = useGlobalSearch((state) => state.categories.length);
   const route = useRoute();
-  const { search_type } = route.params;
+  const { search_type } = route.params ?? {};
   const [results, setResults] = useState([]);
   const [searchMode, setSearchMode] = useState(search_type ?? 0);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -43,6 +45,7 @@ const SearchScreen = () => {
   const [categoryName, setCategoryName] = useState("");
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [admin, setAdmin] = useState(0);
 
   const insets = useSafeAreaInsets();
 
@@ -56,7 +59,7 @@ const SearchScreen = () => {
     }
 
     // If text is too short, clear results immediately
-    if (text.length < 2) {
+    if (text.length <= 2) {
       setResults([]);
       return;
     }
@@ -131,6 +134,18 @@ const SearchScreen = () => {
     setSearchMode((prev) => (prev === 0 ? 2 : 0));
   };
 
+  const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+
+    setAdmin(user?.admin);
+  };
+  useEffect(() => {
+    loadUser();
+    reset();
+  }, []);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#222" }}>
       <TouchableWithoutFeedback onPress={() => setShowDropdown(false)}>
@@ -201,7 +216,7 @@ const SearchScreen = () => {
                 style={styles.input}
               />
 
-              <Ionicons name="search" size={15} color="#FFFFFF" />
+              <Ionicons name="search" size={15} color="#FFFFFF" onPress={() => navigation.navigate('SearchResult')} />
             </View>
 
             {/* GRID ICON */}
@@ -210,55 +225,59 @@ const SearchScreen = () => {
               onPress={() => navigation.navigate("SearchCategory")}
             >
               <Ionicons name="grid-outline" size={18} color="#fff" />
+
+              {categoryCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{categoryCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
-
-          {loading ? (
-            <View style={styles.resultLoader}>
-              <ActivityIndicator size="large" color="#fff" />
-            </View>
-          ) : (
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 100 }}
-              keyboardShouldPersistTaps="handled"
-            >
-              {/* {results.length === 0 && keyword.length >= 2 && (
-              <Text style={styles.noResult}>No results found</Text>
-            )} */}
-              {keyword.length > 0 && (
-                <View style={styles.requestCategory}>
-                  <Text style={styles.categoryText}>
-                    Search for a {keyword}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {keyword.length > 0 && (
+              <View style={styles.requestCategory}>
+                <Text style={styles.categoryText}>
+                  Search for a {keyword}
+                </Text>
+                <TouchableOpacity onPress={handleSwitch}>
+                  <Text style={styles.requestText}>
+                    Switch to {searchMode == 2 ? "jobs" : "Employee"}
                   </Text>
-                  <TouchableOpacity onPress={handleSwitch}>
-                    <Text style={styles.requestText}>
-                      Switch to {searchMode == 0 ? "jobs" : "Employee"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+                </TouchableOpacity>
+              </View>
+            )}
 
-              {searchMode == 0 ? (
-                <SearchedJobs data={results} />
-              ) : (
-                <SearchedEmployees data={results} />
-              )}
+            {loading ? (
+              <View style={styles.resultLoader}>
+                <ActivityIndicator size="large" color="#fff" />
+              </View>
+            ) : (
+              <>
+                {searchMode == 0 ? (
+                  <SearchedJobs data={results} />
+                ) : (
+                  <SearchedEmployees data={results} />
+                )}
 
-              {keyword.length > 0 && (
-                <View style={styles.requestCategory}>
-                  <Text style={styles.categoryText}>
-                    Can't find your category?
-                  </Text>
-                  <TouchableOpacity onPress={() => setCategoryModal(true)}>
-                    <Text style={styles.requestText}>
-                      Request a new category
+                {results.length > 0 && (
+                  <View style={styles.requestCategory}>
+                    <Text style={styles.categoryText}>
+                      Can't find your category?
                     </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </ScrollView>
-          )}
+                    <TouchableOpacity onPress={() => setCategoryModal(true)}>
+                      <Text style={styles.requestText}>
+                        Request a new category
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </>
+            )}
+          </ScrollView>
         </View>
       </TouchableWithoutFeedback>
       <Modal
@@ -295,7 +314,7 @@ const SearchScreen = () => {
           </View>
         </View>
       </Modal>
-      <Footer />
+      {admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 };
@@ -307,12 +326,29 @@ const styles = StyleSheet.create({
     backgroundColor: "#222222",
   },
   resultLoader: {
-  minHeight: 200,
-  justifyContent: "center",
-  alignItems: "center",
-},
-
-
+    minHeight: 200,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  badge: {
+    position: "absolute",
+    top: -2,
+    right: -5,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 9,
+    backgroundColor: "#d51b1b",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    zIndex: 10,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 11,
+    fontFamily: "Montserrat_600SemiBold",
+    textAlign: "center",
+  },
   searchSection: {
     flexDirection: "row",
     alignItems: "center",

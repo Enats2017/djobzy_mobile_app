@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const SearchedEmployees = ({ data }) => {
   const navigation = useNavigation();
@@ -21,7 +21,7 @@ const SearchedEmployees = ({ data }) => {
               style={styles.row}
             >
               <View style={styles.iconWrapper}>
-                <Ionicons name="pricetag-outline" size={16} color="#000" />
+                <MaterialIcons name="category" size={20} color="#000" />
               </View>
 
               <View>
@@ -37,19 +37,19 @@ const SearchedEmployees = ({ data }) => {
             <TouchableOpacity
               key={`employee-${index}`}
               style={styles.row}
-              // onPress={() =>
-              //   navigation.navigate("PublicEmployeeProfile", {
-              //     name: item.username,
-              //   })
-              // }
             >
               <Image source={{ uri: item.photo }} style={styles.avatar} />
 
               <View>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.sub}>
-                  ⭐ {item.rating ?? "0"} •{" "}
-                  {item.address ?? "Location not set"}
+                  ⭐ {item.rating ?? "0"} 
+                  {item.address && (
+                    <>
+                      {" • "}
+                      {item.address}
+                    </>
+                  )}
                 </Text>
               </View>
             </TouchableOpacity>

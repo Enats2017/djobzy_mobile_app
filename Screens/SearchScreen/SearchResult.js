@@ -16,17 +16,22 @@ import Octicons from "@expo/vector-icons/Octicons";
 import FindJobs from "../FindJobs/FindJobs";
 import FindEmployees from "../FindJobs/FindEmployees";
 import { useNavigation } from "@react-navigation/native";
+
 import AdvanceSearch from "./AdvanceSearch";
 
+
+
 const SearchResult = () => {
-  const [activeTab, setActiveTab] = useState(true);
   const navigation = useNavigation();
+  const [activeTab, setActiveTab] = useState(true);
+
   const [showFilter, setShowFilter] = useState(false);
 
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
+
           <PageNameHeaderBar title="Result" navigation={navigation} />
           <KeyboardAvoidingView
             style={{ flex: 1 }}
@@ -39,6 +44,21 @@ const SearchResult = () => {
                   <TouchableOpacity
                     style={styles.toggleBtn}
                     onPress={() => setActiveTab(true)}
+
+          <PageNameHeaderBar title="Result" navigation={navigation}/>
+          <View style={styles.bestmatch}>
+            <View style={styles.matchesHeader}>
+              <View style={styles.toggleWrapper}>
+                <TouchableOpacity
+                  style={styles.toggleBtn}
+                  onPress={() => setActiveTab(true)}
+                >
+                  <Text
+                    style={[
+                      styles.toggleText,
+                      activeTab ? styles.activeText : styles.inactiveText,
+                    ]}
+
                   >
                     <Text
                       style={[

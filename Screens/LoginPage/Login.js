@@ -78,7 +78,7 @@ const Login = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please enter email and password");
+      toastError("Please enter email and password");
       return;
     }
     setLoading(true);
@@ -96,7 +96,6 @@ const Login = ({ navigation }) => {
       setLoading(false);
 
       if (!response.ok) {
-        Alert.alert("Login Failed", data.message || "Invalid credentials");
         toastError("Login Failed", data.message || "Invalid credentials");
         return;
       }

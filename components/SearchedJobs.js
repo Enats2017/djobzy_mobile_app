@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 
 const SearchedJobs = ({ data }) => {
   const navigation = useNavigation();
@@ -19,11 +19,6 @@ const SearchedJobs = ({ data }) => {
             <TouchableOpacity
               key={`job-${index}`}
               style={styles.row}
-              // onPress={() =>
-              //   navigation.navigate("JobDetails", {
-              //     slug: item.job_url?.split("/").pop(),
-              //   })
-              // }
             >
               <View style={styles.iconWrapper}>
                 <Ionicons name="briefcase-outline" size={16} color="#000" />
@@ -41,12 +36,12 @@ const SearchedJobs = ({ data }) => {
               style={styles.row}
             >
               <View style={styles.iconWrapper}>
-                <Ionicons name="brush-outline" size={16} color="#000" />
+                <MaterialIcons name="category" size={20} color="#000" />
               </View>
 
-              <View style={styles.textWrapper}>
-                <Text style={styles.title}>{item.text}</Text>
-                <Text style={styles.subTitle}>category</Text>
+              <View>
+                <Text style={styles.name}>{item.text}</Text>
+                <Text style={styles.sub}>category</Text>
               </View>
             </TouchableOpacity>
           );
@@ -86,12 +81,37 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     color: "#fff",
-  fontFamily: "Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
   },
 
-  subTitle: {
+  iconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+    borderColor: "#fff",
+    borderWidth: 1,
+  },
+
+  name: {
+    fontSize: 14,
+    color: "#fff",
+    fontFamily: "Montserrat_400Regular",
+  },
+
+  sub: {
     fontSize: 12,
-    color: "#aaa",
+    color: "#777",
     marginTop: 2,
   },
 });

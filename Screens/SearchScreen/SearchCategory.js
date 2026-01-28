@@ -189,7 +189,7 @@ const SearchCategory = () => {
           )}
           <View style={{ paddingBottom: 90 }}>
             <GradientButton
-              onPress={() => navigation.navigate("SearchResult")}
+              onPress={() => navigation.goBack()}
             />
           </View>
         </View>

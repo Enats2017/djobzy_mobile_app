@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -9,6 +9,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { useNavigation } from "@react-navigation/native";
 import FilePreview from "../../components/FilePreview";
+import EmployerFooter from "../../components/EmployerFooter";
+import Footer from "../../components/Footer";
 
 export default function IDVerificationUploadScreen() {
   const [openDropdown, setOpenDropdown] = useState(false);
@@ -16,9 +18,19 @@ export default function IDVerificationUploadScreen() {
   const [personalPhoto, setPersonalPhoto] = useState(null);
   const [docFront, setDocFront] = useState(null);
   const [docBack, setDocBack] = useState(null);
+   const [admin, setAdmin] = useState(0);
   const navigation = useNavigation();
 
   const data = ["Driving License", "Passport", "National ID"];
+  const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    setAdmin(user?.admin);
+  };
+  useEffect(() => {
+    loadUser();
+  }, []);
 
   const handleVerify = async () => {
     if (
@@ -135,14 +147,20 @@ export default function IDVerificationUploadScreen() {
               small
               onSelect={setDocFront}
             />
-            <FilePreview file={docFront} onRemove={() => setDocFront(null)} />
-            <UploadBox label="Back Image" small onSelect={setDocBack} />
-            <FilePreview file={docBack} onRemove={() => setDocBack(null)} />
+            
+            <UploadBox label="Back Image"
+            type="document"
+             small 
+             onSelect={setDocBack} />
+           
           </View>
+          <FilePreview file={docFront} onRemove={() => setDocFront(null)} />
+             <FilePreview file={docBack} onRemove={() => setDocBack(null)} />
         </View>
 
         <GradientButton title="Verify Identity" onPress={handleVerify} />
       </View>
+        {admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 }

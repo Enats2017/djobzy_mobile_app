@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -12,6 +12,9 @@ import Entypo from "@expo/vector-icons/Entypo";
 import { ScrollView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../api/ApiUrl";
+import { toastSuccess } from "../../utils/toast";
 
 const TitleScetion = ({
   //jobData,
@@ -21,10 +24,120 @@ const TitleScetion = ({
   descriptionError,
   setDescriptionError,
 }) => {
-  const { title, description, setField } = useCreateJobGlobalStore();  
+  const { title, description, setField, setActiveTab } = useCreateJobGlobalStore();
+
   const [titleModal, setTitleModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+
+
+  const [jobs, setJobs] = useState([]);
+
+  const useTemplate = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/create-job`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      const data = await response.json();
+      setJobs(data.jobs);
+      console.log("11111", data.jobs);
+    } catch (error) {
+      console.log("API Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    useTemplate();
+  }, []);
+
+  const applyTemplate = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await fetch(
+        `${API_URL}/create-job?template=${selectedTemplateId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const data = await res.json();
+      const job = data.job; // 👈 now full object
+
+      if (!job) return;
+
+      // ---- Fill Zustand fields ----
+      setField("title", job.subject || "");
+      setField("description", job.description || "");
+      setField("address", job.preferred_location || "");
+
+      setField(
+        "selectedTerm",
+        job.contract_type === "2" ? "employee" : "short",
+      );
+
+      setField("selectedOption", String(job.duration_type));
+      setField("customDays", job.duration_days || "");
+
+      setField("hourlyRate", job.hour_minimum || "");
+      setField("totalPrice", job.fixed_minimum || "");
+      setField("expectedTime", job.expected_hour || 0);
+
+      // categories (if exist)
+      if (job.gig_services) {
+        setField(
+          "selectedSubs",
+          job.gig_services.map((gs) => ({
+            serviceId: gs.service_id,
+            subId: gs.sub_service_id,
+            name: gs.sub_services.subname,
+          })),
+        );
+      }
+
+      // requirements
+      if (job.requirements) {
+        setField(
+          "requirements",
+          job.requirements.map((r, i) => ({
+            id: i + 1,
+            value: r.requirement,
+          })),
+        );
+      }
+
+      // languages
+      if (job.languages) {
+        setField(
+          "languages",
+          job.languages.map((l, i) => ({
+            id: i + 1,
+            lang: l.language,
+            level: l.level,
+          })),
+        );
+      }
+
+      // edit mode
+      setField("isEdit", true);
+      setField("editingId", job.gid);
+
+      // jump to last step
+      setActiveTab(6);
+
+      setTitleModal(false);
+      toastSuccess("Template applied");
+    } catch (e) {
+      console.log("Template error", e);
+    }
+  };
 
   return (
     <>
@@ -70,10 +183,10 @@ const TitleScetion = ({
               descriptionError && { borderColor: "#ff0000" },
             ]}
             value={description}
-             onChangeText={(text) => {
-            setField("description", text);
-            if (text.trim()) setDescriptionError(false);
-          }}
+            onChangeText={(text) => {
+              setField("description", text);
+              if (text.trim()) setDescriptionError(false);
+            }}
             placeholder="What Should be Done?"
           />
 
@@ -141,22 +254,17 @@ const TitleScetion = ({
               <View style={styles.dropdownList}>
                 <View style={{ maxHeight: 145 }}>
                   <ScrollView showsVerticalScrollIndicator={false}>
-                    {[
-                      "Looking for Logo Designer",
-                      "Need a Website Developer",
-                      "Social Media Manager Needed",
-                      "Photoshop Editing Work",
-                      "Need Thumbnail Designer",
-                    ].map((item, index) => (
+                    {jobs.map((job) => (
                       <TouchableOpacity
-                        key={index}
+                        key={job.gid}
                         style={styles.dropdownItem}
                         onPress={() => {
-                          setSelectedTemplate(item);
+                          setSelectedTemplate(job.subject);
+                          setSelectedTemplateId(job.gid);
                           setShowDropdown(false);
                         }}
                       >
-                        <Text style={styles.dropdownItemText}>{item}</Text>
+                        <Text>{job.subject}</Text>
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
@@ -165,7 +273,8 @@ const TitleScetion = ({
             )}
 
             <TouchableOpacity
-              disabled={!selectedTemplate}
+              disabled={!selectedTemplateId}
+              onPress={applyTemplate}
               style={[
                 styles.useTemplateButton,
                 !selectedTemplate && { opacity: 0.5 },

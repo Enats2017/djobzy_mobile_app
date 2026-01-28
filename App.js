@@ -49,7 +49,7 @@ import ProfileMenu from "./Screens/ProfileMenuPAge/ProfileMenu";
 import PromoteService from "./Screens/PromoteServicesPage/PromoteService";
 import PromoteCategoryPage from "./Screens/PromoteServicesPage/PromoteCategoryPage";
 import EmployeeAccount from "./Screens/PromoteServicesPage/EmployeeAccount";
-import EmployeeVerification from "./Screens/PromoteServicesPage/EmployeeVerification";
+import EmployeeVerification from "./Screens/AccountVerfifcation/EmployeeVerification";
 import ProfileReviewPage from "./Screens/ProfileMenuPAge/ProfileReviewPage";
 import ReferralWallet from "./Screens/ProfileMenuPAge/ReferralWallet";
 import BlogPage from "./Screens/ProfileMenuPAge/BlogPage";

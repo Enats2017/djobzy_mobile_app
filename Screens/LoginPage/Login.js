@@ -139,15 +139,16 @@ const Login = ({ navigation }) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient colors={["#444444", "#222222"]} style={styles.containers}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}          
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 25}
-          
+        <KeyboardAwareScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          enableOnAndroid={true}
+          extraScrollHeight={40}
+          keyboardShouldPersistTaps="handled"
         >
-           <ScrollView contentContainerStyle={styles.scrolcontent}
-           showsVerticalScrollIndicator={false}
-            > 
+          <ScrollView
+            contentContainerStyle={styles.scrolcontent}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.logoContainer}>
               <Image
                 source={require("../../assets/images/Login-icon.png")}
@@ -252,7 +253,7 @@ const Login = ({ navigation }) => {
               </Text>
             </Text>
           </ScrollView>
-        </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -260,26 +261,18 @@ const Login = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   containers: { flex: 1 },
-  container: {
-    flex: 1,
-    padding,
-    alignItems: "center",
-    marginTop,
-    marginBottom,
-  },
-   scrolcontent:{
+  scrolcontent: {
     flexGrow: 1,
-    justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 15,
+    justifyContent: "center",
 
-   },
-  logoContainer: { marginTop: 10, alignItems: "center" },
+    paddingHorizontal: 15,
+  },
+
   logo: { width: logoSize, height: logoSize, resizeMode: "contain" },
   title: {
     fontSize: titleSize,
     color: "#fff",
-
     fontFamily: "Montserrat_600SemiBold",
     textAlign: "center",
     padding: 2,
@@ -316,7 +309,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
   },
-  passwordInput: { flex: 1, fontSize: inputTextSize },
+  passwordInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+    color: "#000",
+  },
   eyeIcon: { paddingHorizontal: 5 },
   row: {
     flexDirection: "row",
@@ -398,9 +397,8 @@ const styles = StyleSheet.create({
   footerText: {
     color: "#fff",
     marginTop: 10,
-     textAlign: "center",
+    textAlign: "center",
 
-   
     fontSize: footerTextSize,
     fontFamily: "Montserrat_500Medium",
   },

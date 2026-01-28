@@ -16,7 +16,7 @@ const { width, height } = Dimensions.get("window");
 // Responsive helpers
 const scale = (size) => (width / 375) * size;
 
-const BUTTON_SIZE = width * 0.45;
+const BUTTON_SIZE = width * 0.41;
 
 const FourthScreen = () => {
   const navigation = useNavigation();
@@ -85,7 +85,7 @@ const FourthScreen = () => {
               I'm a Recruiter
             </Text>
             <Text style={[styles.descText, { color: "#111" }]}>
-              looking for a service
+              Looking for  Service
             </Text>
           </TouchableOpacity>
         </View>
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
 
   scroll: {
-    flexShrink: 1,
+    
     flexGrow:1,
     justifyContent: "center",
     alignItems: "center",
@@ -112,11 +112,11 @@ const styles = StyleSheet.create({
   },
 
   imageContainer: {
-    width: width * 2.9,
+    width: width * 0.9,
     height: height * 0.39,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: 12,
   },
 
  
@@ -128,14 +128,14 @@ const styles = StyleSheet.create({
   },
   
   overlayImage: {
-    width: "100%",
-    height: "100%",
+    width: "95%",
+    height: "95%",
   },
  
 
   section: {
     alignItems: "center",
-    marginBottom: 25,
+    marginBottom: 14,
     paddingHorizontal: 10,
   },
 
@@ -143,6 +143,7 @@ const styles = StyleSheet.create({
     fontSize: scale(36),
     fontFamily: "Montserrat_400Regular",
     color: "#ffffff",
+    lineHeight:scale(40)
   },
 
   bold: {
@@ -163,6 +164,7 @@ const styles = StyleSheet.create({
     flexDirection: width < 360 ? "column" : "row",
     gap: 15,
     alignItems: "center",
+    paddingTop:scale(20)
   },
 
   circleButton: {
@@ -178,7 +180,7 @@ const styles = StyleSheet.create({
   icon: {
     width: 40,
     height: 40,
-    marginBottom: 12,
+    marginBottom: 10,
   },
 
   circleText: {
@@ -191,6 +193,6 @@ const styles = StyleSheet.create({
     fontSize: scale(11),
     fontFamily: "Montserrat_400Regular",
     textAlign: "center",
-    marginTop: 4,
+    marginTop: 3,
   },
 });

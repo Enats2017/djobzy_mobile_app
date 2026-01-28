@@ -25,10 +25,7 @@ export const useCreateJobGlobalStore = create((set) => ({
   editingId: null,
   activeTab: 0,
 
-  
-
   setField: (field, value) => set({ [field]: value }),
-  
 
   addCategory: (cat) =>
     set((state) => {
@@ -43,7 +40,7 @@ export const useCreateJobGlobalStore = create((set) => ({
 
   setEditMode: (id) => set({ isEdit: true, editingId: id }),
   resetEditMode: () => set({ isEdit: false, editingId: null }),
-   
+
   setActiveTab: (tab) => set({ activeTab: tab }),
 
   reset: () =>

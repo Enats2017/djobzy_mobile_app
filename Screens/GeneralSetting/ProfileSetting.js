@@ -13,50 +13,59 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import LineDivider from "../../components/LineDivider";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useCategoryGlobalStore } from "../../components/CategoryGlobalStore";
+import { useProfileStore } from "../../components/useProfileStore";
 import ServicesCategoryModal from "../../components/ServicesCategoryModal";
 import { API_URL, API_ICON } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import GradientButton from "../../components/GradientButton";
 
 export default function ProfileSetting() {
-  const route = useRoute();
+  const { employeeCategories, employerCategories, setField, setEditType } =
+    useProfileStore();
   const navigation = useNavigation();
-  const { employee, employer } = route.params || [];
+
   const [switchLoading, setSwitchLoading] = useState(false);
   const [adminType, setAdminType] = useState(0);
   const [emp, setemp] = useState("");
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const store = useCategoryGlobalStore();
 
   const handleEditEmployer = () => {
-    store.reset();
-
-    const mapped = employer.map((item) => ({
-      serviceId: item.service_id,
-      subId: item.subid,
-      name: item.subname,
-    }));
-
-    store.setCategories(mapped);
-    store.setEditType(1);
+    setField(
+      "categories",
+      employerCategories.map((c) => ({
+        subId: c.subid || c.subservice_id,
+        name: c.subname || c.name,
+      })),
+    );
+    setEditType(1);
     setModalVisible(true);
   };
 
   const handleEditEmployee = () => {
-    store.reset();
+  setField(
+    "categories",
+    employeeCategories.map((c) => ({
+      subId: c.subid || c.subservice_id,
+      name: c.subname || c.name,
+    }))
+  );
+  setEditType(2);
+  setModalVisible(true);
+};
+  // const handleEditEmployee = () => {
+  //   store.reset();
 
-    const mapped = employee.map((item) => ({
-      serviceId: item.service_id,
-      subId: item.subid,
-      name: item.subname,
-    }));
+  //   const mapped = employee.map((item) => ({
+  //     serviceId: item.service_id,
+  //     subId: item.subid,
+  //     name: item.subname,
+  //   }));
 
-    store.setCategories(mapped);
-    store.setEditType(2); // 1 = Employee
-    setModalVisible(true);
-  };
+  //   store.setCategories(mapped);
+  //   store.setEditType(2); // 1 = Employee
+  //   setModalVisible(true);
+  // };
 
   const changeUserType = async () => {
     try {
@@ -112,7 +121,7 @@ export default function ProfileSetting() {
               Please choose the categories that you want to employer people on.
             </Text>
             <View style={styles.categoryContainer}>
-              {employer.map((item, index) => (
+              {employerCategories.map((item, index) => (
                 <View key={index} style={styles.categoryPill}>
                   <Text style={styles.categoryText}>{item.subname}</Text>
                   <TouchableOpacity>
@@ -141,7 +150,7 @@ export default function ProfileSetting() {
             </Text>
 
             <View style={styles.categoryContainer}>
-              {employee.map((item, index) => (
+              {employeeCategories.map((item, index) => (
                 <View key={index} style={styles.categoryPill}>
                   <Text style={styles.categoryText}>{item.subname}</Text>
                   <TouchableOpacity onPress={() => removeCategory(item.subId)}>
@@ -161,7 +170,6 @@ export default function ProfileSetting() {
             {adminType === 0 ? (
               <>
                 <GradientButton title="Employee" disabled />
-
                 <TouchableOpacity
                   style={styles.secondaryBtn}
                   onPress={changeUserType}
@@ -181,7 +189,6 @@ export default function ProfileSetting() {
             ) : (
               <>
                 <GradientButton title="Employer" disabled />
-
                 <TouchableOpacity
                   style={styles.secondaryBtn}
                   onPress={changeUserType}
@@ -331,9 +338,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
     lineHeight: 17,
   },
-   loaderWrapper: {
-           // REQUIRED (Android)
-        // REQUIRED (Android)
+  loaderWrapper: {
+    // REQUIRED (Android)
+    // REQUIRED (Android)
     justifyContent: "center",
     alignItems: "center",
   },

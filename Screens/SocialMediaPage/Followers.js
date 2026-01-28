@@ -24,6 +24,7 @@ import {
 } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import Footer from "../../components/Footer";
+import EmployerFooter from "../../components/EmployerFooter";
 import { useNavigation } from "@react-navigation/native";
 import { API_URL, API_ICON } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -40,7 +41,7 @@ const Followers = () => {
   const [loading, setLoading] = useState(false);
   const [loadingUserId, setLoadingUserId] = useState(null);
   const [searchText, setSearchText] = useState("");
-
+  const [admin, setAdmin] = useState(0);
   const [count, setCount] = useState([]);
   const [user, setUser] = useState();
 
@@ -81,7 +82,16 @@ const Followers = () => {
       setLoading(false);
     }
   };
+
+  const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+
+    setAdmin(user?.admin);
+  };
   useEffect(() => {
+    loadUser();
     fetchFollowersAndFollowing();
   }, []);
 
@@ -106,14 +116,14 @@ const Followers = () => {
       if (data.status === 200) {
         setFollowingData((prev) =>
           prev.map((u) =>
-            u.id === userId ? { ...u, is_followed_by_auth_user: true } : u
-          )
+            u.id === userId ? { ...u, is_followed_by_auth_user: true } : u,
+          ),
         );
 
         setFollowersData((prev) =>
           prev.map((u) =>
-            u.id === userId ? { ...u, is_followed_by_auth_user: true } : u
-          )
+            u.id === userId ? { ...u, is_followed_by_auth_user: true } : u,
+          ),
         );
       }
     } catch (err) {
@@ -143,13 +153,13 @@ const Followers = () => {
       if (data.status === 200) {
         setFollowingData((prev) =>
           prev.map((u) =>
-            u.id === userId ? { ...u, is_followed_by_auth_user: false } : u
-          )
+            u.id === userId ? { ...u, is_followed_by_auth_user: false } : u,
+          ),
         );
         setFollowersData((prev) =>
           prev.map((u) =>
-            u.id === userId ? { ...u, is_followed_by_auth_user: false } : u
-          )
+            u.id === userId ? { ...u, is_followed_by_auth_user: false } : u,
+          ),
         );
       }
     } catch (err) {
@@ -162,7 +172,7 @@ const Followers = () => {
   const currentList = activeTab === "following" ? followingData : followersData;
 
   const filteredList = currentList.filter((item) =>
-    item?.full_name?.toLowerCase().includes(searchText.toLowerCase())
+    item?.full_name?.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   const renderItem = ({ item }) => {
@@ -232,8 +242,6 @@ const Followers = () => {
       </View>
     );
   };
- 
-  
 
   return (
     <>
@@ -312,7 +320,9 @@ const Followers = () => {
                       <Text style={styles.statLabel}>Money Earned</Text>
                     </View>
                     <View style={styles.statBox}>
-                      <Text style={styles.statValue}>{count?.followed_users?.length || 0}</Text>
+                      <Text style={styles.statValue}>
+                        {count?.followed_users?.length || 0}
+                      </Text>
                       <Text style={styles.statLabel}>My Followers</Text>
                     </View>
                   </View>
@@ -354,7 +364,7 @@ const Followers = () => {
               </View>
               <FlatList
                 data={searchText ? filteredList : currentList}
-                keyExtractor={(item) => item?.id?.toString()}
+                keyExtractor={(item) => item.id?.toString()}
                 renderItem={renderItem}
                 ItemSeparatorComponent={() => <LineDivider />}
                 contentContainerStyle={{ paddingBottom: 100 }}
@@ -363,7 +373,7 @@ const Followers = () => {
             </>
           )}
         </View>
-        <Footer />
+        {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
     </>
   );

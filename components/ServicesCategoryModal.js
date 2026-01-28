@@ -14,7 +14,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, Entypo } from "@expo/vector-icons";
 import { API_URL, API_ICON } from "../api/ApiUrl";
-import { useCategoryGlobalStore } from "./CategoryGlobalStore";
+import { useProfileStore } from "./useProfileStore";
 import Loading from "./Loading";
 import GradientButton from "./GradientButton";
 import {
@@ -25,9 +25,8 @@ import {
 const CategoryModel = ({ visible, onClose }) => {
   const insets = useSafeAreaInsets();
 
-  const { categories, addCategoryFromModal, removeCategoryFromModal, editType, reset } =
-    useCategoryGlobalStore();
-
+  const { editType, categories, addCategory, removeCategory,setField } =
+    useProfileStore();
   console.log(editType);
 
   const [search, setSearch] = useState("");
@@ -57,73 +56,57 @@ const CategoryModel = ({ visible, onClose }) => {
   }, []);
 
   const filteredServices = services.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item.name.toLowerCase().includes(search.toLowerCase()),
   );
   const handleSelectSub = (service, sub) => {
-    const exists = categories.some((c) => c.subId === sub.subid);
-    if (exists) return;
-
-    addCategoryFromModal({
+    addCategory({
       serviceId: service.id,
       subId: sub.subid,
       name: sub.subname,
     });
   };
   const handleRemoveSub = (subId) => {
-    removeCategoryFromModal(subId);
+    removeCategory(subId);
   };
+
   const toggleExpand = (serviceId) => {
     setExpandedServices((prev) => ({
       ...prev,
       [serviceId]: !prev[serviceId],
     }));
   };
+
   const handlePublish = async () => {
-    try {
-      setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const response = await fetch(`${API_URL}/save-service`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        services: categories.map((c) => c.subId),
+        type: editType,
+      }),
+    });
 
-      const token = await AsyncStorage.getItem("token");
+    const data = await response.json();
 
-      const formData = new FormData();
-
-      // EXACTLY LIKE WEB: services[]
-      categories.forEach((c) => {
-        formData.append("services[]", c.subId);
-      });
-
-      formData.append("type", editType ?? 1);
-
-    //   console.log("Sending:", {
-    //     services: categories && categories.map((c) => c.subId),
-    //     type: editType,
-    //   });
-
-      const response = await fetch(`${API_URL}/save-service`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-        body: formData,
-      });
-
-      const result = await response.json();
-      console.log("API RESPONSE:", result);
-
-      if (result.status === 200) {
-        Alert.alert("Success", "Categories updated successfully");
-        reset();
-        onClose();
+    if (data.status === 200) {
+      if (editType === 1) {
+        setField("employerCategories", data.resultant_arr);
       } else {
-        Alert.alert("Error", result.message || "Something went wrong");
+        setField("employeeCategories", data.resultant_arr);
       }
-    } catch (error) {
-      console.log("API ERROR:", error);
-      Alert.alert("Error", "Network error");
-    } finally {
-      setLoading(false);
+
+      onClose(); 
     }
-  };
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 
   return (
     <Modal
@@ -210,7 +193,7 @@ const CategoryModel = ({ visible, onClose }) => {
                       <View style={styles.subCategories}>
                         {service.subservices.map((sub) => {
                           const isSelected = categories.some(
-                            (s) => s.subId === sub.subid
+                            (s) => s.subId === sub.subid,
                           );
                           return (
                             <TouchableOpacity
@@ -241,10 +224,7 @@ const CategoryModel = ({ visible, onClose }) => {
               </ScrollView>
 
               <View style={styles.categoryBtn}>
-                <GradientButton
-                  title="Save and Publish"
-                  onPress={handlePublish}
-                />
+                <GradientButton title="Save and Publish"  onPress={handlePublish}/>
               </View>
             </View>
           )}

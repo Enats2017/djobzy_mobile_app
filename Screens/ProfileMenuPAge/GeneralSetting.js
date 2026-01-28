@@ -25,9 +25,11 @@ import EmployerFooter from "../../components/EmployerFooter";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
+import { useProfileStore } from "../../components/useProfileStore";
 
 const GeneralSetting = () => {
   const navigation = useNavigation();
+  const { setField } = useProfileStore();
   const [setting, setSetting] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -51,8 +53,8 @@ const GeneralSetting = () => {
       setSetting(data);
       setUsers(data.userDetails);
       console.log("11111", data.userDetails);
-      setEmployee(data.employee_services);
-      setEmployer(data.employer_services);
+      setField("employeeCategories", data.employee_services || []);
+      setField("employerCategories", data.employer_services || []);
       setDetails(data.mobileCountryDetails);
     } catch (error) {
       console.log("API Error:", error);
@@ -86,7 +88,7 @@ const GeneralSetting = () => {
               />
               <View style={styles.menuContainer}>
                 <MenuItem
-                  type="material" 
+                  type="material"
                   icon="account-circle"
                   title="Account"
                   onPress={() =>

@@ -9,6 +9,7 @@ import GradientButton from "../../components/GradientButton";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const JobCard = ({ item, isLastItem }) => {
   const navigation = useNavigation();
@@ -33,7 +34,8 @@ const JobCard = ({ item, isLastItem }) => {
         }),
       });
       const data = await response.json();
-      console.log("Follow response:", data);
+      toastSuccess("Successfully followed the user")
+      
       if (data.status === 200) {
         setIsLiked(true);
       }
@@ -60,7 +62,8 @@ const JobCard = ({ item, isLastItem }) => {
         }),
       });
       const data = await response.json();
-      console.log("Unfollow response:", data);
+      
+       toastSuccess("Unfollowed successfully")
       if (data.status == 200) {
         setIsLiked(false);
       }
@@ -88,8 +91,9 @@ const JobCard = ({ item, isLastItem }) => {
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
               <View style={styles.userNameSection}>
+               
                 <Text style={styles.userName}>{item.full_name}</Text>
-
+                
                 <View style={styles.starRow}>
                   {[...Array(5)].map((_, i) => (
                     <FontAwesome key={i} name="star" style={styles.starIcon} />
@@ -212,7 +216,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
     gap: 10,
-    width: "100%",
+    flexWrap:"wrap",
+    flex:1,
+   
   },
   avatar: {
     width: 55,
@@ -232,15 +238,21 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "flex-start",
     gap: 5,
+   
   },
   userNameSection: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent:"flex-start",
+    flexWrap:"wrap",
+    
     gap: 5,
   },
   userName: {
     color: "#fff",
     fontSize: 16,
+    flexShrink:1,
+    maxWidth: "100%",
     fontFamily: "Montserrat_500Medium",
   },
   starRow: {

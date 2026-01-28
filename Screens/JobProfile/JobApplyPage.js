@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
-  Platform
+  Platform,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -127,140 +127,143 @@ const JobApplyPage = () => {
   };
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
-         <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-    keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-  >
+      <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           <PageNameHeaderBar navigation={navigation} title="Apply to Jobs" />
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 0 }}
-           keyboardShouldPersistTaps="handled"
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
           >
-            <View style={styles.titleheader}>
-              <Text style={styles.title}>{gig.subject}</Text>
-            </View>
-
-            <Text style={styles.sectionTitle}>Employer's offered price</Text>
-            <View style={styles.row}>
-              <View style={styles.box}>
-                <Text style={styles.label}>Total Price</Text>
-                <View style={styles.valueBox}>
-                  <Text style={styles.currency}>CAD</Text>
-                  <View style={styles.divider} />
-                  <Text style={styles.value}>{gig.fixed_minimum}</Text>
-                </View>
-              </View>
-
-              <View style={styles.box}>
-                <Text style={styles.label}>Hourly Rate</Text>
-                <View style={styles.valueBox}>
-                  <Text style={styles.currency}>CAD</Text>
-                  <View style={styles.divider} />
-                  <Text style={styles.value}>{gig.hour_minimum}</Text>
-                </View>
-              </View>
-            </View>
-
-            <Text style={styles.note}>
-              <Text style={styles.bold}>{gig.expected_hour} Hours </Text>
-              is expected for the job to be done.
-            </Text>
-
-            {/* My Offer */}
-            <TouchableOpacity style={styles.offerHeader}>
-              <Text style={styles.offerText}>My Offer</Text>
-              <FontAwesome name="question-circle" size={15} color="#c3c3c3c3" />
-            </TouchableOpacity>
-
-            <View style={styles.offerRow}>
-              <View style={styles.offerBox}>
-                <Text style={styles.label}>Total Price</Text>
-                <View style={styles.inputContainer}>
-                  <Text style={styles.currency}>CAD</Text>
-                  <View style={styles.divider} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="0"
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                    value={myTotalPrice}
-                    onChangeText={(text) => {
-                      handleTotalPriceChange(text);
-                      handleProcessingFeePriceChange(text);
-                      setMyTotalPrice(text.replace(/[^0-9.]/g, ""));
-                    }}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.offerBox}>
-                <Text style={styles.label}>Hourly Rate</Text>
-                <View style={styles.inputContainer}>
-                  <Text style={styles.currency}>CAD</Text>
-                  <View style={styles.divider} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="0 / hr"
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                    value={myHourlyRate}
-                    onChangeText={(text) => {
-                      handleHourlyChange(text);
-                      setMyHourlyRate(text.replace(/[^0-9.]/g, ""));
-                    }}
-                  />
-                </View>
-              </View>
-            </View>
-            <Text style={styles.note}>
-              <Text style={styles.bold}>{expectedTime} Hours </Text>
-              is expected for the job to be done.
-            </Text>
-            {/* Introduction Letter */}
-            <Text style={styles.sectionTitle}>
-              Introduction Letter (Required)
-            </Text>
-            <TextInput
-              style={styles.textArea}
-              placeholder="Description"
-              placeholderTextColor="#c3c3c3c3"
-              multiline
-              textAlignVertical="top"
-              value={introLetter}
-              onChangeText={(text) => setIntroLetter(text)}
-            />
-
-            <TouchableOpacity
-              style={styles.checkboxContainer}
-              onPress={() => setAgree(!agree)}
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 70 }}
+              keyboardShouldPersistTaps="handled"
             >
-              <View style={[styles.checkbox, agree && styles.checkedBox]}>
-                {agree && (
-                  <MaterialIcons name="check" size={18} color="#ffffff" />
-                )}
+              <View style={styles.titleheader}>
+                <Text style={styles.title}>{gig.subject}</Text>
               </View>
-              <Text style={styles.agreeText}>
-                I agree to abide by the{" "}
-                <Text style={styles.link}>Terms and Conditions</Text> of
-                DJobzy.com
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
-          <View style={{ paddingBottom: 90 }}>
-            <GradientButton
-              title="Send"
-              onPress={handleSubmitOffer}
-              disabled={submitting}
-              loading={submitting}
-            />
-          </View>
-        </View>
-        </KeyboardAvoidingView>
 
+              <Text style={styles.sectionTitle}>Employer's offered price</Text>
+              <View style={styles.row}>
+                <View style={styles.box}>
+                  <Text style={styles.label}>Total Price</Text>
+                  <View style={styles.valueBox}>
+                    <Text style={styles.currency}>CAD</Text>
+                    <View style={styles.divider} />
+                    <Text style={styles.value}>{gig.fixed_minimum}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.box}>
+                  <Text style={styles.label}>Hourly Rate</Text>
+                  <View style={styles.valueBox}>
+                    <Text style={styles.currency}>CAD</Text>
+                    <View style={styles.divider} />
+                    <Text style={styles.value}>{gig.hour_minimum}</Text>
+                  </View>
+                </View>
+              </View>
+
+              <Text style={styles.note}>
+                <Text style={styles.bold}>{gig.expected_hour} Hours </Text>
+                is expected for the job to be done.
+              </Text>
+
+              {/* My Offer */}
+              <TouchableOpacity style={styles.offerHeader}>
+                <Text style={styles.offerText}>My Offer</Text>
+                <FontAwesome
+                  name="question-circle"
+                  size={15}
+                  color="#c3c3c3c3"
+                />
+              </TouchableOpacity>
+
+              <View style={styles.offerRow}>
+                <View style={styles.offerBox}>
+                  <Text style={styles.label}>Total Price</Text>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.currency}>CAD</Text>
+                    <View style={styles.divider} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="0"
+                      placeholderTextColor="#999"
+                      keyboardType="numeric"
+                      value={myTotalPrice}
+                      onChangeText={(text) => {
+                        handleTotalPriceChange(text);
+                        handleProcessingFeePriceChange(text);
+                        setMyTotalPrice(text.replace(/[^0-9.]/g, ""));
+                      }}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.offerBox}>
+                  <Text style={styles.label}>Hourly Rate</Text>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.currency}>CAD</Text>
+                    <View style={styles.divider} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="0 / hr"
+                      placeholderTextColor="#999"
+                      keyboardType="numeric"
+                      value={myHourlyRate}
+                      onChangeText={(text) => {
+                        handleHourlyChange(text);
+                        setMyHourlyRate(text.replace(/[^0-9.]/g, ""));
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+              <Text style={styles.note}>
+                <Text style={styles.bold}>{expectedTime} Hours </Text>
+                is expected for the job to be done.
+              </Text>
+              {/* Introduction Letter */}
+              <Text style={styles.sectionTitle}>
+                Introduction Letter (Required)
+              </Text>
+              <TextInput
+                style={styles.textArea}
+                placeholder="Description"
+                placeholderTextColor="#c3c3c3c3"
+                multiline
+                textAlignVertical="top"
+                value={introLetter}
+                onChangeText={(text) => setIntroLetter(text)}
+              />
+
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => setAgree(!agree)}
+              >
+                <View style={[styles.checkbox, agree && styles.checkedBox]}>
+                  {agree && (
+                    <MaterialIcons name="check" size={18} color="#ffffff" />
+                  )}
+                </View>
+                <Text style={styles.agreeText}>
+                  I agree to abide by the{" "}
+                  <Text style={styles.link}>Terms and Conditions</Text> of
+                  DJobzy.com
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+            <View style={{ paddingBottom: 90 }}>
+              <GradientButton
+                title="Send"
+                onPress={handleSubmitOffer}
+                disabled={submitting}
+                loading={submitting}
+              />
+            </View>
+          </KeyboardAvoidingView>
+        </View>
         <Footer />
       </SafeAreaView>
     </>
@@ -270,6 +273,7 @@ const JobApplyPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#222222",
     paddingHorizontal: 15,
   },
   titleheader: {

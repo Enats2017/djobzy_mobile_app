@@ -4,145 +4,160 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  useWindowDimensions,
   View,
 } from "react-native";
- import { useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import { fontScale, scale } from "../../utils/scale";
+import Feather from '@expo/vector-icons/Feather';
+import { SafeAreaView } from "react-native-safe-area-context";
+
 const ThirdScreen = () => {
-  const { width, height } = useWindowDimensions();
-  const isSmall = width < 380;
-  const isTablet = width > 768;
-  const titleSize = isSmall ? 30 : isTablet ? 52 : 40;
-  const subtitleSize = isSmall ? 25 : isTablet ? 48 : 38;
-  const descriptionSize = isSmall ? 17 : isTablet ? 20 : 22;
-  const buttonPaddingV = isSmall ? 8 : isTablet ? 18 : 10;
-  const buttonPaddingH = isSmall ? 27 : isTablet ? 34 : 38;
-  const buttonTextSize = isSmall ? 18 : isTablet ? 28 : 24;
-  const arrowCircle = isSmall ? 22 : isTablet ? 34 : 28;
-  const arrowSize = isSmall ? 14 : isTablet ? 22 : 18;
-  const img1Width = isSmall
-    ? width * 0.65
-    : isTablet
-    ? width * 0.65
-    : width * 0.9;
-  const img2Width = isSmall
-    ? width * 0.78
-    : isTablet
-    ? width * 0.78
-    : width * 0.95;
-  const marginTop = isSmall ? -10 : isTablet ? 30 : 20;
   const navigation = useNavigation();
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: "#39A881",}}>
     <View style={styles.container}>
+     
       <View style={styles.logoContainer}>
         <Image
           source={require("../../assets/images/Group2.png")}
-          style={{ width: img1Width, margin: marginTop }}
+          style={styles.imageTop}
           resizeMode="contain"
         />
         <Image
           source={require("../../assets/images/Group3.png")}
-          style={{ width: img2Width, marginTop: -130 }}
+          style={styles.imageBottom}
           resizeMode="contain"
         />
       </View>
-      <View style={styles.textcontainer}>
-        <Text style={[styles.title, { fontSize: titleSize }]}>Djobzy</Text>
-        <Text style={[styles.subtitle, { fontSize: subtitleSize }]}>
-          Interview Smarter.{"\n"}Get Hired Faster
+
+      {/* Text */}
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>Djobzy</Text>
+        <Text style={styles.subtitle}>
+          Get Hired Faster
         </Text>
-        <Text style={[styles.description, { fontSize: descriptionSize }]}>
-          Join a vibrant network of professionals, employers, and service
-          seekers.
+
+        <Text style={styles.description}>
+         Connecting ambition to opportunity
         </Text>
       </View>
+
+      {/* Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={[
-            styles.button,
-            {
-              paddingVertical: buttonPaddingV,
-              paddingHorizontal: buttonPaddingH,
-              borderRadius: buttonTextSize,
-            },
-          ]}
-           onPress={()=>navigation.navigate("FourthScreen")}
+          style={styles.button}
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate("FourthScreen")}
         >
-          <Text style={[styles.buttonText, { fontSize: buttonTextSize }]}>
-            Get Started
-          </Text>
-          <View
-            style={[
-              styles.arrowcon,
-              {
-                width: arrowCircle,
-                height: arrowCircle,
-                borderRadius: arrowCircle / 2,
-                marginRight: -20,
-              },
-            ]}
+          <Text style={styles.buttonText}>Get Started</Text>
 
-          >
-            <Text style={[styles.arrow, { fontSize: arrowSize }]}> ➝ </Text>
+          <View style={styles.arrowContainer}>
+            <Feather name="arrow-right" size={27} color="black" />
           </View>
         </TouchableOpacity>
       </View>
     </View>
+
+    </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: "#39A881",
+  },
+
   container: {
     flex: 1,
-    backgroundColor: "#1abc9c",
-    justifyContent: "center",
   },
+
+  /* IMAGE SECTION */
   logoContainer: {
+    flex: 4,
     alignItems: "center",
     justifyContent: "center",
+    position: "relative",
   },
-  textcontainer: {
+
+  imageTop: {
+    width: "100%",
+    position: "relative",
+    top:scale(70)
+    
+    
+  },
+
+  imageBottom: {
+    width: "100%",
+    bottom: scale(30)
+  
+    
+  },
+
+  /* TEXT */
+  textContainer: {
+    flex: 1,
     alignItems: "center",
-    marginTop: 25,
+    justifyContent: "center",
+    paddingHorizontal: scale(20),
   },
+
   title: {
     fontFamily: "Montserrat_400Regular",
+    fontSize: fontScale(40),
+    lineHeight: scale(52),
     color: "#fff",
-    marginBottom: 2,
   },
+
   subtitle: {
     fontFamily: "Montserrat_700Bold",
-    fontWeight: "bold",
+    fontSize: fontScale(30),
     color: "#fff",
     textAlign: "center",
-    marginBottom: 5,
   },
+
   description: {
+    fontSize: fontScale(16),
     color: "#fff",
     textAlign: "center",
+    lineHeight: scale(22),
   },
+
+  /* BUTTON */
   buttonContainer: {
+    flex: 2,
     alignItems: "center",
-    marginTop: 35,
+    justifyContent: "center",
   },
+
   button: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#111",
+    paddingVertical: scale(12),
+    paddingHorizontal: scale(22),
+    borderRadius: scale(30),
   },
+
   buttonText: {
     color: "#fff",
-    fontWeight: "600",
-    marginRight: 10,
+    fontSize: fontScale(18),
+    fontFamily: "Montserrat_700Bold",
   },
-  arrowcon: {
+
+  arrowContainer: {
+    width: scale(30),
+    height: scale(30),
+    borderRadius: scale(15),
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-  },
-  arrow: {
-    color: "#111",
-    fontWeight: "600",
+    marginLeft: scale(12), // horizontal spacing only (OK)
   },
 });
+
+
+
 export default ThirdScreen;

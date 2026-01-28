@@ -7,7 +7,9 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
@@ -17,6 +19,7 @@ import { useRoute } from "@react-navigation/native";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import EmployerFooter from "../../components/EmployerFooter";
+import GradientButton from "../../components/GradientButton";
 
 export default function SendJobOffer() {
   const navigation = useNavigation();
@@ -28,8 +31,10 @@ export default function SendJobOffer() {
   const [loading, setLoading] = useState(false);
   const route = useRoute();
   const { jobDetails } = route.params || {};
+  console.log(jobDetails?.emp_id);
 
-  
+   
+
   const handleHourlyChange = (value) => {
     setHourlyRate(value);
     const total = parseInt(totalPrice);
@@ -41,7 +46,7 @@ export default function SendJobOffer() {
     if (hourly > total) {
       Alert.alert(
         "Invalid Input",
-        "Hourly rate cannot be more than total price."
+        "Hourly rate cannot be more than total price.",
       );
       setExpectedTime(0);
       return;
@@ -100,15 +105,14 @@ export default function SendJobOffer() {
       const data = await res.json();
       if (data.status === 200) {
         Alert.alert("Success", "Offer sent successfully");
-         navigation.navigate("PostJobDetails",{jobId:data.slug})
+        navigation.replace("PostJobDetails", { jobId: data.slug });
       } else {
         Alert.alert("Error", data.message || "Something went wrong");
       }
     } catch (error) {
       console.log("SEND OFFER API ERROR", error);
       Alert.alert("Error", "Could not send offer");
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -116,172 +120,158 @@ export default function SendJobOffer() {
     <SafeAreaView style={styles.safeAreaContainer}>
       <View style={styles.mainContainer}>
         <PageNameHeaderBar navigation={navigation} title="Send a Job Offer" />
-
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
         >
-          <View style={styles.sendOfferTitleBlock}>
-            <Text style={styles.sendOfferJobTitle}>
-              {jobDetails?.gig_details?.subject}
-            </Text>
-            <Text style={styles.sendOfferPostedTime}>
-              {jobDetails.gig_details?.created}
-            </Text>
-          </View>
-          <View style={styles.sendOfferCardSection}>
-            <View style={styles.sendOfferCategoriesBlock}>
-              <Text style={styles.sendOfferCardHeading}>
-                Categories
-              </Text>
-              <View style={styles.sendOfferChipList}>
-                {jobDetails.category && jobDetails.category.length > 0 ? (
-                  jobDetails.category.map((item, idx) => (
-                    <View
-                      key={idx}
-                      style={styles.sendOfferCategoryChip}
-                    >
-                      <Text style={styles.sendOfferChipLabel}>
-                        {item.subname}
-                      </Text>
-                    </View>
-                  ))
-                ) : (
-                  <Text style={styles.sendOfferChipLabel}>
-                    No Category
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
-          <View style={styles.sendOfferCardSection}>
-            <View style={styles.sendOfferPricingBlock}>
-              <Text style={styles.sendOfferCardHeading}>Pricing</Text>
-              <View style={styles.pricingRow}>
-                <View>
-                  <Text style={styles.sendOfferPricingInfo}>
-                    <Text style={styles.priceLabel}>
-                      Total Price:{" "}
-                    </Text>
-                    <Text style={styles.sendOfferPricingHighlight}>
-                      CAD {jobDetails.gig_details?.fixed_minimum || 0}
-                    </Text>
-                  </Text>
-                </View>
-                <View>
-                  <Text style={styles.sendOfferPricingInfo}>
-                    <Text style={styles.priceLabel}>
-                      Hourly Rate:{" "}
-                    </Text>
-                    <Text style={styles.sendOfferPricingHighlight}>
-                      CAD:{jobDetails.gig_details?.hour_minimum || 0}
-                    </Text>
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.sendOfferProjectDuration}>
-                Project Length:{" "}
-                <Text style={styles.sendOfferPricingHighlight}>
-                  {jobDetails.gig_details?.duration_days || []}
-                </Text>
-              </Text>
-              <View style={styles.sendOfferHourInfoRow}>
-                <Text style={styles.sendOfferHourInfo}>
-                  {jobDetails.gig_details?.expected_hour} Hours{" "}
-                </Text>
-                <Text style={styles.sendOfferIsInfo}>
-                  is expected for the job to be done.
-                </Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.sendOfferCardSection}>
-            <Text style={styles.sectionTitle}>Offer New Price</Text>
-            <View style={styles.row}>
-              <View style={styles.box}>
-                <Text style={styles.label}>Total Price</Text>
-                <View style={styles.valueBox}>
-                  <Text style={styles.currency}>CAD</Text>
-                  <View style={styles.divider} />
-                  <TextInput
-                    style={styles.value}
-                    placeholder="0"
-                    placeholderTextColor="#666666"
-                    keyboardType="numeric"
-                    value={totalPrice}
-                    onChangeText={(text) => {
-                      handleTotalPriceChange(text);
-                      handleProcessingFeePriceChange(text);
-                      setTotalPrice(text.replace(/[^0-9.]/g, ""));
-                    }}
-                  />
-                </View>
-              </View>
-              <View style={styles.box}>
-                <Text style={styles.label}>Hourly Rate</Text>
-                <View style={styles.valueBox}>
-                  <Text style={styles.currency}>CAD</Text>
-                  <View style={styles.divider} />
-                  <TextInput
-                    style={styles.value}
-                    placeholder="0/hr"
-                    placeholderTextColor="#666666"
-                    keyboardType="numeric"
-                    value={hourlyRate}
-                    onChangeText={(text) => {
-                      handleHourlyChange(text);
-                      setHourlyRate(text.replace(/[^0-9.]/g, ""));
-                    }}
-                  />
-                </View>
-              </View>
-            </View>
-            <Text style={styles.note}>
-              <Text style={styles.bold}>{expectedTime} Hours </Text>
-              is expected for the job to be done.
-            </Text>
-            <View style={styles.sendOfferCardSection}>
-              <Text style={styles.sectionTitle}>Offer Letter</Text>
-              <TextInput
-                style={styles.textArea}
-                multiline
-                value={offerLetter}
-                onChangeText={setOfferLetter}
-                placeholder="Enter offer description..."
-                placeholderTextColor="#666"
-                textAlignVertical="top"
-
-              />
-            </View>
-          </View>
-
-          <View style={styles.sendOfferCardSection}>
-            <View style={styles.sendOfferDescriptionBlock}>
-              <Text style={styles.sendOfferCardHeading}>
-                Description
-              </Text>
-              <Text style={styles.sendOfferCardText}>
-                {jobDetails.gig_details?.description}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.sendOfferCardSection}></View>
-        </ScrollView>
-        <View style={styles.fixedSendOfferContainer}>
-          <TouchableOpacity
-            style={styles.sendOfferButton}
-            onPress={sendOffer}
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
           >
-            {loading ? (
-                      <ActivityIndicator color="#fff" size="large" />
-                    ) : (
-                      <Text style={styles.sendOfferButtonText}>Send Offer</Text>
-                    )}
-          </TouchableOpacity>
-        </View>
-         
+            <View style={styles.sendOfferTitleBlock}>
+              <Text style={styles.sendOfferJobTitle}>
+                {jobDetails?.gig_details?.subject}
+              </Text>
+              <Text style={styles.sendOfferPostedTime}>
+                {jobDetails.gig_details?.created}
+              </Text>
+            </View>
+            <View style={styles.sendOfferCardSection}>
+              <View style={styles.sendOfferCategoriesBlock}>
+                <Text style={styles.sendOfferCardHeading}>Categories</Text>
+                <View style={styles.sendOfferChipList}>
+                  {jobDetails.category && jobDetails.category.length > 0 ? (
+                    jobDetails.category.map((item, idx) => (
+                      <View key={idx} style={styles.sendOfferCategoryChip}>
+                        <Text style={styles.sendOfferChipLabel}>
+                          {item.subname}
+                        </Text>
+                      </View>
+                    ))
+                  ) : (
+                    <Text style={styles.sendOfferChipLabel}>No Category</Text>
+                  )}
+                </View>
+              </View>
+            </View>
+            <View style={styles.sendOfferCardSection}>
+              <View style={styles.sendOfferPricingBlock}>
+                <Text style={styles.sendOfferCardHeading}>Pricing</Text>
+                <View style={styles.pricingRow}>
+                  <View>
+                    <Text style={styles.sendOfferPricingInfo}>
+                      <Text style={styles.priceLabel}>Total Price: </Text>
+                      <Text style={styles.sendOfferPricingHighlight}>
+                        CAD {jobDetails.gig_details?.fixed_minimum || 0}
+                      </Text>
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={styles.sendOfferPricingInfo}>
+                      <Text style={styles.priceLabel}>Hourly Rate: </Text>
+                      <Text style={styles.sendOfferPricingHighlight}>
+                        CAD:{jobDetails.gig_details?.hour_minimum || 0}
+                      </Text>
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.sendOfferProjectDuration}>
+                  Project Length:{" "}
+                  <Text style={styles.sendOfferPricingHighlight}>
+                    {jobDetails.gig_details?.duration_days || []}
+                  </Text>
+                </Text>
+                <View style={styles.sendOfferHourInfoRow}>
+                  <Text style={styles.sendOfferHourInfo}>
+                    {jobDetails.gig_details?.expected_hour} Hours{" "}
+                  </Text>
+                  <Text style={styles.sendOfferIsInfo}>
+                    is expected for the job to be done.
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View style={styles.sendOfferCardSection}>
+              <Text style={styles.sectionTitle}>Offer New Price</Text>
+              <View style={styles.row}>
+                <View style={styles.box}>
+                  <Text style={styles.label}>Total Price</Text>
+                  <View style={styles.valueBox}>
+                    <Text style={styles.currency}>CAD</Text>
+                    <View style={styles.divider} />
+                    <TextInput
+                      style={styles.value}
+                      placeholder="0"
+                      placeholderTextColor="#666666"
+                      keyboardType="numeric"
+                      value={totalPrice}
+                      onChangeText={(text) => {
+                        handleTotalPriceChange(text);
+                        handleProcessingFeePriceChange(text);
+                        setTotalPrice(text.replace(/[^0-9.]/g, ""));
+                      }}
+                    />
+                  </View>
+                </View>
+                <View style={styles.box}>
+                  <Text style={styles.label}>Hourly Rate</Text>
+                  <View style={styles.valueBox}>
+                    <Text style={styles.currency}>CAD</Text>
+                    <View style={styles.divider} />
+                    <TextInput
+                      style={styles.value}
+                      placeholder="0/hr"
+                      placeholderTextColor="#666666"
+                      keyboardType="numeric"
+                      value={hourlyRate}
+                      onChangeText={(text) => {
+                        handleHourlyChange(text);
+                        setHourlyRate(text.replace(/[^0-9.]/g, ""));
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+              <Text style={styles.note}>
+                <Text style={styles.bold}>{expectedTime} Hours </Text>
+                is expected for the job to be done.
+              </Text>
+              <View style={styles.sendOfferCardSection}>
+                <Text style={styles.sectionTitle}>Offer Letter</Text>
+                <TextInput
+                  style={styles.textArea}
+                  multiline
+                  value={offerLetter}
+                  onChangeText={setOfferLetter}
+                  placeholder="Enter offer description..."
+                  placeholderTextColor="#666"
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
+
+            <View style={styles.sendOfferCardSection}>
+              <View style={styles.sendOfferDescriptionBlock}>
+                <Text style={styles.sendOfferCardHeading}>Description</Text>
+                <Text style={styles.sendOfferCardText}>
+                  {jobDetails.gig_details?.description}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.sendOfferCardSection}></View>
+          </ScrollView>
+          <View style={{ paddingBottom: 90 }}>
+            <GradientButton
+              title="Send"
+              onPress={sendOffer}
+              disabled={loading}
+              loading={loading}
+            />
+          </View>
+        </KeyboardAvoidingView>
       </View>
-      <EmployerFooter/>
+      <EmployerFooter />
     </SafeAreaView>
   );
 }
@@ -297,7 +287,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 150,
+    paddingBottom: 40,
   },
 
   sendOfferTitleBlock: {
@@ -423,7 +413,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_500Medium",
     paddingBottom: 6,
   },
-   textArea: {
+  textArea: {
     backgroundColor: "#FFFFFF0D",
     color: "#c3c3c3c3",
     borderRadius: 12,

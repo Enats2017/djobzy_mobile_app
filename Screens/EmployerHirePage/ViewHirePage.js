@@ -25,7 +25,7 @@ export default function ViewHirePage() {
   const [selectedJob, setSelectedJob] = useState("");
   const [profile, setProfile] = useState({});
   const [gigs, setGigs] = useState([]);
-
+  const [employee, setEmployee] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
@@ -45,6 +45,7 @@ export default function ViewHirePage() {
       });
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
+      setEmployee(data.employee_id)
       setProfile(data.profile);
       setGigs(data.gigs);
     } catch (err) {
@@ -56,6 +57,10 @@ export default function ViewHirePage() {
   useEffect(() => {
     fetchEmployerJob();
   }, []);
+  console.log("11111",employee);
+  
+
+ 
   
   const handleSelectJob = async (item) => {  
      setSelectedJob(item); 
@@ -71,7 +76,7 @@ export default function ViewHirePage() {
       },
       body: JSON.stringify({
         id: item.gid,
-        emp_id: profile?.user_id, 
+        emp_id: employee, 
       }),
     });
     const data = await res.json();

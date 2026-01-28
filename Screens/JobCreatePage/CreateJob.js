@@ -12,7 +12,6 @@ import {
   Alert,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
-
 import TitleSection from "./TitleScetion";
 import Category from "./JobCategory";
 import AddressSection from "./AddressSection";
@@ -46,13 +45,12 @@ const CreateJob = () => {
     reset,
     isEdit,
     activeTab,
-    setActiveTab
+    setActiveTab,
   } = useCreateJobGlobalStore();
 
   const [titleError, setTitleError] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
-  
 
   const [timeError, setTimeError] = useState(false);
   const [priceError, setPriceError] = useState(false);
@@ -60,7 +58,6 @@ const CreateJob = () => {
   const [loading, setLoading] = useState(false);
   const totalSteps = 7;
   const navigation = useNavigation();
-
 
   const handleBack = () => {
     setPriceError(false);
@@ -88,7 +85,7 @@ const CreateJob = () => {
 
     switch (selectedOption) {
       case "1":
-        return { type: 1, days: 0};
+        return { type: 1, days: 0 };
 
       case "1-7":
         return { type: 2, days: 0 };

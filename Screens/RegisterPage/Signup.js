@@ -27,6 +27,9 @@ const Signup = () => {
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
   const navigation = useNavigation();
 
   const handleRegister = async () => {
@@ -68,13 +71,15 @@ const Signup = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient colors={["#444444", "#222222"]} style={styles.containers}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 10}
+        <KeyboardAwareScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          enableOnAndroid={true}
+          extraScrollHeight={80}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <ScrollView
-            contentContainerStyle={styles.container}
+            contentContainerStyle={{ flex: 1 }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -84,10 +89,8 @@ const Signup = () => {
                 style={styles.logo}
               />
             </View>
-            <Text style={styles.title}>Create An Account</Text>
-            <Text style={styles.subtitle}>
-              Create an account to explore about our app
-            </Text>
+            <Text style={styles.title}>Create Your Account</Text>
+
             <Text style={styles.label}>Full Name/Company Name</Text>
             <View style={styles.passwordContainer}>
               <TextInput
@@ -114,11 +117,46 @@ const Signup = () => {
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}
-                placeholder=" Enter Password"
+                placeholder=" Type a password"
                 placeholderTextColor="#888"
                 secureTextEntry={!showPassword}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (confirmPassword && text !== confirmPassword) {
+                    setPasswordError("Passwords do not match");
+                  } else {
+                    setPasswordError("");
+                  }
+                }}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                  size={20}
+                  color="#888"
+                />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.label}>Repeat your Password</Text>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder=" Type the password again"
+                placeholderTextColor="#888"
+                secureTextEntry={!showPassword}
+                value={confirmPassword}
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  if (password && text && password !== text) {
+                    setPasswordError("Passwords do not match");
+                  } else {
+                    setPasswordError("");
+                  }
+                }}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
@@ -204,7 +242,7 @@ const Signup = () => {
               </Text>
             </Text>
           </ScrollView>
-        </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -213,7 +251,7 @@ const styles = StyleSheet.create({
   containers: {
     flex: 1,
     paddingHorizontal: 17,
-    paddingBottom:50,
+    paddingBottom: 50,
   },
   // container: {
   //   alignItems: "center",
@@ -321,19 +359,9 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 45,
     borderRadius: 6,
-    marginBottom: 10,
     paddingHorizontal: 15,
   },
-  facebookBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#6a6565ff",
-    width: "100%",
-    height: 45,
-    borderRadius: 6,
-    marginBottom: 4,
-    paddingHorizontal: 15,
-  },
+
   socialIcon: {
     width: 22,
     height: 22,
@@ -349,14 +377,14 @@ const styles = StyleSheet.create({
   footerText: {
     color: "#fff",
     marginTop: 8,
-     marginBottom:20,
+
     fontSize: 16,
     fontFamily: "Montserrat_400Regular",
     textAlign: "center",
   },
   linkText: {
     color: "#CB7767",
-    fontWeight: "600",
+
     fontSize: 18,
     textDecorationLine: "underline",
   },

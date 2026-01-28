@@ -308,6 +308,7 @@ const styles = StyleSheet.create({
     color:"#46A282",
     fontFamily:"Montserrat_700Bold",
     fontSize:14,
+    textAlign:"center",
 
    },
   section: {

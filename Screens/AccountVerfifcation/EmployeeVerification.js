@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import {
   View,
   Text,
@@ -8,6 +9,8 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import {
   Ionicons,
@@ -31,7 +34,18 @@ import BorderButton from "../../components/BorderButton";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import FilePreview from "../../components/FilePreview";
-import {toastSuccess, toastError, toastInfo, toastWarning} from "../../utils/toast";
+import {
+  toastSuccess,
+  toastError,
+  toastInfo,
+  toastWarning,
+} from "../../utils/toast";
+import Step3Social from "./Step3Social";
+import EmployerFooter from "../../components/EmployerFooter";
+import Step4Address from "./Step4Address";
+import Step5Identyfication from "./Step5Identyfication";
+import Step5Payment from "./Step6Payment";
+import Step7Interview from "./Step7Interview";
 
 const EmployeeVerification = () => {
   const [selected, setSelected] = useState([]);
@@ -44,6 +58,7 @@ const EmployeeVerification = () => {
   const [resumeFile, setResumeFile] = useState(null);
   const [postal, setPostal] = useState("");
   const [location, setLocation] = useState("");
+  const [admin, setAdmin] = useState(0);
 
   const fectchVerfication = async () => {
     setLoading(true);
@@ -59,14 +74,22 @@ const EmployeeVerification = () => {
       setUserDetails(data.userDetails);
       const verificationCount = data.userDetails.verification_count;
       setUserDetails(data.userDetails);
-      console.log(verificationCount);
+    
     } catch (error) {
       console.log("API Error:", error);
     } finally {
       setLoading(false);
     }
   };
+  const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    console.log("11111", user);
+    setAdmin(user?.admin);
+  };
   useEffect(() => {
+    loadUser();
     fectchVerfication();
   }, []);
 
@@ -82,11 +105,33 @@ const EmployeeVerification = () => {
     return step > userDetails?.verification_count + 1;
   };
 
-  const handleStepPress = (step) => {
-    // allow click only on active step
-    if (!isActive(step)) return;
+ const handleStepPress = (step) => {
+  setActiveStep(step); 
+};
 
-    setActiveStep(step);
+  const goBack = () => {
+    setActiveStep(null);
+  };
+  const goNext = async () => {
+  await fectchVerfication(); // re-fetch updated verification_count
+  setActiveStep(null); // go back to verification list
+};
+  const renderStepScreen = () => {
+    switch (activeStep) {
+      case 3:
+        return <Step3Social onNext={goNext} />;
+      case 4:
+        return <Step4Address onNext={goNext} />;
+      case 5:
+        return <Step5Identyfication  onNext={goNext} />;
+      case 6:
+        return <Step5Payment onNext={goNext} />;
+      case 7:
+        return <Step7Interview onNext={goNext} />;
+
+      default:
+        return null;
+    }
   };
 
   const getBoxStyle = (step) => {
@@ -105,61 +150,91 @@ const EmployeeVerification = () => {
     return "#c3c3c3";
   };
 
-  const pickResume = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: "application/pdf",
-    });
+  // const pickResume = async () => {
+  //   const result = await DocumentPicker.getDocumentAsync({
+  //     type: "application/pdf",
+  //   });
 
-    if (!result.canceled && result.assets?.length > 0) {
-      setResumeFile(result.assets[0]);
-    }
-  };
+  //   if (!result.canceled && result.assets?.length > 0) {
+  //     setResumeFile(result.assets[0]);
+  //   }
+  // };
 
-  const removeResume = () => {
-    setResumeFile(null);
-  };
+  // const removeResume = () => {
+  //   setResumeFile(null);
+  // };
 
-  const submitContactInfo = async () => {
-    if (!postal || !location) {
-      alert("Fill the  all Input");
-      return;
-    }
-    const formData = new FormData();
-    formData.append("postal_code", postal);
-    formData.append("searchInput", location);
-    formData.append("images", {
-      uri: resumeFile.uri,
-      name: resumeFile.name,
-      type: "application/pdf",
-    });
-    try {
-      setSubmitting(true);
-      const token = await AsyncStorage.getItem("token");
-      const res = await fetch(`${API_URL}/step4-post`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-        body: formData,
-      });
+  // const submitContactInfo = async () => {
+  //   if (!postal || !location) {
+  //     alert("Fill the  all Input");
+  //     return;
+  //   }
+  //   const formData = new FormData();
+  //   formData.append("postal_code", postal);
+  //   formData.append("searchInput", location);
+  //   formData.append("images", {
+  //     uri: resumeFile.uri,
+  //     name: resumeFile.name,
+  //     type: "application/pdf",
+  //   });
+  //   try {
+  //     setSubmitting(true);
+  //     const token = await AsyncStorage.getItem("token");
+  //     const res = await fetch(`${API_URL}/step4-post`, {
+  //       method: "POST",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         Accept: "application/json",
+  //       },
+  //       body: formData,
+  //     });
 
-      const result = await res.json();
+  //     const result = await res.json();
 
-      if (result.status == 200) {
-        alert("Contact info saved successfully");
-      } else {
-        alert(result.message || "Something went wrong");
-      }
-    } catch (error) {
-      console.error("API Error:", error);
-      toastWarning("netweork error")
-      
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  //     if (result.status == 200) {
+  //       alert("Contact info saved successfully");
+  //     } else {
+  //       alert(result.message || "Something went wrong");
+  //     }
+  //   } catch (error) {
+  //     console.error("API Error:", error);
+  //     toastWarning("netweork error")
 
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
+
+  if (activeStep !== null) {
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 30 : 0}
+          >
+            <ScrollView
+              contentContainerStyle={{ paddingBottom: 100 }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <TouchableOpacity style={styles.dashboardHeader} onPress={goBack}>
+                <View style={styles.arrow}>
+                  <Ionicons name="chevron-back" size={30} color="#ffffff" />
+                </View>
+
+                <Text style={styles.title}>Verification</Text>
+              </TouchableOpacity>
+
+              {renderStepScreen()}
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </View>
+        {admin == 2 ? <EmployerFooter /> : <Footer />}
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -210,7 +285,7 @@ const EmployeeVerification = () => {
               <TouchableOpacity
                 style={[styles.box, getBoxStyle(3)]}
                 onPress={() => handleStepPress(3)}
-                disabled={isDisabled(3)}
+                //disabled={isDisabled(3)}
               >
                 <View style={styles.topRow}>
                   <Text style={[styles.label, getTextStyle(3)]}>
@@ -227,7 +302,7 @@ const EmployeeVerification = () => {
               <TouchableOpacity
                 style={[styles.box, getBoxStyle(4)]}
                 onPress={() => handleStepPress(4)}
-                disabled={isDisabled(4)}
+                //disabled={isDisabled(4)}
               >
                 <View style={styles.topRow}>
                   <Text style={[styles.label, getTextStyle(4)]}>Address</Text>
@@ -245,7 +320,7 @@ const EmployeeVerification = () => {
               <TouchableOpacity
                 style={[styles.box, getBoxStyle(5)]}
                 onPress={() => handleStepPress(5)}
-                disabled={isDisabled(5)}
+                //disabled={isDisabled(5)}
               >
                 <View style={styles.topRow}>
                   <Text style={[styles.label, getTextStyle(5)]}>
@@ -263,7 +338,7 @@ const EmployeeVerification = () => {
               <TouchableOpacity
                 style={[styles.box, getBoxStyle(6)]}
                 onPress={() => handleStepPress(6)}
-                disabled={isDisabled(6)}
+               // disabled={isDisabled(6)}
               >
                 <View style={styles.topRow}>
                   <Text style={[styles.label, getTextStyle(6)]}>
@@ -283,7 +358,7 @@ const EmployeeVerification = () => {
               <TouchableOpacity
                 style={[styles.box, getBoxStyle(7)]}
                 onPress={() => handleStepPress(7)}
-                disabled={isDisabled(7)}
+                //disabled={isDisabled(7)}
               >
                 <View style={styles.topRow}>
                   <Text style={[styles.label, getTextStyle(7)]}>
@@ -299,52 +374,10 @@ const EmployeeVerification = () => {
                 <Text style={[styles.number, getTextStyle(7)]}>07</Text>
               </TouchableOpacity>
             </View>
-            {activeStep === 3 && (
-              <View style={styles.inputSection}>
-                <Text style={styles.inputTitle}>Social Media Accounts</Text>
-                <TextInput
-                  placeholder="Enter Facebook / LinkedIn URL"
-                  placeholderTextColor="#9e9e9e"
-                  style={styles.input}
-                />
-              </View>
-            )}
-            {activeStep === 4 && (
-              <View style={styles.inputSection}>
-                <ContactInfo
-                  postalCodeValue={postal}
-                  onChangePostalCode={setPostal}
-                  locationValue={location}
-                  onChangeLocation={setLocation}
-                  showPhone={false}
-                />
-                {/* <GoogleMap /> */}
-                <View style={{ paddingBottom: 10 }}>
-                  <BorderButton
-                    title="Uplaod the document to verify"
-                    onPress={pickResume}
-                  />
-                  <FilePreview file={resumeFile} onPress={removeResume} />
-                  <GradientButton
-                    disabled={submitting}
-                    loading={submitting}
-                    title="Send"
-                    onPress={submitContactInfo}
-                  />
-                </View>
-              </View>
-            )}
-            {activeStep === 5 && (
-              <View style={styles.inputSection}>
-                <Text style={styles.inputTitle}>Upload ID Card</Text>
-
-                <IDVerificationUploadScreen />
-              </View>
-            )}
           </ScrollView>
         )}
       </View>
-      <Footer />
+      {admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 };
@@ -353,6 +386,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+
   container: {
     flex: 1,
     backgroundColor: "#222222",
@@ -455,6 +489,29 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontFamily: "Montserrat_600SemiBold",
     fontSize: 14,
+  },
+  //pagename section
+  dashboardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingTop: 20,
+    gap: 10,
+  },
+  arrow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#313131",
+    width: 40,
+    height: 40,
+    borderRadius: 100,
+  },
+  title: {
+    fontSize: 20,
+
+    fontStyle: "DegularDisplay_600SemiBold", // ensure this font is available in your project
+    color: "#ffffff",
   },
 });
 

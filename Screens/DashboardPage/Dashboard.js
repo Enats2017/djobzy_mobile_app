@@ -53,9 +53,6 @@ const Dashboard = () => {
         if (pageNum === 1) setLoading(true);
         else setIsFetchingMore(true);
         const token = await AsyncStorage.getItem("token");
-        console.log(token);
-        
-        // console.log("📡 Fetching jobs for page:", pageNum);
         const res = await fetch(
           `${API_URL}/employee-dashboard?page=${pageNum}`,
           {
@@ -132,9 +129,7 @@ const Dashboard = () => {
 
     try {
       const token = await AsyncStorage.getItem("token");
-      console.log(token);
-      
-
+      console.log(token);      
       const res = await fetch(`${API_URL}/filter-by-keyword`, {
         method: "POST",
         headers: {
@@ -496,7 +491,7 @@ const styles = StyleSheet.create({
 
   chipText: {
     color: "#ffffff",
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: "Montserrat_500Medium",
      textAlign: "center",
   },

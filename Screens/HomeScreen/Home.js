@@ -2,39 +2,26 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useState } from "react";
-import {
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  useWindowDimensions,
-} from "react-native";
+import React, { useState } from "react";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { scale } from "../../utils/scale";
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const [isLogin, setisLogin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const checkAuth = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");      
+      const token = await AsyncStorage.getItem("token");
       if (!token) {
         navigation.navigate("SliderScreen");
         return;
       }
+
       const userStr = await AsyncStorage.getItem("user");
       const user = JSON.parse(userStr);
       const { verification_count, admin } = user;
-      console.log("VERIFICATION COUNT RAW:", user?.verification_count);
-        if (verification_count < 2) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "VerificationPage" }],
-      });
-      return;
-    }
 
       if (admin == 2) {
         navigation.navigate("EmployerDashboard");
@@ -42,7 +29,6 @@ export default function HomeScreen() {
         navigation.navigate("Dashboard");
       }
     } catch (error) {
-      console.log("Auth error:", error);
       navigation.reset({
         index: 0,
         routes: [{ name: "SliderScreen" }],
@@ -52,88 +38,36 @@ export default function HomeScreen() {
     }
   };
 
-  const { width, height } = useWindowDimensions();
-  const isSmall = width < 380;
-  const isTablet = width > 768;
-  const isLargePhone = width >= 380 && width < 768;
-  const logoSize = isSmall
-    ? width * 0.3
-    : isTablet
-    ? width * 0.18
-    : width * 0.36;
-  const arrowSize = isSmall
-    ? width * 0.15
-    : isTablet
-    ? width * 0.08
-    : width * 0.16;
-  const iconSize = isSmall
-    ? width * 0.065
-    : isTablet
-    ? width * 0.05
-    : width * 0.075;
   return (
     <LinearGradient
       colors={["#1c1c1c", "#2d2d2d", "#3a3a3a"]}
       style={styles.gradientContainer}
     >
       <SafeAreaView style={styles.safeArea}>
-        <View
-          style={[
-            styles.circleLarge,
-            {
-              width: width * 1.53,
-              height: width * 1.53,
-              borderRadius: width * 1.5,
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.circleMedium,
-            { width: width * 1, height: width * 1, borderRadius: width * 1.5 },
-          ]}
-        />
-        <View
-          style={[
-            styles.circleSmall,
-            {
-              width: width * 0.62,
-              height: width * 0.62,
-              borderRadius: width * 1.5,
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.logoContainer,
-            {
-              width: logoSize,
-              height: logoSize,
-              borderRadius: logoSize / 2,
-              marginTop: height * 0.02,
-            },
-          ]}
-        >
-          <Image
-            source={require("../../assets/images/djobzy-logo.png")}
-            resizeMode="contain"
-            style={{ width: "80%", height: "80%" }}
-          />
+        <View style={styles.container}>
+          {/* Outer Circle */}
+          <View style={styles.outerCircle}>
+            {/* Middle Circle */}
+            <View style={styles.middleCircle}>
+              {/* Inner Circle */}
+              <View style={styles.innerCircle}>
+                {/* Center Logo */}
+                <View style={styles.logoWrapper}>
+                  <Image
+                    source={require("../../assets/images/djobzy-logo.png")}
+                    resizeMode="contain"
+                    style={styles.logo}
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Bottom Arrow Button */}
+          <TouchableOpacity style={styles.arrowBtn} onPress={checkAuth}>
+            <Ionicons name="arrow-forward" size={22} color="#fff" />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={[
-            styles.arrowButton,
-            {
-              bottom: height * 0.132,
-              width: arrowSize,
-              height: arrowSize,
-              borderRadius: arrowSize / 2,
-            },
-          ]}
-          onPress={checkAuth}
-        >
-          <Ionicons name="arrow-forward" size={iconSize} color="#fff" />
-        </TouchableOpacity>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -142,34 +76,67 @@ const styles = StyleSheet.create({
   gradientContainer: {
     flex: 1,
   },
+
   safeArea: {
     flex: 1,
-    alignItems: "center",
+  },
+
+  /* BACKGROUND CIRCLES */
+  container: {
+    flex: 1,
+
     justifyContent: "center",
-  },
-  circleLarge: {
-    position: "absolute",
-    borderWidth: 0.5,
-    borderColor: "rgba(255, 255, 255, 0.1)",
-  },
-  circleMedium: {
-    position: "absolute",
-    borderWidth: 0.5,
-    borderColor: "rgba(255, 255, 255, 0.15)",
-  },
-  circleSmall: {
-    position: "absolute",
-    borderWidth: 0.5,
-    borderColor: "rgba(255, 255, 255, 0.25)",
-  },
-  logoContainer: {
     alignItems: "center",
-    justifyContent: "center",
   },
-  arrowButton: {
-    position: "absolute",
-    backgroundColor: "#d17866",
-    alignItems: "center",
+
+  outerCircle: {
+    width: 670,
+    height: 670,
+    borderRadius: 500,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
     justifyContent: "center",
+    alignItems: "center",
+  },
+
+  middleCircle: {
+    width: 435,
+    height: 435,
+    borderRadius: 400,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  innerCircle: {
+    width: 260,
+    height: 260,
+    borderRadius: 150,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  logoWrapper: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  logo: {
+    width: 135,
+    height: 135,
+  },
+
+  arrowBtn: {
+    position: "absolute",
+    bottom: 34,
+    width: 56,
+    height: 56,
+    borderRadius: 40,
+    backgroundColor: "#e67c63",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

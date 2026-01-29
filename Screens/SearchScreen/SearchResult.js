@@ -3,7 +3,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import Footer from "../../components/Footer";
 import {
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,37 +15,25 @@ import Octicons from "@expo/vector-icons/Octicons";
 import FindJobs from "../FindJobs/FindJobs";
 import FindEmployees from "../FindJobs/FindEmployees";
 import { useNavigation } from "@react-navigation/native";
-
 import AdvanceSearch from "./AdvanceSearch";
-
-
 
 const SearchResult = () => {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState(true);
-
+  const [activeTab, setActiveTab] = useState(true); // true = Jobs, false = Employees
   const [showFilter, setShowFilter] = useState(false);
 
   return (
-    <>
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.container}>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <PageNameHeaderBar title="Result" navigation={navigation} />
 
-          <PageNameHeaderBar title="Result" navigation={navigation} />
-          <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
-          >
-            <View style={styles.bestmatch}>
-              <View style={styles.matchesHeader}>
-                <View style={styles.toggleWrapper}>
-                  <TouchableOpacity
-                    style={styles.toggleBtn}
-                    onPress={() => setActiveTab(true)}
-
-          <PageNameHeaderBar title="Result" navigation={navigation}/>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+        >
           <View style={styles.bestmatch}>
+          
             <View style={styles.matchesHeader}>
               <View style={styles.toggleWrapper}>
                 <TouchableOpacity
@@ -58,65 +45,63 @@ const SearchResult = () => {
                       styles.toggleText,
                       activeTab ? styles.activeText : styles.inactiveText,
                     ]}
-
                   >
-                    <Text
-                      style={[
-                        styles.toggleText,
-                        activeTab ? styles.activeText : styles.inactiveText,
-                      ]}
-                    >
-                      Find Jobs
-                    </Text>
-                    {activeTab && <View style={styles.underline} />}
-                  </TouchableOpacity>
+                    Find Jobs
+                  </Text>
+                  {activeTab && <View style={styles.underline} />}
+                </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={styles.toggleBtn}
-                    onPress={() => setActiveTab(false)}
-                  >
-                    <Text
-                      style={[
-                        styles.toggleText,
-                        !activeTab ? styles.activeText : styles.inactiveText,
-                      ]}
-                    >
-                      Find Employees
-                    </Text>
-                    {!activeTab && <View style={styles.underline} />}
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.iconsContainer}>
-                  <TouchableOpacity
+                <TouchableOpacity
+                  style={styles.toggleBtn}
+                  onPress={() => setActiveTab(false)}
+                >
+                  <Text
                     style={[
-                      styles.iconCircle,
-                      showFilter && styles.iconCircleActive,
+                      styles.toggleText,
+                      !activeTab ? styles.activeText : styles.inactiveText,
                     ]}
-                    onPress={() => setShowFilter((prev) => !prev)}
                   >
-                    <FontAwesome6
-                      name="filter"
-                      size={18}
-                      color={showFilter ? "#000" : "#fff"}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconCircle}>
-                    <Octicons name="filter" size={18} color="white" />
-                  </TouchableOpacity>
-                </View>
+                    Find Employees
+                  </Text>
+                  {!activeTab && <View style={styles.underline} />}
+                </TouchableOpacity>
               </View>
 
-              {showFilter && <AdvanceSearch />}
+              <View style={styles.iconsContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.iconCircle,
+                    showFilter && styles.iconCircleActive,
+                  ]}
+                  onPress={() => setShowFilter((prev) => !prev)}
+                >
+                  <FontAwesome6
+                    name="filter"
+                    size={18}
+                    color={showFilter ? "#000" : "#fff"}
+                  />
+                </TouchableOpacity>
 
-              {activeTab ? <FindJobs /> : <FindEmployees />}
+                <TouchableOpacity style={styles.iconCircle}>
+                  <Octicons name="filter" size={18} color="#fff" />
+                </TouchableOpacity>
+              </View>
             </View>
-          </KeyboardAvoidingView>
-        </View>
-        <Footer />
-      </SafeAreaView>
-    </>
+
+            {/* FILTER */}
+            {showFilter && <AdvanceSearch />}
+
+            {/* CONTENT */}
+            {activeTab ? <FindJobs /> : <FindEmployees />}
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+
+      <Footer />
+    </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -154,27 +139,21 @@ const styles = StyleSheet.create({
   },
   iconCircleActive: {
     backgroundColor: "#fff",
-    borderColor: "#fff",
   },
-
   toggleText: {
     fontFamily: "Montserrat_600SemiBold",
-    color: "#c3c3c3",
     fontSize: 14,
     textAlign: "center",
   },
   inactiveText: {
-    fontFamily: "Montserrat_600SemiBold",
     color: "#c3c3c3",
-    fontSize: 14,
-    borderColor: "#c3c3c3",
     borderBottomWidth: 1,
+    borderColor: "#c3c3c3",
     width: "100%",
     paddingBottom: 8,
   },
   activeText: {
-    fontFamily: "Montserrat_600SemiBold",
-    color: "#FFFFFF",
+    color: "#ffffff",
     paddingBottom: 8,
   },
   underline: {

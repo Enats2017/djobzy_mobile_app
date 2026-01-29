@@ -85,7 +85,7 @@ const FourthScreen = () => {
               I'm a Recruiter
             </Text>
             <Text style={[styles.descText, { color: "#111" }]}>
-              Looking for  Service
+              Looking for Service
             </Text>
           </TouchableOpacity>
         </View>

@@ -117,24 +117,23 @@ const App = () => {
     return null;
   }
 
-   if (Text.defaultProps == null) {
-  Text.defaultProps = {};
-}
-Text.defaultProps.allowFontScaling = false;
+  if (Text.defaultProps == null) {
+    Text.defaultProps = {};
+  }
+  Text.defaultProps.allowFontScaling = false;
 
-if (TextInput.defaultProps == null) {
-  TextInput.defaultProps = {};
-}
-TextInput.defaultProps.allowFontScaling = false;
+  if (TextInput.defaultProps == null) {
+    TextInput.defaultProps = {};
+  }
+  TextInput.defaultProps.allowFontScaling = false;
 
- 
+
 
   return (
     <View style={{ flex: 1 }}>
-      
       <MessageNotificationProvider>
         <NavigationContainer>
-          
+
           <Stack.Navigator
             initialRouteName="Home"
             screenOptions={{ headerShown: false }}
@@ -208,11 +207,11 @@ TextInput.defaultProps.allowFontScaling = false;
             <Stack.Screen name="EditPromoteSevices" component={EditPromoteSevices} />
             <Stack.Screen name="SearchScreen" component={SearchScreen} />
             <Stack.Screen name="Register_Success" component={Register_Success} />
-            <Stack.Screen name="EmployeeHire" component={EmployeeHire}/>
-            <Stack.Screen name="FavoriteEmployee" component={FavoriteEmployee}/>
-            <Stack.Screen name="EmployerCategory" component={EmployerCategory}/>
-            <Stack.Screen name="SearchCategory" component={SearchCategory}/>
-            <Stack.Screen name="SearchResult" component={SearchResult}/>
+            <Stack.Screen name="EmployeeHire" component={EmployeeHire} />
+            <Stack.Screen name="FavoriteEmployee" component={FavoriteEmployee} />
+            <Stack.Screen name="EmployerCategory" component={EmployerCategory} />
+            <Stack.Screen name="SearchCategory" component={SearchCategory} />
+            <Stack.Screen name="SearchResult" component={SearchResult} />
           </Stack.Navigator>
         </NavigationContainer>
         <Toast config={toastConfig} />

@@ -3,10 +3,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
-import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, View,Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { scale } from "../../utils/scale";
 
+const { height } = Dimensions.get("window");
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
@@ -39,13 +40,12 @@ export default function HomeScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={["#1c1c1c", "#2d2d2d", "#3a3a3a"]}
-      style={styles.gradientContainer}
-    >
-      <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea}>
+        <LinearGradient
+          colors={["#1c1c1c", "#2d2d2d", "#3a3a3a"]}
+          style={styles.gradientContainer}
+        >
         <View style={styles.container}>
-          {/* Outer Circle */}
           <View style={styles.outerCircle}>
             {/* Middle Circle */}
             <View style={styles.middleCircle}>
@@ -62,14 +62,14 @@ export default function HomeScreen() {
               </View>
             </View>
           </View>
-
-          {/* Bottom Arrow Button */}
-          <TouchableOpacity style={styles.arrowBtn} onPress={checkAuth}>
-            <Ionicons name="arrow-forward" size={22} color="#fff" />
-          </TouchableOpacity>
+          <View style={styles.arrowWrapper}>
+            <TouchableOpacity style={styles.arrowBtn} onPress={checkAuth}>
+              <Ionicons name="arrow-forward" size={22} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
-      </SafeAreaView>
     </LinearGradient>
+      </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
@@ -81,10 +81,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  /* BACKGROUND CIRCLES */
   container: {
     flex: 1,
-
     justifyContent: "center",
     alignItems: "center",
   },
@@ -128,15 +126,19 @@ const styles = StyleSheet.create({
     width: 135,
     height: 135,
   },
+  arrowWrapper: {
+  position: "absolute",
+  top: height * 0.88,  
+  alignSelf: "center",
+},
+arrowBtn: {
+  width: 56,
+  height: 56,
+  borderRadius: 40,
+  backgroundColor: "#e67c63",
+  justifyContent: "center",
+  alignItems: "center",
+},
 
-  arrowBtn: {
-    position: "absolute",
-    bottom: 34,
-    width: 56,
-    height: 56,
-    borderRadius: 40,
-    backgroundColor: "#e67c63",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+ 
 });

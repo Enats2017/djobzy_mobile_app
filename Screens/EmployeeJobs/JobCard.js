@@ -34,7 +34,7 @@ const JobCard = ({ item, isLastItem }) => {
         }),
       });
       const data = await response.json();
-      toastSuccess("Successfully followed the user")
+      // toastSuccess("Successfully followed the user")
       
       if (data.status === 200) {
         setIsLiked(true);
@@ -63,7 +63,7 @@ const JobCard = ({ item, isLastItem }) => {
       });
       const data = await response.json();
       
-       toastSuccess("Unfollowed successfully")
+      //  toastSuccess("Unfollowed successfully")
       if (data.status == 200) {
         setIsLiked(false);
       }

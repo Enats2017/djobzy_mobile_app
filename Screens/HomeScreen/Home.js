@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   },
   arrowWrapper: {
   position: "absolute",
-  top: height * 0.88,  
+  top: height * 0.84,  
   alignSelf: "center",
 },
 arrowBtn: {

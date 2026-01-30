@@ -12,19 +12,22 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { useNotifications } from "../context/MessageNotificationContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import HeaderMenuModal from "./HeaderMenuModal";
 
-const HeaderBar = ({ onMenuPress, showSearch = true }) => {
+const HeaderBar = ({  showMenu = true, showSearch = true }) => {
   const navigation = useNavigation();
   const { messageCount } = useNotifications();
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const goToSearch = async () => {
     const userStr = await AsyncStorage.getItem("user");
     const user = JSON.parse(userStr);
     const { admin } = user;
     const search_type = admin == 2 ? 2 : 0;
-    navigation.navigate("SearchScreen", {search_type});
+    navigation.navigate("SearchScreen", { search_type });
   };
   return (
+    <>
     <View style={styles.container}>
       <View style={styles.left}>
         <Image
@@ -34,14 +37,15 @@ const HeaderBar = ({ onMenuPress, showSearch = true }) => {
         />
       </View>
       <View style={styles.right}>
-        {
-          showSearch && (
-            <TouchableOpacity style={styles.iconWrapper} onPress={goToSearch}>
-              <Feather name="search" size={18} color="#fff" />
-            </TouchableOpacity>
-          )
-        }
-        <TouchableOpacity style={styles.iconWrapper} onPress={() => navigation.navigate("ChatList")}>
+        {showSearch && (
+          <TouchableOpacity style={styles.iconWrapper} onPress={goToSearch}>
+            <Feather name="search" size={18} color="#fff" />
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          style={styles.iconWrapper}
+          onPress={() => navigation.navigate("ChatList")}
+        >
           <Ionicons name="chatbubble-outline" size={22} color="#fff" />
           {messageCount > 0 && (
             <View style={styles.messageBadge}>
@@ -52,15 +56,23 @@ const HeaderBar = ({ onMenuPress, showSearch = true }) => {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.iconWrapper} onPress={onMenuPress}>
+        <TouchableOpacity style={styles.iconWrapper} onPress={() => setMenuVisible(true)}>
           <Feather name="menu" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
     </View>
+    {showMenu && (
+        <HeaderMenuModal
+          visible={menuVisible}
+          onClose={() => setMenuVisible(false)}
+        />
+      )}
+    </>
   );
 };
 
-const STATUSBAR_HEIGHT = Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
+const STATUSBAR_HEIGHT =
+  Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
 
 const styles = StyleSheet.create({
   container: {
@@ -80,9 +92,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
-  },
-  left: {
-    // paddingTop:10,
   },
   logo: {
     width: 55,
@@ -120,7 +129,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: "Montserrat_600SemiBold",
     textAlign: "center",
-  }
+  },
 });
 
 export default HeaderBar;

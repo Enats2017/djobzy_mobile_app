@@ -21,12 +21,23 @@ const SearchedEmployees = ({ data }) => {
               style={styles.row}
             >
               <View style={styles.iconWrapper}>
-                <MaterialIcons name="category" size={20} color="#000" />
+                {
+                  item.icon ? (
+                    <Image
+                      source={{
+                        uri: `${API_ICON}/images/servicephoto/png-image/${item.icon}`,
+                      }}
+                      style={styles.image}
+                    />
+                  ) : (
+                    <MaterialIcons name="category" size={20} color="#000" />
+                  )
+                }
               </View>
 
               <View>
                 <Text style={styles.name}>{item.text}</Text>
-                <Text style={styles.sub}>category</Text>
+                <Text style={styles.sub}>{item.sub_service ?? 'category'}</Text>
               </View>
             </TouchableOpacity>
           );
@@ -43,7 +54,7 @@ const SearchedEmployees = ({ data }) => {
               <View>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.sub}>
-                  ⭐ {item.rating ?? "0"} 
+                  ⭐ {item.rating ?? "0"}
                   {item.address && (
                     <>
                       {" • "}
@@ -82,13 +93,17 @@ const styles = StyleSheet.create({
   },
 
   iconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 100,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
+  },
+  image: {
+    width: 22,
+    height: 22,
   },
 
   avatar: {

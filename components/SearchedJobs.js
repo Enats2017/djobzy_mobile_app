@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { API_ICON } from "../api/ApiUrl";
 
 const SearchedJobs = ({ data }) => {
   const navigation = useNavigation();
@@ -19,9 +20,10 @@ const SearchedJobs = ({ data }) => {
             <TouchableOpacity
               key={`job-${index}`}
               style={styles.row}
+              onPress={item.job_url}
             >
               <View style={styles.iconWrapper}>
-                <Ionicons name="briefcase-outline" size={16} color="#000" />
+                <Ionicons name="briefcase-outline" size={20} color="#000" />
               </View>
 
               <Text style={styles.title}>{item.subject}</Text>
@@ -36,12 +38,23 @@ const SearchedJobs = ({ data }) => {
               style={styles.row}
             >
               <View style={styles.iconWrapper}>
-                <MaterialIcons name="category" size={20} color="#000" />
+                {
+                  item.icon ? (
+                    <Image
+                      source={{
+                        uri: `${API_ICON}/images/servicephoto/png-image/${item.icon}`,
+                      }}
+                      style={styles.image}
+                    />
+                  ) : (
+                    <MaterialIcons name="category" size={20} color="#000" />
+                  )
+                }
               </View>
 
               <View>
                 <Text style={styles.name}>{item.text}</Text>
-                <Text style={styles.sub}>category</Text>
+                <Text style={styles.sub}>{item.sub_service ?? 'category'}</Text>
               </View>
             </TouchableOpacity>
           );
@@ -85,13 +98,17 @@ const styles = StyleSheet.create({
   },
 
   iconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 100,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
+  },
+  image: {
+    width: 22,
+    height: 22,
   },
 
   avatar: {

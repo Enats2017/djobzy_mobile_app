@@ -12,20 +12,31 @@ import {
 } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Octicons from "@expo/vector-icons/Octicons";
-import FindJobs from "../FindJobs/FindJobs";
-import FindEmployees from "../FindJobs/FindEmployees";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import AdvanceSearch from "./AdvanceSearch";
+import JobResult from "./JobResult";
+import EmployeeResult from "./EmployeeResult";
 
 const SearchResult = () => {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState(true); // true = Jobs, false = Employees
+  const route = useRoute();
+  const {
+    keyword,
+    searchMode,
+    search_type,
+    search_dropdown,
+    latitude,
+    longitude,
+    subcategory,
+    category,
+  } = route.params || {};
+  const [activeTab, setActiveTab] = useState(searchMode === 0); // true = Jobs, false = Employees
   const [showFilter, setShowFilter] = useState(false);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <PageNameHeaderBar title="Result" navigation={navigation} />
+        <PageNameHeaderBar title={keyword || "Result" } navigation={navigation} />
 
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -33,7 +44,7 @@ const SearchResult = () => {
           keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
         >
           <View style={styles.bestmatch}>
-          
+
             <View style={styles.matchesHeader}>
               <View style={styles.toggleWrapper}>
                 <TouchableOpacity
@@ -92,7 +103,30 @@ const SearchResult = () => {
             {showFilter && <AdvanceSearch />}
 
             {/* CONTENT */}
-            {activeTab ? <FindJobs /> : <FindEmployees />}
+            {activeTab ? (
+              <JobResult 
+                keyword={keyword}
+                searchMode={searchMode}
+                search_type={search_type}
+                search_dropdown={search_dropdown}
+                latitude={latitude}
+                longitude={longitude}
+                subcategory={subcategory}
+                category={category}
+              />
+            ) : (
+              <EmployeeResult 
+                keyword={keyword}
+                searchMode={searchMode}
+                search_type={search_type}
+                search_dropdown={search_dropdown}
+                latitude={latitude}
+                longitude={longitude}
+                subcategory={subcategory}
+                category={category}
+              />
+            )}
+
           </View>
         </KeyboardAvoidingView>
       </View>
@@ -116,7 +150,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 15,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   toggleWrapper: {
     flexDirection: "row",

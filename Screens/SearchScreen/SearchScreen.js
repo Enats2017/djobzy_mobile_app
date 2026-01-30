@@ -36,6 +36,7 @@ const SearchScreen = () => {
   const latestKeywordRef = useRef("");
   const { keyword, setKeyword, reset } = useGlobalSearch();
   const categoryCount = useGlobalSearch((state) => state.categories.length);
+  const categories = useGlobalSearch((state) => state.categories);
   const route = useRoute();
   const { search_type } = route.params ?? {};
   const [results, setResults] = useState([]);
@@ -46,8 +47,9 @@ const SearchScreen = () => {
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [admin, setAdmin] = useState(0);
-
   const insets = useSafeAreaInsets();
+  const subcategoryParam = (categories || []).map(c => c.subId).join(",");
+  const categoryParam = (categories || []).map(c => c.name).join(",");
 
   const handleSearch = (text) => {
     setKeyword(text);
@@ -216,7 +218,20 @@ const SearchScreen = () => {
                 style={styles.input}
               />
 
-              <Ionicons name="search" size={15} color="#FFFFFF" onPress={() => navigation.navigate('SearchResult')} />
+              <Ionicons name="search" size={15} color="#FFFFFF"
+                onPress={() =>
+                  navigation.navigate("SearchResult", {
+                    keyword: keyword,
+                    searchMode: searchMode,
+                    search_type: search_type,
+                    search_dropdown: 0,
+                    latitude: 0,
+                    longitude: 0,
+                    subcategory: subcategoryParam,
+                    category: categoryParam,
+                  })
+                }
+              />
             </View>
 
             {/* GRID ICON */}

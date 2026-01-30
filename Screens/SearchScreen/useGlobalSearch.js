@@ -1,11 +1,17 @@
 import { create } from "zustand";
 
-export const useGlobalSearch = create((set) => ({
+export const useGlobalSearch = create((set, get) => ({
   keyword: "",
   categories: [],
+  low_price: 0,
+  high_price: 9999,
+  latitude: "",
+  longitude: "",
+  radius: 100,
+  orderBy: "Distance",
+  sortOrder: "ASC",
   setKeyword: (value) => set({ keyword: value }),
   clearKeyword: () => set({ keyword: "" }),
-
   setField: (field, value) => set({ [field]: value }),
   addCategory: (category) =>
     set((state) => {
@@ -21,9 +27,22 @@ export const useGlobalSearch = create((set) => ({
 
   clearCategories: () => set({ categories: [] }),
 
+  getSubcategoryParam: () =>
+    get().categories.map((c) => c.subId).join(","),
+
+  getCategoryParam: () =>
+    get().categories.map((c) => c.name).join(","),
+
   reset: () =>
     set({
       keyword: "",
       categories: [],
+      low_price: 0,
+      high_price: 9999,
+      latitude: "",
+      longitude: "",
+      radius: 100,
+      orderBy: "Distance",
+      sortOrder: "ASC",
     }),
 }));

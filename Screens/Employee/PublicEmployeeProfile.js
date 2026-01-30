@@ -139,7 +139,7 @@ export default function PublicEmployeeProfile({ route }) {
     ? safeSubcategory
     : safeSubcategory.slice(0, 5);
 
-  if (loading) return <Loading />;
+  // if (loading) return <Loading />;
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.employeeContainer}>
@@ -197,7 +197,7 @@ export default function PublicEmployeeProfile({ route }) {
                   onPress={() => {
                     setIsEmployer(!isEmployer);
                     setIsEmployer(false);
-                    navigation.replace("EmployerProfilePage", {
+                    navigation.replace("PublicEmployeeProfilePage", {
                       name: user?.name,
                     });
                   }}
@@ -239,17 +239,6 @@ export default function PublicEmployeeProfile({ route }) {
                     )}
                   </TouchableOpacity>
                 )}
-                {/* <TouchableOpacity
-                style={styles.btnHire}
-                 onPress={() => {
-                    setIsEmployer(!isEmployer);
-                    navigation.navigate("EmployerProfilePage", {
-                      name: user?.name
-                    });
-                  }}
-              >
-                <Text style={styles.btnHireText}>Hire</Text>
-              </TouchableOpacity> */}
                 <TouchableOpacity
                   style={styles.btnChat}
                   onPress={() => navigation.navigate("FeedChat")}

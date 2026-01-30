@@ -2,14 +2,22 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { API_ICON } from "../api/ApiUrl";
+import { useGlobalSearch } from "../Screens/SearchScreen/useGlobalSearch";
 
 const SearchedEmployees = ({ data }) => {
   const navigation = useNavigation();
+  const setKeyword = useGlobalSearch(state => state.setKeyword);
 
   const orderedData = [
     ...data.filter(item => item.type === "employee"),
     ...data.filter(item => item.type === "service"),
   ];
+
+  const handleCategorySearch = (text) => {
+    setKeyword(text);
+    navigation.navigate("SearchResult")
+  }
 
   return (
     <View>
@@ -19,6 +27,7 @@ const SearchedEmployees = ({ data }) => {
             <TouchableOpacity
               key={`service-${index}`}
               style={styles.row}
+              onPress={() => handleCategorySearch(item.text)}
             >
               <View style={styles.iconWrapper}>
                 {
@@ -48,6 +57,11 @@ const SearchedEmployees = ({ data }) => {
             <TouchableOpacity
               key={`employee-${index}`}
               style={styles.row}
+              onPress={() =>
+                navigation.navigate("PublicEmployeeProfilePage", {
+                    name: item?.username || "",
+                })
+              }
             >
               <Image source={{ uri: item.photo }} style={styles.avatar} />
 

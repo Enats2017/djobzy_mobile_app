@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 export const useGlobalSearch = create((set, get) => ({
   keyword: "",
+  userSearchMode: 0,
   categories: [],
   low_price: 0,
   high_price: 9999,
@@ -11,6 +12,7 @@ export const useGlobalSearch = create((set, get) => ({
   orderBy: "Distance",
   sortOrder: "ASC",
   setKeyword: (value) => set({ keyword: value }),
+  setUserSearchMode: (value) => set({ userSearchMode: value }),
   clearKeyword: () => set({ keyword: "" }),
   setField: (field, value) => set({ [field]: value }),
   addCategory: (category) =>
@@ -36,6 +38,7 @@ export const useGlobalSearch = create((set, get) => ({
   reset: () =>
     set({
       keyword: "",
+      userSearchMode: 0,
       categories: [],
       low_price: 0,
       high_price: 9999,

@@ -67,7 +67,7 @@ import UserPaymentPage from "./Screens/GeneralSetting/UserPaymentPage";
 import UserNotification from "./Screens/GeneralSetting/UserNotification";
 import UserSecurity from "./Screens/GeneralSetting/UserSecurity";
 import IDVerificationUploadScreen from "./Screens/GeneralSetting/IDVerificationUploadScreen";
-import EmployerProfilePage from "./Screens/EmployerHirePage/EmployerProfilePage";
+import PublicEmployeeProfilePage from "./Screens/EmployerHirePage/PublicEmployeeProfilePage";
 import ViewHirePage from "./Screens/EmployerHirePage/ViewHirePage";
 import ChatList from "./Screens/Chat/ChatList";
 import ChatRoom from "./Screens/Chat/ChatRoom";
@@ -189,7 +189,7 @@ const App = () => {
             <Stack.Screen name="UserNotification" component={UserNotification} />
             <Stack.Screen name="UserSecurity" component={UserSecurity} />
             <Stack.Screen name="IDVerificationUploadScreen" component={IDVerificationUploadScreen} />
-            <Stack.Screen name="EmployerProfilePage" component={EmployerProfilePage} />
+            <Stack.Screen name="PublicEmployeeProfilePage" component={PublicEmployeeProfilePage} />
             <Stack.Screen name="ViewHirePage" component={ViewHirePage} />
             <Stack.Screen name="ChatList" component={ChatList} />
             <Stack.Screen name="ChatRoom" component={ChatRoom} />

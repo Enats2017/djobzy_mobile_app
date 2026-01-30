@@ -16,27 +16,18 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import AdvanceSearch from "./AdvanceSearch";
 import JobResult from "./JobResult";
 import EmployeeResult from "./EmployeeResult";
+import { useGlobalSearch } from "./useGlobalSearch";
 
 const SearchResult = () => {
   const navigation = useNavigation();
-  const route = useRoute();
-  const {
-    keyword,
-    searchMode,
-    search_type,
-    search_dropdown,
-    latitude,
-    longitude,
-    subcategory,
-    category,
-  } = route.params || {};
-  const [activeTab, setActiveTab] = useState(searchMode === 0); // true = Jobs, false = Employees
+  const { keyword, userSearchMode } = useGlobalSearch();
+  const [activeTab, setActiveTab] = useState(userSearchMode === 0);
   const [showFilter, setShowFilter] = useState(false);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <PageNameHeaderBar title={keyword || "Result" } navigation={navigation} />
+        <PageNameHeaderBar title={keyword || "Result"} navigation={navigation} />
 
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -103,29 +94,7 @@ const SearchResult = () => {
             {showFilter && <AdvanceSearch />}
 
             {/* CONTENT */}
-            {activeTab ? (
-              <JobResult 
-                keyword={keyword}
-                searchMode={searchMode}
-                search_type={search_type}
-                search_dropdown={search_dropdown}
-                latitude={latitude}
-                longitude={longitude}
-                subcategory={subcategory}
-                category={category}
-              />
-            ) : (
-              <EmployeeResult 
-                keyword={keyword}
-                searchMode={searchMode}
-                search_type={search_type}
-                search_dropdown={search_dropdown}
-                latitude={latitude}
-                longitude={longitude}
-                subcategory={subcategory}
-                category={category}
-              />
-            )}
+            {activeTab ? <JobResult /> : <EmployeeResult /> }
 
           </View>
         </KeyboardAvoidingView>

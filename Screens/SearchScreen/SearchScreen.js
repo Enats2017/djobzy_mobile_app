@@ -25,7 +25,6 @@ import Footer from "../../components/Footer";
 import GradientButton from "../../components/GradientButton";
 import { toastError, toastSuccess } from "../../utils/toast";
 import { useGlobalSearch } from "./useGlobalSearch";
-import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -34,9 +33,8 @@ const SearchScreen = () => {
   const navigation = useNavigation();
   const debounceTimer = useRef(null);
   const latestKeywordRef = useRef("");
-  const { keyword, setKeyword, reset } = useGlobalSearch();
+  const { keyword, setKeyword, reset, setUserSearchMode } = useGlobalSearch();
   const categoryCount = useGlobalSearch((state) => state.categories.length);
-  const categories = useGlobalSearch((state) => state.categories);
   const route = useRoute();
   const { search_type } = route.params ?? {};
   const [results, setResults] = useState([]);
@@ -48,8 +46,6 @@ const SearchScreen = () => {
   const [loading, setLoading] = useState(false);
   const [admin, setAdmin] = useState(0);
   const insets = useSafeAreaInsets();
-  const subcategoryParam = (categories || []).map(c => c.subId).join(",");
-  const categoryParam = (categories || []).map(c => c.name).join(",");
 
   const handleSearch = (text) => {
     setKeyword(text);
@@ -133,7 +129,9 @@ const SearchScreen = () => {
     }
   };
   const handleSwitch = () => {
-    setSearchMode((prev) => (prev === 0 ? 2 : 0));
+    const newMode = searchMode === 0 ? 2 : 0;
+    setSearchMode(newMode);
+    setUserSearchMode(newMode);
   };
 
   const loadUser = async () => {
@@ -149,7 +147,7 @@ const SearchScreen = () => {
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#222" }}>
+    <SafeAreaView style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={() => setShowDropdown(false)}>
         <View style={styles.container}>
           {/* SEARCH BAR */}
@@ -177,6 +175,7 @@ const SearchScreen = () => {
                         style={styles.dropdownItem}
                         onPress={() => {
                           setSearchMode(2);
+                          setUserSearchMode(2)
                           setKeyword("");
                           setResults([]);
                           setShowDropdown(false);
@@ -192,6 +191,7 @@ const SearchScreen = () => {
                         style={styles.dropdownItem}
                         onPress={() => {
                           setSearchMode(0);
+                          setUserSearchMode(0)
                           setKeyword("");
                           setResults([]);
                           setShowDropdown(false);
@@ -219,18 +219,7 @@ const SearchScreen = () => {
               />
 
               <Ionicons name="search" size={15} color="#FFFFFF"
-                onPress={() =>
-                  navigation.navigate("SearchResult", {
-                    keyword: keyword,
-                    searchMode: searchMode,
-                    search_type: search_type,
-                    search_dropdown: 0,
-                    latitude: 0,
-                    longitude: 0,
-                    subcategory: subcategoryParam,
-                    category: categoryParam,
-                  })
-                }
+                onPress={() => navigation.navigate("SearchResult")}
               />
             </View>
 

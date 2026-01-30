@@ -60,7 +60,7 @@ const FavoriteEmployee = () => {
         name: item?.name,
       });
     } else {
-      navigation.navigate("EmployerProfilePage", {
+      navigation.navigate("PublicEmployeeProfilePage", {
         name: item?.name || "",
       });
     }
@@ -144,23 +144,28 @@ const FavoriteEmployee = () => {
     );
   };
 
-  if (loading) return <Loading />;
+  // if (loading) return <Loading />;
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <PageNameHeaderBar title="Favorite Employees" navigation={navigation} />
-        {jobs.length == 0 ? (
-          <NoJobs />
-        ) : (
-          <FlatList
-            data={jobs}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 100 }}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
+        {
+          loading ? (
+            <Loading />
+          ) : jobs.length === 0 ? (
+            <NoJobs />
+          ) : (
+            <FlatList
+              data={jobs}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderItem}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              showsVerticalScrollIndicator={false}
+            />
+          )
+        }
+
       </View>
       <EmployerFooter />
     </SafeAreaView>

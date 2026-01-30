@@ -28,7 +28,7 @@ import LineDivider from "../../components/LineDivider";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
 
-export default function EmployerProfilePage({ route }) {
+export default function PublicEmployeeProfilePage({ route }) {
   const navigation = useNavigation();
   const { name } = route?.params ?? {};
   const [promote, setPromote] = useState([]);
@@ -196,7 +196,7 @@ export default function EmployerProfilePage({ route }) {
     ? safeSubcategory
     : safeSubcategory.slice(0, 5);
 
-  if (loading) return <Loading />;
+  // if (loading) return <Loading />;
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.employeeContainer}>
@@ -469,9 +469,9 @@ export default function EmployerProfilePage({ route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#222222",
   },
   employeeContainer: {
+    backgroundColor: "#222222",
     flex: 1,
     paddingHorizontal: 15,
   },

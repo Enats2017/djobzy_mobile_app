@@ -19,7 +19,7 @@ const CONTRACT_SCREENS = [
 
 const Home_Screen = [
   "EmployerDashboard",
-  "EmployerProfilePage",
+  "PublicEmployeeProfilePage",
   "PublicEmployeeProfile",
 ];
 

@@ -29,7 +29,7 @@ const EmployerCard = ({ item, isLastItem }) => {
         name: item?.name,
       });
     } else {
-      navigation.navigate("EmployerProfilePage", {
+      navigation.navigate("PublicEmployeeProfilePage", {
         name: item?.name || "",
       });
     }

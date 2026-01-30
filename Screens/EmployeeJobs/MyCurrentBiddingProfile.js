@@ -26,7 +26,7 @@ const MyCurrentBiddingProfile = () => {
       name: offer.name,
     });
   } else {
-    navigation.navigate("EmployerProfilePage", {
+    navigation.navigate("PublicEmployeeProfilePage", {
       name: offer.name,
     });
   }

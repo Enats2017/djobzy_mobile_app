@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import {
     ActivityIndicator,
     StyleSheet,
@@ -9,15 +9,14 @@ import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import JobCard from "../EmployeeJobs/JobCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useGlobalSearch } from "./useGlobalSearch";
 
-export default function JobResult({
-    keyword,
-    search_dropdown,
-    latitude,
-    longitude,
-    subcategory,
-    category,
-}) {
+export default function JobResult() {
+    const insets = useSafeAreaInsets();
+    const { keyword, latitude, longitude, getSubcategoryParam, getCategoryParam, } = useGlobalSearch();
+
+    const subcategory = getSubcategoryParam();
+    const category = getCategoryParam();
 
     const [jobs, setJobs] = useState([]);
     const [page, setPage] = useState(1);
@@ -26,37 +25,42 @@ export default function JobResult({
     const [hasMore, setHasMore] = useState(true);
     const onEndReachedCalledDuringMomentum = useRef(false);
     const hasFetched = useRef(false);
-    const insets = useSafeAreaInsets();
 
-    const buildQueryParams = () => {
+    const queryString = useMemo(() => {
         const params = new URLSearchParams({
-            search_dropdown: search_dropdown ?? 0,
-            latitude: latitude ?? 0,
-            longitude: longitude ?? 0,
-            keyword: keyword ?? "",
-            subcategory: subcategory ?? "",
-            category: category ?? "",
+            search_dropdown: 0,
+            latitude: latitude || 0,
+            longitude: longitude || 0,
+            keyword: keyword || "",
+            subcategory: subcategory || "",
+            category: category || "",
         });
+
         return params.toString();
-    };
-    const queryString = buildQueryParams();
+    }, [keyword, latitude, longitude, subcategory, category]);
 
-    const fetchJobs = useCallback(async (pageNum = 1) => {
-        try {
-            if (loading || isFetchingMore) return;
-            if (pageNum === 1) setLoading(true);
-            else setIsFetchingMore(true);
-            const res = await fetch(`${API_URL}/search-result?${queryString}&page=${pageNum}`, {
-                headers: {
-                    Accept: "application/json",
-                },
-            });
+    const fetchJobs = useCallback(
+        async (pageNum = 1) => {
+            try {
+                if (loading || isFetchingMore) return;
 
-            const data = await res.json();
-            if (!data?.gigs || data.gigs.length === 0) {
-                setHasMore(false);
-                return;
-            }
+                if (pageNum === 1) setLoading(true);
+                else setIsFetchingMore(true);
+
+                const url = `${API_URL}/search-result?${queryString}&page=${pageNum}`;
+                // console.log("📡 Fetching Jobs URL:", url);
+
+                const res = await fetch(url, {
+                    headers: {
+                        Accept: "application/json",
+                    },
+                });
+
+                const data = await res.json();
+                if (!data?.gigs || data.gigs.length === 0) {
+                    setHasMore(false);
+                    return;
+                }
 
             setJobs((prev) => {
                 const newGigs = data.gigs.filter(
@@ -81,7 +85,8 @@ export default function JobResult({
         }
     }, [fetchJobs]);
 
-    if (loading) return <Loading />;
+    if (loading && page === 1) return <Loading />;
+
     const renderFooter = () => {
         if (!isFetchingMore) return null;
         return (
@@ -93,7 +98,7 @@ export default function JobResult({
 
     const renderJobCard = ({ item, index }) => {
         const isLastItem = index === jobs.length - 1;
-        return <JobCard item={item} lastItem={isLastItem} />
+        return <JobCard item={item} lastItem={isLastItem} />;
     };
 
     return (
@@ -104,10 +109,16 @@ export default function JobResult({
                 keyExtractor={(item) => item.gid.toString()}
                 ListFooterComponent={renderFooter}
                 onEndReachedThreshold={0.5}
-                onMomentumScrollBegin={() => { onEndReachedCalledDuringMomentum.current = false; }}
+                onMomentumScrollBegin={() => {
+                    onEndReachedCalledDuringMomentum.current = false;
+                }}
                 onEndReached={() => {
-                    if (!onEndReachedCalledDuringMomentum.current && hasMore && !isFetchingMore && !loading) {
-                        // console.log("🚀 Triggering next page:", page + 1);
+                    if (
+                        !onEndReachedCalledDuringMomentum.current &&
+                        hasMore &&
+                        !isFetchingMore &&
+                        !loading
+                    ) {
                         fetchJobs(page + 1);
                         onEndReachedCalledDuringMomentum.current = true;
                     }

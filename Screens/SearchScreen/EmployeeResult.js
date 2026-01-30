@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
@@ -16,15 +16,18 @@ import Loading from "../../components/Loading";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LineDivider from "../../components/LineDivider";
 import GradientButton from "../../components/GradientButton";
+import { useGlobalSearch } from "./useGlobalSearch";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
-export default function EmployeeResult({
-    keyword,
-    search_dropdown,
-    latitude,
-    longitude,
-    subcategory,
-    category,
-}) {
+export default function EmployeeResult() {
+    const insets = useSafeAreaInsets();
+    const navigation = useNavigation();
+
+    const { keyword, latitude, longitude, getSubcategoryParam, getCategoryParam,} = useGlobalSearch();
+
+    const subcategory = getSubcategoryParam();
+    const category = getCategoryParam();
+
     const [employees, setEmployees] = useState([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -33,35 +36,35 @@ export default function EmployeeResult({
 
     const onEndReachedCalledDuringMomentum = useRef(false);
     const hasFetched = useRef(false);
-    const insets = useSafeAreaInsets();
 
-    const buildQueryParams = () => {
+    const queryString = useMemo(() => {
         const params = new URLSearchParams({
-            search_dropdown: search_dropdown ?? 0,
-            latitude: latitude ?? 0,
-            longitude: longitude ?? 0,
-            keyword: keyword ?? "",
-            subcategory: subcategory ?? "",
-            category: category ?? "",
+            search_dropdown: 0,
+            latitude: latitude || 0,
+            longitude: longitude || 0,
+            keyword: keyword || "",
+            subcategory: subcategory || "",
+            category: category || "",
         });
 
         return params.toString();
-    };
-    const queryString = buildQueryParams();
+    }, [keyword, latitude, longitude, subcategory, category]);
+
 
     const fetchEmployee = useCallback(
         async (pageNum = 1) => {
             if (loading || isFetchingMore) return;
 
-            // IMPORTANT: prevent double calls
             if (pageNum === 1) {
                 setLoading(true);
             } else {
-                setIsFetchingMore(true); // lock BEFORE calling API
+                setIsFetchingMore(true);
             }
 
             try {
-                const res = await fetch(`${API_URL}/employee-search-result?${queryString}&page=${pageNum}`, {
+                const url = `${API_URL}/employee-search-result?${queryString}&page=${pageNum}`;
+
+                const res = await fetch(url, {
                     headers: {
                         Accept: "application/json",
                     },
@@ -73,8 +76,6 @@ export default function EmployeeResult({
                     setHasMore(false);
                     return;
                 }
-
-                console.log("Details count:", data.details.length);
 
                 setEmployees((prev) => {
                     const newItems = data.details.filter(
@@ -93,7 +94,7 @@ export default function EmployeeResult({
                 setIsFetchingMore(false);
             }
         },
-        [loading, isFetchingMore]
+        [loading, isFetchingMore, queryString]
     );
 
     useEffect(() => {
@@ -112,7 +113,7 @@ export default function EmployeeResult({
         );
     };
 
-    if (loading) return <Loading />;
+    if (loading && page === 1) return <Loading />;
 
     const renderEmployeeCard = ({ item, index }) => {
         const isLastItem = index === employees.length - 1;
@@ -146,7 +147,6 @@ export default function EmployeeResult({
                             </View>
                         </View>
                         <TouchableOpacity
-                            onPress={() => setLiked1(!liked1)}
                             style={styles.heartTouchable}
                         >
                             <FontAwesome
@@ -189,7 +189,14 @@ export default function EmployeeResult({
                         </View>
                     </View>
                     <View>
-                        <GradientButton title="View" onPress={() => navigation.navigate("JobProfile", { gid: item.request_slug })} />
+                        <GradientButton
+                            title="View"
+                            onPress={() =>
+                                navigation.navigate("PublicEmployeeProfilePage", {
+                                    name: item?.name || "",
+                                })
+                            }
+                        />
                     </View>
                 </View>
                 {!isLastItem && <LineDivider />}
@@ -209,7 +216,6 @@ export default function EmployeeResult({
                 onMomentumScrollBegin={() => { onEndReachedCalledDuringMomentum.current = false; }}
                 onEndReached={() => {
                     if (!onEndReachedCalledDuringMomentum.current && hasMore && !isFetchingMore && !loading) {
-                        // console.log("🚀 Triggering next page:", page + 1);
                         fetchEmployee(page + 1);
                         onEndReachedCalledDuringMomentum.current = true;
                     }
@@ -319,9 +325,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         flex: 1,
     },
-    locationIcon1: {
-
-    },
+    locationIcon1: {},
     locationText1: {
         flex: 1,
         fontSize: 12,

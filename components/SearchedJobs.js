@@ -3,14 +3,21 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { API_ICON } from "../api/ApiUrl";
+import { useGlobalSearch } from "../Screens/SearchScreen/useGlobalSearch";
 
 const SearchedJobs = ({ data }) => {
   const navigation = useNavigation();
+  const setKeyword = useGlobalSearch(state => state.setKeyword);
 
   const orderedData = [
     ...data.filter(item => item.type === "job"),
     ...data.filter(item => item.type === "service"),
   ];
+
+  const handleCategorySearch = (text) => {
+    setKeyword(text);
+    navigation.navigate("SearchResult")
+  }
 
   return (
     <View>
@@ -36,6 +43,7 @@ const SearchedJobs = ({ data }) => {
             <TouchableOpacity
               key={`service-${index}`}
               style={styles.row}
+              onPress={() => handleCategorySearch(item.text)}
             >
               <View style={styles.iconWrapper}>
                 {

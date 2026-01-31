@@ -59,9 +59,13 @@ const VerificationPage = () => {
       });
 
       const user = res.data.userDetails || {};
-         const verificationStep = Number(user.verification_step ?? 0);
-         setActiveTab(verificationStep);
+      await AsyncStorage.removeItem("user");
+      await AsyncStorage.setItem("user", JSON.stringify(res.data.userDetails));
+      console.log("user:",user);
     
+      const verificationStep = Number(user.verification_step ?? 0);
+      setActiveTab(verificationStep);
+
       const fetchedServices = res.data.services || [];
       setServices(fetchedServices);
       setFiltered(fetchedServices);
@@ -84,7 +88,7 @@ const VerificationPage = () => {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1,  }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.container}
@@ -113,16 +117,12 @@ const VerificationPage = () => {
                             isCompleted
                               ? styles.completedCircle
                               : isActive
-                              ? styles.activeCircle
-                              : styles.inactiveCircle,
+                                ? styles.activeCircle
+                                : styles.inactiveCircle,
                           ]}
                         >
                           {isCompleted && (
-                            <MaterialIcons
-                              name="done"
-                              size={15}
-                              color="#fff"
-                            />
+                            <MaterialIcons name="done" size={15} color="#fff" />
                           )}
                         </View>
                         <Text
@@ -131,8 +131,8 @@ const VerificationPage = () => {
                             isActive
                               ? styles.activeText
                               : isCompleted
-                              ? styles.completedText
-                              : styles.inactiveText,
+                                ? styles.completedText
+                                : styles.inactiveText,
                           ]}
                         >
                           {label}
@@ -152,12 +152,10 @@ const VerificationPage = () => {
                       )}
                     </View>
                   );
-                }
+                },
               )}
             </View>
-            <View
-              style={{ display: activeTab === 0 ? "flex" : "none",  }}
-            >
+            <View style={{ display: activeTab === 0 ? "flex" : "none" }}>
               {loading ? (
                 <View style={styles.loaderWrap}>
                   <ActivityIndicator size="large" color="#fff" />
@@ -297,17 +295,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   loaderWrap: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  paddingVertical: 40,
-},
-loadingText: {
-  marginTop: 10,
-  fontSize: 14,
-  color: "#666",
-},
-
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: "#666",
+  },
 });
 
 export default VerificationPage;

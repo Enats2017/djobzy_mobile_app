@@ -49,7 +49,7 @@ const Signup = () => {
           full_name: fullName,
           email: email,
           password: password,
-          referral_username: referralUsername,
+          referral_user: referralUsername,
         }),
       });
       const data = await res.json();

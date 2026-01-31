@@ -3,7 +3,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
-import { Image, StyleSheet, TouchableOpacity, View,Dimensions } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Dimensions,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { scale } from "../../utils/scale";
 
@@ -21,13 +27,17 @@ export default function HomeScreen() {
       }
 
       const userStr = await AsyncStorage.getItem("user");
+      console.log(userStr);
+
       const user = JSON.parse(userStr);
       const { verification_count, admin } = user;
 
-      if (admin == 2) {
+      if (verification_count > 2 && admin == 2) {
         navigation.navigate("EmployerDashboard");
-      } else {
+      } else if (verification_count > 2 && admin == 0) {
         navigation.navigate("Dashboard");
+      } else {
+        navigation.navigate("VerificationPage");
       }
     } catch (error) {
       navigation.reset({
@@ -41,35 +51,33 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-        <LinearGradient
-          colors={["#1c1c1c", "#2d2d2d", "#3a3a3a"]}
-          style={styles.gradientContainer}
-        >
+      <LinearGradient
+        colors={["#1c1c1c", "#2d2d2d", "#3a3a3a"]}
+        style={styles.gradientContainer}
+      >
         <View style={styles.container}>
-          <View style={styles.outerCircle}>
-            {/* Middle Circle */}
-            <View style={styles.middleCircle}>
-              {/* Inner Circle */}
-              <View style={styles.innerCircle}>
-                {/* Center Logo */}
-                <View style={styles.logoWrapper}>
-                  <Image
-                    source={require("../../assets/images/djobzy-logo.png")}
-                    resizeMode="contain"
-                    style={styles.logo}
-                  />
+          <View style={styles.circleBox}>
+            <View style={styles.outerCircle}>
+              <View style={styles.middleCircle}>
+                <View style={styles.innerCircle}>
+                  <View style={styles.logoWrapper}>
+                    <Image
+                      source={require("../../assets/images/djobzy-logo.png")}
+                      resizeMode="contain"
+                      style={styles.logo}
+                    />
+                  </View>
                 </View>
               </View>
             </View>
-          </View>
-          <View style={styles.arrowWrapper}>
+
             <TouchableOpacity style={styles.arrowBtn} onPress={checkAuth}>
               <Ionicons name="arrow-forward" size={22} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
-    </LinearGradient>
-      </SafeAreaView>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
@@ -85,6 +93,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  circleBox: {
+    width: 680,
+    height: 680,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
   },
 
   outerCircle: {
@@ -126,19 +141,16 @@ const styles = StyleSheet.create({
     width: 135,
     height: 135,
   },
-  arrowWrapper: {
-  position: "absolute",
-  top: height * 0.84,  
-  alignSelf: "center",
-},
-arrowBtn: {
-  width: 56,
-  height: 56,
-  borderRadius: 40,
-  backgroundColor: "#e67c63",
-  justifyContent: "center",
-  alignItems: "center",
-},
 
- 
+  arrowBtn: {
+    position: "absolute",
+    bottom: -22,
+    alignSelf: "center",
+    width: 56,
+    height: 56,
+    borderRadius: 40,
+    backgroundColor: "#e67c63",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

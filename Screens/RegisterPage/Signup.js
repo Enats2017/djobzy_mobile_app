@@ -11,17 +11,18 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Platform,
-  KeyboardAvoidingView,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GradientButton from "../../components/GradientButton";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [fullNameError, setFullNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
   const [referralUsername, setReferralUsername] = useState("");
   const [remember, setRemember] = useState(false);
@@ -31,12 +32,41 @@ const Signup = () => {
   const [passwordError, setPasswordError] = useState("");
 
   const navigation = useNavigation();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.(com)$/i;
 
   const handleRegister = async () => {
-    if (!fullName || !email || !password) {
-      Alert.alert("Error", "Please fill all fields");
-      return;
+    let hasError = false;
+
+    if (!fullName) {
+      setFullNameError("Full name is required.");
+      hasError = true;
     }
+
+    if (!email) {
+      setEmailError("Email is required.");
+      hasError = true;
+    } else if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email ending with .com");
+      hasError = true;
+    }
+
+    if (!password) {
+      setPasswordError("Password is required.");
+      hasError = true;
+    } else if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters long.");
+      hasError = true;
+    }
+
+    if (!confirmPassword) {
+      setPasswordError("Please confirm your password.");
+      hasError = true;
+    } else if (password !== confirmPassword) {
+      setPasswordError("Passwords do not match.");
+      hasError = true;
+    }
+
+    if (hasError) return;
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/register`, {
@@ -49,20 +79,19 @@ const Signup = () => {
           full_name: fullName,
           email: email,
           password: password,
-          referral_username: referralUsername,
+          referral_user: referralUsername,
         }),
       });
       const data = await res.json();
       setLoading(false);
       if (!res.ok) {
-        Alert.alert("Register Failed", data.message || "Something went wrong");
-        console.log("Error:", data);
+        toastError(data.message || "Registration failed.");
         return;
       }
       navigation.replace("Register_Success", { email: email });
     } catch (err) {
       console.log(err);
-      Alert.alert("Error", "Failed to connect to server");
+      toastError("Failed to connect to server.");
     } finally {
       setLoading(false);
     }
@@ -98,21 +127,28 @@ const Signup = () => {
                 placeholder=" Enter Full Name/Company Name"
                 placeholderTextColor="#888"
                 value={fullName}
-                onChangeText={setFullName}
+                onChangeText={(text) => {
+                  setFullName(text);
+                  setFullNameError("");
+                }}
               />
             </View>
+            {fullNameError ? <Text style={styles.errorText}>{fullNameError}</Text> : null}
             <Text style={styles.label}>Email</Text>
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}
                 placeholder="xyz@gmail.com"
                 placeholderTextColor="#888"
-                value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  setEmailError("");
+                }}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
             </View>
+            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
             <Text style={styles.label}>Create a password</Text>
             <View style={styles.passwordContainer}>
               <TextInput
@@ -169,6 +205,9 @@ const Signup = () => {
                 />
               </TouchableOpacity>
             </View>
+            {passwordError ? (
+              <Text style={styles.errorText}>{passwordError}</Text>
+            ) : null}
 
             <Text style={styles.label}>Referral's username (Optional)</Text>
             <View style={styles.passwordContainer}>
@@ -250,15 +289,14 @@ const Signup = () => {
 const styles = StyleSheet.create({
   containers: {
     flex: 1,
-    paddingHorizontal: 17,
+    paddingHorizontal: 15,
     paddingBottom: 50,
   },
-  // container: {
-  //   alignItems: "center",
-  //   padding: 15,
-  //   marginTop: 50,
-  //   marginBottom: 20,
-  // },
+  errorText: {
+    color: "#d32f2f",
+    fontSize: 13,
+    marginTop: 4,
+  },
   logoContainer: {
     alignItems: "center",
     paddingTop: 20,
@@ -355,36 +393,33 @@ const styles = StyleSheet.create({
   googleBtn: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#6a6565ff",
     width: "100%",
     height: 45,
     borderRadius: 6,
-    paddingHorizontal: 15,
   },
 
   socialIcon: {
     width: 22,
     height: 22,
-    marginLeft: 80,
     textAlign: "center",
   },
   socialText: {
     color: "#fff",
     fontWeight: "600",
-    marginLeft: 10,
+    marginLeft: 5,
     fontFamily: "Montserrat_600SemiBold",
   },
   footerText: {
     color: "#fff",
     marginTop: 8,
-
     fontSize: 16,
     fontFamily: "Montserrat_400Regular",
     textAlign: "center",
   },
   linkText: {
     color: "#CB7767",
-
     fontSize: 18,
     textDecorationLine: "underline",
   },

@@ -9,27 +9,47 @@ import {
 } from "react-native";
 import { CountryPicker } from "react-native-country-codes-picker";
 import { Ionicons } from "@expo/vector-icons";
-import Icon from "react-native-vector-icons/Feather";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
 const PhoneNumberInput = ({
   value = "",
   onChange = () => {},
+  defaultFlag = "🇨🇦",
+  defaultCallingCode = "+1",
+  defaultCountryISO = "CA",
   placeholder = "Enter phone number",
-  defaultFlag = "🇮🇳",
-  defaultCallingCode = "+91",
 }) => {
   const [showPicker, setShowPicker] = useState(false);
-  const [flag, setFlag] = useState(" ");
-  const [callingCode, setCallingCode] = useState(defaultCallingCode );
+  const [flag, setFlag] = useState(defaultFlag);
+  const [callingCode, setCallingCode] = useState(defaultCallingCode);
+  const [countryISO, setCountryISO] = useState(defaultCountryISO);
   const [phoneNumber, setPhoneNumber] = useState(value);
   const [isValid, setIsValid] = useState(false);
   const [error, setError] = useState("");
 
- useEffect(() => {
-  setPhoneNumber(value);
-}, [value]);
+  useEffect(() => {
+    setPhoneNumber(value);
+    validateNumber(value, countryISO, callingCode);
+  }, [value]);
 
+  const validateNumber = (number, isoCode, dialCode) => {
+    if (!number) {
+      setIsValid(false);
+      setError("");
+      return;
+    }
 
+    try {
+      const fullNumber = `${dialCode}${number}`;
+      const valid = isValidPhoneNumber(fullNumber, isoCode);
+
+      setIsValid(valid);
+      setError(valid ? "" : "Invalid phone number");
+    } catch (e) {
+      setIsValid(false);
+      setError("Invalid phone number");
+    }
+  };
 
   const handleChange = (text) => {
     const digits = text.replace(/[^0-9]/g, "");
@@ -38,22 +58,13 @@ const PhoneNumberInput = ({
     onChange({
       phone: digits,
       countryCode: callingCode.replace("+", ""),
+      countryISO,
     });
-
-    if (digits.length === 10) {
-      setIsValid(true);
-      setError("");
-    } else if (digits.length === 0) {
-      setIsValid(false);
-      setError("");
-    } else {
-      setIsValid(false);
-      setError("Invalid phone number");
-    }
+    validateNumber(digits, countryISO, callingCode);
   };
 
   return (
-    <View style={styles.wrapper}>
+    <View>
       <View
         style={[
           styles.inputContainer,
@@ -77,6 +88,7 @@ const PhoneNumberInput = ({
           value={phoneNumber}
           onChangeText={handleChange}
         />
+
         {isValid && (
           <Ionicons
             name="checkmark-done-circle-sharp"
@@ -86,8 +98,15 @@ const PhoneNumberInput = ({
           />
         )}
       </View>
+
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      <Modal visible={showPicker}   onRequestClose={() => setCopyModel(false)} transparent animationType="slide">
+
+      <Modal
+        visible={showPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowPicker(false)}
+      >
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContainer}>
             <CountryPicker
@@ -97,12 +116,15 @@ const PhoneNumberInput = ({
               pickerButtonOnPress={(item) => {
                 setFlag(item.flag);
                 setCallingCode(item.dial_code);
+                setCountryISO(item.code);
 
                 onChange({
                   phone: phoneNumber,
                   countryCode: item.dial_code.replace("+", ""),
+                  countryISO: item.code,
                 });
 
+                validateNumber(phoneNumber, item.code, item.dial_code);
                 setShowPicker(false);
               }}
               style={{
@@ -129,7 +151,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1.5,
-    borderColor: "#ccc",
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 13,
@@ -160,7 +181,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 12,
     top: "50%",
-
     transform: [{ translateY: -2 }],
   },
   errorText: {
@@ -179,23 +199,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 16,
     overflow: "hidden",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 12,
-    borderBottomWidth: 1,
-    borderColor: "#eee",
-  },
-  modalTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-  },
-  closeIcon: {
-    fontSize: 24,
-    color: "#000",
-    paddingHorizontal: 10,
   },
 });

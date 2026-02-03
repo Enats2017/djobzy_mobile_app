@@ -27,14 +27,15 @@ export default function HomeScreen() {
       }
 
       const userStr = await AsyncStorage.getItem("user");
-      console.log(userStr);
 
       const user = JSON.parse(userStr);
       const { verification_count, admin } = user;
+      console.log("1111",verification_count);
+      
 
-      if (verification_count > 2 && admin == 2) {
+      if (verification_count >= 2 && admin == 2) {
         navigation.navigate("EmployerDashboard");
-      } else if (verification_count > 2 && admin == 0) {
+      } else if (verification_count >= 2 && admin == 0) {
         navigation.navigate("Dashboard");
       } else {
         navigation.navigate("VerificationPage");

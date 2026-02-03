@@ -5,7 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 const GradientButton = ({
   title = "Next",
   onPress,
-  paddingHorizontal = 55,
+  paddingHorizontal = 0,
   marginTop = 10,
   borderRadius=12,
   paddingVertical = 10,
@@ -48,6 +48,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 20,
+    textAlign:"center",
     fontFamily: "Montserrat_700Bold",
   },
 });

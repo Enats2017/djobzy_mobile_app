@@ -110,8 +110,8 @@ export default function FavoriteJobs() {
                         </Text>
                       </View>
                     </View>
-
-                    <View>
+                  </View>
+                    <View style={styles.heartColumn}>
                       <TouchableOpacity style={styles.heartTouchable}>
                         <FontAwesome
                           name={liked ? "heart" : "heart-o"}
@@ -120,7 +120,6 @@ export default function FavoriteJobs() {
                         />
                       </TouchableOpacity>
                     </View>
-                  </View>
                 </View>
 
                 <View style={styles.jobTitleSection}>
@@ -223,7 +222,7 @@ const styles = StyleSheet.create({
   },
   userRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 10,
     gap: 10,
     width: "100%",
@@ -250,7 +249,8 @@ const styles = StyleSheet.create({
   userNameSection: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+     flexWrap: "wrap",
+    gap: 2,
   },
   userName: {
     color: "#fff",

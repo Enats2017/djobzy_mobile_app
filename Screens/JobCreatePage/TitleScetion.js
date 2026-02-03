@@ -24,13 +24,13 @@ const TitleScetion = ({
   descriptionError,
   setDescriptionError,
 }) => {
-  const { title, description, setField, setActiveTab } = useCreateJobGlobalStore();
+  const { title, description, setField, setActiveTab } =
+    useCreateJobGlobalStore();
 
   const [titleModal, setTitleModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
-
 
   const [jobs, setJobs] = useState([]);
 
@@ -46,7 +46,6 @@ const TitleScetion = ({
       });
       const data = await response.json();
       setJobs(data.jobs);
-      console.log("11111", data.jobs);
     } catch (error) {
       console.log("API Error:", error);
     } finally {
@@ -70,10 +69,7 @@ const TitleScetion = ({
 
       const data = await res.json();
       const job = data.job; // 👈 now full object
-
       if (!job) return;
-
-      // ---- Fill Zustand fields ----
       setField("title", job.subject || "");
       setField("description", job.description || "");
       setField("address", job.preferred_location || "");
@@ -89,18 +85,22 @@ const TitleScetion = ({
       setField("hourlyRate", job.hour_minimum || "");
       setField("totalPrice", job.fixed_minimum || "");
       setField("expectedTime", job.expected_hour || 0);
+      console.log("BEFORE setField 👉", job.gig_services);
 
-      // categories (if exist)
-      if (job.gig_services) {
-        setField(
-          "selectedSubs",
-          job.gig_services.map((gs) => ({
-            serviceId: gs.service_id,
-            subId: gs.sub_service_id,
-            name: gs.sub_services.subname,
-          })),
+      setField(
+        "selectedSubs",
+        job.gig_services.map((gs) => ({
+          subId: gs.sub_services.subid, // ✅ SAME AS EDIT
+          name: gs.sub_services.subname, // ✅ SAME AS EDIT
+        })),
+      );
+
+      setTimeout(() => {
+        console.log(
+          "AFTER setField (ZUSTAND) 👉",
+          useCreateJobGlobalStore.getState().selectedSubs,
         );
-      }
+      }, 0);
 
       // requirements
       if (job.requirements) {
@@ -117,21 +117,14 @@ const TitleScetion = ({
       if (job.languages) {
         setField(
           "languages",
-          job.languages.map((l, i) => ({
-            id: i + 1,
-            lang: l.language,
-            level: l.level,
-          })),
+         job.language?.map((l, i) => ({
+        id: i + 1,
+        lang: l.language_name,
+        level: l.level || "",
+      })) || [{ id: 1, lang: "", level: "" }],
         );
       }
-
-      // edit mode
-      setField("isEdit", true);
-      setField("editingId", job.gid);
-
-      // jump to last step
       setActiveTab(6);
-
       setTitleModal(false);
       toastSuccess("Template applied");
     } catch (e) {

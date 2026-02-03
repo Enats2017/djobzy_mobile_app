@@ -18,14 +18,18 @@ import ServicesCategoryModal from "../../components/ServicesCategoryModal";
 import { API_URL, API_ICON } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import GradientButton from "../../components/GradientButton";
+import EmployerFooter from "../../components/EmployerFooter";
+import Footer from "../../components/Footer";
 
 export default function ProfileSetting() {
+  const route = useRoute();
+  const { useradmin } = route.params || {};
+
   const { employeeCategories, employerCategories, setField, setEditType } =
     useProfileStore();
   const navigation = useNavigation();
-
   const [switchLoading, setSwitchLoading] = useState(false);
-  const [adminType, setAdminType] = useState(0);
+  const [adminType, setAdminType] = useState(useradmin || 0);
   const [emp, setemp] = useState("");
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -43,16 +47,16 @@ export default function ProfileSetting() {
   };
 
   const handleEditEmployee = () => {
-  setField(
-    "categories",
-    employeeCategories.map((c) => ({
-      subId: c.subid || c.subservice_id,
-      name: c.subname || c.name,
-    }))
-  );
-  setEditType(2);
-  setModalVisible(true);
-};
+    setField(
+      "categories",
+      employeeCategories.map((c) => ({
+        subId: c.subid || c.subservice_id,
+        name: c.subname || c.name,
+      })),
+    );
+    setEditType(2);
+    setModalVisible(true);
+  };
   // const handleEditEmployee = () => {
   //   store.reset();
 
@@ -70,9 +74,7 @@ export default function ProfileSetting() {
   const changeUserType = async () => {
     try {
       setSwitchLoading(true);
-
       const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(`${API_URL}/change-type`, {
         method: "POST",
         headers: {
@@ -81,12 +83,21 @@ export default function ProfileSetting() {
           "Content-Type": "application/json",
         },
       });
-
       const data = await response.json();
-      console.log(data);
 
-      if (data.status === 200) {
-        setAdminType(data.result);
+      if (data.status === 200 && data.user) {
+        await AsyncStorage.removeItem("user");
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
+        const saved = await AsyncStorage.getItem("user");
+      const parsed = JSON.parse(saved);
+
+
+      console.log("💾 Saved in AsyncStorage:", parsed);
+      console.log("💾 Saved admin:", parsed?.admin);
+
+
+        // 2️⃣ Update this screen instantly
+        setAdminType(data.user.admin);
       }
     } catch (error) {
       console.log("Change type error:", error);
@@ -104,7 +115,7 @@ export default function ProfileSetting() {
       <View style={styles.container}>
         <PageNameHeaderBar title="Profile Setting" navigation={navigation} />
         <ScrollView
-          contentContainerStyle={{ paddingBottom: 50 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Employer Section */}
@@ -235,6 +246,7 @@ export default function ProfileSetting() {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
       />
+      {useradmin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 }

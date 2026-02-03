@@ -30,7 +30,7 @@ import LineDivider from "../../components/LineDivider";
 import GradientButton from "../../components/GradientButton";
 import BorderButton from "../../components/BorderButton";
 import * as Clipboard from "expo-clipboard";
-import { API_URL } from "../../api/ApiUrl";
+import { API_URL, API_ICON } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
@@ -39,8 +39,12 @@ import QuestionMark from "../../components/QuestionMark";
 
 const EmployerAccount = () => {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { name } = route.params || [];
+  const employeeLink = `${API_ICON}/employee-profile/${name}`;
+  const employerLink = `${API_ICON}/employer-profile/${name}`;
   const [copyModel, setCopyModel] = useState(false);
-  const [copyText, setCopyText] = useState("");
+  const [copyText, setCopyText] = useState(employeeLink);
   const [downloadModal, setDownloadModal] = useState(false);
   const [activeTab, setActiveTab] = useState("employee");
   const [loading, setLoading] = useState(true);
@@ -51,14 +55,11 @@ const EmployerAccount = () => {
   const [job, setJob] = useState([]);
   const [Current, setCurrent] = useState([]);
   const [profile, setProfile] = useState([]);
-  const route = useRoute();
-  const { name } = route.params || [];
+
   const insets = useSafeAreaInsets();
 
   const handleCopy = async () => {
-    const link = `${API_URL}/employer_profile`;
     try {
-      setCopyText(link);
       await Clipboard.setStringAsync(link);
       if (Platform.OS === "android") {
         ToastAndroid.show("Copied to clipboard!", ToastAndroid.SHORT);
@@ -252,7 +253,7 @@ const EmployerAccount = () => {
                     style={{ marginLeft: 5 }}
                   />
                 </View> */}
-                <QuestionMark title="Profile Title" iconColor="#fff"/>
+                <QuestionMark title="Profile Title" iconColor="#fff" />
                 <Text style={styles.infoText2}>
                   {user.profile_title_employer}
                 </Text>
@@ -266,7 +267,7 @@ const EmployerAccount = () => {
                     style={{ marginLeft: 5 }}
                   />
                 </View> */}
-                <QuestionMark title="About Me" iconColor="#fff"/>
+                <QuestionMark title="About Me" iconColor="#fff" />
                 <Text style={styles.infoText2}>{user.employer_about}</Text>
               </View>
               <Text style={styles.infoTitle}> MyJobPosts</Text>
@@ -312,7 +313,7 @@ const EmployerAccount = () => {
                   style={{ marginLeft: 5 }}
                 />
               </View> */}
-              <QuestionMark title="Employee Category" iconColor="#fff"/>
+              <QuestionMark title="Employee Category" iconColor="#fff" />
               <View style={styles.pillsWrapper}>
                 <TouchableOpacity
                   style={styles.addBtn}
@@ -390,17 +391,17 @@ const EmployerAccount = () => {
                           title="View"
                           paddingVertical={6}
                           paddingHorizontal={22}
-                           onPress={() =>
-                        navigation.navigate("PostJobDetails", {
-                          jobId: item.request_slug,
-                        })
-                      }
+                          onPress={() =>
+                            navigation.navigate("PostJobDetails", {
+                              jobId: item.request_slug,
+                            })
+                          }
                         />
                       </View>
                     </View>
                   ))
                 ) : (
-                   <Text style={styles.dots}>.........</Text>
+                  <Text style={styles.dots}>.........</Text>
                 )}
 
                 <Text style={styles.infoTitle}>Works History And Reviews</Text>
@@ -438,7 +439,10 @@ const EmployerAccount = () => {
                     styles.tab,
                     activeTab === "employee" && styles.activeTabEmployee,
                   ]}
-                  onPress={() => setActiveTab("employee")}
+                  onPress={() => {
+                    setActiveTab("employee");
+                    setCopyText(employeeLink);
+                  }}
                 >
                   <Text
                     style={
@@ -456,11 +460,14 @@ const EmployerAccount = () => {
                     styles.tab,
                     activeTab === "employer" && styles.activeTabEmployer,
                   ]}
-                  onPress={() => setActiveTab("employer")}
+                  onPress={() => {
+                    setActiveTab("employer");
+                    setCopyText(employerLink);
+                  }}
                 >
                   <Text
                     style={
-                      activeTab === "jobs"
+                      activeTab === "employer"
                         ? styles.activeTabTextEmployer
                         : styles.tabText
                     }
@@ -471,8 +478,16 @@ const EmployerAccount = () => {
               </View>
               {activeTab === "employee" ? (
                 <View style={styles.inputRow}>
-                  <Text style={styles.linkText}>{copyText}</Text>
-                  <TouchableOpacity style={styles.copyBtn}>
+                  <View style={styles.textWrap}>
+                    <Text
+                      style={styles.linkText}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      {copyText}
+                    </Text>
+                  </View>
+                  <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
                     <Text style={styles.copyText}>Copy Link</Text>
                     <Ionicons
                       name="copy-outline"
@@ -484,7 +499,15 @@ const EmployerAccount = () => {
                 </View>
               ) : (
                 <View style={styles.inputRow}>
-                  <Text style={styles.linkText}>{copyText}</Text>
+                  <View style={styles.textWrap}>
+                    <Text
+                      style={styles.linkText}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      {copyText}
+                    </Text>
+                  </View>
                   <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
                     <Text style={styles.copyText}>Copy Link</Text>
                     <Ionicons
@@ -588,13 +611,13 @@ const styles = StyleSheet.create({
   iconbox: {
     flexDirection: "row",
     gap: 6,
-   alignItems:"flex-start",
-    flexWrap:"wrap",
+    alignItems: "flex-start",
+    flexWrap: "wrap",
   },
   infoText: {
     color: "#c3c3c3c3",
     fontSize: 16,
-      width: "78%",
+    width: "78%",
     fontFamily: "Montserrat_400Regular",
   },
   iconRow: {
@@ -821,8 +844,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+   textWrap: {
+    flex: 1,
+  },
   linkText: {
-    width: "70%",
+   paddingHorizontal: 5, 
     color: "#000",
     fontSize: 15,
     fontFamily: "Montserrat_500Medium",

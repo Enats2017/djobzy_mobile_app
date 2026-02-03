@@ -18,7 +18,7 @@ export default function IDVerificationUploadScreen() {
   const [personalPhoto, setPersonalPhoto] = useState(null);
   const [docFront, setDocFront] = useState(null);
   const [docBack, setDocBack] = useState(null);
-   const [admin, setAdmin] = useState(0);
+  const [admin, setAdmin] = useState(0);
   const navigation = useNavigation();
 
   const data = ["Driving License", "Passport", "National ID"];
@@ -141,26 +141,17 @@ export default function IDVerificationUploadScreen() {
             Document Images (Front & Back)
           </Text>
           <View style={styles.row}>
-            <UploadBox
-              label="Front Image"
-              type="document"
-              small
-              onSelect={setDocFront}
-            />
-            
-            <UploadBox label="Back Image"
-            type="document"
-             small 
-             onSelect={setDocBack} />
-           
+            <UploadBox label="Front Image" small onSelect={setDocFront} />
+
+            <UploadBox label="Back Image" small onSelect={setDocBack} />
           </View>
           <FilePreview file={docFront} onRemove={() => setDocFront(null)} />
-             <FilePreview file={docBack} onRemove={() => setDocBack(null)} />
+          <FilePreview file={docBack} onRemove={() => setDocBack(null)} />
         </View>
 
         <GradientButton title="Verify Identity" onPress={handleVerify} />
       </View>
-        {admin == 2 ? <EmployerFooter /> : <Footer />}
+      {admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 }

@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function FirstPage({ onNext }) {
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: "#C96B59",}}>
+    <SafeAreaView style={{flex:1}}>
     <View style={styles.container}>
       {/* Images */}
       <View style={styles.logoContainer}>
@@ -41,8 +41,6 @@ export default function FirstPage({ onNext }) {
          Welcome to the services marketplace
         </Text>
       </View>
-
-      {/* Button */}
       <View style={styles.buttonWrapper}>
         <TouchableOpacity style={styles.button} onPress={onNext}>
           <Ionicons
@@ -59,6 +57,7 @@ export default function FirstPage({ onNext }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+     backgroundColor: "#C96B59",
    
     alignItems: "center",
   },
@@ -95,17 +94,21 @@ const styles = StyleSheet.create({
     fontSize: fontScale(34),
     textAlign: "center",
     color: "#fff",
-    fontFamily: "Montserrat_400Regular",
+    fontFamily: "Montserrat_300Regular",
+    
   },
 
   bold: {
     fontSize: fontScale(40),
     fontFamily: "Montserrat_700Bold",
+    letterSpacing:0,
+    
   },
 
   subtext: {
     fontSize: fontScale(16),
     textAlign: "center",
+    fontFamily:"Montserrat_400Regular",
     color: "#f5f5f5",
     lineHeight: scale(22),
   },

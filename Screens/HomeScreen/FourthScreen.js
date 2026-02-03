@@ -46,8 +46,9 @@ const FourthScreen = () => {
           <Text style={styles.heading}>Select Your</Text>
           <Text style={styles.bold}>Primary Role</Text>
           <Text style={styles.subheading}>
-            You can switch between your Recruiter and Job Seeker accounts at any
-            time
+            You can switch between your{" "}
+            <Text style={styles.boldtext}>Recruiter</Text> and{" "}
+            <Text style={styles.boldtext}>Job Seeker</Text> accounts at any time
           </Text>
         </View>
 
@@ -56,7 +57,7 @@ const FourthScreen = () => {
           <TouchableOpacity
             style={[styles.circleButton, { backgroundColor: "#39A881" }]}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate("Login")}
+            onPress={() => navigation.navigate("Signup")}
           >
             <Image
               source={require("../../assets/images/Group-vector.png")}
@@ -64,17 +65,15 @@ const FourthScreen = () => {
               resizeMode="contain"
             />
             <Text style={[styles.circleText, { color: "#fff" }]}>
-              I'm a Job Seeker
-            </Text>
-            <Text style={[styles.descText, { color: "#fff" }]}>
-              looking for a job
+              I'm a Job Seeker{" "}
+              <Text style={[styles.descText]}>looking for a job or task</Text>
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.circleButton, { backgroundColor: "#fff" }]}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate("Login")}
+            onPress={() => navigation.navigate("Signup")}
           >
             <Image
               source={require("../../assets/images/Group-icon.png")}
@@ -82,10 +81,10 @@ const FourthScreen = () => {
               resizeMode="contain"
             />
             <Text style={[styles.circleText, { color: "#111" }]}>
-              I'm a Recruiter
-            </Text>
-            <Text style={[styles.descText, { color: "#111" }]}>
-              Looking for Service
+              I'm a Recruiter{"\n"}
+              <Text style={[styles.descText, { color: "#111" }]}>
+                need a service provider
+              </Text>
             </Text>
           </TouchableOpacity>
         </View>
@@ -99,16 +98,15 @@ export default FourthScreen;
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "#222222",
+    
   },
 
   scroll: {
-    
-    flexGrow:1,
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom:50
-   
+    paddingBottom: 50,
+    backgroundColor: "#222222",
   },
 
   imageContainer: {
@@ -119,31 +117,29 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
- 
   baseImage: {
     position: "absolute",
     top: 25,
-    left:0,
+    left: 0,
     width: "100%",
   },
-  
+
   overlayImage: {
     width: "95%",
     height: "95%",
   },
- 
 
   section: {
     alignItems: "center",
-    marginBottom: 14,
-    paddingHorizontal: 10,
+    marginBottom: 12,
+    maxWidth: "87%",
   },
 
   heading: {
     fontSize: scale(36),
     fontFamily: "Montserrat_400Regular",
     color: "#ffffff",
-    lineHeight:scale(40)
+    lineHeight: scale(40),
   },
 
   bold: {
@@ -151,20 +147,22 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_700Bold",
     color: "#ffffff",
   },
+  boldtext: {
+    fontFamily: "Montserrat_700Bold",
+  },
 
   subheading: {
     fontSize: scale(16),
     fontFamily: "Montserrat_400Regular",
     color: "#ffffff",
     textAlign: "center",
-    
   },
 
   buttons: {
     flexDirection: width < 360 ? "column" : "row",
-    gap: 15,
+    gap: 12,
     alignItems: "center",
-    paddingTop:scale(20)
+    paddingTop: scale(20),
   },
 
   circleButton: {
@@ -190,7 +188,7 @@ const styles = StyleSheet.create({
   },
 
   descText: {
-    fontSize: scale(11),
+    fontSize: scale(13),
     fontFamily: "Montserrat_400Regular",
     textAlign: "center",
     marginTop: 3,

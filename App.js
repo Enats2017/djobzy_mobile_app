@@ -89,6 +89,7 @@ import FavoriteEmployee from "./Screens/EmployerDashboardPage/FavoriteEmployee";
 import EmployerCategory from "./Screens/EmployerDashboardPage/EmployerCategory";
 import SearchCategory from "./Screens/SearchScreen/SearchCategory";
 import SearchResult from "./Screens/SearchScreen/SearchResult";
+import CompletedContract from "./Screens/ContractPage/CompletedContract";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -212,6 +213,8 @@ const App = () => {
             <Stack.Screen name="EmployerCategory" component={EmployerCategory} />
             <Stack.Screen name="SearchCategory" component={SearchCategory} />
             <Stack.Screen name="SearchResult" component={SearchResult} />
+            <Stack.Screen name="CompletedContract" component={CompletedContract} />
+
           </Stack.Navigator>
         </NavigationContainer>
         <Toast config={toastConfig} />

@@ -57,13 +57,13 @@ const Resert = ({ onNext }) => {
         <View style={ styles.section}>
           <Text style={styles.title}>Reset Password</Text>
           <Text style={styles.subtitle}>
-            Enter the email associated with your account and we’ll send instuctions to reset your password.
+            Enter the email associated with your account and we’ll send Instructions to reset your password.
           </Text>
         </View>
 
         <View style={styles.emalInput}>
           <Text style={styles.label}>Email</Text>
-          <View style={{ position: "relative", width: "100%" }}>
+          <View style={styles.passwordContainer}>
             <TextInput
               style={styles.input}
               placeholder="xyz@gmail.com"
@@ -145,13 +145,20 @@ const styles = StyleSheet.create({
     fontSize:16,
     padding:2,  
   },
-  input: {
+    passwordContainer: {
     width: "100%",
     height: 48,
+    borderRadius: 6,
+    paddingHorizontal: 5,
     backgroundColor: "#fff",
-    borderRadius: 8,
-
-    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  input: {
+      flex: 1,
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+    color: "#000",
   },
   remember:{
     alignItems:"center",

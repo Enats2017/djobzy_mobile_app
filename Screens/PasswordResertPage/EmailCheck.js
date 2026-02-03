@@ -10,7 +10,10 @@ const EmailCheck = ({ onNext, email, onResend }) => {
         <Text style={styles.title}>Check Your Email</Text>
         <Text style={styles.subtitle}>We Send a Password reset Link to</Text>
         <Text style={styles.sub}>{email}</Text>
+        <View style={{paddingTop:20}}>
+
         <GradientButton title="Open email app" onPress={onNext} />
+        </View>
         <View style={styles.link}>
           <Text style={styles.linktitle}>Didnt receive the email?</Text>
           <TouchableOpacity onPress={onResend}>
@@ -28,7 +31,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontFamily: "Montserrat_600SemiBold",
 
-    marginBottom: 7,
   },
   subtitle: {
     fontSize: 15,
@@ -47,16 +49,19 @@ const styles = StyleSheet.create({
 
   link: {
     flexDirection: "row",
-    margin: 15,
+    marginTop: 20,
     justifyContent: "center",
     gap: 2,
   },
   linktitle: {
     color: "#fff",
+    fontFamily:"Montserrat_400Regular",
+    fontSize:14
   },
   textlink: {
     color: "#f49696eb",
     textDecorationLine: "underline",
+    fontFamily:"Montserrat_400Regular",
   },
 });
 

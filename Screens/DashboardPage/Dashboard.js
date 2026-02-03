@@ -255,8 +255,8 @@ const Dashboard = () => {
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <HeaderBar onMenuPress={() => setMenuVisible(true)} />
-          <Modal transparent visible={menuVisible} animationType="fade">
+          <HeaderBar/>
+          {/* <Modal transparent visible={menuVisible} animationType="fade">
             <TouchableOpacity
               style={styles.overlay}
               activeOpacity={1}
@@ -299,7 +299,7 @@ const Dashboard = () => {
                 </TouchableOpacity>
               </View>
             </TouchableOpacity>
-          </Modal>
+          </Modal> */}
 
           {/* <View style={styles.tabContainer}>
             <TouchableOpacity

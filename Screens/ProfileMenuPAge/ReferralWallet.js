@@ -423,12 +423,16 @@ const ReferralWallet = () => {
                 </View>
                 <Text style={styles.title}>Invite with an Link</Text>
                 <View style={styles.inputWrapper}>
-                  <TextInput
-                    placeholder="Referral link"
-                    placeholderTextColor="#8F8F8F"
-                    style={styles.input}
-                    value={referralUrl}
-                  />
+                  <View style={styles.textWrap}>
+                    <Text
+                      style={styles.linkText}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      {referralUrl}
+                    </Text>
+                  </View>
+
                   <TouchableOpacity
                     style={styles.copyButton}
                     onPress={copyReferralUrl}
@@ -545,7 +549,7 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 11,
     borderRadius: 12,
-   
+
     alignItems: "center",
     justifyContent: "center",
   },
@@ -572,6 +576,9 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
     paddingHorizontal: 2,
     marginBottom: 15,
+  },
+   textWrap: {
+    flex: 1,
   },
   input: {
     flex: 1,

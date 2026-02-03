@@ -11,6 +11,7 @@ import {
   Platform,
   ToastAndroid,
   TouchableWithoutFeedback,
+  Dimensions,
 } from "react-native";
 import Octicons from "@expo/vector-icons/Octicons";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -32,10 +33,15 @@ import Footer from "../../components/Footer";
 import GradientButton from "../../components/GradientButton";
 import BorderButton from "../../components/BorderButton";
 import * as Clipboard from "expo-clipboard";
-import { API_URL } from "../../api/ApiUrl";
+import { API_ICON, API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import CategoryModel from "../../components/CategoryModel";
+import { captureRef } from "react-native-view-shot";
+import * as Print from "expo-print";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
+import { useRef } from "react";
 
 import Delete_Category from "../../components/Delete_Category";
 import QuestionMark from "../../components/QuestionMark";
@@ -43,8 +49,8 @@ import QuestionMark from "../../components/QuestionMark";
 const EmployeeAccount = () => {
   const route = useRoute();
   const { name } = route.params || [];
-  const employeeLink = `${API_URL}/employee-profile/${name}`;
-  const employerLink = `${API_URL}/employer-profile/${name}`;
+  const employeeLink = `${API_ICON}/employee-profile/${name}`;
+  const employerLink = `${API_ICON}/employer-profile/${name}`;
   const [copyModel, setCopyModel] = useState(false);
   const [copyText, setCopyText] = useState(employeeLink);
   const [modalVisible, setModalVisible] = useState(false);
@@ -60,6 +66,9 @@ const EmployeeAccount = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedName, setSelectedName] = useState("");
+  const screenRef = useRef(null);
+  const scrollRef = useRef(null);
+  const [contentHeight, setContentHeight] = useState(0);
 
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -138,9 +147,134 @@ const EmployeeAccount = () => {
   };
   const displayedCategories = showAllCategories ? job : job.slice(0, 5);
 
+  const generateExactUIPDF = async (mode = "color") => {
+    const isBW = mode === "bw";
+
+    const colors = {
+      bg: isBW ? "#ffffff" : "#222222",
+      card: isBW ? "#ffffff" : "rgba(255,255,255,0.1)",
+      text: isBW ? "#000000" : "#ffffff",
+      sub: isBW ? "#555" : "#c3c3c3",
+      stat: isBW ? "#000" : "#46A282",
+      accent: isBW ? "#000" : "#25dd4d",
+      pill: isBW ? "#eeeeee" : "rgba(255,255,255,0.1)",
+    };
+
+    const html = `
+  <html>
+  <head>
+    <style>
+      @page { size: A4; margin: 18px; }
+      body {
+        background:${colors.bg};
+        color:${colors.text};
+        font-family: Arial, sans-serif;
+      }
+      .profileCard {
+        background:${colors.card};
+        border-radius:15px;
+        padding:20px 10px;
+      }
+      .row { display:flex; gap:8px; }
+      .avatar {
+        width:84px; height:84px;
+        border-radius:60px;
+        border:1.5px solid ${colors.sub};
+      }
+      .name { font-size:18px; margin-bottom:7px; }
+      .iconRow { display:flex; justify-content:space-between; margin-top:12px; }
+      .iconText { font-size:12px; }
+      .statsRow { display:flex; gap:10px; margin-top:18px; }
+      .statBox {
+        background:${colors.stat};
+        padding:16px 25px;
+        border-radius:10px;
+        text-align:center;
+      }
+      .infoBox { margin-top:12px; }
+      .pill {
+        display:inline-flex;
+        background:${colors.pill};
+        padding:7px 14px;
+        border-radius:20px;
+        margin:4px;
+        font-size:12px;
+      }
+      .serviceCard {
+        width:160px;
+        padding:14px;
+        border-radius:14px;
+        border:1.5px solid ${colors.pill};
+        text-align:center;
+        display:inline-block;
+        margin-right:10px;
+      }
+      .price { color:${colors.accent}; }
+    </style>
+  </head>
+
+  <body>
+
+  <div class="profileCard">
+    <div class="row">
+      <img class="avatar" src="${user.photo || ""}" />
+      <div>
+        <div class="name">${user.full_name}</div>
+        <div style="color:${colors.sub};">Verification Level: ${user.verification_count}/7</div>
+        <div style="color:${colors.sub};">${user.address}</div>
+      </div>
+    </div>
+
+    <div class="statsRow">
+      <div class="statBox">${profile.count}<br/>Jobs</div>
+      <div class="statBox">${profile.earned}<br/>Earned</div>
+      <div class="statBox">${profile.likes?.length}<br/>Followers</div>
+    </div>
+  </div>
+
+  <div class="infoBox">
+    <b>Profile Title</b>
+    <div style="color:${colors.sub};">${user.profile_title_employee}</div>
+  </div>
+
+  <div class="infoBox">
+    <b>About Me</b>
+    <div style="color:${colors.sub};">${user.about}</div>
+  </div>
+
+  <div class="infoBox"><b>Promote Services</b></div>
+
+  ${promote
+    .map(
+      (p) => `
+    <div class="serviceCard">
+      <b>${p.subject}</b><br/>
+      <span class="price">${p.hour_minimum} CAD</span><br/>
+      <small>/hour</small>
+    </div>
+  `,
+    )
+    .join("")}
+
+  <div class="infoBox"><b>Employee Category</b></div>
+
+  ${job.map((j) => `<span class="pill">${j.subname}</span>`).join("")}
+
+  </body>
+  </html>
+  `;
+
+    const pdf = await Print.printToFileAsync({ html });
+    const uri = pdf.uri || pdf.fileUri;
+    const dest =
+      FileSystem.documentDirectory + `profile_ui_${mode}_${Date.now()}.pdf`;
+    await FileSystem.copyAsync({ from: uri, to: dest });
+    await Sharing.shareAsync(dest);
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.container}>
+      <View style={styles.container} ref={screenRef} collapsable={false}>
         <View style={styles.header}>
           <PageNameHeaderBar title="My Account" navigation={navigation} />
         </View>
@@ -148,8 +282,10 @@ const EmployeeAccount = () => {
           <Loading />
         ) : (
           <ScrollView
+            ref={scrollRef}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}
+            onContentSizeChange={(w, h) => setContentHeight(h)}
           >
             <View style={styles.profileCard}>
               <View style={styles.profileinfo}>
@@ -488,7 +624,7 @@ const EmployeeAccount = () => {
               >
                 <Text
                   style={
-                    activeTab === "jobs"
+                    activeTab === "employer"
                       ? styles.activeTabTextEmployer
                       : styles.tabText
                   }
@@ -499,7 +635,15 @@ const EmployeeAccount = () => {
             </View>
             {activeTab === "employee" ? (
               <View style={styles.inputRow}>
-                <Text style={styles.linkText}>{copyText}</Text>
+                <View style={styles.textWrap}>
+                  <Text
+                    style={styles.linkText}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                  >
+                    {copyText}
+                  </Text>
+                </View>
                 <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
                   <Text style={styles.copyText}>Copy Link</Text>
                   <Ionicons
@@ -512,7 +656,15 @@ const EmployeeAccount = () => {
               </View>
             ) : (
               <View style={styles.inputRow}>
-                <Text style={styles.linkText}>{copyText}</Text>
+                <View style={styles.textWrap}>
+                  <Text
+                    style={styles.linkText}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                  >
+                    {copyText}
+                  </Text>
+                </View>
                 <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
                   <Text style={styles.copyText}>Copy Link</Text>
                   <Ionicons
@@ -552,12 +704,16 @@ const EmployeeAccount = () => {
               proves your qualification.
             </Text>
             <View style={styles.button}>
-              <GradientButton title="Download Colored Print" />
+              <GradientButton
+                title="Download Colored Print"
+                onPress={() => generateExactUIPDF("color")}
+              />
               <BorderButton
                 borderColor="#000"
                 color="#000"
                 fontSize={19}
                 title="Download Black & White Print"
+                onPress={() => generateExactUIPDF("bw")}
               />
             </View>
           </View>
@@ -774,12 +930,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  textWrap: {
+    flex: 1,
+  },
   linkText: {
-    width: "70%",
+    paddingHorizontal: 5,
     color: "#000",
     fontSize: 15,
     fontFamily: "Montserrat_500Medium",
-    paddingHorizontal: 10,
   },
   copyBtn: {
     backgroundColor: "#CC6D5D",

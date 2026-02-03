@@ -53,6 +53,8 @@ const DuplicateEmp = () => {
         if (pageNum === 1) setLoading(true);
         else setIsFetchingMore(true);
         const token = await AsyncStorage.getItem("token");
+        console.log(token);
+        
         // console.log("📡 Fetching jobs for page:", pageNum);
         const res = await fetch(
           `${API_URL}/employer-dashboard?page=${pageNum}`,
@@ -195,52 +197,7 @@ const DuplicateEmp = () => {
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <HeaderBar onMenuPress={() => setMenuVisible(true)} />
-          <Modal transparent visible={menuVisible} animationType="fade">
-            <TouchableOpacity
-              style={styles.overlay}
-              activeOpacity={1}
-              onPress={() => setMenuVisible(false)}
-            >
-              <View style={styles.popup}>
-                <TouchableOpacity
-                  style={styles.row}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    navigation.navigate("Followers", {
-                      activeTab: "following",
-                    });
-                  }}
-                >
-                  <Text style={styles.text}>Following</Text>
-                </TouchableOpacity>
-                <LineDivider marginVertical={12} />
-                
-                <TouchableOpacity
-                  style={styles.row}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    navigation.navigate("Followers", { activeTab: "follower" });
-                  }}
-                >
-                  <Text style={styles.text}>Follower</Text>
-                </TouchableOpacity>
-
-                <LineDivider marginVertical={12} />
-
-                <TouchableOpacity
-                  style={styles.row}
-                  onPress={() => {
-                    setMenuVisible(false);
-                    navigation.navigate("PostsPage");
-                  }}
-                >
-                  <Text style={styles.text}>Posts</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          </Modal>
-
+          <HeaderBar/>
           {/* <View style={styles.tabContainer}>
             <TouchableOpacity
               style={[styles.tab, activeTab === "feeds" && styles.activeTab]}

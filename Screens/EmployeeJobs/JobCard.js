@@ -34,8 +34,8 @@ const JobCard = ({ item, isLastItem }) => {
         }),
       });
       const data = await response.json();
-      // toastSuccess("Successfully followed the user")
-      
+       toastSuccess("Liked Successfully")
+
       if (data.status === 200) {
         setIsLiked(true);
       }
@@ -62,8 +62,8 @@ const JobCard = ({ item, isLastItem }) => {
         }),
       });
       const data = await response.json();
-      
-      //  toastSuccess("Unfollowed successfully")
+
+        toastSuccess("Unliked Successfully")
       if (data.status == 200) {
         setIsLiked(false);
       }
@@ -81,50 +81,43 @@ const JobCard = ({ item, isLastItem }) => {
           Uploaded at {item.created}
         </Text>
         <View style={styles.userRow}>
-          <Image
-            source={{
-              uri: item.photo,
-            }}
-            style={styles.avatar}
-          />
-
+          <Image source={{ uri: item.photo }} style={styles.avatar} />
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
               <View style={styles.userNameSection}>
-               
-                <Text style={styles.userName}>{item.full_name}</Text>
-                
+                <Text
+                  style={styles.userName}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {item.full_name}
+                </Text>
+
                 <View style={styles.starRow}>
                   {[...Array(5)].map((_, i) => (
                     <FontAwesome key={i} name="star" style={styles.starIcon} />
                   ))}
                 </View>
               </View>
+
               <View style={styles.paymentRow}>
                 <MaterialIcons name="verified" size={16} color="#40b68e" />
                 <Text style={styles.paymentVerified}>Payment verified</Text>
               </View>
             </View>
-
-            <View>
-              <TouchableOpacity
-                style={styles.heartTouchable}
-                disabled={loading}
-                onPress={() => {
-                  if (isLiked) {
-                    handleUnfollow();
-                  } else {
-                    handleFollow();
-                  }
-                }}
-              >
-                <FontAwesome
-                  name={isLiked ? "heart" : "heart-o"}
-                  size={20}
-                  color={isLiked ? "#ff0000" : "#c3c3c3"}
-                />
-              </TouchableOpacity>
-            </View>
+          </View>
+          <View style={styles.heartColumn}>
+            <TouchableOpacity
+              style={styles.heartTouchable}
+              disabled={loading}
+              onPress={() => (isLiked ? handleUnfollow() : handleFollow())}
+            >
+              <FontAwesome
+                name={isLiked ? "heart" : "heart-o"}
+                size={20}
+                color={isLiked ? "#ff0000" : "#c3c3c3"}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -213,12 +206,14 @@ const styles = StyleSheet.create({
 
   userRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+
     marginBottom: 10,
     gap: 10,
-    flexWrap:"wrap",
-    flex:1,
-   
+  },
+  userInfo: {
+    flex: 1, // 💥 takes remaining width
+    paddingRight: 8, // space before heart
   },
   avatar: {
     width: 55,
@@ -231,33 +226,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    gap: 10,
     flex: 1,
   },
   nameRow: {
     flexDirection: "column",
-    alignItems: "flex-start",
     gap: 5,
-   
   },
   userNameSection: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
-    justifyContent:"flex-start",
-    flexWrap:"wrap",
-    
-    gap: 5,
+    gap: 2,
   },
   userName: {
     color: "#fff",
     fontSize: 16,
-    flexShrink:1,
-    maxWidth: "100%",
+    flexShrink: 1,
     fontFamily: "Montserrat_500Medium",
   },
   starRow: {
     flexDirection: "row",
+
     gap: 3,
+  },
+  heartColumn: {
+    width: 40, // 💥 fixed column
+    alignItems: "center",
+    justifyContent: "flex-start",
   },
   starIcon: {
     fontSize: 13,

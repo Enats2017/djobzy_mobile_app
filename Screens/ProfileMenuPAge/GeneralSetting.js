@@ -52,6 +52,7 @@ const GeneralSetting = () => {
       const data = await response.json();
       setSetting(data);
       setUsers(data.userDetails);
+     
       console.log("11111", data.userDetails);
       setField("employeeCategories", data.employee_services || []);
       setField("employerCategories", data.employer_services || []);
@@ -64,6 +65,8 @@ const GeneralSetting = () => {
   };
   const loadUser = async () => {
     const userStr = await AsyncStorage.getItem("user");
+      console.log("uerchnage", userStr);
+
     if (!userStr) return;
     const user = JSON.parse(userStr);
 
@@ -73,6 +76,9 @@ const GeneralSetting = () => {
     loadUser();
     fetchSetting();
   }, []);
+
+  console.log(admin);
+  
 
   return (
     <>
@@ -101,8 +107,7 @@ const GeneralSetting = () => {
                   title="Profile Settings"
                   onPress={() =>
                     navigation.navigate("ProfileSetting", {
-                      employee: employee,
-                      employer: employer,
+                      useradmin: users?.admin,
                     })
                   }
                 />

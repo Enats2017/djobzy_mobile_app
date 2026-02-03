@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import Footer from "../../components/Footer";
@@ -17,12 +17,28 @@ import AdvanceSearch from "./AdvanceSearch";
 import JobResult from "./JobResult";
 import EmployeeResult from "./EmployeeResult";
 import { useGlobalSearch } from "./useGlobalSearch";
+import EmployerFooter from "../../components/EmployerFooter";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SearchResult = () => {
   const navigation = useNavigation();
   const { keyword, userSearchMode } = useGlobalSearch();
   const [activeTab, setActiveTab] = useState(userSearchMode === 0);
   const [showFilter, setShowFilter] = useState(false);
+  const [admin, setAdmin] = useState(0);
+
+   const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+
+    setAdmin(user?.admin);
+  };
+
+  useEffect(() => {
+      loadUser();
+      
+    }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -100,7 +116,7 @@ const SearchResult = () => {
         </KeyboardAvoidingView>
       </View>
 
-      <Footer />
+      {admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 };

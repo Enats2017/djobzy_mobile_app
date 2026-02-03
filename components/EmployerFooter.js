@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Entypo, FontAwesome6 } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -55,7 +55,7 @@ const EmployerFooter = () => {
             style={styles.tab}
             onPress={() => navigation.navigate("EmployerDashboard")}
           >
-            <Ionicons
+            <Entypo
               name="home"
               size={24}
               color={isHomeActive() ? ACTIVE_COLOR : INACTIVE_COLOR}
@@ -92,7 +92,26 @@ const EmployerFooter = () => {
             <Text
               style={[styles.label, isActive("CreateJob") && styles.activeText]}
             >
-              Post
+              Job Post
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => navigation.navigate("ChatList")}
+          >
+            <Ionicons
+              name="chatbox"
+              size={24}
+              color={isActive("ChatList") ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
+            <Text
+              style={[
+                styles.label,
+                isActive("ChatList") && styles.activeText,
+              ]}
+            >
+              Chat
             </Text>
           </TouchableOpacity>
 
@@ -120,9 +139,9 @@ const EmployerFooter = () => {
             style={styles.tab}
             onPress={() => navigation.navigate("ProfileMenu")}
           >
-            <MaterialIcons
-              name="person"
-              size={24}
+            <FontAwesome6
+              name="user-large"
+              size={21}
               color={isActive("ProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
             <Text

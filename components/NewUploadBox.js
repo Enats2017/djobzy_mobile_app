@@ -1,19 +1,18 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet, View } from "react-native";
+import { TouchableOpacity, Text, StyleSheet, View, Platform } from "react-native";
 import { Foundation,EvilIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 
 export default function NewUploadBox({
   label,
-  type = "image",
   file,
   onSelect,
   onRemove,
 }) {
   const handlePress = async () => {
     try {
-      if (type === "image") {
+      
         const result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           quality: 0.8,
@@ -22,16 +21,7 @@ export default function NewUploadBox({
         if (!result.canceled) {
           onSelect(result.assets[0]);
         }
-      } else {
-        const result = await DocumentPicker.getDocumentAsync({
-          type: "*/*",
-          copyToCacheDirectory: true,
-        });
-
-        if (result.assets && result.assets.length > 0) {
-          onSelect(result.assets[0]);
-        }
-      }
+    
     } catch (err) {
       console.log("Picker error:", err);
     }

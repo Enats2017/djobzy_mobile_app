@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   View,
@@ -15,6 +15,8 @@ import BorderButton from "../../components/BorderButton";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Footer from "../../components/Footer";
+import EmployerFooter from "../../components/EmployerFooter";
 
 const AccountSetting = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -29,6 +31,8 @@ const AccountSetting = () => {
   const [loading, setLoading] = useState(false);
   const route = useRoute();
   const { user } = route.params || {};
+  const [admin, setAdmin] = useState(0);
+
 
   const handleConfirmPassword = async () => {
     try {
@@ -99,6 +103,18 @@ const AccountSetting = () => {
       Alert.alert("Error", "Something went wrong");
     }
   };
+
+    const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+
+    setAdmin(user?.admin);
+  };
+  useEffect(() => {
+    loadUser();
+   
+  }, []);
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
@@ -131,7 +147,7 @@ const AccountSetting = () => {
                   style={styles.eyeIcon}
                 >
                   <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    name={showPassword ? "eye-outline" : "eye-off-outline"}
                     size={18}
                     color="#888"
                   />
@@ -210,6 +226,7 @@ const AccountSetting = () => {
             {activeTab == 1 && <BorderButton title="Close your account" />}
           </View>
         </View>
+         {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
     </>
   );

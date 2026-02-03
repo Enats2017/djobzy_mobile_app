@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const SecondPage = ({ onNext }) => {
   return (
-    <SafeAreaView style={{flex:1, backgroundColor:"#DD9D24"}}>
+    <SafeAreaView style={{flex:1}}>
     <View style={styles.container}>
       {/* Image */}
       <View style={styles.imageWrapper}>
@@ -26,7 +26,7 @@ const SecondPage = ({ onNext }) => {
       {/* Text */}
       <View style={styles.textWrapper}>
         <Text style={styles.heading}>
-          Gateway to
+          Gateway to {"\n"}
           <Text style={styles.blodtext}> Services, Careers & Success</Text> 
         </Text>
 
@@ -58,6 +58,7 @@ const SecondPage = ({ onNext }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor:"#DD9D24"
     
   },
 
@@ -85,13 +86,13 @@ const styles = StyleSheet.create({
     fontSize: fontScale(36),
     textAlign: "center",
     color: "#fff",
-    fontFamily: "Montserrat_400Regular",
+    fontFamily: "Montserrat_300Regular",
   },
 
   subtext: {
     fontSize: fontScale(18),
     textAlign: "center",
-    fontFamily:"Montserrat_400Regular",
+    fontFamily:"Montserrat_300Regular",
     color: "#f5f5f5",
     lineHeight: scale(22),
   },

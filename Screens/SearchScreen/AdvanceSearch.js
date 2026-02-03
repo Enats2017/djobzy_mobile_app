@@ -10,94 +10,196 @@ import {
 } from "react-native";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
+import MultiSlider from "@ptomasroos/react-native-multi-slider";
 import { scale, fontScale } from "../../utils/scale";
 import GradientButton from "../../components/GradientButton";
-import GoogleMap from "../../components/GoogleMap";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../api/ApiUrl";
 
 const AdvancedSearch = () => {
   const [fromPrice, setFromPrice] = useState("");
   const [toPrice, setToPrice] = useState("");
   const [remote, setRemote] = useState(false);
+  const [priceRange, setPriceRange] = useState([0, 5000]);
+
+  const [categoryText, setCategoryText] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
+  const fetchCategories = async (text) => {
+    setCategoryText(text);
+
+    if (text.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/get-services`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ service_name: text }),
+      });
+
+      const data = await res.json();
+
+      if (data.status === 200) {
+        setSuggestions(data.data);
+      } else {
+        setSuggestions([]);
+      }
+    } catch (e) {
+      console.log("API error", e);
+    }
+  };
 
   return (
     <>
-    <ScrollView contentContainerStyle={styles.scrolcontent} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Advanced Search</Text>
-        <View style={{ width: 18 }} />
-      </View>
-      <Text style={styles.label}>Keyword</Text>
-      <TextInput style={styles.input} placeholder="Keyword" />
-
-      <Text style={styles.label}>Category</Text>
-      <View style={styles.plusInput}>
-        <TextInput style={styles.innerInput} placeholder="Add a Categroy" />
-        <TouchableOpacity style={styles.inputRow}>
-          <FontAwesome6 name="plus" size={14} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      <Text style={styles.label}>Hourly Price</Text>
-      <View style={styles.offerRow}>
-        <View style={styles.offerBox}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.currency}>Form</Text>
-
-            <TextInput
-              style={styles.slideinput}
-              value={String(fromPrice)}
-              onChangeText={(text) => setFromPrice(Number(text))}
-              placeholder="0"
-              placeholderTextColor="#999"
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
-
-        <View style={styles.offerBox}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.currency}>to</Text>
-            <TextInput
-              style={styles.slideinput}
-              value={String(toPrice)}
-              onChangeText={(text) => setToPrice(Number(text))}
-              placeholder="0"
-              placeholderTextColor="#999"
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
-      </View>
-      <View style={styles.sliderRow}>
-        <Slider
-          style={{ flex: 1 }}
-          minimumValue={0}
-          maximumValue={5000}
-          value={toPrice}
-          minimumTrackTintColor="#D17B68"
-          maximumTrackTintColor="#888"
-          thumbTintColor="#D17B68"
-          onValueChange={(v) => setToPrice(Math.floor(v))}
-        />
-      </View>
-
-      <TouchableOpacity
-        style={styles.checkboxRow}
-        onPress={() => setRemote(!remote)}
+      <ScrollView
+        contentContainerStyle={styles.scrolcontent}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.checkbox, remote && styles.checked]}>
-          {remote && <Ionicons name="checkmark" size={14} color="#fff" />}
+        <View style={styles.header}>
+          <Text style={styles.title}>Advanced Search</Text>
+          <View style={{ width: 18 }} />
         </View>
-        
-        <Text style={styles.checkboxText}>Remote Jobs</Text>
-      </TouchableOpacity>
-      <View style={{paddingBottom:10}}>
-      <GoogleMap/>
-      </View>
-      <View style={styles.address}>
-        <TextInput style={styles.input} placeholder="Address" />
-        <TextInput style={styles.input} placeholder="km" />
-        <GradientButton />
-      </View>
+        <Text style={styles.label}>Keyword</Text>
+        <TextInput style={styles.input} placeholder="Keyword" />
+
+        <Text style={styles.label}>Category</Text>
+        <View style={styles.plusInput}>
+          <TextInput
+            style={styles.innerInput}
+            placeholder="Add a Categroy"
+            value={categoryText}
+            onChangeText={fetchCategories}
+          />
+          <TouchableOpacity style={styles.inputRow}>
+            <FontAwesome6 name="plus" size={14} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        {suggestions.length > 0 && (
+          <View style={styles.dropdown}>
+            <ScrollView>
+              {suggestions.map((service) => (
+                <View key={service.service_id}>
+                  <Text style={styles.serviceTitle}>
+                    {service.service_name}
+                  </Text>
+
+                  {service.subservices.map((sub) => (
+                    <TouchableOpacity
+                      key={sub.subid}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        if (
+                          !selectedCategories.find((x) => x.subid === sub.subid)
+                        ) {
+                          setSelectedCategories([...selectedCategories, sub]);
+                        }
+                        setCategoryText("");
+                        setSuggestions([]);
+                      }}
+                    >
+                      <Text>{sub.subname}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+        <View style={styles.chipRow}>
+          {selectedCategories.map((item) => (
+            <View key={item.subid} style={styles.chip}>
+              <Text style={styles.chipText}>{item.subname}</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setSelectedCategories(
+                    selectedCategories.filter((x) => x.subid !== item.subid),
+                  )
+                }
+              >
+                <Ionicons name="close" size={14} color="#000" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+        <Text style={styles.label}>Hourly Price</Text>
+        <View style={styles.offerRow}>
+          <View style={styles.offerBox}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.currency}>Form</Text>
+
+              <TextInput
+                style={styles.slideinput}
+                value={String(priceRange[0])}
+                onChangeText={(v) =>
+                  setPriceRange([Number(v) || 0, priceRange[1]])
+                }
+                placeholder="0"
+                placeholderTextColor="#999"
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+
+          <View style={styles.offerBox}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.currency}>to</Text>
+              <TextInput
+                style={styles.slideinput}
+                value={String(priceRange[1])}
+                onChangeText={(v) =>
+                  setPriceRange([priceRange[0], Number(v) || 0])
+                }
+                placeholder="0"
+                placeholderTextColor="#999"
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+        </View>
+        <View style={styles.sliderRow}>
+          <MultiSlider
+            values={priceRange}
+            min={0}
+            max={5000}
+            step={50}
+            sliderLength={330}
+            onValuesChange={(values) => setPriceRange(values)}
+            selectedStyle={{ backgroundColor: "#D17B68" }}
+            unselectedStyle={{ backgroundColor: "#444" }}
+            markerStyle={{
+              height: 20,
+              width: 20,
+              borderRadius: 10,
+              backgroundColor: "#D17B68",
+              borderWidth: 3,
+              borderColor: "#fff",
+            }}
+          />
+        </View>
+
+        <TouchableOpacity
+          style={styles.checkboxRow}
+          onPress={() => setRemote(!remote)}
+        >
+          <View style={[styles.checkbox, remote && styles.checked]}>
+            {remote && <Ionicons name="checkmark" size={14} color="#fff" />}
+          </View>
+
+          <Text style={styles.checkboxText}>Remote Jobs</Text>
+        </TouchableOpacity>
+        <View style={{ paddingBottom: 10 }}></View>
+        <View style={styles.address}>
+          <TextInput style={styles.input} placeholder="Address" />
+          <TextInput style={styles.input} placeholder="km" />
+          <GradientButton />
+        </View>
       </ScrollView>
     </>
   );
@@ -106,10 +208,8 @@ const AdvancedSearch = () => {
 export default AdvancedSearch;
 
 const styles = StyleSheet.create({
-  scrolcontent:{
-    
-    paddingBottom:50,
-
+  scrolcontent: {
+    paddingBottom: 50,
   },
   title: {
     color: "#fff",
@@ -192,32 +292,22 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   sliderRow: {
-    paddingTop: 10,
-    flexDirection: "row",
-    gap: 8,
-  },
+  
+  alignItems: "center",
+},
+
   remoteRow: {
-    margin: 16,
+    
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  applyBtn: {
-    backgroundColor: "#ff6b5a",
-    margin: 16,
-    padding: 14,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  applyText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
+
   checkboxRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: 8,
-    paddingBottom: 10,
+  
+    
   },
   checkbox: {
     width: 18,
@@ -241,4 +331,46 @@ const styles = StyleSheet.create({
   checkboxText: {
     color: "#fff",
   },
+  dropdown: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    marginTop: 4,
+    elevation: 5,
+  },
+  dropdownItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: "#eee",
+  },
+  serviceTitle: {
+    fontWeight: "bold",
+    padding: 6,
+    backgroundColor: "#f2f2f2",
+  },
+
+  chipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 8,
+  },
+  chip: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    alignItems: "center",
+    gap: 5,
+  },
+  chipText: { color: "#000", fontSize: 12 },
+
+  offerRow: { flexDirection: "row", gap: 10 },
+  offerBox: { flex: 1 },
+
+  currency: { fontSize: fontScale(14), color: "#666" },
+  slideinput: { fontSize: 16, color: "#666" },
+
+  
+ 
 });

@@ -10,9 +10,11 @@ import {
 } from "react-native";
 import FindEmployees from "./FindEmployees";
 import FindJobs from "./FindJobs";
+import AdvancedSearch from "../SearchScreen/AdvanceSearch";
 
 const BestMatches = () => {
   const [activeTab, setActiveTab] = useState(true);
+    const [showFilter, setShowFilter] = useState(false);
 
   return (
     <View style={styles.bestmatch}>
@@ -49,14 +51,19 @@ const BestMatches = () => {
           </TouchableOpacity>
         </View>
         <View style={styles.iconsContainer}>
-          <TouchableOpacity style={styles.iconCircle}>
-            <FontAwesome6 name="filter" size={18} color="white" />
+          <TouchableOpacity style={[
+                    styles.iconCircle,
+                    showFilter && styles.iconCircleActive,
+                  ]}
+                  onPress={() => setShowFilter((prev) => !prev)}>
+            <FontAwesome6 name="filter" size={18}  color={showFilter ? "#000" : "#fff"} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconCircle}>
             <Octicons name="filter" size={18} color="white" />
           </TouchableOpacity>
         </View>
       </View>
+      {showFilter && <AdvancedSearch />}
 
       {activeTab ? <FindJobs /> : <FindEmployees />}
 
@@ -94,6 +101,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#424242",
     borderRadius: 100,
     padding: 10,
+  },
+    iconCircleActive: {
+    backgroundColor: "#fff",
   },
   toggleText: {
     fontFamily: "Montserrat_600SemiBold",

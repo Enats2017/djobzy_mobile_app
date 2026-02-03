@@ -5,7 +5,8 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert
+  Alert,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import NewUploadBox from "../../components/NewUploadBox";
@@ -21,11 +22,29 @@ const Step5Identyfication = () => {
   const [selected, setSelected] = useState("Select Document Type");
 
   const data = ["Driving License", "Passport", "National ID"];
+  // const normalizeUri = (uri) =>
+  //   Platform.OS === "android" ? uri.replace("file://", "") : uri;
+
+  // const isValidImage = (uri) => {
+  //   const ext = uri.split(".").pop().toLowerCase();
+  //   return ["jpg", "jpeg", "png"].includes(ext);
+  // };
 
   const handleVerify = async () => {
-    
+    if (
+      !personalPhoto ||
+      !docFront ||
+      !docBack ||
+      selected === "Select Document Type"
+    ) {
+      Alert.alert("Error", "Please upload all required images");
+      return;
+    }
+
     const formData = new FormData();
+
     formData.append("card_type", selected);
+
     formData.append("FacePhoto", {
       uri: personalPhoto.uri,
       name: "face.jpg",
@@ -44,16 +63,22 @@ const Step5Identyfication = () => {
       type: "image/jpeg",
     });
 
+    console.log("firstimg", personalPhoto.uri);
+    console.log("secondimg", docFront.uri);
+    console.log("thirdimg", docBack.uri);
+
     try {
       const token = await AsyncStorage.getItem("token");
-      const res = await fetch(`${API_URL}/doc-verify`, {
+      console.log("hiii");
+
+      const res = await fetch(`${API_URL}/verify-doc`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
         body: formData,
-      });
+      });``
 
       const data = await res.json();
       console.log("API RESPONSE:", data);
@@ -67,6 +92,7 @@ const Step5Identyfication = () => {
       Alert.alert("Error", "Upload failed");
     }
   };
+
   return (
     <>
       <Text style={styles.setptext}>STEP 4</Text>
@@ -106,7 +132,6 @@ const Step5Identyfication = () => {
       )}
       <NewUploadBox
         label="Personal Photo"
-        type="image"
         file={personalPhoto}
         onSelect={setPersonalPhoto}
         onRemove={() => setPersonalPhoto(null)}
@@ -114,7 +139,6 @@ const Step5Identyfication = () => {
 
       <NewUploadBox
         label="Document Image (Front)"
-        type="document"
         file={docFront}
         onSelect={setDocFront}
         onRemove={() => setDocFront(null)}
@@ -122,14 +146,13 @@ const Step5Identyfication = () => {
 
       <NewUploadBox
         label="Document Image (Back)"
-        type="document"
         file={docBack}
         onSelect={setDocBack}
         onRemove={() => setDocBack(null)}
       />
 
-      <GradientButton title="Verify Identity by Jumio" />
-      <TouchableOpacity style={styles.nextBtn} onPress={handleVerify}>
+      <GradientButton title="Verify Identity by Jumio" onPress={handleVerify} />
+      <TouchableOpacity style={styles.nextBtn}>
         <Text style={styles.nextText}>Next</Text>
       </TouchableOpacity>
     </>

@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons,Entypo,MaterialCommunityIcons,FontAwesome6 } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -18,9 +18,9 @@ const Footer = () => {
             style={styles.tab}
             
           >
-            <Ionicons
+            <Entypo
               name="home"
-              size={24}
+              size={25}
               color={isActive === "jobs" ? "#007bff" : "#000000"}
             />
             <Text style={[styles.label, isActive == 0 && styles.activeText]}>
@@ -45,28 +45,28 @@ const Footer = () => {
 
           <TouchableOpacity
             style={styles.tab}
-            onPress={() => navigation.navigate("PromoteService")}
+            onPress={() => navigation.navigate("ChatList")}
           >
             <Ionicons
-              name="add-circle"
+              name="chatbox"
               size={24}
-              color={isActive("PromoteService") ? ACTIVE_COLOR : INACTIVE_COLOR}
+              color={isActive("ChatList") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
             <Text
               style={[
                 styles.label,
-                isActive("PromoteService") && styles.activeText,
+                isActive("ChatList") && styles.activeText,
               ]}
             >
-              Promote
+              Chat
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("NotificationScreen")}
           >
-            <Ionicons
-              name="notifications"
+            <MaterialCommunityIcons
+              name="bell-badge"
               size={24}
               color={
                 isActive("NotificationScreen") ? ACTIVE_COLOR : INACTIVE_COLOR
@@ -85,8 +85,8 @@ const Footer = () => {
             style={styles.tab}
             onPress={() => navigation.navigate("ProfileMenu")}
           >
-            <Ionicons
-              name="person"
+            <FontAwesome6
+              name="user-large"
               size={24}
               color={isActive("ProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />

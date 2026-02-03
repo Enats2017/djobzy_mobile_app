@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesome, MaterialIcons, Entypo } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
+import { toastSuccess } from "../../utils/toast";
 
 const EmployerCard = ({ item, isLastItem }) => {
   const navigation = useNavigation();
@@ -53,6 +53,7 @@ const EmployerCard = ({ item, isLastItem }) => {
       const data = await response.json();
       console.log("Follow response:", data);
       if (data.status === 200) {
+         toastSuccess("Successfully followed the user")
         setIsLiked(true);
       }
     } catch (error) {
@@ -80,6 +81,7 @@ const EmployerCard = ({ item, isLastItem }) => {
       const data = await response.json();
       console.log("Unfollow response:", data);
       if (data.status == 200) {
+         toastSuccess("Unfollowed successfully")
         setIsLiked(false);
       }
     } catch (error) {
@@ -215,6 +217,8 @@ const styles = StyleSheet.create({
   avatar: {
     width: 60,
     height: 60,
+    borderWidth:1,
+    borderColor:"#fff",
     borderRadius: 100,
   },
   infoWrapper: {

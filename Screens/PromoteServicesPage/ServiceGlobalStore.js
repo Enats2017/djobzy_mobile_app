@@ -1,54 +1,53 @@
 import { create } from "zustand";
 
 export const useServiceGlobalStore = create((set) => ({
-    title: "",
-    description: "",
-    hourlyRate: "",
-    totalPrice: "",
-    expectedTime: 0,
-    images: [],
-    categories: [],
-    isEdit: false,
-    editingId: null,
-    
-    setField: (field, value) => set({ [field]: value }),
-    setExpectedTime: (hours) => set({ expectedTime: hours }),
-    addCategory: (category) =>
-        set((state) => {
-            if (state.categories.some((c) => c.subId === category.subId)) {
-                return state; 
-            }
-            return { categories: [...state.categories, category] };
-        }),
+  title: "",
+  description: "",
+  hourlyRate: "",
+  totalPrice: "",
+  expectedTime: 0,
+  images: [],
+  categories: [],
+  isEdit: false,
+  editingId: null,
 
-    removeCategory: (subId) =>
-        set((state) => ({
-            categories: state.categories.filter((c) => c.subId !== subId),
-        })),
+  setField: (field, value) => set({ [field]: value }),
+  setExpectedTime: (hours) => set({ expectedTime: hours }),
+  addCategory: (category) =>
+    set((state) => {
+      if (state.categories.some((c) => c.subId === category.subId)) {
+        return state;
+      }
+      return { categories: [...state.categories, category] };
+    }),
 
-    clearCategories: () => set({ categories: [] }),
+  removeCategory: (subId) =>
+    set((state) => ({
+      categories: state.categories.filter((c) => c.subId !== subId),
+    })),
 
-    addImage: (img) =>
-        set((state) => ({ images: [...state.images, img] })),
+  clearCategories: () => set({ categories: [] }),
 
-    removeImage: (index) =>
-        set((state) => ({
-            images: state.images.filter((_, i) => i !== index),
-        })),
+  addImage: (img) => set((state) => ({ images: [...state.images, img] })),
 
-        setEditMode: (id) => set({ isEdit: true, editingId: id }),
-        resetEditMode: () => set({ isEdit: false, editingId: null }),
+  removeImage: (index) =>
+    set((state) => ({
+      images: state.images.filter((_, i) => i !== index),
+    })),
 
-    reset: () =>
-        set({
-            title: "",
-            description: "",
-            hourlyRate: "",
-            totalPrice: "",
-            expectedTime: 0,
-            images: [],
-            categories: [],
-             isEdit: false,        
-    editingId: null,
-        }),
+  setEditMode: (id) => set({ isEdit: true, editingId: id }),
+  resetEditMode: () => set({ isEdit: false, editingId: null }),
+
+  reset: () =>
+    set({
+      title: "",
+      description: "",
+      hourlyRate: "",
+      totalPrice: "",
+      expectedTime: 0,
+      images: [],
+      categories: [],
+      isEdit: false,
+      editingId: null,
+    }),
 }));

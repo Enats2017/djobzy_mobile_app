@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import EmployerFooter from "../../components/EmployerFooter";
 
-const ActiveContract = () => {
+const CompletedContract = () => {
   const [currentJobs, setCurrnetJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
@@ -22,7 +22,7 @@ const ActiveContract = () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(`${API_URL}/active-contract`, {
+      const response = await fetch(`${API_URL}/closed-jobs`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
@@ -39,12 +39,14 @@ const ActiveContract = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <PageNameHeaderBar title="Active Contracts" navigation={navigation} />
+          <PageNameHeaderBar
+            title=" My Completed Contracts"
+            navigation={navigation}
+          />
           {loading ? (
             <Loading />
           ) : (
@@ -96,6 +98,16 @@ const ActiveContract = () => {
                           </View>
                         </View>
                       </View>
+                      <View style={styles.offeredSection}>
+                        <Text style={styles.offeredPriceText}>
+                          Total Income
+                        </Text>
+                        <View style={styles.cadButton}>
+                          <Text style={styles.cadButtonText}>
+                            CAD {currentJob.bid_price}
+                          </Text>
+                        </View>
+                      </View>
                     </View>
 
                     <View style={styles.jobTitleSection}>
@@ -144,7 +156,7 @@ const ActiveContract = () => {
 
                     <View style={styles.buttonSection}>
                       <GradientButton
-                        title="View"
+                        title="View Contract Post"
                         onPress={() =>
                           navigation.navigate("ViewCurrentJobPost", {
                             gid: currentJob.request_slug,
@@ -198,24 +210,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-     flex: 1,
-   
+    flex: 1,
   },
   nameRow: {
     flexDirection: "column",
     gap: 5,
   },
   userNameSection: {
-    
     flexDirection: "row",
     alignItems: "center",
-    flexWrap:"wrap",
+    flexWrap: "wrap",
     gap: 3,
   },
   userName: {
     color: "#fff",
     fontSize: 16,
-     flexShrink: 1,
+    flexShrink: 1,
     fontFamily: "Montserrat_500Medium",
   },
   starRow: {
@@ -328,5 +338,26 @@ const styles = StyleSheet.create({
     marginHorizontal: 1,
     marginVertical: 15,
   },
+    offeredPriceText: {
+    color: "#ffffff",
+    fontSize: 10,
+    textAlign: "center",
+    fontFamily: "Montserrat_500Medium",
+    marginBottom: 4,
+  },
+   cadButton: {
+    backgroundColor: "#FDBF2D",
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cadButtonText: {
+    fontFamily: "Montserrat_700Bold",
+    color: "#000",
+    fontSize: 13,
+  },
 });
-export default ActiveContract;
+
+export default CompletedContract;

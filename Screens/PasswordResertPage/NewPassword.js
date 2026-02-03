@@ -9,86 +9,105 @@ import {
   View,
 } from "react-native";
 import GradientButton from "../../components/GradientButton";
+import { toastError, toastSuccess } from "../../utils/toast";
+
 
 const NewPassword = ({ onNext }) => {
-  const [remember, setRemember] = useState(false);
-  const [showPassword, setShowPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState("");
+
+  const isValidLength = password.length >= 8;
+  const isMatch = password === confirmPassword && confirmPassword.length > 0;
+
+  const handleSubmit = () => {
+    if (!isValidLength) {
+       toastError("Password must be at least 8 characters");
+      return;
+    }
+    if (!isMatch) {
+      toastError("Passwords do not match");
+      return;
+    }
+    onNext();
+  };
+
   return (
-    <>
-      <View style={styles.heading}>
-        <Text style={styles.title}>Create A New Password</Text>
-        <Text style={styles.subtitle}>
-          Your new Password must be different from previous used password
-        </Text>
-        <View style={styles.section}>
-          <Text style={styles.label}> New Password</Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              placeholder="* * * * * * * * * * *"
-              placeholderTextColor="#999"
-              secureTextEntry={!showPassword}
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
-            >
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={22}
-                color="#666"
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.requirementRow}>
-            <TouchableOpacity
-              style={styles.rememberMe}
-              onPress={() => setRemember(!remember)}
-            >
-              <View
-                style={[styles.checkbox, remember && styles.checkboxChecked]}
-              >
-                {remember && (
-                  <Ionicons
-                    name="checkmark"
-                    
-                    color="#fff"
-                  />
-                )}
-              </View>
-              <Text style={styles.requirementText}>
-                {" "}
-                Must have at least 8 characters
-              </Text>
-            </TouchableOpacity>
-          </View>
+    <View style={styles.heading}>
+      <Text style={styles.title}>Create New Password</Text>
+      <Text style={styles.subtitle}>
+        Your new password must be different from previously used password
+      </Text>
 
-          <Text style={[styles.label, { marginTop: 20 }]}>
-            Conferm Password
-          </Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              placeholder="* * * * * * * * * *"
-              placeholderTextColor="#999"
-              secureTextEntry={!showPassword}
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
-            >
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={22}
-                color="#666"
-              />
-            </TouchableOpacity>
-          </View>
+      <View style={styles.section}>
+        <Text style={styles.label}>New Password</Text>
 
-          <GradientButton marginTop={25} title="Send" onPress={onNext} />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="********"
+            placeholderTextColor="#999"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eyeIcon}
+          >
+            <Ionicons
+              name={showPassword ? "eye-outline" : "eye-off-outline"}
+              size={22}
+              color="#666"
+            />
+          </TouchableOpacity>
         </View>
+
+        <View style={styles.requirementRow}>
+          <View
+            style={[styles.checkbox, isValidLength && styles.checkboxChecked]}
+          >
+            {isValidLength && <Ionicons name="checkbox-outline" size={17} color="#fff" />}
+          </View>
+          <Text style={styles.requirementText}>
+            Must have at least 8 characters
+          </Text>
+        </View>
+
+        <Text style={[styles.label, { marginTop: 20 }]}>Confirm Password</Text>
+
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="********"
+            placeholderTextColor="#999"
+            secureTextEntry={!showConfirmPassword}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            style={styles.eyeIcon}
+          >
+            <Ionicons
+              name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
+              size={22}
+              color="#666"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {confirmPassword.length > 0 && !isMatch && (
+          <Text style={{ color: "red", marginTop: 5 }}>
+            Passwords do not match
+          </Text>
+        )}
+
+        <GradientButton marginTop={25} title="Send" onPress={handleSubmit} />
       </View>
-    </>
+    </View>
   );
 };
 
@@ -98,6 +117,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontFamily: "Montserrat_600SemiBold",
     textAlign: "center",
+    letterSpacing: 0,
   },
   subtitle: {
     fontSize: 15,
@@ -124,7 +144,7 @@ const styles = StyleSheet.create({
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
-
+    justifyContent: "center",
     backgroundColor: "#fff",
     borderRadius: 10,
     paddingHorizontal: 15,
@@ -135,7 +155,7 @@ const styles = StyleSheet.create({
   passwordInput: {
     flex: 1,
     fontSize: 14,
-
+    textAlignVertical: "center",
     fontFamily: "Montserrat_400Regular",
     color: "#666666",
   },
@@ -152,6 +172,7 @@ const styles = StyleSheet.create({
   requirementText: {
     color: "#ecf0ecff",
     fontSize: 14,
+    fontFamily:"Montserrat_400Regular",
     marginLeft: 6,
   },
   loginBtn: {

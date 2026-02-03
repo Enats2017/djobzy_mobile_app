@@ -44,7 +44,7 @@ export default function EmployerContracts() {
           <Text style={styles.menuText}>Sent Offers</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={()=> navigation.navigate("CompletedContract")}>
           <Text style={styles.menuText}>Completed Contracts</Text>
         </TouchableOpacity>
 

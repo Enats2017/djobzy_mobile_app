@@ -14,10 +14,10 @@ import {
 import PhoneNumberInput from "../../components/PhoneNumberInput";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import GradientButton from "../../components/GradientButton";
-
-import Icon from "react-native-vector-icons/Feather";
+import { isValidPhoneNumber } from "libphonenumber-js";
 import { API_URL } from "../../api/ApiUrl";
 import { toastError, toastSuccess } from "../../utils/toast";
+import { getCountryCallingCode } from "libphonenumber-js";
 
 const AccountSetup = ({
   countries,
@@ -28,12 +28,14 @@ const AccountSetup = ({
   email,
   emailVerified,
   onNext,
+  userDetails
 }) => {
   console.log(username);
 
   const [loading, setLoading] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [mobileCountryId, setMobileCountryId] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(userDetails.mobile_number || "");
+  const [mobileCountryId, setMobileCountryId] = useState(userDetails.mobile_country_id || "");
+  const [mobileCountryISO, setMobileCountryISO] = useState("");
   const phoneInputRef = useRef(null);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [usernameError, setUsernameError] = useState("");
@@ -49,12 +51,47 @@ const AccountSetup = ({
   //  }, []);
 
   console.log("PHONE:", phoneNumber);
-console.log("COUNTRY CODE:", mobileCountryId);
+  console.log("COUNTRY CODE:", mobileCountryId);
+  console.log("COUNTRY ISO:", mobileCountryISO);
+
+  const isoToFlag = (iso) =>
+    iso
+      ?.toUpperCase()
+      .replace(/./g, (char) =>
+        String.fromCodePoint(127397 + char.charCodeAt())
+      );
+
+  const isoToCallingCode = (iso) => {
+    try {
+      return `+${getCountryCallingCode(iso)}`;
+    } catch {
+      return "+1"; // fallback Canada
+    }
+  };
+
+  const countryISO = userDetails?.iso2 || "CA";
+  const defaultCountryISO = countryISO;
+  const defaultCallingCode = isoToCallingCode(countryISO);
+  const defaultFlag = isoToFlag(countryISO) || "🇨🇦";
 
   const handleAccountSetup = async () => {
-    if (!fullName || !username || !phoneNumber) {
-      //Alert.alert("Error", "Please fill all required fields.");
-      toastError("Please fill all required fields.");
+    if (!fullName) {
+      toastError("Please enter your full name.");
+      return;
+    }
+    if (!username) {
+      toastError("Please enter your username.");
+      return;
+    }
+    if (!phoneNumber) {
+      toastError("Please enter your phone number.");
+      return;
+    }
+    const fullNumber = `+${mobileCountryId}${phoneNumber}`;
+    const updatedFullNumber = `${mobileCountryId}${phoneNumber}`;
+    const isPhoneValid = isValidPhoneNumber(fullNumber, mobileCountryISO);
+    if (!isPhoneValid) {
+      toastError("Please enter a valid phone number.");
       return;
     }
     try {
@@ -65,9 +102,10 @@ console.log("COUNTRY CODE:", mobileCountryId);
         {
           full_name: fullName,
           username: username,
-          phone_number: phoneNumber,
+          phone_number: updatedFullNumber,
           mobile_country_id: mobileCountryId,
-          step_flag: 1,
+          country_iso2: mobileCountryISO,
+          step_flag: "step2",
         },
         {
           headers: {
@@ -85,19 +123,15 @@ console.log("COUNTRY CODE:", mobileCountryId);
       }
       if (response.data.errors) {
         const errors = response.data.errors;
-
         if (errors.username) {
           setUsernameError(errors.username[0]);
         }
-
         if (errors.phone_number) {
           setPhoneError(errors.phone_number[0]);
         }
-
-        return; // 🔴 VERY IMPORTANT
+        return;
       }
 
-      // ✅ ONLY GENERIC ERROR → TOAST
       if (response.data.message) {
         toastError(response.data.message);
       }
@@ -120,7 +154,7 @@ console.log("COUNTRY CODE:", mobileCountryId);
           value={fullName}
           onChangeText={(text) => setFullName(text)}
         />
-        <Text style={styles.label}>Username</Text>
+        <Text >Create a Username</Text>
         <TextInput
           style={styles.input}
           placeholder="Type your username"
@@ -169,49 +203,16 @@ console.log("COUNTRY CODE:", mobileCountryId);
         <Text style={styles.label}>Phone Number</Text>
         <PhoneNumberInput
           value={phoneNumber}
-          onChange={({ phone, countryCode }) => {
-            setPhoneNumber(phone); // ✅ only digits
-            setMobileCountryId(countryCode); // ✅ 91
+          onChange={({ phone, countryCode, countryISO }) => {
+            setPhoneNumber(phone);
+            setMobileCountryId(countryCode);
+            setMobileCountryISO(countryISO);
+            setPhoneError(false)
           }}
+          defaultFlag={defaultFlag}
+          defaultCallingCode={defaultCallingCode}
+          defaultCountryISO={defaultCountryISO}
         />
-        {/* <View style={{ position: "relative", width: "100%" }}>
-          <PhoneInput
-            ref={phoneInputRef}
-            defaultValue={phoneNumber}
-            defaultCode="IN"
-            layout="first"
-            containerStyle={styles.phoneInputContainer}
-            textContainerStyle={styles.phoneTextInputContainer}
-            textInputStyle={styles.phoneTextInput}
-            codeTextStyle={styles.codeText}
-            flagButtonStyle={styles.flagButton}
-            onChangeFormattedText={(text) => {
-              setPhoneNumber(text);
-              const countryData = countries.find((c) => c.phonecode);
-              setMobileCountryId(countryData?.id || "");
-              if (text.length >= 10) {
-                setPhoneVerified(true);
-                setPhoneError("");
-              } else {
-                setPhoneVerified(false);
-                setPhoneError("Invalid phone number");
-              }
-            }}
-          />
-          {phoneVerified && (
-            <Icon
-              name="check-circle"
-              size={22}
-              color="green"
-              style={{
-                position: "absolute",
-                right: 12,
-                top: "50%",
-                transform: [{ translateY: -11 }],
-              }}
-            />
-          )}
-        </View> */}
       </View>
       {phoneError ? (
         <Text style={{ color: "red", marginTop: 4 }}>{phoneError}</Text>
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#ffffff",
-    fontSize: 17,
+    fontSize: 16,
     marginTop: 18,
     fontFamily: "Montserrat_600SemiBold",
     marginBottom: 5,

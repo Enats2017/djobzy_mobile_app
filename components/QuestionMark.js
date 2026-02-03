@@ -29,18 +29,17 @@ const QuestionMark = ({
 };
 
 const styles = StyleSheet.create({
-      offerHeader: {
+  offerHeader: {
     flexDirection: "row",
-    alignItems:"center",
-    marginBottom:"5",  
+    alignItems: "center",
+    marginBottom: "5",
     gap: 6,
   },
 
-   offerText:{
-     color: "#ffffff",
+  offerText: {
+    color: "#ffffff",
     fontSize: 16,
     fontFamily: "Montserrat_600SemiBold",
-
   },
 
 

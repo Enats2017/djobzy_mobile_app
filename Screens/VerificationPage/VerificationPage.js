@@ -62,9 +62,16 @@ const VerificationPage = () => {
       await AsyncStorage.removeItem("user");
       await AsyncStorage.setItem("user", JSON.stringify(res.data.userDetails));
       console.log("user:",user);
-    
-      const verificationStep = Number(user.verification_step ?? 0);
-      setActiveTab(verificationStep);
+      setUserDetails(user);
+
+      const verificationStep = user.verification_step;
+      if(verificationStep == 'step2') {
+        setActiveTab(1);
+      } else if(verificationStep == 'step3') {
+        setActiveTab(2);
+      } else {
+        setActiveTab(0);
+      }
 
       const fetchedServices = res.data.services || [];
       setServices(fetchedServices);
@@ -90,7 +97,7 @@ const VerificationPage = () => {
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior="padding"
           style={styles.container}
         >
           <HeaderBar showSearch={false} />
@@ -172,6 +179,7 @@ const VerificationPage = () => {
                   setUsername={setUsername}
                   email={email}
                   emailVerified={emailVerified}
+                  userDetails={userDetails}
                   onNext={() => setActiveTab(1)}
                 />
               )}
@@ -214,7 +222,7 @@ const VerificationPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
+    paddingHorizontal: 15,
     backgroundColor: "#222222",
   },
   StepContainer: {

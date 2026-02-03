@@ -163,7 +163,7 @@ const openGallery = async () => {
 
       if (response.data.status === 200) {
         //alert("Profile setup successful!");
-        toastSuccess("Profile setuo successfull!");
+        toastSuccess("Profile setup successfull!");
         if (onNext) onNext(response.data.user_admin);
       } else {
         alert(response.data.message || "Failed to save data");
@@ -396,7 +396,6 @@ const styles = StyleSheet.create({
   },
   uploadPhotoButton: {
     alignItems: "center",
-    // gap:10,
     width: "100%",
   },
   uploadText: {

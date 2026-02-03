@@ -5,11 +5,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import GradientButton from "../../components/GradientButton";
 
 const JobCreate = ({ admin, userId }) => {
-  console.log("admin",admin);
+  console.log("admin", admin);
   console.log(userId);
   const navigation = useNavigation();
   const handleCreateLater = () => {
-      if (admin == 2) {
+    if (admin == 2) {
       navigation.reset({
         index: 0,
         routes: [{ name: "EmployerDashboard", params: { userId } }],
@@ -48,12 +48,12 @@ const JobCreate = ({ admin, userId }) => {
       </View>
       <View style={styles.jobbtn}>
         {admin === 0 ? (
-          
+
           <GradientButton title="Create Promoted Services" paddingVertical={15} onPress={() => navigation.navigate("PromoteService", { userId })} />
         ) : (
-          
 
-          <GradientButton title="Create Job Post" paddingVertical={15} onPress={() => navigation.navigate("CreateJob", { userId })}/>
+
+          <GradientButton title="Create Job Post" paddingVertical={15} onPress={() => navigation.navigate("CreateJob", { userId })} />
         )}
         <TouchableOpacity style={styles.leterBtn} onPress={handleCreateLater}>
           <Text style={styles.nextBtnText}>Create Later</Text>
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   jobsection: {
     justifyContent: "center",
     alignItems: "center",
-    alignContent:"center",
+    alignContent: "center",
     marginTop: 25,
   },
   checking: {
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     top: 9,
   },
-  icon:{
+  icon: {
     backgroundColor: "#fff",
     width: 30,
     height: 30,
@@ -105,14 +105,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: "Montserrat_600SemiBold",
     color: "#fff",
-    textAlign:"center",
+    textAlign: "center",
     marginBottom: 10,
   },
   subText: {
     fontSize: 28,
     fontFamily: "Montserrat_700Bold",
     color: "#CB7767",
-
     marginBottom: 10,
   },
   instructionText: {
@@ -126,19 +125,18 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 20,
   },
-  
   createBtn: {
     backgroundColor: "#f1eeedff",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
   },
-  nextBtnText: { 
-    color: "#fff", 
-    fontWeight: "700", 
+  nextBtnText: {
+    color: "#fff",
+    fontWeight: "Montserrat_700Bold",
     fontSize: 18
-   },
- 
+  },
+
   leterBtn: {
     borderWidth: 1,
     borderColor: "#fff",

@@ -378,7 +378,6 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 6,
     marginBottom: 10,
-    paddingHorizontal: 15,
   },
   socialIcon: {
     width: socialIconSize,

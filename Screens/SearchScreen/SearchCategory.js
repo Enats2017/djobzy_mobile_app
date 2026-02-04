@@ -18,6 +18,7 @@ import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import Loading from "../../components/Loading";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "../../components/Footer";
+import EmployerFooter from "../../components/EmployerFooter";
 import GradientButton from "../../components/GradientButton";
 import { useNavigation } from "@react-navigation/native";
 import { useGlobalSearch } from "./useGlobalSearch";
@@ -29,6 +30,8 @@ const SearchCategory = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expandedServices, setExpandedServices] = useState({});
+    const [admin, setAdmin] = useState(0);
+    
 
   const fetchData = async () => {
     try {
@@ -48,7 +51,18 @@ const SearchCategory = () => {
       setLoading(false);
     }
   };
+   const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+      console.log("uerchnage", userStr);
+
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+
+    setAdmin(user?.admin);
+  };
+ 
   useEffect(() => {
+    loadUser();
     fetchData();
   }, []);
 
@@ -193,7 +207,7 @@ const SearchCategory = () => {
             />
           </View>
         </View>
-        <Footer />
+        {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
     </>
   );

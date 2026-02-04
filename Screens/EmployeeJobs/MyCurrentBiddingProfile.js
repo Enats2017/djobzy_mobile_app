@@ -22,7 +22,7 @@ const MyCurrentBiddingProfile = () => {
 
   const handleProfileNavigation = (offer) => {
   if ( offer?.admin === 2) {
-    navigation.navigate("PublicEmployeeProfile", {
+    navigation.navigate("PublicEmployerProfilePage", {
       name: offer.name,
     });
   } else {

@@ -20,6 +20,7 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import EmployerFooter from "../../components/EmployerFooter";
 import GradientButton from "../../components/GradientButton";
+import { toastError } from "../../utils/toast";
 
 export default function SendJobOffer() {
   const navigation = useNavigation();
@@ -32,8 +33,6 @@ export default function SendJobOffer() {
   const route = useRoute();
   const { jobDetails } = route.params || {};
   console.log(jobDetails?.emp_id);
-
-   
 
   const handleHourlyChange = (value) => {
     setHourlyRate(value);
@@ -81,6 +80,17 @@ export default function SendJobOffer() {
   };
 
   const sendOffer = async () => {
+    if (!totalPrice) {
+      toastError("Enter Your Total Price");
+    }
+
+    if (!hourlyRate) {
+      toastError("Enter Your Hourly Rate");
+    }
+
+    if (!offerLetter) {
+      toastError("Plz Fillup The Offer Letter");
+    }
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
@@ -237,6 +247,13 @@ export default function SendJobOffer() {
                 <Text style={styles.bold}>{expectedTime} Hours </Text>
                 is expected for the job to be done.
               </Text>
+              <View style={styles.sendOfferDescriptionBlock}>
+                <Text style={styles.sendOfferCardHeading}>Description</Text>
+                <Text style={styles.sendOfferCardText}>
+                  {jobDetails.gig_details?.description}
+                </Text>
+              </View>
+
               <View style={styles.sendOfferCardSection}>
                 <Text style={styles.sectionTitle}>Offer Letter</Text>
                 <TextInput
@@ -250,20 +267,10 @@ export default function SendJobOffer() {
                 />
               </View>
             </View>
-
-            <View style={styles.sendOfferCardSection}>
-              <View style={styles.sendOfferDescriptionBlock}>
-                <Text style={styles.sendOfferCardHeading}>Description</Text>
-                <Text style={styles.sendOfferCardText}>
-                  {jobDetails.gig_details?.description}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.sendOfferCardSection}></View>
           </ScrollView>
           <View style={{ paddingBottom: 90 }}>
             <GradientButton
-              title="Send"
+              title="Send An Offer"
               onPress={sendOffer}
               disabled={loading}
               loading={loading}

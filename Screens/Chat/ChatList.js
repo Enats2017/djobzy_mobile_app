@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,11 +14,28 @@ import { useNavigation } from "@react-navigation/native";
 import { useNotifications } from "../../context/MessageNotificationContext";
 import moment from "moment";
 import Loading from "../../components/Loading";
+import NoTransactions from "../Wallet/NoTransactions";
+import EmployerFooter from "../../components/EmployerFooter";
+import Footer from "../../components/Footer";
 
 const ChatList = () => {
   const navigation = useNavigation();
   const { notifications } = useNotifications();
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [admin, setAdmin] = useState(0);
+  const [users, setUsers] = useState([]);
+
+  const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    console.log("uerchnage", userStr);
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    setAdmin(user?.admin);
+    console.log(admin); 
+  };
+  useEffect(() => {
+    loadUser();
+  }, []);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -29,10 +46,7 @@ const ChatList = () => {
         })
       }
     >
-      <Image
-        source={{ uri: item.sender_photo }}
-        style={styles.avatar}
-      />
+      <Image source={{ uri: item.sender_photo }} style={styles.avatar} />
 
       <View style={styles.rowText}>
         <View style={styles.rowTop}>
@@ -49,9 +63,7 @@ const ChatList = () => {
 
           {item.unread_count > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                {item.unread_count}
-              </Text>
+              <Text style={styles.badgeText}>{item.unread_count}</Text>
             </View>
           )}
         </View>
@@ -64,22 +76,19 @@ const ChatList = () => {
       <View style={styles.container}>
         <PageNameHeaderBar title="Chat" navigation={navigation} />
         <SearchBar />
-        <FlatList
-          data={notifications}
-          keyExtractor={(item) => item.sender_id.toString()}
-          renderItem={renderItem}
-          refreshing={loading}
-          onRefresh={() => { }}
-          ListEmptyComponent={
-            !loading && (
-              <Text style={styles.emptyText}>
-                No conversations found
-              </Text>
-            )
-          }
-        />
-
+        {notifications.length === 0 ? (
+          <NoTransactions title="No Conversation Found" />
+        ) : (
+          <FlatList
+            data={notifications}
+            keyExtractor={(item) => item.sender_id.toString()}
+            renderItem={renderItem}
+            refreshing={loading}
+            onRefresh={() => {}}
+          />
+        )}
       </View>
+      {admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 };
@@ -132,7 +141,7 @@ const styles = StyleSheet.create({
     borderRadius: 27,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: "#ccc"
+    borderColor: "#ccc",
   },
   rowText: { flex: 1 },
   rowTop: {

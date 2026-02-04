@@ -44,7 +44,7 @@ const ReceivedOffers = () => {
     fetchData();
   }, []);
 
-   const moveToHidden = (offer) => {
+  const moveToHidden = (offer) => {
     setPendingOffer((prev) => prev.filter((o) => o.oid !== offer.oid));
     setHiddenOffer((prev) => [offer, ...prev]);
   };
@@ -83,25 +83,31 @@ const ReceivedOffers = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#fff" />
-        ) : activeTab ? (
-          pendingOffer.length > 0 ? (
-            pendingOffer.map((offer, index) => (
-              <PendingOffer key={index} pendingOffer={offer}  onHide={moveToHidden} />
-            ))
-          ) : (
-            <NoJobs />
-          )
-        ) : hiddenOffer.length > 0 ? (
-          hiddenOffer.map((offer, index) => (
-            <HiddenOffer key={index} hiddenOffer={offer} />
-          ))
-        ) : (
+      {loading ? (
+        <ActivityIndicator size="large" color="#fff" />
+      ) : activeTab ? (
+        pendingOffer.length === 0 ? (
           <NoJobs />
-        )}
-      </ScrollView>
+        ) : (
+          <ScrollView contentContainerStyle={styles.scrollView}>
+            {pendingOffer.map((offer, index) => (
+              <PendingOffer
+                key={index}
+                pendingOffer={offer}
+                onHide={moveToHidden}
+              />
+            ))}
+          </ScrollView>
+        )
+      ) : hiddenOffer.length === 0 ? (
+        <NoJobs />
+      ) : (
+        <ScrollView contentContainerStyle={styles.scrollView}>
+          {hiddenOffer.map((offer, index) => (
+            <HiddenOffer key={index} hiddenOffer={offer} />
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 };

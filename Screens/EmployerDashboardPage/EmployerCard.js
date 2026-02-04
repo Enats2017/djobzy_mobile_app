@@ -25,7 +25,7 @@ const EmployerCard = ({ item, isLastItem }) => {
     }
 
     if (item?.admin == 2) {
-      navigation.navigate("PublicEmployeeProfile", {
+      navigation.navigate("PublicEmployerProfilePage", {
         name: item?.name,
       });
     } else {
@@ -124,7 +124,7 @@ const EmployerCard = ({ item, isLastItem }) => {
                     {[1, 2, 3, 4, 5].map((star) => (
                       <FontAwesome
                         key={star}
-                        name={item.avg_rating >= star ? "star" : "star-o"}
+                        name={ "star"}
                         size={14}
                         color="#EBBE56"
                         style={{ marginRight: 2 }}

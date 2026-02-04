@@ -30,6 +30,7 @@ export default function NoTransactions({
 
 const styles = StyleSheet.create({
     emptyStateContainer: {
+        flex:1,
         paddingVertical: 40,
         alignItems: "center",
         justifyContent: "center",

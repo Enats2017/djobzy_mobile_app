@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { toastSuccess } from "../../utils/toast";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
@@ -24,7 +25,6 @@ import NoJobs from "../EmployeeJobs/NoJobs";
 
 export default function FavoriteJobs() {
   const [loading, setLoading] = useState(true);
-  const [liked, setLiked] = useState(true);
   const [jobs, setJobs] = useState([]);
 
   const fetchData = async () => {
@@ -49,140 +49,178 @@ export default function FavoriteJobs() {
     fetchData();
   }, []);
 
+   const handleUnfollow = async (favId) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/employee-remove-fav`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: favId,
+        }),
+      });
+      const data = await response.json();
+      console.log("Unfollow response:", data);
+      if (data.status == 200) {
+        toastSuccess("Unfollowed successfully");
+        setJobs((prev) => prev.filter((j) => j.gid !== favId));
+      }
+    } catch (error) {
+      console.log("Unfollow error:", error);
+    } finally {
+    }
+  };
+
   if (loading) return <Loading />;
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.scrollView}
-    >
-      <View style={styles.favoriteContainer}>
-        <View style={styles.headerRow}>
-          <Text style={styles.sectionHeader}>My Favorite Jobs</Text>
+    <>
+      {jobs && jobs.length > 0 ? (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollView}
+        >
+          <View style={styles.favoriteContainer}>
+            <View style={styles.headerRow}>
+              <Text style={styles.sectionHeader}>My Favorite Jobs</Text>
 
-          <TouchableOpacity onPress={() => console.log("Filter clicked!")}>
-            <View style={styles.filterButton}>
-              <MaterialIcons name="filter-list" size={24} color="white" />
+              <TouchableOpacity onPress={() => console.log("Filter clicked!")}>
+                <View style={styles.filterButton}>
+                  <MaterialIcons name="filter-list" size={24} color="white" />
+                </View>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        </View>
 
-        {jobs && jobs.length > 0 ? (
-          jobs.map((job, index) => (
-            <View key={job.gid || index}>
-              <View style={styles.jobCard}>
-                <Text style={styles.uploadTextAbove}>
-                  Uploaded at {job.job_created}
-                </Text>
-                <View style={styles.userRow}>
-                  <Image
-                    source={{
-                      uri:
-                        job.photo ||
-                        "https://randomuser.me/api/portraits/women/8.jpg",
-                    }}
-                    style={styles.avatar}
-                  />
+            {jobs.map((job, index) => (
+              <View key={job.gid || index}>
+                <View style={styles.jobCard}>
+                  <Text style={styles.uploadTextAbove}>
+                    Uploaded at {job.job_created}
+                  </Text>
 
-                  <View style={styles.userInfo}>
-                    <View style={styles.nameRow}>
-                      <View style={styles.userNameSection}>
-                        <Text style={styles.userName}>{job.full_name}</Text>
+                  <View style={styles.userRow}>
+                    <Image
+                      source={{
+                        uri:
+                          job.photo ||
+                          "https://randomuser.me/api/portraits/women/8.jpg",
+                      }}
+                      style={styles.avatar}
+                    />
 
-                        <View style={styles.starRow}>
-                          {[...Array(5)].map((_, i) => (
-                            <FontAwesome
-                              key={i}
-                              name="star"
-                              style={styles.starIcon}
-                            />
-                          ))}
+                    <View style={styles.userInfo}>
+                      <View style={styles.nameRow}>
+                        <View style={styles.userNameSection}>
+                          <Text style={styles.userName}>{job.full_name}</Text>
+
+                          <View style={styles.starRow}>
+                            {[...Array(5)].map((_, i) => (
+                              <FontAwesome
+                                key={i}
+                                name="star"
+                                style={styles.starIcon}
+                              />
+                            ))}
+                          </View>
+                        </View>
+
+                        <View style={styles.paymentRow}>
+                          <MaterialIcons
+                            name="verified"
+                            size={16}
+                            color="#40b68e"
+                          />
+                          <Text style={styles.paymentVerified}>
+                            Payment verified
+                          </Text>
                         </View>
                       </View>
-                      <View style={styles.paymentRow}>
-                        <MaterialIcons
-                          name="verified"
-                          size={16}
-                          color="#40b68e"
-                        />
-                        <Text style={styles.paymentVerified}>
-                          Payment verified
-                        </Text>
-                      </View>
                     </View>
-                  </View>
+
                     <View style={styles.heartColumn}>
-                      <TouchableOpacity style={styles.heartTouchable}>
+                      <TouchableOpacity style={styles.heartTouchable }  onPress={() => handleUnfollow(job.gid)}>
                         <FontAwesome
-                          name={liked ? "heart" : "heart-o"}
+                          name={job.is_like ? "heart" : "heart-o"}
                           size={20}
-                          color={liked ? "#ff0000" : "#fff"}
+                          color={job.is_like ? "#ff0000" : "#fff"}
                         />
                       </TouchableOpacity>
                     </View>
-                </View>
-
-                <View style={styles.jobTitleSection}>
-                  <Text style={styles.jobTitle}>{job.subject}</Text>
-                  <Text style={styles.jobDesc}>{truncateWords(job.description, 20)}</Text>
-                </View>
-
-                <View style={styles.skillRow}>
-                  {job.cat.map((category, index) => (
-                    <View key={index}>
-                      <View style={styles.skillTag}>
-                        <Text style={styles.skillText}>{category.subname}</Text>
-                      </View>
-                    </View>
-                  ))}
-
-                  {job.more && Number(job.more) > 0 ? (
-                    <View style={styles.skillTag}>
-                      <Text style={styles.skillText}>+{job.more} more</Text>
-                    </View>
-                  ) : null}
-                </View>
-
-
-                <View style={styles.jobFooter}>
-                  <AntDesign
-                    name="dollar"
-                    size={16}
-                    color="#CB7767"
-                    style={styles.locationIcon}
-                  />
-                  <Text style={styles.hourly}>Hourly: </Text>
-                  <Text style={styles.hourlyRange}>CAD {job.hour_minimum}</Text>
-                  <View style={styles.locationRow}>
-                    {job.preferred_location && (
-                      <>
-                        <FontAwesome6
-                          name="location-dot"
-                          size={14}
-                          color="#cb7767"
-                          style={styles.locationIcon}
-                        />
-
-                        <Text style={styles.locationText}>
-                          {job.preferred_location}
-                        </Text>
-                      </>
-                    )}
                   </View>
+
+                  <View style={styles.jobTitleSection}>
+                    <Text style={styles.jobTitle}>{job.subject}</Text>
+                    <Text style={styles.jobDesc}>
+                      {truncateWords(job.description, 20)}
+                    </Text>
+                  </View>
+
+                  <View style={styles.skillRow}>
+                    {job.cat?.map((category, index) => (
+                      <View key={index}>
+                        <View style={styles.skillTag}>
+                          <Text style={styles.skillText}>
+                            {category.subname}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+
+                    {job.more && Number(job.more) > 0 ? (
+                      <View style={styles.skillTag}>
+                        <Text style={styles.skillText}>+{job.more} more</Text>
+                      </View>
+                    ) : null}
+                  </View>
+
+                  <View style={styles.jobFooter}>
+                    <AntDesign
+                      name="dollar"
+                      size={16}
+                      color="#CB7767"
+                      style={styles.locationIcon}
+                    />
+                    <Text style={styles.hourly}>Hourly: </Text>
+                    <Text style={styles.hourlyRange}>
+                      CAD {job.hour_minimum}
+                    </Text>
+
+                    <View style={styles.locationRow}>
+                      {job.preferred_location && (
+                        <>
+                          <FontAwesome6
+                            name="location-dot"
+                            size={14}
+                            color="#cb7767"
+                            style={styles.locationIcon}
+                          />
+                          <Text style={styles.locationText}>
+                            {job.preferred_location}
+                          </Text>
+                        </>
+                      )}
+                    </View>
+                  </View>
+
+                  <TouchableOpacity style={styles.viewBtn}>
+                    <Text style={styles.viewBtnText}>View</Text>
+                  </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity style={styles.viewBtn}>
-                  <Text style={styles.viewBtnText}>View</Text>
-                </TouchableOpacity>
+                <LineDivider />
               </View>
-              <LineDivider />
-            </View>
-          ))
-        ) : (
-          <NoJobs />
-        )}
-      </View>
-    </ScrollView>
+            ))}
+          </View>
+        </ScrollView>
+      ) : (
+        <NoJobs />
+      )}
+    </>
   );
 }
 
@@ -249,7 +287,7 @@ const styles = StyleSheet.create({
   userNameSection: {
     flexDirection: "row",
     alignItems: "center",
-     flexWrap: "wrap",
+    flexWrap: "wrap",
     gap: 2,
   },
   userName: {
@@ -359,7 +397,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     color: "#fff",
     fontFamily: "Montserrat_400Regular",
-    flexWrap: "wrap"
+    flexWrap: "wrap",
   },
 
   viewBtn: {

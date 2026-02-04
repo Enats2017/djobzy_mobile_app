@@ -20,6 +20,7 @@ import LineDivider from "../../components/LineDivider";
 import EmployerFooter from "../../components/EmployerFooter";
 import Loading from "../../components/Loading";
 import NoJobs from "../EmployeeJobs/NoJobs";
+import { toastSuccess } from "../../utils/toast";
 
 const FavoriteEmployee = () => {
   const navigation = useNavigation();
@@ -29,6 +30,8 @@ const FavoriteEmployee = () => {
   const fetchData = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
+      console.log(token);
+
       const response = await fetch(`${API_URL}/employer-favourite-jobs`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -36,6 +39,7 @@ const FavoriteEmployee = () => {
         },
       });
       const data = await response.json();
+
       setJobs(data.jobs || []);
     } catch (error) {
       console.log("API Error:", error);
@@ -56,13 +60,40 @@ const FavoriteEmployee = () => {
   const handleProfileNavigation = (item) => {
     console.log("Employer name 👉", item?.name);
     if (item?.admin == 2) {
-      navigation.navigate("PublicEmployeeProfile", {
+      navigation.navigate("PublicEmployerProfilePage", {
         name: item?.name,
       });
     } else {
       navigation.navigate("PublicEmployeeProfilePage", {
         name: item?.name || "",
       });
+    }
+  };
+
+  const handleUnfollow = async (favId) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/employer-remove-fav`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: favId,
+        }),
+      });
+      const data = await response.json();
+      console.log("Unfollow response:", data);
+      if (data.status == 200) {
+        toastSuccess("Unfollowed successfully");
+        setJobs((prev) => prev.filter((j) => j.id !== favId));
+      }
+    } catch (error) {
+      console.log("Unfollow error:", error);
+    } finally {
     }
   };
 
@@ -92,8 +123,8 @@ const FavoriteEmployee = () => {
             </View>
           </View>
           <TouchableOpacity
-            onPress={() => setLiked1(!liked1)}
             style={styles.heartTouchable}
+            onPress={() => handleUnfollow(item.id)}
           >
             <FontAwesome
               name={item.is_like === 1 ? "heart" : "heart-o"}
@@ -108,15 +139,18 @@ const FavoriteEmployee = () => {
             <Text style={styles.jobDesc1}>{item.profile_title_employee}</Text>
           </>
         ) : null}
-        <View style={styles.locationRow1}>
-          <FontAwesome6
-            name="location-dot"
-            size={14}
-            color="#eb8676"
-            style={styles.locationIcon1}
-          />
-          <Text style={styles.locationText1}> {item.address || "NA"} </Text>
-        </View>
+
+        {item.address && (
+          <View style={styles.locationRow1}>
+            <FontAwesome6
+              name="location-dot"
+              size={14}
+              color="#eb8676"
+              style={styles.locationIcon1}
+            />
+            <Text style={styles.locationText1}> {item.address || "NA"} </Text>
+          </View>
+        )}
         <View style={styles.parentContainer1}>
           <Text style={styles.sectionTitle1}>Promoted Services</Text>
           <View style={styles.promotedRow1}>
@@ -150,22 +184,21 @@ const FavoriteEmployee = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <PageNameHeaderBar title="Favorite Employees" navigation={navigation} />
-        {
-          loading ? (
-            <Loading />
-          ) : jobs.length === 0 ? (
-            <NoJobs />
-          ) : (
-            <FlatList
-              data={jobs}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={renderItem}
-              contentContainerStyle={{ paddingBottom: 100 }}
-              showsVerticalScrollIndicator={false}
-            />
-          )
-        }
-
+        {loading ? (
+          <Loading />
+        ) : jobs.length === 0 ? (
+          <View style={styles.emptyBox}>
+            <Text style={styles.emptyText}>No favourite employees found</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={jobs}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </View>
       <EmployerFooter />
     </SafeAreaView>
@@ -293,6 +326,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Montserrat_700Bold",
   },
+  emptyBox: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingTop: 100,
+},
+
+emptyText: {
+  fontSize: 16,
+  color: "#fff",
+  fontFamily: "Montserrat_500Medium",
+},
+
 });
 
 export default FavoriteEmployee;

@@ -46,7 +46,7 @@ const FourthScreen = () => {
           <Text style={styles.heading}>Select Your</Text>
           <Text style={styles.bold}>Primary Role</Text>
           <Text style={styles.subheading}>
-            You can switch between your{" "}
+           switch between your{" "}
             <Text style={styles.boldtext}>Recruiter</Text> and{" "}
             <Text style={styles.boldtext}>Job Seeker</Text> accounts at any time
           </Text>

@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     fontSize: fontScale(34),
     textAlign: "center",
     color: "#fff",
-    fontFamily: "Montserrat_300Regular",
+    fontFamily: "Montserrat_400Regular",
     
   },
 

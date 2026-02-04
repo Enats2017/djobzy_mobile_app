@@ -67,7 +67,8 @@ import UserPaymentPage from "./Screens/GeneralSetting/UserPaymentPage";
 import UserNotification from "./Screens/GeneralSetting/UserNotification";
 import UserSecurity from "./Screens/GeneralSetting/UserSecurity";
 import IDVerificationUploadScreen from "./Screens/GeneralSetting/IDVerificationUploadScreen";
-import PublicEmployeeProfilePage from "./Screens/EmployerHirePage/PublicEmployeeProfilePage";
+import PublicEmployeeProfilePage from "./Screens/PublicPage/PublicEmployeeProfilePage";
+import PublicEmployerProfilePage from "./Screens/PublicPage/PublicEmployerProfilePage";
 import ViewHirePage from "./Screens/EmployerHirePage/ViewHirePage";
 import ChatList from "./Screens/Chat/ChatList";
 import ChatRoom from "./Screens/Chat/ChatRoom";
@@ -79,7 +80,6 @@ import DeactivedDetailsPage from "./Screens/ContractPage/DeactivedDetailsPage";
 import ViewBoostJobs from "./Screens/ContractPage/ViewBoostJobs";
 import ProfileSetting from "./Screens/GeneralSetting/ProfileSetting";
 import EmployerAccount from "./Screens/Employer/EmployerAccount";
-import PublicEmployeeProfile from "./Screens/Employee/PublicEmployeeProfile";
 import PromoteServicesDetails from "./Screens/PromoteServicesPage/PromoteServicesDetails";
 import EditPromoteSevices from "./Screens/PromoteServicesPage/EditPromoteSevices";
 import SearchScreen from "./Screens/SearchScreen/SearchScreen";
@@ -191,6 +191,7 @@ const App = () => {
             <Stack.Screen name="UserSecurity" component={UserSecurity} />
             <Stack.Screen name="IDVerificationUploadScreen" component={IDVerificationUploadScreen} />
             <Stack.Screen name="PublicEmployeeProfilePage" component={PublicEmployeeProfilePage} />
+            <Stack.Screen name="PublicEmployerProfilePage" component={PublicEmployerProfilePage} />
             <Stack.Screen name="ViewHirePage" component={ViewHirePage} />
             <Stack.Screen name="ChatList" component={ChatList} />
             <Stack.Screen name="ChatRoom" component={ChatRoom} />
@@ -203,7 +204,6 @@ const App = () => {
             <Stack.Screen name="ViewBoostJobs" component={ViewBoostJobs} />
             <Stack.Screen name="ProfileSetting" component={ProfileSetting} />
             <Stack.Screen name="EmployerAccount" component={EmployerAccount} />
-            <Stack.Screen name="PublicEmployeeProfile" component={PublicEmployeeProfile} />
             <Stack.Screen name="PromoteServicesDetails" component={PromoteServicesDetails} />
             <Stack.Screen name="EditPromoteSevices" component={EditPromoteSevices} />
             <Stack.Screen name="SearchScreen" component={SearchScreen} />

@@ -4,7 +4,8 @@ import { TouchableOpacity, Text, StyleSheet } from "react-native";
 const BorderButton = ({
   title = "Next",
   onPress,
-  paddingHorizontal = 25,
+  disabled = false,
+  paddingHorizontal = 0,
   marginTop = 10,
   fontSize = 20,
   color = "#fff",
@@ -14,9 +15,19 @@ const BorderButton = ({
   return (
     <>
       <TouchableOpacity onPress={onPress} activeOpacity={0.8}
-        style={[styles.button, { paddingHorizontal, borderColor, marginTop }, styleOverride, ]}
+       style={[
+        styles.button,
+        { paddingHorizontal, borderColor, marginTop },
+        disabled && styles.disabledButton, // 🔥 dull style
+        styleOverride,
+      ]}
+        disabled={disabled}
       >
-        <Text style={[styles.buttonText,{color, fontSize} ]}>{title}</Text>
+        <Text  style={[
+          styles.buttonText,
+          { color, fontSize },
+          disabled && styles.disabledText, // 🔥 dull text
+        ]}>{title}</Text>
       </TouchableOpacity>
     </>
   );
@@ -36,5 +47,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "Montserrat_700Bold",
   },
+    disabledButton: {
+    borderColor: "#666",
+    backgroundColor: "#2a2a2a",
+    opacity: 0.45,
+  },
+
+  disabledText: {
+    color: "#999",
+  }
 });
 export default BorderButton;

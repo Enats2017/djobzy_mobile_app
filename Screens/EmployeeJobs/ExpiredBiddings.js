@@ -87,8 +87,9 @@ const styles = StyleSheet.create({
 
   cardHeader2: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 10,
+    gap:6,
   },
 
   avatarWrapperOuter2: {
@@ -101,18 +102,14 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "#222",
   },
-  avatarImage2: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 30,
-    marginLeft: 1,
-  },
+
 
   userInfo2: { flex: 1 },
 
   nameStarsRow2: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap:"wrap",
     gap: 5,
   },
   starsRow2: {
@@ -121,17 +118,16 @@ const styles = StyleSheet.create({
 
   username2: {
     color: "#fff",
-    fontWeight: "500",
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-    marginLeft: 8,
+   
   },
 
   verificationRow2: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 5,
-    marginLeft: 8,
+  
   },
   verification2: {
     color: "#C3C3C3",

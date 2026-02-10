@@ -9,7 +9,6 @@ export const useCreateJobGlobalStore = create((set) => ({
   requirements: [{ id: 1, value: "" }],
   languages: [{ id: 1, lang: "", level: "" }],
   address: "",
-
   fileData: {
     fileName: null,
     fileUri: null,
@@ -26,6 +25,21 @@ export const useCreateJobGlobalStore = create((set) => ({
   isEdit: false,
   editingId: null,
   activeTab: 0,
+
+  isEditingFromReview: false,
+  reviewReturnTab: null,
+
+  setEditingFromReview: (tabIndex) =>
+    set({
+      isEditingFromReview: true,
+      reviewReturnTab: tabIndex,
+    }),
+
+  clearEditingFromReview: () =>
+    set({
+      isEditingFromReview: false,
+      reviewReturnTab: null,
+    }),
 
   setField: (field, value) => set({ [field]: value }),
 
@@ -68,5 +82,7 @@ export const useCreateJobGlobalStore = create((set) => ({
       processingFee: "",
       isEdit: false,
       editingId: null,
+      isEditingFromReview: false,
+      reviewReturnTab: null,
     }),
 }));

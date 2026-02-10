@@ -193,7 +193,7 @@ const openGallery = async () => {
         <View style={styles.titleheading}>
           <Text style={styles.label}>Profile Picture</Text>
           <Text style={styles.subLabel}>
-            Try to final a picture that shows clear and visible image of your or
+            Try to final a picture that shows clear and visible image of you or
             your company logo
           </Text>
         </View>
@@ -221,12 +221,13 @@ const openGallery = async () => {
         </View>
 
         <Text style={styles.label}>
-          Profile Title <Text style={styles.subLabel}>(Employer)</Text>{" "}
+          Profile Title <Text style={{fontFamily:"Montserrat_400Regular"}}>(Employer)</Text>{" "}
         </Text>
         <Text style={styles.subLabel}>
           Profile title should shortly describe your main focus on Djobzy. E.g.
           I am a Plumber or I am hiring labor workers.
         </Text>
+        <View style={styles.titleinput}>
         <TextInput
           style={styles.input}
           placeholder="Example: Plumber or Hiring labor workers"
@@ -234,13 +235,16 @@ const openGallery = async () => {
           value={title}
           onChangeText={setTitle}
           
+          
         />
+        </View>
         <Text style={styles.charCount}>{titleCharsLeft} characters left</Text>
         <Text style={styles.label}>Profile Description</Text>
         <Text style={styles.subLabel}>Describe your experiences or goals.</Text>
 
+        <View style={styles.aidescription}>
         <TextInput
-          style={styles.aidescription}
+          style={styles.aiinput}
           multiline
           placeholder="Tell me about your self"
           value={description}
@@ -248,6 +252,8 @@ const openGallery = async () => {
           onChangeText={setDescription}
           textAlignVertical="top"
         />
+        </View>
+
 
         <View style={styles.Count}>
           <Text style={styles.charCount}>
@@ -270,10 +276,16 @@ const openGallery = async () => {
             console.log("AI generate triggered");
           }}
         >
-          <Text style={styles.generateText}>✨ Generate with AI</Text>
+            <Image
+                    source={require("../../assets/images/aiimg.png")}
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+          <Text style={styles.generateText}>Generate with AI</Text>
         </TouchableOpacity>
 
-        <Text style={styles.label}>Resume (Optional)</Text>
+        <Text style={styles.label}>Resume <Text style={{fontFamily:"Montserrat_400Regular"}}>(Optional)
+          </Text> </Text>
         <Text style={styles.subLabel}>
           Showcase your skills and experience by uploading your resume.
         </Text>
@@ -310,6 +322,7 @@ const openGallery = async () => {
         <Text style={styles.subLabel}>
           Link your profile from other platform. (e.g. LinkedIn)
         </Text>
+        <View style={styles.titleinput}>
         <TextInput
           style={styles.input}
           placeholder="https://www.linkedin.com/in/..."
@@ -317,6 +330,8 @@ const openGallery = async () => {
           value={onlineResumeLink}
           onChangeText={setOnlineResumeLink}
         />
+
+        </View>
         <TouchableOpacity onPress={pickResume} style={styles.uploadBtn}>
           <Text style={styles.uploadText}></Text>
         </TouchableOpacity>
@@ -349,8 +364,8 @@ const styles = StyleSheet.create({
   heading: {
     color: "#d66e58",
     fontSize: 28,
-    marginBottom: 10,
-    fontWeight: "700",
+    marginBottom: 5,
+    fontFamily:"Montserrat_600SemiBold",
   },
   photoContainer: {
     position: "relative",
@@ -414,27 +429,36 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
     marginBottom: 10,
   },
-  input: {
-    backgroundColor: "#FFFFFF0D",
-    color: "#fff",
-    padding: 10,
-    height:40,
-    
-    fontFamily: "Montserrat_400Regular",
-    fontSize: 12,
-    fontStyle: "italic",
+  titleinput:{
+     backgroundColor: "#FFFFFF0D",
     borderRadius: 8,
     marginBottom: 5,
+    paddingHorizontal:8,
+
+    height:40,
+
+  },
+  input: {
+    color: "#fff",
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 13,
+    fontStyle: "italic",
+  
   },
   aidescription: {
-    fontFamily: "Montserrat_400Regular",
-    fontSize: 12,
-    height: 80,
+    height: 90,
     padding: 10,
-    color: "#fff",
     backgroundColor: "#FFFFFF0D",
-    borderRadius: 8,
-    fontStyle: "italic",
+    borderRadius: 8,   
+  },
+
+  aiinput:{
+     fontFamily:"Montserrat_500Medium",
+    fontSize:14,
+    color:"#ffff",
+     fontStyle: "italic",
+  
+   
   },
 
   Count: {
@@ -444,15 +468,19 @@ const styles = StyleSheet.create({
   charCount: {
     color: "#aaa",
     fontSize: 12,
+    fontFamily:"Montserrat_400Regular",
     textAlign: "right",
   },
   generateButton: {
+    flexDirection:"row",
     backgroundColor: "#C96B59",
     padding: 15,
     width: "55%",
     borderRadius: 10,
     marginTop: 10,
     alignItems: "center",
+    justifyContent:"center",
+    gap:7,
     marginBottom: 15,
   },
   disabledBtn: {
@@ -473,7 +501,8 @@ const styles = StyleSheet.create({
 
   generateText: {
     color: "#fff",
-    fontWeight: "bold",
+ fontFamily:"Montserrat_500Medium",
+ fontSize: 14,
   },
   uploadResumeButton: {
     backgroundColor: "#FFFFFF0D",

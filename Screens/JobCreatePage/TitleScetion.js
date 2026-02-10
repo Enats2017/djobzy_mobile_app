@@ -134,12 +134,7 @@ const TitleScetion = ({
 
   return (
     <>
-      <KeyboardAwareScrollView
-        style={{ height: "100%" }}
-        extraScrollHeight={10}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ flexGrow: 1 }}
-      >
+      
         <View style={styles.TextSection}>
           <View style={styles.template}>
             <Text style={styles.label}>Title</Text>
@@ -148,7 +143,7 @@ const TitleScetion = ({
               <Text style={styles.templatetext}>Use Template</Text>
             </TouchableOpacity>
           </View>
-          {/* TITLE */}
+           <View  style={styles.passwordContainer}>
           <TextInput
             style={[styles.input, titleError && { borderColor: "#ff0000" }]}
             value={title}
@@ -158,6 +153,8 @@ const TitleScetion = ({
             }}
             placeholder="What Should be Done?"
           />
+
+           </View>
 
           {titleError && (
             <Text style={styles.errorText}>*Please enter a job title</Text>
@@ -169,7 +166,7 @@ const TitleScetion = ({
 
           {/* DESCRIPTION */}
           <Text style={styles.label}>Description</Text>
-
+          <View  style={styles.passwordContainer}>
           <TextInput
             style={[
               styles.input,
@@ -182,6 +179,7 @@ const TitleScetion = ({
             }}
             placeholder="What Should be Done?"
           />
+          </View>
 
           {descriptionError && (
             <Text style={styles.errorText}>
@@ -191,7 +189,7 @@ const TitleScetion = ({
 
           <Text style={styles.belowtext}>Please describe the job details.</Text>
         </View>
-      </KeyboardAwareScrollView>
+     
 
       <Modal
         visible={titleModal}
@@ -298,7 +296,7 @@ const styles = StyleSheet.create({
     paddingTop: 5,
   },
   sectionBtn: {
-    paddingTop: 235,
+   
 
     gap: 15,
   },
@@ -323,15 +321,21 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  input: {
-    borderWidth: 1,
-    fontFamily: "Montserrat_500Medium",
-    fontSize: 14,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 17,
+   passwordContainer: {
+    width: "100%",
+    height: 48,
+    borderRadius: 6,
+    paddingHorizontal: 5,
     backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  input: {
+     flex: 1,
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+    color: "#000",
   },
   belowtext: {
     color: "#ffffff",
@@ -340,17 +344,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
-  button: {
-    marginHorizontal: 5,
-    paddingVertical: 13,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#f7f3f3ff",
-    fontSize: 20,
-    fontFamily: "Montserrat_700Bold",
-  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",

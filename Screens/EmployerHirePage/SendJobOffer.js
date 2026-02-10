@@ -82,14 +82,17 @@ export default function SendJobOffer() {
   const sendOffer = async () => {
     if (!totalPrice) {
       toastError("Enter Your Total Price");
+      return;
     }
 
     if (!hourlyRate) {
       toastError("Enter Your Hourly Rate");
+      return;
     }
 
     if (!offerLetter) {
-      toastError("Plz Fillup The Offer Letter");
+      toastError("Offer Letter Field Should Require");
+      return;
     }
     setLoading(true);
     try {
@@ -256,8 +259,9 @@ export default function SendJobOffer() {
 
               <View style={styles.sendOfferCardSection}>
                 <Text style={styles.sectionTitle}>Offer Letter</Text>
+                <View style={styles.textArea}>
                 <TextInput
-                  style={styles.textArea}
+                  style={styles.input}
                   multiline
                   value={offerLetter}
                   onChangeText={setOfferLetter}
@@ -265,6 +269,7 @@ export default function SendJobOffer() {
                   placeholderTextColor="#666"
                   textAlignVertical="top"
                 />
+                </View>
               </View>
             </View>
           </ScrollView>
@@ -294,7 +299,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 40,
+    
   },
 
   sendOfferTitleBlock: {
@@ -320,7 +325,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   sendOfferCategoriesBlock: {
-    paddingBottom: 5,
+    flex:1
   },
   sendOfferCardHeading: {
     color: "#ffffff",
@@ -422,14 +427,17 @@ const styles = StyleSheet.create({
   },
   textArea: {
     backgroundColor: "#FFFFFF0D",
-    color: "#c3c3c3c3",
-    borderRadius: 12,
-    fontFamily: "Montserrat_400Medium",
-    fontStyle: "italic",
-    fontSize: 14,
     paddingHorizontal: 15,
     minHeight: 150,
     marginTop: 6,
+    borderRadius: 12,
+  },
+  input:{
+     color: "#c3c3c3c3",
+    fontFamily: "Montserrat_400Medium",
+    fontStyle: "italic",
+    fontSize: 14,
+
   },
   valueBox: {
     flexDirection: "row",

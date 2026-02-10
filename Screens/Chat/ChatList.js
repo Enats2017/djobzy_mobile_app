@@ -22,13 +22,12 @@ const ChatList = () => {
   const navigation = useNavigation();
   const { notifications } = useNotifications();
   const [loading, setLoading] = useState(false);
+   const [searchText, setSearchText] = useState("");
   const [admin, setAdmin] = useState(0);
-  const [users, setUsers] = useState([]);
-
+  
   const loadUser = async () => {
     const userStr = await AsyncStorage.getItem("user");
     console.log("uerchnage", userStr);
-    if (!userStr) return;
     const user = JSON.parse(userStr);
     setAdmin(user?.admin);
     console.log(admin); 
@@ -36,6 +35,12 @@ const ChatList = () => {
   useEffect(() => {
     loadUser();
   }, []);
+
+   const filteredNotifications = notifications.filter(item =>
+    item.sender_name
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase())
+  );
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -75,12 +80,12 @@ const ChatList = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <PageNameHeaderBar title="Chat" navigation={navigation} />
-        <SearchBar />
-        {notifications.length === 0 ? (
+        <SearchBar value={searchText} onChangeText={setSearchText} />
+       {filteredNotifications.length === 0 ? (
           <NoTransactions title="No Conversation Found" />
         ) : (
           <FlatList
-            data={notifications}
+            data={filteredNotifications}
             keyExtractor={(item) => item.sender_id.toString()}
             renderItem={renderItem}
             refreshing={loading}

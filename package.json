@@ -17,6 +17,7 @@
     "@react-native-picker/picker": "2.11.1",
     "@react-navigation/native": "^7.1.17",
     "@react-navigation/stack": "^7.4.8",
+    "@stripe/stripe-react-native": "^0.58.0",
     "axios": "^1.13.2",
     "country-state-city": "^3.2.1",
     "expo": "~54.0.32",

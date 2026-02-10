@@ -10,8 +10,7 @@ const EmployerCard = ({ item, isLastItem }) => {
   const navigation = useNavigation();
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [isLiked, setIsLiked] = useState(item?.is_like == 1);
-   const [loading, setLoading] = useState(false);
-  
+  const [loading, setLoading] = useState(false);
 
   const handleProfileNavigation = (item) => {
     console.log("Employer name 👉", item?.name);
@@ -53,19 +52,21 @@ const EmployerCard = ({ item, isLastItem }) => {
       const data = await response.json();
       console.log("Follow response:", data);
       if (data.status === 200) {
-         toastSuccess("Successfully followed the user")
+        toastSuccess("Successfully followed the user");
         setIsLiked(true);
       }
     } catch (error) {
       console.log("Follow error:", error);
     } finally {
-       setLoading(false);
+      setLoading(false);
     }
   };
 
   const handleUnfollow = async () => {
+    console.log(item.id);
+    
     try {
-       setLoading(true);
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/unfollowUser`, {
         method: "POST",
@@ -81,13 +82,13 @@ const EmployerCard = ({ item, isLastItem }) => {
       const data = await response.json();
       console.log("Unfollow response:", data);
       if (data.status == 200) {
-         toastSuccess("Unfollowed successfully")
+        toastSuccess("Unfollowed successfully");
         setIsLiked(false);
       }
     } catch (error) {
       console.log("Unfollow error:", error);
     } finally {
-       setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -124,7 +125,7 @@ const EmployerCard = ({ item, isLastItem }) => {
                     {[1, 2, 3, 4, 5].map((star) => (
                       <FontAwesome
                         key={star}
-                        name={ "star"}
+                        name={"star"}
                         size={14}
                         color="#EBBE56"
                         style={{ marginRight: 2 }}
@@ -143,7 +144,7 @@ const EmployerCard = ({ item, isLastItem }) => {
             </View>
 
             <TouchableOpacity
-              style={styles.heartTouchable} 
+              style={styles.heartTouchable}
               disabled={loading}
               onPress={() => {
                 if (isLiked) {
@@ -156,7 +157,7 @@ const EmployerCard = ({ item, isLastItem }) => {
               <FontAwesome
                 name={isLiked ? "heart" : "heart-o"}
                 size={20}
-                color={isLiked ? "#FF0000" : "#c3c3c3" }
+                color={isLiked ? "#FF0000" : "#c3c3c3"}
               />
             </TouchableOpacity>
           </View>
@@ -217,8 +218,8 @@ const styles = StyleSheet.create({
   avatar: {
     width: 60,
     height: 60,
-    borderWidth:1,
-    borderColor:"#fff",
+    borderWidth: 1,
+    borderColor: "#fff",
     borderRadius: 100,
   },
   infoWrapper: {

@@ -185,7 +185,7 @@ const JobCategory = ({
 
 const styles = StyleSheet.create({
   Choosecontainer: {
-    height: "85%",
+   flex:1
   },
 
   heading: {

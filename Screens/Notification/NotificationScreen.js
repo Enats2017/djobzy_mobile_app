@@ -99,7 +99,7 @@ const NotificationScreen = () => {
             </TouchableOpacity>
           </View>
           {/* Tabs inside scroll */}
-          <View style={styles.tabContainer}>
+          {/* <View style={styles.tabContainer}>
             <TouchableOpacity
               style={[styles.tab, activeTab === "new" && styles.activeTab]}
               onPress={() => setActiveTab("new")}
@@ -125,7 +125,7 @@ const NotificationScreen = () => {
                Chat Notifications
               </Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
           {loading ? (
             <Loading />
           ) : (

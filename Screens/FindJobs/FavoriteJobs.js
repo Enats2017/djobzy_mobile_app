@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   jobFooter: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 10,
     marginTop: 5,
   },
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   },
   locationRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "baseline",
     flex: 1,
   },
   locationIcon: {

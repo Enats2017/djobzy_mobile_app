@@ -12,7 +12,7 @@ import {
 import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 
 const ReviewPage = ({ setActiveTab }) => {
-const {
+  const {
     title,
     description,
     totalPrice,
@@ -25,6 +25,7 @@ const {
     languages,
     address,
     fileData,
+    setEditingFromReview,
   } = useCreateJobGlobalStore();
   const navigation = useNavigation();
 
@@ -37,7 +38,12 @@ const {
         <View style={styles.section}>
           <View style={styles.headerRow}>
             <Text style={styles.sectionTitle}>Title</Text>
-            <TouchableOpacity onPress={() => setActiveTab(0)}>
+            <TouchableOpacity
+              onPress={() => {
+                setEditingFromReview(6); // review tab index
+                setActiveTab(0);
+              }}
+            >
               <MaterialCommunityIcons
                 name="pencil"
                 size={16}
@@ -59,7 +65,12 @@ const {
         <View style={styles.section}>
           <View style={styles.headerRow}>
             <Text style={styles.sectionTitle}>Description</Text>
-            <TouchableOpacity onPress={() => setActiveTab(0)}>
+            <TouchableOpacity
+              onPress={() => {
+                setEditingFromReview(6); // review tab index
+                setActiveTab(0);
+              }}
+            >
               <MaterialCommunityIcons
                 name="pencil"
                 size={16}
@@ -77,12 +88,16 @@ const {
             marginBottom: 10,
           }}
         />
-
         {/* Pricing Section */}
         <View style={styles.section}>
           <View style={styles.headerRow}>
             <Text style={styles.sectionTitle}>Pricing</Text>
-            <TouchableOpacity onPress={() => setActiveTab(5)}>
+            <TouchableOpacity
+              onPress={() => {
+                setEditingFromReview(6); // review tab index
+                setActiveTab(5);
+              }}
+            >
               <MaterialCommunityIcons
                 name="pencil"
                 size={16}
@@ -96,23 +111,47 @@ const {
           </Text>
           <Text style={styles.value}>
             Hourly Rate:{" "}
-            <Text style={styles.bold}>
-              CAD {hourlyRate || "0.00"}
-            </Text>
+            <Text style={styles.bold}>CAD {hourlyRate || "0.00"}</Text>
           </Text>
           <Text style={styles.value}>
             Estimated Hours:{" "}
             <Text style={styles.bold}>{expectedTime || "0"}h</Text>
           </Text>
+        </View>
+        <View
+          style={{
+            height: 1,
+            backgroundColor: "#Ffffff33",
+            width: "100%",
+            marginBottom: 10,
+          }}
+        />
+          <View style={styles.section}>
+          <View style={styles.headerRow}>
+            <Text style={styles.sectionTitle}>Duration</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setEditingFromReview(6); // review tab index
+                setActiveTab(4);
+              }}
+            >
+              <MaterialCommunityIcons
+                name="pencil"
+                size={16}
+                color="#c3c3c3c3"
+              />
+            </TouchableOpacity>
+          </View>
           <Text style={styles.value}>
             Project Length:{" "}
             <Text style={styles.bold}>
-               {selectedOption === "custom" || selectedOption === "customEmp"
+              {selectedOption === "custom" || selectedOption === "customEmp"
                 ? customDays || "—"
                 : selectedOption || "—"}
             </Text>
           </Text>
         </View>
+
         <View
           style={{
             height: 1,
@@ -124,7 +163,12 @@ const {
         <View style={styles.section}>
           <View style={styles.headerRow}>
             <Text style={styles.sectionTitle}>Categories</Text>
-            <TouchableOpacity onPress={() => setActiveTab(1)}>
+            <TouchableOpacity
+              onPress={() => {
+                setEditingFromReview(6); // review tab index
+                setActiveTab(1);
+              }}
+            >
               <MaterialCommunityIcons
                 name="pencil"
                 size={16}
@@ -153,9 +197,50 @@ const {
           }}
         />
         <View style={styles.section}>
+          {/* HEADER */}
           <View style={styles.headerRow}>
-            <Text style={styles.sectionTitle}>Contract Details</Text>
-            <TouchableOpacity onPress={() => setActiveTab(2)}>
+            <Text style={styles.sectionTitle}>Requirements</Text>
+
+            <TouchableOpacity
+              onPress={() => {
+                setEditingFromReview(6); // review tab index
+                setActiveTab(2);
+              }}
+            >
+              <MaterialCommunityIcons name="pencil" size={16} color="#c3c3c3" />
+            </TouchableOpacity>
+          </View>
+
+          {/* BODY */}
+          {requirements.length > 0 ? (
+            requirements.map((r, index) => (
+              <View key={index} style={styles.bulletRow}>
+                <Text style={styles.bullet}>•</Text>
+                <Text style={styles.sectionText}>{r.value}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.emptyText}>—</Text>
+          )}
+        </View>
+
+        <View
+          style={{
+            height: 1,
+            backgroundColor: "#Ffffff33",
+            width: "100%",
+            marginBottom: 10,
+          }}
+        />
+        <View style={styles.section}>
+          <View style={styles.headerRow}>
+            <Text style={styles.sectionTitle}>Language</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setEditingFromReview(6); // review tab index
+                setActiveTab(2);
+              }}
+            >
               <MaterialCommunityIcons
                 name="pencil"
                 size={16}
@@ -163,26 +248,49 @@ const {
               />
             </TouchableOpacity>
           </View>
-          <Text style={styles.sectionText}>
-            Address: <Text style={styles.bold}>{address}</Text>
-          </Text>
-          <Text style={styles.sectionText}>
-            Requirements:{" "}
-            <Text style={styles.bold}>
-              {requirements.length > 0
-                ? requirements.map((r) => r.value).join(", ")
-                : "—"}
-            </Text>
-          </Text>
-          <Text style={styles.sectionText}>
-            Languages:{" "}
-            <Text style={styles.bold}>
-               {languages.length > 0
-                ? languages.map((l) => l.lang).join(", ")
-                : "—"}
-            </Text>
-          </Text>
+          {languages.length > 0 ? (
+            languages.map((l, index) => (
+              <View key={index} style={styles.bulletRow}>
+                <Text style={styles.bullet}>•</Text>
+
+                <Text style={styles.sectionText}>
+                  {l.lang}
+                  {l.level ? ` (${l.level})` : ""}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.emptyText}>—</Text>
+          )}
         </View>
+        <View
+          style={{
+            height: 1,
+            backgroundColor: "#Ffffff33",
+            width: "100%",
+            marginBottom: 10,
+          }}
+        />
+
+        <View style={styles.section}>
+          <View style={styles.headerRow}>
+            <Text style={styles.sectionTitle}>Address</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setEditingFromReview(6); // review tab index
+                setActiveTab(2);
+              }}
+            >
+              <MaterialCommunityIcons
+                name="pencil"
+                size={16}
+                color="#c3c3c3c3"
+              />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.sectionText}>{address}</Text>
+        </View>
+
         <View
           style={{
             height: 1,
@@ -196,7 +304,12 @@ const {
         <View style={styles.section}>
           <View style={styles.headerRow}>
             <Text style={styles.sectionTitle}>Attachment</Text>
-            <TouchableOpacity onPress={() => setActiveTab(3)}>
+            <TouchableOpacity
+              onPress={() => {
+                setEditingFromReview(6); // review tab index
+                setActiveTab(3);
+              }}
+            >
               <MaterialCommunityIcons
                 name="pencil"
                 size={16}
@@ -205,7 +318,7 @@ const {
             </TouchableOpacity>
           </View>
           <Text style={styles.sectionText}>
-              {fileData?.fileName || "No file uploaded"}
+            {fileData?.fileName || "No file uploaded"}
           </Text>
         </View>
       </ScrollView>
@@ -286,6 +399,16 @@ const styles = StyleSheet.create({
     color: "#ebe8e8ff",
     fontSize: 20,
     fontFamily: "Montserrat_700Bold",
+  },
+  bulletRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  bullet: {
+    color: "#ffffff",
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 20,
   },
 });
 

@@ -38,6 +38,8 @@ const EmployerSentOffer = () => {
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
       setSentOffer(data.gigs);
+      console.log(data.gigs);
+      
     } catch (err) {
       setError(err.message);
     } finally {
@@ -141,7 +143,7 @@ const EmployerSentOffer = () => {
                         Introduction Letter
                       </Text>
                       <Text style={styles.sectionText}>
-                        {item.desc_proposal}
+                        {item.offer}
                       </Text>
                     </View>
 
@@ -171,7 +173,7 @@ const EmployerSentOffer = () => {
                         <Text style={styles.viewBtnText}>View</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity style={styles.chatBtn}>
+                      <TouchableOpacity style={styles.chatBtn}onPress={() => navigation.navigate("ChatList")}>
                         <Text style={styles.chatBtnText}>Chat</Text>
                       </TouchableOpacity>
                     </View>

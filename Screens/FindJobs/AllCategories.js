@@ -1,8 +1,8 @@
-
-import { Feather } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
+import { Feather, Entypo } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import {
-  Keyboard,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,236 +10,255 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
+import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
+import GradientButton from "../../components/GradientButton";
 
-export default function AllCategories() {
-  const [categories, setCategories] = useState({});
-  const [searchText, setSearchText] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchInputRef = useRef(null);
-  const [loading, setLoading] = useState(true);
+const AllCategories = () => {
+  const navigation = useNavigation();
+  const { categories, addCategory, removeCategory } = useGlobalSearch();
+  const [search, setSearch] = useState("");
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [admin, setAdmin] = useState(0);
 
-  const fetchCategories = async () => {
+  /* ================= LOAD USER ================= */
+  const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    setAdmin(user?.admin || 0);
+  };
+
+  const fetchData = async () => {
     try {
-      const response = await fetch(`${API_URL}/all-category`);
-      const json = await response.json();
-      const formatted = {};
-      json.services.forEach((service) => {
-        const categoryName = service.name;
-        const subNames = (service.subservices || []).map((sub) => sub.subname);
-        formatted[categoryName] = subNames;
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/all-category`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
       });
-      setCategories(formatted);
+
+      const data = await res.json();
+      setServices(data?.services || []);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.log("API Error:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCategories();
+    loadUser();
+    fetchData();
   }, []);
 
-  const filteredCategories = {};
-  if (searchText.trim() === "") {
-    Object.assign(filteredCategories, categories);
-  } else {
-    Object.entries(categories).forEach(([categoryTitle, bars]) => {
-      const hasMatch = bars.some((bar) =>
-        bar.toLowerCase().includes(searchText.toLowerCase())
-      );
-      if (hasMatch) {
-        filteredCategories[categoryTitle] = bars;
-      }
-    });
-  }
+  const isSelected = (subId) => categories.some((item) => item.subId === subId);
 
-  const handleOutsideTap = () => {
-    Keyboard.dismiss();
-    setShowSuggestions(false);
+  const toggleSubCategory = (service, sub) => {
+    if (isSelected(sub.subid)) {
+      removeCategory(sub.subid);
+    } else {
+      addCategory({
+        serviceId: service.id,
+        subId: sub.subid,
+        name: sub.subname,
+      });
+    }
   };
+  const filteredServices = services
+    .map((service) => {
+      if (!search.trim()) return service;
 
+      const matchedSubs = service.subservices?.filter((sub) =>
+        sub.subname.toLowerCase().includes(search.toLowerCase()),
+      );
+
+      if (
+        service.name.toLowerCase().includes(search.toLowerCase()) ||
+        matchedSubs?.length
+      ) {
+        return { ...service, subservices: matchedSubs };
+      }
+      return null;
+    })
+    .filter(Boolean);
+
+  /* ================= RENDER ================= */
   if (loading) return <Loading />;
 
   return (
-    <ScrollView
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 100 }}
-    >
       <View style={styles.categoryContainer}>
-        <Text style={styles.sectionHeader}>Choose the Categories</Text>
-
+    <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={styles.searchBar}>
           <TextInput
-            ref={searchInputRef}
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search category"
+            placeholderTextColor="#777"
             style={styles.searchInput}
-            value={searchText}
-            onChangeText={(text) => {
-              setSearchText(text);
-              setShowSuggestions(text.length > 0);
-            }}
-            placeholder="Search any categories"
-            placeholderTextColor="#666666"
-            onFocus={() => {
-              if (searchText.length > 0) setShowSuggestions(true);
-            }}
           />
-          <Feather
-            name="search"
-            size={20}
-            color="#bcbcbc"
-            style={styles.searchIcon}
-          />
+          <Feather name="search" size={18} color="#999" />
         </View>
-        {showSuggestions && (
-          <View style={styles.suggestionList}>
-            <ScrollView nestedScrollEnabled showsVerticalScrollIndicator>
-              {Object.values(filteredCategories)
-                .flat()
-                .map((bar, index) => (
-                  <TouchableOpacity
-                    key={`${bar}-${index}`}
-                    style={styles.suggestionItem}
-                    onPress={() => {
-                      setSearchText(bar);
-                      setShowSuggestions(false);
-                      searchInputRef.current?.blur();
-                    }}
-                  >
-                    <Text style={styles.suggestionText}>{bar}</Text>
-                  </TouchableOpacity>
-                ))}
-            </ScrollView>
-          </View>
-        )}
-        {Object.entries(filteredCategories).map(([categoryTitle, bars]) => (
-          <React.Fragment key={categoryTitle}>
-            <Text style={styles.categoryTitle}>{categoryTitle}</Text>
-            <View style={styles.barsContainer}>
-              {bars.map((bar) => {
-                const isActiveTab =
-                  bar.toLowerCase() === searchText.toLowerCase();
+        <View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.selectedContainer}
+          >
+            {categories.map((sub) => (
+              <View key={sub.subId} style={styles.selectedPill}>
+                <Text style={styles.selectedText}>{sub.name}</Text>
+                <TouchableOpacity onPress={() => removeCategory(sub.subId)}>
+                  <Entypo name="cross" size={17} color="#c3c3c3" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        {filteredServices.map((service) => (
+          <View key={service.id} style={styles.serviceBlock}>
+            <Text style={styles.serviceTitle}>{service.name}</Text>
+
+            <View style={styles.subContainer}>
+              {service.subservices?.map((sub) => {
+                const active = isSelected(sub.subid);
+
                 return (
                   <TouchableOpacity
-                    key={bar}
-                    style={[styles.bar, isActiveTab && styles.activeBar]}
-                    onPress={() => console.log(`${bar} clicked`)}
+                    key={sub.subid}
+                    style={[styles.subItem, active && styles.subItemActive]}
+                    onPress={() => toggleSubCategory(service, sub)}
                   >
                     <Text
-                      style={[
-                        styles.barText,
-                        isActiveTab && styles.activeBarText,
-                      ]}
+                      style={[styles.subText, active && styles.subTextActive]}
                     >
-                      {bar}
+                      {sub.subname}
                     </Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
-            <View style={styles.dividerLine} />
-          </React.Fragment>
+               <View style={styles.dividerLine} />
+          </View>
         ))}
-      </View>
     </ScrollView>
-  );
-}
+      
+    {categories.length > 0 && (
+      <View style={styles.bottomButtonWrapper}>
+    
+        <GradientButton   title="Next"/>
+      </View>
+    )}
 
+  </View>
+
+  );
+};
+
+export default AllCategories;
 const styles = StyleSheet.create({
   categoryContainer: {
     flex: 1,
   },
-  sectionHeader: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Montserrat_600SemiBold",
-    letterSpacing: 0.2,
-    marginBottom: 10,
-  },
+
+  /* SEARCH */
   searchBar: {
     flexDirection: "row",
-    backgroundColor: "#ffffff",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 2,
     alignItems: "center",
-    marginBottom: 15,
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 44,
   },
   searchInput: {
     flex: 1,
     color: "#666666",
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-    backgroundColor: "transparent",
   },
-  searchIcon: {
-    marginLeft: 6,
-    color: "#666666",
+  selectedContainer: {
+    flexDirection: "row",
+    marginTop: 12,
+    gap: 8,
   },
-  suggestionList: {
-    backgroundColor: "#353535",
-    borderRadius: 9,
-    marginTop: 4,
-    maxHeight: 320,
-    overflow: "hidden",
+
+  selectedPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ffffff1A",
+    borderColor: "#f3efefff",
+
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
-  suggestionItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+  selectedText: {
+    fontSize: 11,
+    fontFamily: "Montserrat_500Medium",
+    color: "#f7f1f1ff",
+    marginRight: 5,
   },
-  suggestionText: {
+
+  serviceBlock: {
+    marginTop: 15,
+  },
+  serviceTitle: {
     color: "#fff",
-    fontSize: 15,
-    fontFamily: "Montserrat_500Medium",
-  },
-  noResultsText: {
-    color: "#bcbcbc",
-    fontSize: 15,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    textAlign: "center",
-  },
-  categoryTitle: {
-    color: "#ffffff",
-    fontSize: 16,
+    fontSize: 17,
     fontFamily: "Montserrat_600SemiBold",
+    letterSpacing: 0.2,
     marginBottom: 10,
   },
 
-  activeBar: {
-    backgroundColor: "#ffffff",
-    borderColor: "#ffffff",
-    borderWidth: 1,
-  },
-
-  activeBarText: {
-    color: "#303030",
-    fontFamily: "Montserrat_600SemiBold",
-  },
-  barsContainer: {
+  subContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "flex-start",
-    gap: 8,
   },
-  bar: {
-    backgroundColor: "#494949",
-    paddingVertical: 11,
-    paddingHorizontal: 15,
-    borderRadius: 40,
+  subItem: {
+    backgroundColor: "#353535",
+    borderRadius: 20,
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "center",
+
+    margin: 4,
   },
-  barText: {
-    color: "#dee2e6",
+  subItemActive: {
+    backgroundColor: "#fff",
+    borderColor: "#fff",
+  },
+  subText: {
+    color: "#ffffff",
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-    textAlign: "center",
   },
-  dividerLine: {
+  subTextActive: {
+    color: "#000",
+    fontSize: 14,
+    fontFamily: "Montserrat_500Medium",
+  },
+   dividerLine: {
     height: 1,
-    backgroundColor: "#C5C5C5",
-    marginVertical: 15,
+    backgroundColor: "#FFFFFF1a",
+    marginTop: 10,
   },
+  bottomButtonWrapper: {
+  position: "absolute",
+   backgroundColor: "#222",
+  bottom: 79,
+  left: 0,
+  paddingVertical:10,
+  right: 0,
+  
+},
+
+
+
 });

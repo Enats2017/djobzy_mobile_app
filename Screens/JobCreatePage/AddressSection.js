@@ -16,7 +16,7 @@ import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStor
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const AddressSection = () => {
+const AddressSection = ({addressError, setAddressError}) => {
   const [languageSuggestions, setLanguageSuggestions] = useState([]);
   const [activeLangId, setActiveLangId] = useState(null);
   const [loadingLang, setLoadingLang] = useState(false);
@@ -92,13 +92,8 @@ const AddressSection = () => {
   };
 
   return (
-    <View style={{ height: "86%" }}>
-      <KeyboardAwareScrollView
-        extraScrollHeight={10}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
+    <View style={{ flex:1}}>
+ 
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Requirements Section */}
           <View style={styles.section}>
@@ -207,9 +202,14 @@ const AddressSection = () => {
               style={styles.addressInput}
               placeholder="Write an Address"
               value={address}
-              onChangeText={(text) => setField("address", text)}
+              onChangeText={(text) => { 
+              setField("address", text);
+                if (text.trim()) setAddressError(false); }}
               placeholderTextColor="#c3c3c3"
             />
+            {addressError && (
+                        <Text style={styles.errorText}>*Please Enter Your  Address</Text>
+                      )}
             {/* <View style={styles.mapscetion}>
               <MapView
                 style={styles.map}
@@ -223,7 +223,7 @@ const AddressSection = () => {
             </View> */}
           </View>
         </ScrollView>
-      </KeyboardAwareScrollView>
+      
     </View>
   );
 };
@@ -353,6 +353,12 @@ suggestionText: {
   fontSize: 14,
   color: "#333",
 },
+
+  errorText: {
+    color: "#FF0000",
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+  },
 
 });
 

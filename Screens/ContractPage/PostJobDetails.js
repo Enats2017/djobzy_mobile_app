@@ -182,7 +182,7 @@ const PostJobDetails = () => {
             <Loading />
           ) : (
             <>
-              <ScrollView>
+              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled"> 
                 <View style={styles.titleContainer}>
                   <Text style={styles.jobTitle}>
                     {postJob.details?.subject}
@@ -242,9 +242,9 @@ const PostJobDetails = () => {
                     </Text>
                   </View>
                 </View>
-                {postJob?.requirement?.length > 0 && (
+                {postJob?.requirement?.length > 1 && (
                   <View style={styles.cardContainer}>
-                    <Text style={styles.cardHeading}>Requirnment</Text>
+                    <Text style={styles.cardHeading}>Requirements</Text>
                     <View style={styles.requirementContainer}>
                       {postJob?.requirement?.map((req, index) => (
                         <View key={index} style={styles.requirementItem}>
@@ -261,7 +261,7 @@ const PostJobDetails = () => {
                     </View>
                   </View>
                 )}
-                {postJob?.language?.length > 0 && (
+                {postJob?.language?.length > 1 && (
                   <View style={styles.cardContainer}>
                     <Text style={styles.cardHeading}>Language</Text>
                     <View style={styles.requirementContainer}>
@@ -524,7 +524,7 @@ const PostJobDetails = () => {
               </Text>
               <Text style={styles.deActivateModalSubtitle}>
                 After this action, your job will no longer be public. However,
-                we will save it in templates in case you decide to publish it
+                we will save it for you in templates in case you decide to publish it
                 again.
               </Text>
 
@@ -979,7 +979,7 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
   deActivateModalPrimaryBtn: {
-    backgroundColor: "#fdbf2d",
+    backgroundColor: "#fdbe2a",
     borderRadius: 10,
     width: "100%",
     paddingVertical: 12,
@@ -990,7 +990,7 @@ const styles = StyleSheet.create({
     color: "#232323",
     fontFamily: "Montserrat_700Bold",
     fontSize: 16,
-    letterSpacing: 0.12,
+    letterSpacing: 0,
   },
   deActivateModalSecondaryBtn: {
     backgroundColor: "#fff",

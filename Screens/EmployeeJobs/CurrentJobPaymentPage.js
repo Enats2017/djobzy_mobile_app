@@ -44,6 +44,8 @@ export default function CurrentJobPaymentPage() {
       });
       const data = await response.json();
       setGigs(data.gig);
+      console.log(data.orders);
+      
       setUser(data.user);
       setData(data);
 
@@ -252,6 +254,16 @@ export default function CurrentJobPaymentPage() {
                       <Text style={styles.tableValue}>{val.ref}</Text>
                     </View>
                   </View>
+                   <View style={styles.dividerHoriz} />
+                  <View style={styles.tableRow}>
+                    <View style={styles.tableLeftCell}>
+                      <Text style={styles.tableLabel}>All Payments</Text>
+                    </View>
+                    <View style={styles.dividerVert} />
+                    <View style={styles.tableRightCell}>
+                      <Text style={styles.tableValue}>CAD {val.amount}</Text>
+                    </View>
+                  </View>
                 </View>
               ))}
             <View style={styles.footer}>
@@ -269,7 +281,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#222222",
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
   },
 
   topCard: {
@@ -289,6 +301,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    gap:4,
     minWidth: 0,
   },
   topLabel: {
@@ -333,14 +346,14 @@ const styles = StyleSheet.create({
   metaItemRowRight: {
     flexDirection: "row",
     justifyContent: "flex-end",
+     alignItems:"center",
     flex: 1,
   },
   metaLabel: {
     color: "#ffffff",
     fontSize: 12,
     fontFamily: "Montserrat_400Regular",
-    marginBottom: 1,
-    marginTop: 2,
+  
   },
   metaValue: {
     color: "#ffffff",
@@ -380,7 +393,7 @@ const styles = StyleSheet.create({
   },
   userCard: {
     flexDirection: "row",
-    alignItems: "center",
+     alignItems: "flex-start",
     padding: 13,
     paddingVertical: 20,
     backgroundColor: "#444",
@@ -398,6 +411,7 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
+    gap: 4,
   },
   userName: {
     fontSize: 18,
@@ -429,7 +443,7 @@ const styles = StyleSheet.create({
   },
   locationRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "baseline",
     marginTop: 2,
   },
   location: {

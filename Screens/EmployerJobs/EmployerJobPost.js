@@ -68,11 +68,11 @@ export default function EmployerJobPost() {
                   <View style={styles.topInfoContainer}>
                     <View style={styles.leftInfo}>
                       <Text style={styles.jobTitle}>{item.subject}</Text>
-                      <Text style={styles.jobId}>Posted {item.created}</Text>
+                      <Text style={styles.jobId}>Posted : {item.created}</Text>
                     </View>
                     <View style={styles.rightInfo}>
                       <View style={styles.proposalsRow}>
-                        <Text style={styles.proposalsLabel}>Proposals</Text>
+                        <Text style={styles.proposalsLabel}>Proposals :</Text>
                         <Text style={styles.proposalsCount}>{item.proposal}</Text>
                       </View>
                     </View>
@@ -114,7 +114,11 @@ export default function EmployerJobPost() {
                     >
                       <Text style={styles.viewBtnText}>View</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.boostBtn}>
+                    <TouchableOpacity style={styles.boostBtn} onPress={() =>
+                  navigation.navigate("JobBoostPaymentSection", {
+                    gig: item
+                  })
+                }>
                       <Text style={styles.boostBtnText}>Boost</Text>
                     </TouchableOpacity>
                   </View>
@@ -200,7 +204,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    flexWrap: "wrap",
+   
   },
 
   proposalsLabel: {

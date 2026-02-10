@@ -212,8 +212,8 @@ const styles = StyleSheet.create({
   heading: {
     color: "#CB7767",
     fontSize: 24,
-    fontFamily: "DegularDisplay_600SemiBold",
-    marginBottom:5,
+    fontFamily: "Montserrat_600SemiBold",
+    marginBottom:4,
     marginTop: 7,
   },
   card: {

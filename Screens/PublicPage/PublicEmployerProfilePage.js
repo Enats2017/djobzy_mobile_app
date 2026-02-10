@@ -47,9 +47,9 @@ export default function PublicEmployerProfilePage({ route }) {
 
   const fetchEmployeeProfile = async () => {
     try {
-       const userStr = await AsyncStorage.getItem("user");
+      const userStr = await AsyncStorage.getItem("user");
       const users = JSON.parse(userStr);
-       setCurrentUserId(users?.id);
+      setCurrentUserId(users?.id);
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/employer/${name}`, {
         method: "GET",
@@ -61,8 +61,8 @@ export default function PublicEmployerProfilePage({ route }) {
       const data = await res.json();
       setProfile(data);
       setUser(data.editprofile);
-     // console.log("employerEditProfile",data.editprofile.admin );
-      
+      // console.log("employerEditProfile",data.editprofile.admin );
+
       setJob(data.myJobPosts);
       setSubcategory(data.subcategory);
       setFeeds(data.feeds.data ?? []);
@@ -79,8 +79,7 @@ export default function PublicEmployerProfilePage({ route }) {
 
   const isLiked = profile?.like?.is_like === 1;
 
-  console.log("employeradmin vale",admin);
-  
+  console.log("employeradmin vale", admin);
 
   const handleFollow = async () => {
     try {
@@ -228,7 +227,7 @@ export default function PublicEmployerProfilePage({ route }) {
                 </TouchableOpacity>
               </View>
               <View style={styles.buttonsRow}>
-                {currentUserId !== user?.id &&  (
+                {currentUserId !== user?.id && (
                   <TouchableOpacity
                     onPress={isLiked ? handleUnfollow : handleFollow}
                     style={[styles.btnFollow, isLiked && styles.btnUnfollow]}
@@ -265,7 +264,7 @@ export default function PublicEmployerProfilePage({ route }) {
                 )} */}
                 <TouchableOpacity
                   style={styles.btnChat}
-                  onPress={() => navigation.navigate("FeedChat")}
+                  onPress={() => navigation.navigate("ChatList")}
                 >
                   <Text style={styles.btnChatText}>Chat</Text>
                 </TouchableOpacity>
@@ -282,109 +281,120 @@ export default function PublicEmployerProfilePage({ route }) {
                 <Text style={styles.statsNumber}>{profile?.earned} CAD</Text>
               </View>
             </View>
-            <View style={styles.infoOuterContainer}>
-              <View style={styles.infoSection}>
-                <Text style={styles.sectionLabel}>Profile Title</Text>
-                <Text style={styles.profileTitleText}>
-                  {user?.profile_title_employer || "No Title Added"}
-                </Text>
-              </View>
-              <View style={styles.dividerLine} />
-              <View style={styles.infoSection}>
-                <Text style={styles.sectionLabel}>About Me</Text>
-                <Text style={styles.aboutMeText}>
-                  {user?.employer_about || "No about info available."}
-                </Text>
-              </View>
-              <View style={styles.dividerLine} />
-            </View>
-            <FlatList
-              data={feeds}
-              keyExtractor={(item) => item.id.toString()}
-              scrollEnabled={feeds.length > 5 ? true : false}
-              ListHeaderComponent={
-                <Text style={styles.recentText}>
-                  {feeds[0]?.full_name} Recent Posts
-                </Text>
-              }
-              renderItem={({ item }) => (
-                <FeedPost
-                  author={item.full_name}
-                  subtitle={item.profile_title_employer ?? "No title"}
-                  time={item.created}
-                  text={item?.message}
-                  avatar={{ uri: item.photo }}
-                  image={{ uri: item.file_name }}
-                  likes={item.likes_count}
-                  comments={item.comment_count}
-                  share="0"
-                />
-              )}
-            />
-
-            <View style={styles.category}>
-              <Text style={styles.sectionLabel}>Involved Category</Text>
-              <View style={styles.categoryWrapper}>
-                {displayedCategories.map((item) => (
-                  <View key={item.subid} style={styles.categoryPill}>
-                    <Text style={styles.categoryText}>{item.subname}</Text>
-                  </View>
-                ))}
-                {subcategory.length > 5 && (
-                  <TouchableOpacity
-                    onPress={() => setShowAllCategories((prev) => !prev)}
-                    style={styles.showMoreBtn}
-                  >
-                    <Text style={styles.showMoreText}>
-                      {showAllCategories ? "Show Less" : "Show More"}
-                    </Text>
-
-                    <Ionicons
-                      name={showAllCategories ? "chevron-up" : "chevron-down"}
-                      size={14}
-                      color="#000"
-                      style={{ marginLeft: 5 }}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-            <View style={styles.pillsWrapper}>
-              <Text style={styles.sectionLabel}> MyJobPosts</Text>
-              {job?.data?.map((item, index) => (
-                <View key={index} style={styles.card}>
-                  <Text style={styles.heading}>{item.subject}</Text>
-                  <Text style={styles.desc}>{item.description}</Text>
-                  <Text style={styles.row}>
-                    <Text style={styles.label}>Total Price:</Text> CAD{" "}
-                    {item.fixed_minimum}
-                    {"   "}
-                    <Text style={styles.label}>Hourly Rate:</Text> CAD{" "}
-                    {item.hour_minimum}
+            {user && (
+              <View style={styles.infoOuterContainer}>
+                <View style={styles.infoSection}>
+                  <Text style={styles.sectionLabel}>Profile Title</Text>
+                  <Text style={styles.profileTitleText}>
+                    {user?.profile_title_employer || "No Title Added"}
                   </Text>
-                  <Text style={styles.row}>
-                    <Text style={styles.label}>Project Length:</Text>{" "}
-                    {item.expected_hour}
-                  </Text>
-                  <LineDivider />
-                  <View style={styles.gridentbtn}>
-                    <Text style={styles.row}>Proposals: {item.proposal}</Text>
-                    <GradientButton
-                      title="View"
-                      paddingVertical={6}
-                      paddingHorizontal={22}
-                      marginTop={0}
-                      onPress={() =>
-                        navigation.navigate("JobProfile", {
-                          gid: item.request_slug,
-                        })
-                      }
-                    />
-                  </View>
                 </View>
-              ))}
+                <View style={styles.dividerLine} />
+                <View style={styles.infoSection}>
+                  <Text style={styles.sectionLabel}>About Me</Text>
+                  <Text style={styles.aboutMeText}>
+                    {user?.employer_about || "No about info available."}
+                  </Text>
+                </View>
+                <View style={styles.dividerLine} />
+              </View>
+            )}
+            {feeds.length > 0 && (
+              <FlatList
+                data={feeds}
+                keyExtractor={(item) => item.id.toString()}
+                scrollEnabled={feeds.length > 5 ? true : false}
+                ListHeaderComponent={
+                  <Text style={styles.recentText}>
+                    {feeds[0]?.full_name} Recent Posts
+                  </Text>
+                }
+                renderItem={({ item }) => (
+                  <FeedPost
+                    author={item.full_name}
+                    subtitle={item.profile_title_employer ?? "No title"}
+                    time={item.created}
+                    text={item?.message}
+                    avatar={{ uri: item.photo }}
+                    image={{ uri: item.file_name }}
+                    likes={item.likes_count}
+                    comments={item.comment_count}
+                    share="0"
+                  />
+                )}
+              />
+            )}
 
-              <LineDivider />
+            {displayedCategories.length > 0 && (
+              <View style={styles.category}>
+                <Text style={styles.sectionLabel}>Involved Category</Text>
+                <View style={styles.categoryWrapper}>
+                  {displayedCategories.map((item) => (
+                    <View key={item.subid} style={styles.categoryPill}>
+                      <Text style={styles.categoryText}>{item.subname}</Text>
+                    </View>
+                  ))}
+                  {subcategory.length > 5 && (
+                    <TouchableOpacity
+                      onPress={() => setShowAllCategories((prev) => !prev)}
+                      style={styles.showMoreBtn}
+                    >
+                      <Text style={styles.showMoreText}>
+                        {showAllCategories ? "Show Less" : "Show More"}
+                      </Text>
+
+                      <Ionicons
+                        name={showAllCategories ? "chevron-up" : "chevron-down"}
+                        size={14}
+                        color="#000"
+                        style={{ marginLeft: 5 }}
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            )}
+            <View style={styles.pillsWrapper}>
+              {job.data.length > 0 && (
+                <>
+                  <Text style={styles.sectionLabel}> MyJobPosts</Text>
+                  {job?.data?.map((item, index) => (
+                    <View key={index} style={styles.card}>
+                      <Text style={styles.heading}>{item.subject}</Text>
+                      <Text style={styles.desc}>{item.description}</Text>
+                      <Text style={styles.row}>
+                        <Text style={styles.label}>Total Price:</Text> CAD{" "}
+                        {item.fixed_minimum}
+                        {"   "}
+                        <Text style={styles.label}>Hourly Rate:</Text> CAD{" "}
+                        {item.hour_minimum}
+                      </Text>
+                      <Text style={styles.row}>
+                        <Text style={styles.label}>Project Length:</Text>{" "}
+                        {item.expected_hour}
+                      </Text>
+                      <LineDivider />
+                      <View style={styles.gridentbtn}>
+                        <Text style={styles.row}>
+                          Proposals: {item.proposal}
+                        </Text>
+                        <GradientButton
+                          title="View"
+                          paddingVertical={6}
+                          paddingHorizontal={22}
+                          marginTop={0}
+                          onPress={() =>
+                            navigation.navigate("JobProfile", {
+                              gid: item.request_slug,
+                            })
+                          }
+                        />
+                      </View>
+                    </View>
+                  ))}
+                  <LineDivider />
+                </>
+              )}
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>Attachments</Text>
                 <Text style={styles.profileTitleText}>.........</Text>
@@ -685,6 +695,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 7,
+    marginBottom: 7,
   },
   categoryPill: {
     flexDirection: "row",

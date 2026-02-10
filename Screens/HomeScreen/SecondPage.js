@@ -86,13 +86,13 @@ const styles = StyleSheet.create({
     fontSize: fontScale(36),
     textAlign: "center",
     color: "#fff",
-    fontFamily: "Montserrat_300Regular",
+    fontFamily: "Montserrat_400Regular",
   },
 
   subtext: {
     fontSize: fontScale(18),
     textAlign: "center",
-    fontFamily:"Montserrat_300Regular",
+    fontFamily:"Montserrat_400Regular",
     color: "#f5f5f5",
     lineHeight: scale(22),
   },

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation,useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -10,6 +10,8 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import TitleSection from "./TitleScetion";
@@ -24,7 +26,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
 import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
-import { toastSuccess } from "../../utils/toast";
+import { toastError, toastSuccess } from "../../utils/toast";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const CreateJob = () => {
   const {
@@ -46,7 +49,10 @@ const CreateJob = () => {
     isEdit,
     activeTab,
     setActiveTab,
-    type
+    type,
+    isEditingFromReview,
+    reviewReturnTab,
+    clearEditingFromReview,
   } = useCreateJobGlobalStore();
 
   const route = useRoute();
@@ -55,7 +61,7 @@ const CreateJob = () => {
   const [titleError, setTitleError] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
-
+  const [addressError, setAddressError] = useState(false);
   const [timeError, setTimeError] = useState(false);
   const [priceError, setPriceError] = useState(false);
   const [hourlyError, setHourlyError] = useState(false);
@@ -166,7 +172,10 @@ const CreateJob = () => {
       if (gid) {
         formData.append("gigId", gid);
       }
-      const url = type === 'edit' ? `${API_URL}/save-edit-job-data` : `${API_URL}/save-job-data`;
+      const url =
+        type === "edit"
+          ? `${API_URL}/save-edit-job-data`
+          : `${API_URL}/save-job-data`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -203,6 +212,7 @@ const CreateJob = () => {
     setTimeError(false);
     setPriceError(false);
     setHourlyError(false);
+    setAddressError(false);
 
     switch (activeTab) {
       case 0:
@@ -214,6 +224,11 @@ const CreateJob = () => {
           setDescriptionError(true);
           return;
         }
+        if (isEditingFromReview) {
+          setActiveTab(reviewReturnTab);
+          clearEditingFromReview();
+          return;
+        }
         setActiveTab(1);
         break;
 
@@ -222,14 +237,33 @@ const CreateJob = () => {
           setCategoryError(true);
           return;
         }
+        if (isEditingFromReview) {
+          setActiveTab(reviewReturnTab);
+          clearEditingFromReview();
+          return;
+        }
         setActiveTab(2);
         break;
 
       case 2:
+        if (!address.trim()) {
+          setAddressError(true);
+          return;
+        }
+        if (isEditingFromReview) {
+          setActiveTab(reviewReturnTab);
+          clearEditingFromReview();
+          return;
+        }
         setActiveTab(3);
         break;
 
       case 3:
+        if (isEditingFromReview) {
+          setActiveTab(reviewReturnTab);
+          clearEditingFromReview();
+          return;
+        }
         setActiveTab(4);
         break;
 
@@ -238,6 +272,21 @@ const CreateJob = () => {
           setTimeError(true);
           return;
         }
+
+        if (
+          (selectedOption === "custom" || selectedOption === "customEmp") &&
+          (!customDays || customDays.trim() === "" || Number(customDays) <= 0)
+        ) {
+          setTimeError(true);
+          return;
+        }
+
+        if (isEditingFromReview) {
+          setActiveTab(reviewReturnTab);
+          clearEditingFromReview();
+          return;
+        }
+
         setActiveTab(5);
         break;
 
@@ -248,6 +297,11 @@ const CreateJob = () => {
         }
         if (!hourlyRate.trim()) {
           setHourlyError(true);
+          return;
+        }
+        if (isEditingFromReview) {
+          setActiveTab(reviewReturnTab);
+          clearEditingFromReview();
           return;
         }
         setActiveTab(6);
@@ -272,6 +326,16 @@ const CreateJob = () => {
         break;
     }
   };
+
+  const isLastStep = activeTab === totalSteps - 1;
+
+  const primaryButtonText = isEditingFromReview
+    ? "Update"
+    : isLastStep
+      ? type === "edit"
+        ? "Update"
+        : "Publish"
+      : "Next";
 
   return (
     <>
@@ -304,7 +368,7 @@ const CreateJob = () => {
                   "Budget",
                   "Review & Publish",
                 ].map((label, index, array) => {
-                  const isActive = index === activeTab;
+                  const isActive = index < activeTab;
                   const isCompleted = index < activeTab;
 
                   return (
@@ -369,7 +433,12 @@ const CreateJob = () => {
           {loading ? (
             <Loading />
           ) : (
-            <View style={styles.contentContainer}>
+            <KeyboardAwareScrollView
+              enableOnAndroid
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 80 }}
+              showsVerticalScrollIndicator={false}
+            >
               {activeTab === 0 && (
                 <TitleSection
                   titleError={titleError}
@@ -385,7 +454,7 @@ const CreateJob = () => {
                   setCategoryError={setCategoryError}
                 />
               )}
-              {activeTab === 2 && <AddressSection />}
+              {activeTab === 2 && <AddressSection addressError={addressError} setAddressError={setAddressError} />}
               {activeTab === 3 && <FileUpload />}
               {activeTab === 4 && (
                 <TimePeriod timeError={timeError} setTimeError={setTimeError} />
@@ -401,32 +470,16 @@ const CreateJob = () => {
               )}
 
               {activeTab === 6 && <ReviewPage setActiveTab={setActiveTab} />}
-            </View>
+            </KeyboardAwareScrollView>
           )}
         </View>
         <View style={styles.sectionBtn}>
-          {type == 'edit' && activeTab === totalSteps - 1 ? (
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: "#D17b68" }]}
-              onPress={handleNext}
-            >
-              <Text style={styles.buttonText}>
-                {" "}
-                {activeTab === totalSteps - 1 ? "Update" : "Next"}
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: "#D17b68" }]}
-              onPress={handleNext}
-            >
-              <Text style={styles.buttonText}>
-                {" "}
-                {activeTab === totalSteps - 1 ? "Publish" : "Next"}
-              </Text>
-            </TouchableOpacity>
-          )
-          }
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: "#D17b68" }]}
+            onPress={handleNext}
+          >
+            <Text style={styles.buttonText}>{primaryButtonText}</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, { borderColor: "#ccc", borderWidth: 1 }]}
@@ -438,7 +491,6 @@ const CreateJob = () => {
             </Text>
           </TouchableOpacity>
         </View>
-
         <EmployerFooter />
       </SafeAreaView>
     </>

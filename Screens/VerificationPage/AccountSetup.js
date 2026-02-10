@@ -7,9 +7,12 @@ import {
   StyleSheet,
   Text,
   KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   TextInput,
   TouchableOpacity,
   View,
+  
 } from "react-native";
 import PhoneNumberInput from "../../components/PhoneNumberInput";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
@@ -18,6 +21,8 @@ import { isValidPhoneNumber } from "libphonenumber-js";
 import { API_URL } from "../../api/ApiUrl";
 import { toastError, toastSuccess } from "../../utils/toast";
 import { getCountryCallingCode } from "libphonenumber-js";
+import QuestionMark from "../../components/QuestionMark";
+import BorderButton from "../../components/BorderButton";
 
 const AccountSetup = ({
   countries,
@@ -28,18 +33,23 @@ const AccountSetup = ({
   email,
   emailVerified,
   onNext,
-  userDetails
+  userDetails,
 }) => {
   console.log(username);
 
   const [loading, setLoading] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState(userDetails.mobile_number || "");
-  const [mobileCountryId, setMobileCountryId] = useState(userDetails.mobile_country_id || "");
+  const [phoneNumber, setPhoneNumber] = useState(
+    userDetails.mobile_number || "",
+  );
+  const [mobileCountryId, setMobileCountryId] = useState(
+    userDetails.mobile_country_id || "",
+  );
   const [mobileCountryISO, setMobileCountryISO] = useState("");
   const phoneInputRef = useRef(null);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [usernameError, setUsernameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [canVerify, setCanVerify] = useState(false);
 
   // const [emailVerified, setEmailVerified] = useState([]);
 
@@ -58,7 +68,7 @@ const AccountSetup = ({
     iso
       ?.toUpperCase()
       .replace(/./g, (char) =>
-        String.fromCodePoint(127397 + char.charCodeAt())
+        String.fromCodePoint(127397 + char.charCodeAt()),
       );
 
   const isoToCallingCode = (iso) => {
@@ -113,7 +123,7 @@ const AccountSetup = ({
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (response.data.status === 200) {
@@ -147,84 +157,117 @@ const AccountSetup = ({
     <View style={styles.safe}>
       <View style={styles.header}>
         <Text style={styles.heading}>Account Setup</Text>
-        <Text style={styles.label}>Full Name / Company Name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Full Name"
-          value={fullName}
-          onChangeText={(text) => setFullName(text)}
-        />
-        <Text >Create a Username</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Type your username"
-          value={username}
-          onChangeText={(text) => {
-            setUsername(text);
-            setUsernameError(false);
-          }}
-        />
-        {usernameError ? (
-          <View style={styles.erromsg}>
-            <MaterialIcons name="error-outline" size={18} color="#FF0000" />
-            <Text style={styles.errotext}>{usernameError}</Text>
-          </View>
-        ) : null}
-        <Text style={styles.label}>Email</Text>
-        <View style={{ position: "relative", width: "100%" }}>
+      </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 60 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.label}>Full Name / Company Name</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={(text) => setEmail(text)}
-            keyboardType="email-address"
-            editable={!emailVerified}
+            placeholder="Type your name or company name"
+            value={fullName}
+            onChangeText={(text) => setFullName(text)}
           />
-          {emailVerified && (
-            <Ionicons
-              name="checkmark-done-circle-sharp"
-              size={24}
-              color="green"
-              style={{
-                position: "absolute",
-                right: 12,
-                top: "50%",
-                transform: [{ translateY: -11 }],
-              }}
+          <View style={styles.label}>
+            <QuestionMark title="Create a Username" />
+          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Type your username"
+            value={username}
+            onChangeText={(text) => {
+              setUsername(text);
+              setUsernameError(false);
+            }}
+          />
+          {usernameError ? (
+            <View style={styles.erromsg}>
+              <MaterialIcons name="error-outline" size={18} color="#FF0000" />
+              <Text style={styles.errotext}>{usernameError}</Text>
+            </View>
+          ) : null}
+          <Text style={styles.label}>Email</Text>
+          <View style={{ position: "relative", width: "100%" }}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={(text) => setEmail(text)}
+              keyboardType="email-address"
+              editable={!emailVerified}
             />
-          )}
-        </View>
-        {!emailVerified && email ? (
-          <TouchableOpacity
-            style={styles.verifyButton}
-            onPress={() => handleVerifyEmail(email)}
-          ></TouchableOpacity>
-        ) : null}
-        <Text style={styles.label}>Phone Number</Text>
-        <PhoneNumberInput
-          value={phoneNumber}
-          onChange={({ phone, countryCode, countryISO }) => {
-            setPhoneNumber(phone);
-            setMobileCountryId(countryCode);
-            setMobileCountryISO(countryISO);
-            setPhoneError(false)
-          }}
-          defaultFlag={defaultFlag}
-          defaultCallingCode={defaultCallingCode}
-          defaultCountryISO={defaultCountryISO}
-        />
-      </View>
-      {phoneError ? (
-        <Text style={{ color: "red", marginTop: 4 }}>{phoneError}</Text>
-      ) : null}
+            {emailVerified && (
+              <Ionicons
+                name="checkmark-done-circle-sharp"
+                size={24}
+                color="green"
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "30%",
+                  transform: [{ translateY: -11 }],
+                }}
+              />
+            )}
+          </View>
+          {!emailVerified && email ? (
+            <TouchableOpacity
+              style={styles.verifyButton}
+              onPress={() => handleVerifyEmail(email)}
+            ></TouchableOpacity>
+          ) : null}
+          <View style={styles.label}>
+            <QuestionMark title="Phone Number" />
+          </View>
+          <PhoneNumberInput
+            value={phoneNumber}
+            onChange={({ phone, countryCode, countryISO }) => {
+              setPhoneNumber(phone);
+              setMobileCountryId(countryCode);
+              setMobileCountryISO(countryISO);
+              setPhoneError(false);
+              const full = `+${countryCode}${phone}`;
+              const valid = isValidPhoneNumber(full, countryISO);
+              setCanVerify(valid);
+            }}
+            defaultFlag={defaultFlag}
+            defaultCallingCode={defaultCallingCode}
+            defaultCountryISO={defaultCountryISO}
+          />
 
-      <GradientButton
-        title="Next"
-        marginTop={25}
-        disabled={loading}
-        loading={loading}
-        onPress={handleAccountSetup}
-      />
+          <Text style={styles.phoneText}>
+            The phone number will not be used for any marketing purposes.
+          </Text>
+          {phoneError ? (
+            <Text style={{ color: "red", marginTop: 4 }}>{phoneError}</Text>
+          ) : null}
+
+          <BorderButton
+            title="Verify"
+            marginTop={18}
+            disabled={!canVerify}
+            onPress={() => {
+              if (!canVerify) return;
+              //handleVerifyPhone(); // your verify API
+            }}
+          />
+
+          <GradientButton
+            title="Next"
+            marginTop={25}
+            disabled={loading}
+            loading={loading}
+            onPress={handleAccountSetup}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 };
@@ -245,6 +288,8 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#faf6f6ff",
     paddingHorizontal: 10,
+    fontSize:14,
+    fontFamily:"Montserrat_400Regular",
     borderRadius: 10,
     height: 50,
     color: "#111010ff",
@@ -300,6 +345,13 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
     fontSize: 14,
     lineHeight: 19,
+  },
+  phoneText: {
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+    fontStyle: "italic",
+    color: "#c3c3c3c3",
+    marginTop: 7,
   },
 });
 

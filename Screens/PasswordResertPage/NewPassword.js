@@ -7,6 +7,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+   Alert,
+  Linking,
+  Platform,
 } from "react-native";
 import GradientButton from "../../components/GradientButton";
 import { toastError, toastSuccess } from "../../utils/toast";
@@ -72,7 +75,7 @@ const NewPassword = ({ onNext }) => {
             {isValidLength && <Ionicons name="checkbox-outline" size={17} color="#fff" />}
           </View>
           <Text style={styles.requirementText}>
-            Must have at least 8 characters
+            Must be at least 8 characters
           </Text>
         </View>
 

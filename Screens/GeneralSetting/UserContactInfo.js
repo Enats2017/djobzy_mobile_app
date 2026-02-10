@@ -11,23 +11,44 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import GradientButton from "../../components/GradientButton";
 import PhoneNumberInput from "../../components/PhoneNumberInput";
+import { getCountryCallingCode } from "libphonenumber-js";
 
 const UserContactInfo = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { details, user } = route.params || [];
-  const [phone, setPhone] = useState(user?.mobile_number || "");
+  const [phoneNumber, setPhoneNumber] = useState(user.mobile_number || "");
   const [postal, setPostal] = useState("");
   const [location, setLocation] = useState("");
-  const [countryCode, setCountryCode] = useState(
- user?.mobile_country_id || ""
-);
-  console.log("11111",countryCode);
-  
- const [loading, setLoading] = useState(false);
+  const [mobileCountryId, setMobileCountryId] = useState(
+    user.mobile_country_id || "",
+  );
+  const [mobileCountryISO, setMobileCountryISO] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  console.log("PHONE:", phone);
-  console.log("LOCATION:", location);
+  console.log("PHONE:", phoneNumber);
+  console.log("COUNTRY CODE:", mobileCountryId);
+  console.log("COUNTRY ISO:", mobileCountryISO);
+
+  const isoToFlag = (iso) =>
+    iso
+      ?.toUpperCase()
+      .replace(/./g, (char) =>
+        String.fromCodePoint(127397 + char.charCodeAt()),
+      );
+
+  const isoToCallingCode = (iso) => {
+    try {
+      return `+${getCountryCallingCode(iso)}`;
+    } catch {
+      return "+1"; // fallback Canada
+    }
+  };
+
+  const countryISO = user?.iso2 || "CA";
+  const defaultCountryISO = countryISO;
+  const defaultCallingCode = isoToCallingCode(countryISO);
+  const defaultFlag = isoToFlag(countryISO) || "🇨🇦";
 
   console.log(postal);
 
@@ -38,7 +59,7 @@ const UserContactInfo = () => {
     }
 
     console.log("hii");
-    
+
     const formData = new FormData();
     formData.append("phone_number", phone); // no +
     console.log("hii222", phone);
@@ -51,15 +72,14 @@ const UserContactInfo = () => {
     // formData.append("timezone", timezone);
     // console.log("hii2223334433333", timezone);
     console.log("SENDING DATA:", {
-       phone,
+      phone,
       countryCode,
       postal,
       location,
-      
-     });
+    });
 
     try {
-      setLoading(true)
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/contact-save`, {
         method: "POST",
@@ -80,9 +100,8 @@ const UserContactInfo = () => {
     } catch (error) {
       console.error("API Error:", error);
       alert("Network error");
-    }
-    finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,14 +115,22 @@ const UserContactInfo = () => {
             showsVerticalScrollIndicator={false}
           >
             <PhoneNumberInput
-             value={phone}
-             defaultCallingCode={countryCode}
-            
+              value={phoneNumber}
+              onChange={({ phone, countryCode, countryISO }) => {
+                setPhoneNumber(phone);
+                setMobileCountryId(countryCode);
+                setMobileCountryISO(countryISO);
+                setPhoneError(false);
+                const full = `+${countryCode}${phone}`;
+                const valid = isValidPhoneNumber(full, countryISO);
+                setCanVerify(valid);
+              }}
+              defaultFlag={defaultFlag}
+              defaultCallingCode={defaultCallingCode}
+              defaultCountryISO={defaultCountryISO}
             />
+
             <ContactInfo
-              phoneValue={phone}
-              onChangePhone={setPhone}
-              countryCode={ countryCode}
               postalCodeValue={postal}
               onChangePostalCode={setPostal}
               locationValue={location}
@@ -118,7 +145,11 @@ const UserContactInfo = () => {
               }}
             /> */}
             <View style={{ paddingBottom: 10 }}>
-              <GradientButton loading={loading} title="Send" onPress={submitContactInfo} />
+              <GradientButton
+                loading={loading}
+                title="Send"
+                onPress={submitContactInfo}
+              />
             </View>
           </ScrollView>
         </View>

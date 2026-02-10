@@ -33,8 +33,6 @@ const MyBiddings = () => {
         const data = await response.json();
         setActiveBids(data.active_bids || []);
         setExpireBids(data.expired_bids || []);
-       
-        
       } catch (error) {
         console.log("API Error:", error);
       } finally {
@@ -78,25 +76,33 @@ const MyBiddings = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#fff" />
-        ) : activeTab ? (
-          activeBids.length > 0 ? (
-            activeBids.map((offer, index) => (
-              <ActiveBiddings key={index} activeBids={offer} />
-            ))
-          ) : (
-            <NoJobs />
-          )
-        ) : expireBids.length > 0 ? (
-          expireBids.map((offer, index) => (
-            <ExpiredBiddings key={index} expireBids={offer} />
-          ))
-        ) : (
+      {loading ? (
+        <ActivityIndicator size="large" color="#fff" />
+      ) : activeTab ? (
+        activeBids.length === 0 ? (
           <NoJobs />
-        )}
-      </ScrollView>
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+          >
+            {activeBids.map((offer, index) => (
+              <ActiveBiddings key={index} activeBids={offer} />
+            ))}
+          </ScrollView>
+        )
+      ) : expireBids.length === 0 ? (
+        <NoJobs />
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+        >
+          {expireBids.map((offer, index) => (
+            <ExpiredBiddings key={index} expireBids={offer} />
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -109,7 +115,7 @@ const styles = StyleSheet.create({
   },
   toggleWrapper: {
     flexDirection: "row",
-    width:"100%",
+    width: "100%",
     justifyContent: "space-around",
     marginBottom: 10,
   },
@@ -122,7 +128,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_600SemiBold",
     color: "#8E8E8E",
     fontSize: 16,
-    textAlign: "center"
+    textAlign: "center",
   },
   inactiveText: {
     fontFamily: "Montserrat_600SemiBold",
@@ -130,7 +136,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderColor: "#ccc",
     borderBottomWidth: 1,
-    width: '100%',
+    width: "100%",
     paddingBottom: 8,
   },
   activeText: {
@@ -144,9 +150,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderRadius: 10,
   },
-  scrollView: { paddingHorizontal: 1 ,
-    paddingBottom:100,
-  },
+  scrollView: { paddingHorizontal: 1, paddingBottom: 100 },
 });
 
 export default MyBiddings;

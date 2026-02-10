@@ -89,7 +89,8 @@ const styles = StyleSheet.create({
 
   cardHeader2: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+    gap:4,
     marginBottom: 10,
   },
 
@@ -115,7 +116,8 @@ const styles = StyleSheet.create({
   nameStarsRow2: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    flexWrap:"wrap",
+    gap: 2,
   },
   starsRow2: {
     flexDirection: "row",
@@ -126,14 +128,14 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-    marginLeft: 8,
+  
   },
 
   verificationRow2: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 5,
-    marginLeft: 8,
+  
   },
   verification2: {
     color: "#C3C3C3",

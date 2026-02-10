@@ -12,7 +12,9 @@ const ActiveBiddings = ({ activeBids = [] }) => {
         <View style={styles.avatarWrapperOuter}>
           <Image
             source={{
-              uri: activeBids.photo || "https://randomuser.me/api/portraits/women/82.jpg",
+              uri:
+                activeBids.photo ||
+                "https://randomuser.me/api/portraits/women/82.jpg",
             }}
             style={styles.avatarImage}
           />
@@ -41,7 +43,9 @@ const ActiveBiddings = ({ activeBids = [] }) => {
               color="#C3C3C3"
               style={{ marginRight: 6 }}
             />
-            <Text style={styles.verification}>Verification Level: {activeBids.verification_count}/7</Text>
+            <Text style={styles.verification}>
+              Verification Level: {activeBids.verification_count}/7
+            </Text>
           </View>
         </View>
 
@@ -58,9 +62,7 @@ const ActiveBiddings = ({ activeBids = [] }) => {
 
       <View style={styles.sectionBox}>
         <Text style={styles.sectionTitle}>Introduction Letter</Text>
-        <Text style={styles.sectionText}>
-          {activeBids.desc_proposal}
-        </Text>
+        <Text style={styles.sectionText}>{activeBids.desc_proposal}</Text>
       </View>
 
       <View style={styles.sectionBox}>
@@ -71,14 +73,17 @@ const ActiveBiddings = ({ activeBids = [] }) => {
       </View>
 
       <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.viewBtn}  onPress={() =>
-                        navigation.navigate("JobProfile", {
-                          gid: activeBids.request_slug,
-                        })
-                      }>
+        <TouchableOpacity
+          style={styles.viewBtn}
+          onPress={() =>
+            navigation.navigate("JobProfile", {
+              gid: activeBids.request_slug,
+            })
+          }
+        >
           <Text style={styles.viewBtnText}>View</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.chatBtn}>
+        <TouchableOpacity style={styles.chatBtn} onPress={()=>navigation.navigate("ChatList")}>
           <Text style={styles.chatBtnText}>Chat</Text>
         </TouchableOpacity>
       </View>
@@ -97,8 +102,9 @@ const styles = StyleSheet.create({
 
   cardHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 10,
+    gap: 7,
   },
 
   avatarWrapperOuter: {
@@ -121,6 +127,7 @@ const styles = StyleSheet.create({
   nameStarsRow: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap:"wrap",
     gap: 5,
   },
   starsRow: {
@@ -132,14 +139,14 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-    marginLeft: 8,
+   
   },
 
   verificationRow: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 5,
-    marginLeft: 8,
+   
   },
   verification: {
     color: "#C3C3C3",

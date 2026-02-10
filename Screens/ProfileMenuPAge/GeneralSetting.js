@@ -43,6 +43,8 @@ const GeneralSetting = () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
+      console.log(token);
+      
       const response = await fetch(`${API_URL}/setting`, {
         headers: {
           Authorization: `Bearer ${token}`,

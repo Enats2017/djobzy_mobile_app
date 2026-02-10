@@ -22,7 +22,10 @@ const TimePeriod = ({ timeError, setTimeError }) => {
 
   const handleSelectOption = (option) => {
     setTimeError(false);
+
     setField("selectedOption", option);
+    setField("customDays", "");
+    
   };
 
   const handleCustomDays = (value) => {
@@ -154,16 +157,17 @@ const TimePeriod = ({ timeError, setTimeError }) => {
                 onChangeText={handleCustomDays}
                 keyboardType="numeric"
                 placeholder="15"
-                placeholderTextColor="#000"
+                editable={selectedOption === "custom" ? true : false}
+                placeholderTextColor="#c3c3c3c3"
+             
               />
             </View>
           </View>
 
-          {timeError && (
-            <Text style={styles.errorText}>
-              *Please select at least one option
-            </Text>
-          )}
+          {timeError &&
+            (selectedOption === "custom" || selectedOption === "customEmp") && (
+              <Text style={{ color: "red" , fontFamily:"Montserrat_400Regular"}}>Please enter custom days</Text>
+            )}
         </>
       )}
 
@@ -240,18 +244,18 @@ const TimePeriod = ({ timeError, setTimeError }) => {
                 style={styles.inputBox}
                 value={customDays}
                 onChangeText={handleCustomDays}
+                editable={selectedOption === "customEmp" ? true : false}
                 keyboardType="numeric"
                 placeholder="15"
-                placeholderTextColor="#000"
+               
               />
             </View>
           </View>
 
-          {timeError && (
-            <Text style={styles.errorText}>
-              *Please select at least one option
-            </Text>
-          )}
+           {timeError &&
+            (selectedOption === "custom" || selectedOption === "customEmp") && (
+              <Text style={{ color: "red" , fontFamily:"Montserrat_400Regular"}}>Please enter custom Months</Text>
+            )}
         </>
       )}
     </View>
@@ -350,7 +354,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f7f2f2",
     borderRadius: 8,
     position: "absolute",
-    right: 6,
+    right: 4,
     justifyContent: "center",
     alignItems: "center",
   },

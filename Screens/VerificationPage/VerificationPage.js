@@ -61,13 +61,13 @@ const VerificationPage = () => {
       const user = res.data.userDetails || {};
       await AsyncStorage.removeItem("user");
       await AsyncStorage.setItem("user", JSON.stringify(res.data.userDetails));
-      console.log("user:",user);
+      console.log("user:", user);
       setUserDetails(user);
 
       const verificationStep = user.verification_step;
-      if(verificationStep == 'step2') {
+      if (verificationStep == "step2") {
         setActiveTab(1);
-      } else if(verificationStep == 'step3') {
+      } else if (verificationStep == "step3") {
         setActiveTab(2);
       } else {
         setActiveTab(0);
@@ -96,11 +96,8 @@ const VerificationPage = () => {
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          behavior="padding"
-          style={styles.container}
-        >
-          <HeaderBar showSearch={false} />
+        <KeyboardAvoidingView behavior="padding" style={styles.container}>
+          <HeaderBar showSearch={false} showMenu={false} />
           <ScrollView
             contentContainerStyle={{ paddingBottom: 5 }}
             showsVerticalScrollIndicator={false}
@@ -111,27 +108,36 @@ const VerificationPage = () => {
                 (label, index, array) => {
                   const isActive = index === activeTab;
                   const isCompleted = index < activeTab;
-
                   return (
-                    <View
-                      key={index}
-                      style={{ flexDirection: "row", alignItems: "center" }}
-                    >
-                      <View style={styles.step}>
-                        <View
-                          style={[
-                            styles.circle,
-                            isCompleted
-                              ? styles.completedCircle
-                              : isActive
-                                ? styles.activeCircle
-                                : styles.inactiveCircle,
-                          ]}
+                    <View key={index} style={styles.stepItem}>
+                      <View style={styles.topRow}>
+                        {/* 🔥 TOUCHABLE CIRCLE (BIG HIT AREA) */}
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          style={styles.circleTouch}
+                          onPress={() => setActiveTab(index)}
                         >
-                          {isCompleted && (
-                            <MaterialIcons name="done" size={15} color="#fff" />
-                          )}
-                        </View>
+                          <View
+                            style={[
+                              styles.circle,
+                              isCompleted
+                                ? styles.completedCircle
+                                : isActive
+                                  ? styles.activeCircle
+                                  : styles.inactiveCircle,
+                            ]}
+                          >
+                            {isCompleted && (
+                              <MaterialIcons
+                                name="done"
+                                size={14}
+                                color="#fff"
+                              />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+
+                        {/* LABEL */}
                         <Text
                           style={[
                             styles.stepText,
@@ -144,19 +150,19 @@ const VerificationPage = () => {
                         >
                           {label}
                         </Text>
-                      </View>
 
-                      {/* Line Between Steps */}
-                      {index < array.length - 1 && (
-                        <Animated.View
-                          style={[
-                            styles.line,
-                            isCompleted
-                              ? styles.completedLine
-                              : styles.inactiveLine,
-                          ]}
-                        />
-                      )}
+                        {/* LINE */}
+                        {index < array.length - 1 && (
+                          <View
+                            style={[
+                              styles.line,
+                              isCompleted
+                                ? styles.completedLine
+                                : styles.inactiveLine,
+                            ]}
+                          />
+                        )}
+                      </View>
                     </View>
                   );
                 },
@@ -223,70 +229,106 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 15,
+    paddingTop: 70,
     backgroundColor: "#222222",
   },
-  StepContainer: {
+ StepContainer: {
     flexDirection: "row",
+    justifyContent: "space-between",
+     marginBottom:20,
+    width: "100%",
+  },
+
+  stepItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+
+  topRow: {
+    alignItems: "center",
+    width: "100%",
+    position: "relative",
+  },
+
+  /* 👆 BIG TOUCH AREA */
+  circleTouch: {
+    width: 40,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: 60,
-    marginBottom: 15,
+    zIndex: 3,
   },
-  step: {
-    alignItems: "center",
-  },
+
   circle: {
-    width: 20,
-    height: 20,
-    borderRadius: 11,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 5,
+    backgroundColor: "transparent",
   },
+
   completedCircle: {
     backgroundColor: "#CB7767",
-    borderWidth: 1,
-    borderColor: "#1b1a1aff",
+    borderColor: "#CB7767",
   },
+
   activeCircle: {
     backgroundColor: "#CB7767",
-    borderWidth: 1,
-    borderColor: "#1b1a1aff",
+    borderColor: "#CB7767",
   },
+
   inactiveCircle: {
     backgroundColor: "transparent",
-    borderWidth: 1,
     borderColor: "#fff",
   },
+
   stepText: {
+    marginTop: 8,
     fontSize: 12,
-    width: 80,
+    width: 100,
     textAlign: "center",
+    color: "#fff",
   },
+
   completedText: {
     color: "#fff",
+    fontFamily:"Montserrat_400Regular",
+    fontSize:14,
   },
+
   activeText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontFamily:"Montserrat_400Regular",
+    fontSize:14,
   },
+
   inactiveText: {
     color: "#aaa",
+    fontFamily:"Montserrat_400Regular",
+    fontSize:14,
   },
+
   line: {
-    height: 1.5,
-    width: 78,
-  },
-  completedLine: {
-    backgroundColor: "#ff6666",
-    marginBottom: 15,
-  },
-  inactiveLine: {
+    position: "absolute",
+    top: 20, // center of 40px touch area
+    left: "55%",
+    right: "-45%",
+    height: 1,
     borderWidth: 1,
-    marginBottom: 15,
-    borderColor: "#aaa",
+    zIndex: 1,
+  },
+
+  completedLine: {
+    borderStyle: "solid",
+    borderColor: "#CB7767",
+  },
+
+  inactiveLine: {
     borderStyle: "dashed",
-    backgroundColor: "transparent",
+    borderColor: "#aaa",
   },
 
   backBtn: {

@@ -71,14 +71,26 @@ const {
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
+  const [emailerror, setEmailError] = useState(" ");
   const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      toastError("Please enter email and password");
+    if (!email) {
+      setEmailError("Emaii Field is require");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError("Enter a valid email");
+      return;
+    }
+
+    if (!password) {
+      setPasswordError("Password Field is require");
       return;
     }
     setLoading(true);
@@ -102,8 +114,6 @@ const Login = ({ navigation }) => {
       await AsyncStorage.setItem("token", data.token);
 
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
-
-      //Alert.alert("Success", "Login successful");
       toastSuccess("Success", "Login successful");
       const { verification_count, admin } = data.user;
 
@@ -159,13 +169,22 @@ const Login = ({ navigation }) => {
               Enter your email and password to log in
             </Text>
             <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="xyz@gmail.com"
-              placeholderTextColor="#888"
-              value={email}
-              onChangeText={setEmail}
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="xyz@gmail.com"
+                placeholderTextColor="#888"
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  setEmailError(""); // clear error while typing
+                }}
+              />
+            </View>
+            {emailerror ? (
+              <Text style={{ color: "red", marginTop: 5 }}>{emailerror}</Text>
+            ) : null}
+
             <Text style={styles.label}>Password</Text>
             <View style={styles.passwordContainer}>
               <TextInput
@@ -174,7 +193,10 @@ const Login = ({ navigation }) => {
                 placeholderTextColor="#888"
                 secureTextEntry={!showPassword}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setPasswordError(""); // clear error while typing
+                }}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
@@ -187,6 +209,12 @@ const Login = ({ navigation }) => {
                 />
               </TouchableOpacity>
             </View>
+            {passwordError ? (
+              <Text style={{ color: "red", marginTop: 5 }}>
+                {passwordError}
+              </Text>
+            ) : null}
+
             <View style={styles.row}>
               <TouchableOpacity
                 style={styles.rememberMe}
@@ -199,7 +227,7 @@ const Login = ({ navigation }) => {
                     <Ionicons
                       name="checkmark"
                       size={checkIconSize}
-                      color="#fff"
+                      color="#000"
                     />
                   )}
                 </View>
@@ -262,10 +290,11 @@ const styles = StyleSheet.create({
   containers: { flex: 1 },
   scrolcontent: {
     flexGrow: 1,
-    alignItems: "center",
-    justifyContent: "center",
-
     paddingHorizontal: 15,
+  },
+  logoContainer: {
+    alignItems: "center",
+    paddingTop: 20,
   },
 
   logo: { width: logoSize, height: logoSize, resizeMode: "contain" },
@@ -288,16 +317,14 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginBottom: 5,
     fontFamily: "Montserrat_600SemiBold",
-    marginTop: 10,
+ 
     fontSize: labelSize,
   },
   input: {
-    width: "100%",
-    height: inputHeight,
-    backgroundColor: "#fff",
-    borderRadius: inputRadius,
-    paddingHorizontal: 12,
-    fontSize: inputTextSize,
+    flex:1,
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+    color: "#0000",
   },
   passwordContainer: {
     width: "100%",
@@ -312,7 +339,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontFamily: "Montserrat_400Regular",
-    fontSize: 14,
     color: "#000",
   },
   eyeIcon: { paddingHorizontal: 5 },
@@ -368,7 +394,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  checkboxChecked: { backgroundColor: "#f76c6c", borderColor: "#f76c6c" },
+  checkboxChecked: { backgroundColor: "#FFF", borderColor: "#FFF" },
   socialBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -394,15 +420,15 @@ const styles = StyleSheet.create({
   },
   footerText: {
     color: "#fff",
-    marginTop: 10,
+    marginTop: 7,
     textAlign: "center",
-
-    fontSize: footerTextSize,
+  
+    fontSize: 14,
     fontFamily: "Montserrat_500Medium",
   },
   linkText: {
     color: "#C96B59",
-    fontSize: footerTextSize,
+    fontSize: 14,
     fontFamily: "Montserrat_500Medium",
     textDecorationLine: "underline",
   },

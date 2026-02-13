@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
+    fontFamily:"Montserrat_400Regular",
     color: "#fff",
     fontSize: 14,
     padding: 0,

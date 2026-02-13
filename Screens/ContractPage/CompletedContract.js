@@ -29,6 +29,8 @@ const CompletedContract = () => {
         },
       });
       const data = await response.json();
+      console.log(data);
+
       setCurrnetJobs(data.employee || []);
     } catch (error) {
       console.log("API Error:", error);
@@ -54,121 +56,131 @@ const CompletedContract = () => {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 90 }}
             >
-              {currentJobs.map((currentJob, index) => (
-                <View style={styles.outerContainer} key={index}>
-                  <View style={styles.cardContainer}>
-                    <View style={styles.userRow}>
-                      <Image
-                        source={{
-                          uri:
-                            currentJob.photo ||
-                            "https://randomuser.me/api/portraits/women/8.jpg",
-                        }}
-                        style={styles.avatar}
-                      />
+              {currentJobs.length > 0 ? (
+                currentJobs.map((currentJob, index) => (
+                  <View style={styles.outerContainer} key={index}>
+                    <View style={styles.cardContainer}>
+                      <View style={styles.userRow}>
+                        <Image
+                          source={{
+                            uri:
+                              currentJob.photo ||
+                              "https://randomuser.me/api/portraits/women/8.jpg",
+                          }}
+                          style={styles.avatar}
+                        />
 
-                      <View style={styles.userInfo}>
-                        <View style={styles.nameRow}>
-                          <View style={styles.userNameSection}>
-                            <Text style={styles.userName}>
-                              {currentJob.full_name}
-                            </Text>
+                        <View style={styles.userInfo}>
+                          <View style={styles.nameRow}>
+                            <View style={styles.userNameSection}>
+                              <Text style={styles.userName}>
+                                {currentJob.full_name}
+                              </Text>
 
-                            <View style={styles.starRow}>
-                              {[...Array(5)].map((_, i) => (
-                                <FontAwesome
-                                  key={i}
-                                  name="star"
-                                  style={styles.starIcon}
-                                />
-                              ))}
+                              <View style={styles.starRow}>
+                                {[...Array(5)].map((_, i) => (
+                                  <FontAwesome
+                                    key={i}
+                                    name="star"
+                                    style={styles.starIcon}
+                                  />
+                                ))}
+                              </View>
+                            </View>
+                            <View style={styles.paymentRow}>
+                              <MaterialIcons
+                                name="verified"
+                                size={16}
+                                color="#c3c3c3"
+                              />
+                              <Text style={styles.paymentVerified}>
+                                Verification Level:{" "}
+                                {currentJob.verification_count}
+                                /7
+                              </Text>
                             </View>
                           </View>
-                          <View style={styles.paymentRow}>
-                            <MaterialIcons
-                              name="verified"
-                              size={16}
-                              color="#c3c3c3"
-                            />
-                            <Text style={styles.paymentVerified}>
-                              Verification Level:{" "}
-                              {currentJob.verification_count}
-                              /7
+                        </View>
+                        <View style={styles.offeredSection}>
+                          <Text style={styles.offeredPriceText}>
+                            Total Income
+                          </Text>
+                          <View style={styles.cadButton}>
+                            <Text style={styles.cadButtonText}>
+                              CAD {currentJob.bid_price}
                             </Text>
                           </View>
                         </View>
                       </View>
-                      <View style={styles.offeredSection}>
-                        <Text style={styles.offeredPriceText}>
-                          Total Income
+
+                      <View style={styles.jobTitleSection}>
+                        <Text style={styles.jobTitle}>
+                          {currentJob.subject}
                         </Text>
-                        <View style={styles.cadButton}>
-                          <Text style={styles.cadButtonText}>
+                        <Text style={styles.postedDate}>
+                          Start Date : {currentJob.payment_date}
+                        </Text>
+                      </View>
+
+                      <View style={styles.jobInfoSection}>
+                        <Text style={styles.infoText}>
+                          Total Price:{" "}
+                          <Text style={styles.infoHighlight}>
                             CAD {currentJob.bid_price}
+                          </Text>{" "}
+                          Hourly Rate:{" "}
+                          <Text style={styles.infoHighlight}>
+                            CAD {currentJob.prop_hourly_rate}
                           </Text>
-                        </View>
+                        </Text>
+                        <Text style={styles.infoText}>
+                          Expected Hours:{" "}
+                          <Text style={styles.infoHighlight}>
+                            {currentJob.prop_total_hour}
+                          </Text>
+                        </Text>
+
+                        {currentJob.preferred_location && (
+                          <View
+                            style={{ flexDirection: "row", flexWrap: "wrap" }}
+                          >
+                            <Text style={styles.infoText}>Location: </Text>
+                            <Text style={[styles.infoHighlight, { flex: 1 }]}>
+                              {currentJob.preferred_location}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+
+                      <View style={styles.jobDescriptionSection}>
+                        <Text style={styles.descTitle}>Job Description</Text>
+                        <Text style={styles.descText}>
+                          {truncateWords(currentJob.description, 20)}
+                        </Text>
+                      </View>
+
+                      <View style={styles.buttonSection}>
+                        <GradientButton
+                          title="View Contract Post"
+                          onPress={() =>
+                            navigation.navigate("ViewCurrentJobPost", {
+                              gid: currentJob.request_slug,
+                            })
+                          }
+                        />
                       </View>
                     </View>
 
-                    <View style={styles.jobTitleSection}>
-                      <Text style={styles.jobTitle}>{currentJob.subject}</Text>
-                      <Text style={styles.postedDate}>
-                        Start Date : {currentJob.payment_date}
-                      </Text>
-                    </View>
-
-                    <View style={styles.jobInfoSection}>
-                      <Text style={styles.infoText}>
-                        Total Price:{" "}
-                        <Text style={styles.infoHighlight}>
-                          CAD {currentJob.bid_price}
-                        </Text>{" "}
-                        Hourly Rate:{" "}
-                        <Text style={styles.infoHighlight}>
-                          CAD {currentJob.prop_hourly_rate}
-                        </Text>
-                      </Text>
-                      <Text style={styles.infoText}>
-                        Expected Hours:{" "}
-                        <Text style={styles.infoHighlight}>
-                          {currentJob.prop_total_hour}
-                        </Text>
-                      </Text>
-
-                      {currentJob.preferred_location && (
-                        <View
-                          style={{ flexDirection: "row", flexWrap: "wrap" }}
-                        >
-                          <Text style={styles.infoText}>Location: </Text>
-                          <Text style={[styles.infoHighlight, { flex: 1 }]}>
-                            {currentJob.preferred_location}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    <View style={styles.jobDescriptionSection}>
-                      <Text style={styles.descTitle}>Job Description</Text>
-                      <Text style={styles.descText}>
-                        {truncateWords(currentJob.description, 20)}
-                      </Text>
-                    </View>
-
-                    <View style={styles.buttonSection}>
-                      <GradientButton
-                        title="View Contract Post"
-                        onPress={() =>
-                          navigation.navigate("ViewCurrentJobPost", {
-                            gid: currentJob.request_slug,
-                          })
-                        }
-                      />
-                    </View>
+                    {/* {index !== currentJobs.length - 1 && <LineDivider />} */}
                   </View>
-
-                  {/* {index !== currentJobs.length - 1 && <LineDivider />} */}
-                </View>
-              ))}
+                ))
+              ) : (
+                <Text
+                  style={{ textAlign: "center", marginTop: 50, color: "#fff" }}
+                >
+                  No Applicants Found
+                </Text>
+              )}
             </ScrollView>
           )}
         </View>
@@ -338,14 +350,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 1,
     marginVertical: 15,
   },
-    offeredPriceText: {
+  offeredPriceText: {
     color: "#ffffff",
     fontSize: 10,
     textAlign: "center",
     fontFamily: "Montserrat_500Medium",
     marginBottom: 4,
   },
-   cadButton: {
+  cadButton: {
     backgroundColor: "#FDBF2D",
     borderRadius: 10,
     paddingVertical: 6,

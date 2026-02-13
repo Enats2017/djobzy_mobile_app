@@ -11,6 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Linking
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -30,6 +31,7 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigation = useNavigation();
   const emailRegex = /^[^\s@]+@[^\s@]+\.(com)$/i;
@@ -108,7 +110,7 @@ const Signup = () => {
           keyboardShouldPersistTaps="handled"
         >
           <ScrollView
-            contentContainerStyle={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom:50 }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -133,7 +135,9 @@ const Signup = () => {
                 }}
               />
             </View>
-            {fullNameError ? <Text style={styles.errorText}>{fullNameError}</Text> : null}
+            {fullNameError ? (
+              <Text style={styles.errorText}>{fullNameError}</Text>
+            ) : null}
             <Text style={styles.label}>Email</Text>
             <View style={styles.passwordContainer}>
               <TextInput
@@ -148,7 +152,9 @@ const Signup = () => {
                 autoCapitalize="none"
               />
             </View>
-            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+            {emailError ? (
+              <Text style={styles.errorText}>{emailError}</Text>
+            ) : null}
             <Text style={styles.label}>Create a password</Text>
             <View style={styles.passwordContainer}>
               <TextInput
@@ -183,11 +189,11 @@ const Signup = () => {
                 style={styles.passwordInput}
                 placeholder=" Type the password again"
                 placeholderTextColor="#888"
-                secureTextEntry={!showPassword}
+                secureTextEntry={!showConfirmPassword}
                 value={confirmPassword}
                 onChangeText={(text) => {
                   setConfirmPassword(text);
-                  if (password && text && password !== text) {
+                  if (password && text !== password) {
                     setPasswordError("Passwords do not match");
                   } else {
                     setPasswordError("");
@@ -195,11 +201,11 @@ const Signup = () => {
                 }}
               />
               <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                 style={styles.eyeIcon}
               >
                 <Ionicons
-                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                  name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
                   size={20}
                   color="#888"
                 />
@@ -228,15 +234,15 @@ const Signup = () => {
                   style={[styles.checkbox, remember && styles.checkboxChecked]}
                 >
                   {remember && (
-                    <Ionicons name="checkmark" size={14} color="#fff" />
+                    <Ionicons name="checkmark" size={14} color="#000" />
                   )}
                 </View>
                 <Text style={styles.rememberText}>
                   By Signing up, you agree to the
                 </Text>
-              </TouchableOpacity>
-              <Text style={styles.forgotText}>
-                Terms and Condition{" "}
+              </TouchableOpacity >
+              <Text style={styles.forgotText} onPress={() => Linking.openURL("https://www.djobzy.com/terms-of-use")}>
+                Terms and Conditions{" "}
                 <Text style={{ color: "#fff", textDecorationLine: "none" }}>
                   and
                 </Text>{" "}
@@ -290,7 +296,7 @@ const styles = StyleSheet.create({
   containers: {
     flex: 1,
     paddingHorizontal: 15,
-    paddingBottom: 50,
+ 
   },
   errorText: {
     color: "#d32f2f",
@@ -324,14 +330,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   input: {
-    width: "100%",
-    height: 48,
+   flex:1,
     fontFamily: "Montserrat_400Regular",
     fontSize: 14,
     color: "#0000",
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingHorizontal: 10,
   },
   passwordContainer: {
     width: "100%",
@@ -387,8 +389,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   checkboxChecked: {
-    backgroundColor: "#f76c6c",
-    borderColor: "#f76c6c",
+    backgroundColor: "#FFF",
+    borderColor: "#FFF",
   },
   googleBtn: {
     flexDirection: "row",

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { SafeAreaView,useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import {
   View,
   Text,
@@ -18,6 +21,7 @@ import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import { useServiceGlobalStore } from "./ServiceGlobalStore";
 import { Ionicons } from "@expo/vector-icons";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const EditPromoteSevices = () => {
   const navigation = useNavigation();
@@ -47,7 +51,6 @@ const EditPromoteSevices = () => {
       const data = await response.json();
       if (data.status === 200) {
         setService(data.result);
-        
       } else {
         Alert.alert("Error", result.message || "Unable to fetch details");
       }
@@ -61,16 +64,21 @@ const EditPromoteSevices = () => {
   useEffect(() => {
     fetchDetails();
   }, []);
+  
+  
 
   const handleEdit = () => {
     const store = useServiceGlobalStore.getState();
     store.reset();
+    store.setUniqueId(service?.unique_id);
     store.setField("title", service.title || "");
     store.setField("description", service.description || "");
     store.setField("hourlyRate", String(service.hour_minimum || ""));
     store.setField("totalPrice", String(service.price || ""));
-    store.setExpectedTime(service.time_hours || 0);
-   store.clearCategories();
+    store.setExpectedTime(
+      (service.selected_time == "no-calendar" ? 1 : service.selected_time) || 0,
+    );
+    store.clearCategories();
 
     service.subservice_id?.forEach((id, index) => {
       store.addCategory({
@@ -81,12 +89,11 @@ const EditPromoteSevices = () => {
     // service.attachment?.forEach((img) => {
     //   store.addImage({ uri: `${API_ICON}/${img.attachment}` });
     // });
-    store.setEditMode(service.sid);
+    
     navigation.navigate("PromoteService");
   };
 
   const serviceId = service?.sid;
-  console.log(serviceId);
 
   const handleDeleteService = async () => {
     try {
@@ -106,12 +113,11 @@ const EditPromoteSevices = () => {
 
       const data = await response.json();
       if (data.status === 200) {
-        Alert.alert("Deleted", "Service deleted successfully");
+        toastSuccess("Service deleted successfully");
         setDeleteModal(false);
-        navigation.navigate("EmployeeAccount")
-        
+        navigation.navigate("EmployeeAccount");
       } else {
-        Alert.alert("Error", data.message || "Delete failed");
+        toastError(data.message || "Delete failed");
       }
     } catch (error) {
       console.log("Delete error:", error);
@@ -121,7 +127,6 @@ const EditPromoteSevices = () => {
     }
   };
 
- 
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
@@ -193,10 +198,7 @@ const EditPromoteSevices = () => {
           onRequestClose={() => setDeleteModal(false)}
         >
           <View style={styles.deleteOverlay}>
-            <View  style={[
-                  styles.deleteBox,
-                  { paddingBottom: insets.bottom },
-                ]}>
+            <View style={[styles.deleteBox, { paddingBottom: insets.bottom }]}>
               <TouchableOpacity
                 style={styles.modalCloseIcon}
                 onPress={() => setDeleteModal(false)}
@@ -210,7 +212,7 @@ const EditPromoteSevices = () => {
                 color="#d64545"
                 style={{ marginBottom: 10 }}
               />
-              <Text style={styles.deleteTitle}>Delete Category</Text>
+              <Text style={styles.deleteTitle}>Delete Services</Text>
               <Text style={styles.deleteMsg}>
                 Are you Sure you Want To Delete The Services ?
               </Text>
@@ -380,21 +382,21 @@ const styles = StyleSheet.create({
   deleteBtns: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    
+
     gap: 10,
-    paddingHorizontal:13,
+    paddingHorizontal: 13,
   },
   cancelBtn: {
     paddingVertical: 15,
-    width:"50%",
-    alignItems:"center",
+    width: "50%",
+    alignItems: "center",
     borderRadius: 10,
     backgroundColor: "#ddd",
   },
   deleteBtn: {
     paddingVertical: 15,
-    width:"50%",
-    alignItems:"center",
+    width: "50%",
+    alignItems: "center",
     borderRadius: 10,
     backgroundColor: "red",
   },

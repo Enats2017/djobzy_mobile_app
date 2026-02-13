@@ -8,8 +8,15 @@ import {
   ScrollView,
   Switch,
   ActivityIndicator,
+  Linking
 } from "react-native";
-import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import {
+  Ionicons,
+  MaterialIcons,
+  FontAwesome5,
+  Entypo,
+  Fontisto,
+} from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { useNavigation, useStateForPath } from "@react-navigation/native";
@@ -20,11 +27,12 @@ import Footer from "../../components/Footer";
 import CustomSwitch from "../../components/CustomSwitch";
 import EmployerFooter from "../../components/EmployerFooter";
 import { useNotifications } from "../../context/MessageNotificationContext";
+import { useServiceGlobalStore } from "../PromoteServicesPage/ServiceGlobalStore";
 
 const EmployeeProfileMenu = () => {
   const navigation = useNavigation();
   const [isEmployer, setIsEmployer] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const [switchLoading, setSwitchLoading] = useState(false);
   const [accountType, setAccountType] = useState(null);
   const [user, setUser] = useState(null);
@@ -130,101 +138,230 @@ const EmployeeProfileMenu = () => {
     }
   };
 
+  const handlePromotebNavigation = () => {
+    const store = useServiceGlobalStore.getState();
+    store.reset();
+    store.resetUniqueId();
+    navigation.navigate("PromoteService");
+  };
 
-  if (loading) return <Loading />
+  const handleCreateJobNavigation = () => {
+      const store = useCreateJobGlobalStore.getState();
+      store.reset();
+      store.resetEditMode();
+      store.clearEditingFromReview();
+      store.setActiveTab(0);
+      navigation.navigate("CreateJob");
+    };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {
-          loading ? (<Loading />) : (
-            <>
-              <PageNameHeaderBar title={user?.admin == 2 ? "Employer Profile" : "Employee Profile"} navigation={navigation} />
-              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.profileContainer}>
-                  <Image
-                    source={{
-                      uri: user?.photo,
-                    }}
-                    style={[styles.profileImage, { borderColor: user?.admin === 0 ? '#46a282' : '#ebbe56', borderWidth: 2 }]}
+        {loading ? (
+          <Loading />
+        ) : (
+          <>
+            <PageNameHeaderBar
+              title={user?.admin == 2 ? "Employer Profile" : "Employee Profile"}
+              navigation={navigation}
+            />
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContainer}
+            >
+              <View style={styles.profileContainer}>
+                <Image
+                  source={{
+                    uri: user?.photo,
+                  }}
+                  style={[
+                    styles.profileImage,
+                    {
+                      borderColor: user?.admin === 0 ? "#46a282" : "#ebbe56",
+                      borderWidth: 2,
+                    },
+                  ]}
+                />
+                <Text style={styles.profileName}>{user?.full_name}</Text>
+                <Text style={styles.profileRole}>
+                  {" "}
+                  {user?.admin == 0 ? "Employee" : "Employer"}{" "}
+                </Text>
+              </View>
+              <View style={styles.switchContainer}>
+                <Text style={styles.switchLabel}>
+                  {user?.admin == 0
+                    ? "Switch to Employer"
+                    : "Switch to Employee"}
+                </Text>
+
+                {!switchLoading && (
+                  <CustomSwitch value={isEmployer} onChange={toggleSwitch} />
+                )}
+
+                {switchLoading && (
+                  <ActivityIndicator
+                    size={30}
+                    color="#D17B68"
+                    style={{ marginLeft: 10 }}
                   />
-                  <Text style={styles.profileName}>{user?.full_name}</Text>
-                  <Text style={styles.profileRole}> {user?.admin == 0 ? "Employee" : "Employer"} </Text>
-                </View>
-                <View style={styles.switchContainer}>
-                  <Text style={styles.switchLabel}>
-                    {user?.admin == 0 ? "Switch to Employer" : "Switch to Employee"}
-                  </Text>
+                )}
+              </View>
+              <View style={styles.menuContainer}>
+                {user?.admin == 0 ? (
+                  <MenuItem
+                   type="Entypo"
+                    icon="circle-with-plus"
+                    title="Promote Services"
+                    onPress={handlePromotebNavigation}
+                  />
+                ) : (
+                  <MenuItem
+                    type="Entypo"
+                    icon="circle-with-plus"
+                    title="Post a Job"
+                    onPress={handleCreateJobNavigation}
+                  />
+                )}
+                {user?.admin == 0 ? (
+                  <MenuItem
+                    type="ion"
+                    icon="grid"
+                    title="Dashboard"
+                    onPress={() => navigation.navigate("Dashboard")}
+                  />
+                ) : (
+                  <MenuItem
+                    type="ion"
+                    icon="grid"
+                    title="Dashboard"
+                    onPress={() => navigation.navigate("EmployerDashboard")}
+                  />
+                )}
 
-                  {!switchLoading && (
-                    <CustomSwitch
-                      value={isEmployer}
-                      onChange={toggleSwitch}
-                    />
-                  )}
-
-                  {switchLoading && (
-                    <ActivityIndicator size={30} color="#D17B68" style={{ marginLeft: 10 }} />
-                  )}
-                </View>
-                <View style={styles.menuContainer}>
-                  {user?.admin == 0 ? (
-                    <MenuItem icon="add-circle-outline" title="Promote Services" onPress={() => navigation.navigate("PromoteService")} />
-                  ) : (
-                    <MenuItem icon="add-circle-outline" title="Create a Job" onPress={() => navigation.navigate("CreateJob")} />
-                  )}
-                  {user?.admin == 0 ? (
-                    <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("Dashboard")} />
-                  ) : (
-                    <MenuItem icon="grid-outline" title="Dashboard" onPress={() => navigation.navigate("EmployerDashboard")} />
-                  )}
-
-                  {user?.admin == 0 ? (
-                    <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployeeAccount", { name: user?.name })} />
-                  ) : (
-                    <MenuItem icon="person-outline" title="My account" onPress={() => navigation.navigate("EmployerAccount", { name: user?.name })} />
-                  )
-                  }
-                  <MenuItem icon="star-outline" title="Reviews" onPress={() => navigation.navigate("ProfileReviewPage")} />
-                  <MenuItem icon="checkmark-done-outline" title="Verification" onPress={() => navigation.navigate("EmployeeVerification")} />
-                  <MenuItem icon="wallet-outline" title="Wallet" onPress={() => navigation.navigate("Wallet")} />
-                  <MenuItem icon="settings-outline" title="Setting" onPress={() => navigation.navigate("GeneralSetting")} />
-                  <MenuItem icon="gift-outline" title="Referral wallet" onPress={() => navigation.navigate("ReferralWallet")} />
-                  <MenuItem icon="chatbubble-ellipses-outline" title="Chat" onPress={() => navigation.navigate("ChatList")} />
-                  {/* <MenuItem icon="document-outline" title="Blog" onPress={() => navigation.navigate("BlogPage")} /> */}
-                </View>
-                <TouchableOpacity style={styles.logoutContainer} onPress={handleLogout}>
-                  <Text style={styles.logoutLabel}>Logout</Text>
-                  {
-                    submitting ? (
-                      <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                      <MaterialIcons name="logout" size={24} color="#ffffff" />
-                    )
-                  }
-                </TouchableOpacity>
-              </ScrollView>
-            </>
-          )
-        }
+                {user?.admin == 0 ? (
+                  <MenuItem
+                    type="ion"
+                    icon="person"
+                    title="My account"
+                    onPress={() =>
+                      navigation.navigate("EmployeeAccount", {
+                        name: user?.name,
+                      })
+                    }
+                  />
+                ) : (
+                  <MenuItem
+                    type="ion"
+                    icon="person"
+                    title="My account"
+                    onPress={() =>
+                      navigation.navigate("EmployerAccount", {
+                        name: user?.name,
+                      })
+                    }
+                  />
+                )}
+                <MenuItem
+                  type="material"
+                  icon="reviews"
+                  title="Reviews"
+                  onPress={() => navigation.navigate("ProfileReviewPage")}
+                />
+                <MenuItem
+                  type="material"
+                  icon="verified"
+                  title="Verification"
+                  onPress={() => navigation.navigate("EmployeeVerification")}
+                />
+                <MenuItem
+                  type="Entypo"
+                  icon="wallet"
+                  title="Wallet"
+                  onPress={() => navigation.navigate("Wallet")}
+                />
+                <MenuItem
+                  type="Entypo"
+                  icon="share"
+                  title="Referral wallet"
+                  onPress={() => navigation.navigate("ReferralWallet")}
+                />
+                <MenuItem
+                  type="Fontisto"
+                  icon="hipchat"
+                  title="Chat"
+                  onPress={() => navigation.navigate("ChatList")}
+                />
+                <MenuItem
+                  type="ion"
+                  icon="settings"
+                  title="Setting"
+                  onPress={() => navigation.navigate("GeneralSetting")}
+                />
+                 <MenuItem  type="ion"
+                  icon="coin"  title="Djobzy Coin | Invest with Us"
+                  onPress={() => Linking.openURL("https://www.djobzy.com/invest")}
+                  /> 
+              </View>
+              <TouchableOpacity
+                style={styles.logoutContainer}
+                onPress={handleLogout}
+              >
+                <Text style={styles.logoutLabel}>Log Out</Text>
+                {submitting ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <MaterialIcons name="logout" size={24} color="#ffffff" />
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </>
+        )}
       </View>
-      {user?.admin == 2 ? (
-        <EmployerFooter />
-    ) : (
-        <Footer />
-      )}
+      {user?.admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 };
 
-const MenuItem = ({ icon, title, onPress }) => (
+const MenuItem = ({ type, icon, title, onPress }) => (
   <TouchableOpacity style={styles.menuItem} onPress={onPress}>
     <View style={styles.iconbox}>
-      <Ionicons name={icon} size={22} color="#fff" style={styles.menuIcon} />
+      {type === "ion" && (
+        <Ionicons name={icon} size={20} color="#fff" style={styles.menuIcon} />
+      )}
+      {type === "material" && (
+        <MaterialIcons
+          name={icon}
+          size={22}
+          color="#fff"
+          style={styles.menuIcon}
+        />
+      )}
+      {type === "AntDesign" && (
+        <AntDesign name={icon} size={22} color="#fff" style={styles.menuIcon} />
+      )}
+      {type === "Font" && (
+        <FontAwesome6
+          name={icon}
+          size={22}
+          color="#fff"
+          style={styles.menuIcon}
+        />
+      )}
+      {type === "Octicons" && (
+        <Octicons name={icon} size={22} color="#fff" style={styles.menuIcon} />
+      )}
+      {type === "Entypo" && (
+        <Entypo name={icon} size={22} color="#fff" style={styles.menuIcon} />
+      )}
+      {type === "Fontisto" && (
+        <Fontisto name={icon} size={19} color="#fff" style={styles.menuIcon} />
+      )}
     </View>
     <Text style={styles.menuText}>{title}</Text>
     <Ionicons
       name="chevron-forward"
-      size={18}
+      size={22}
       color="#999"
       style={styles.forwardIcon}
     />
@@ -299,6 +436,7 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
+
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderBottomWidth: 1,
@@ -330,7 +468,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#ffffff1a",
+    backgroundColor: "red",
     borderRadius: 12,
     padding: 15,
     marginTop: 18,
@@ -339,7 +477,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 16,
     fontFamily: "Montserrat_500Medium",
-  }
+  },
 });
 
 export default EmployeeProfileMenu;

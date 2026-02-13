@@ -1,4 +1,4 @@
-import Footer from "../../components/Footer";
+import EmployerFooter from "../../components/EmployerFooter";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
@@ -50,7 +50,7 @@ const JobPublishedPage = ({ route }) => {
             </TouchableOpacity>
           </View>
         </View>
-        <Footer />
+        <EmployerFooter />
       </SafeAreaView>
     </>
   );

@@ -1,6 +1,8 @@
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { truncateWords } from "../../api/TruncateWords";
+
 
 const ExpiredBiddings = ({expireBids =[]}) => {
   return (
@@ -9,7 +11,7 @@ const ExpiredBiddings = ({expireBids =[]}) => {
         <View style={styles.avatarWrapperOuter2}>
           <Image
             source={{
-              uri: expireBids.photo ||  "https://randomuser.me/api/portraits/women/90.jpg",
+              uri: expireBids?.photo ||  "https://randomuser.me/api/portraits/women/90.jpg",
             }}
             style={styles.avatarImage2}
           />
@@ -17,7 +19,7 @@ const ExpiredBiddings = ({expireBids =[]}) => {
 
         <View style={styles.userInfo2}>
           <View style={styles.nameStarsRow2}>
-            <Text style={styles.username2}>{expireBids.full_name}</Text>
+            <Text style={styles.username2}>{expireBids?.full_name}</Text>
             <View style={styles.starsRow2}>
               {[...Array(5)].map((_, i) => (
                 <FontAwesome
@@ -38,32 +40,32 @@ const ExpiredBiddings = ({expireBids =[]}) => {
               color="#C3C3C3"
               style={{ marginRight: 6 }}
             />
-            <Text style={styles.verification2}>Verification Level: {expireBids.verification_count}/7</Text>
+            <Text style={styles.verification2}>Verification Level: {expireBids?.verification_count}/7</Text>
           </View>
         </View>
 
         <View style={styles.offeredSection2}>
           <Text style={styles.offeredPriceText2}>Offered Price</Text>
           <View style={styles.cadButton2}>
-            <Text style={styles.cadButtonText2}>CAD {expireBids.bid_price}</Text>
+            <Text style={styles.cadButtonText2}>CAD {expireBids?.bid_price}</Text>
           </View>
         </View>
       </View>
 
       <Text style={styles.title2}>{expireBids.subject}</Text>
-      <Text style={styles.posted2}>Posted On: {expireBids.dated}</Text>
+      <Text style={styles.posted2}>Posted On: {expireBids?.dated}</Text>
 
       <View style={styles.sectionBox2}>
         <Text style={styles.sectionTitle2}>Introduction Letter</Text>
         <Text style={styles.sectionText2}>
-          {expireBids.desc_proposal}
+          {expireBids?.desc_proposal}
         </Text>
       </View>
 
       <View style={styles.sectionBox2}>
         <Text style={styles.sectionTitle2}>Job Description</Text>
         <Text style={styles.sectionText2}>
-          {truncateWords(expireBids.description, 20)}
+          {truncateWords(expireBids?.description, 20)}
         </Text>
       </View>
 
@@ -87,8 +89,9 @@ const styles = StyleSheet.create({
 
   cardHeader2: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 10,
+    gap:6,
   },
 
   avatarWrapperOuter2: {
@@ -101,18 +104,14 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "#222",
   },
-  avatarImage2: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 30,
-    marginLeft: 1,
-  },
+
 
   userInfo2: { flex: 1 },
 
   nameStarsRow2: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap:"wrap",
     gap: 5,
   },
   starsRow2: {
@@ -121,17 +120,16 @@ const styles = StyleSheet.create({
 
   username2: {
     color: "#fff",
-    fontWeight: "500",
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-    marginLeft: 8,
+   
   },
 
   verificationRow2: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 5,
-    marginLeft: 8,
+  
   },
   verification2: {
     color: "#C3C3C3",

@@ -26,15 +26,17 @@ const JobCreate = ({ admin, userId }) => {
   return (
     <>
       <View style={styles.jobsection}>
-        <View style={styles.checking}>
-          <View style={styles.checkCircle}>
-            <View style={styles.done}>
-              <MaterialIcons
-                name="done"
-                size={26}
-                color="#218e67"
-                style={styles.icon}
-              />
+        <View style={styles.bigcircle}>
+          <View style={styles.checking}>
+            <View style={styles.checkCircle}>
+              <View style={styles.done}>
+                <MaterialIcons
+                  name="done"
+                  size={26}
+                  color="#218e67"
+                  style={styles.icon}
+                />
+              </View>
             </View>
           </View>
         </View>
@@ -42,18 +44,27 @@ const JobCreate = ({ admin, userId }) => {
         <Text style={styles.startText}>
           Start Your <Text style={styles.subText}>Djobzy</Text> Journey
         </Text>
-        {/* <Text style={styles.instructionText}>
-          In order to get things done,create your first job post
-        </Text> */}
+        {admin === 2 && (
+          <Text style={styles.instructionText}>
+            In order to get things done,create your first job post
+          </Text>
+        )}
       </View>
       <View style={styles.jobbtn}>
         {admin === 0 ? (
-
-          <GradientButton title="Create Promoted Services" paddingVertical={15} onPress={() => navigation.navigate("PromoteService", { userId })} />
+          <GradientButton
+            title="Create Promoted Services for Free"
+            textColor="#303030"
+            colors={["#fff", "#fff"]}
+            paddingVertical={15}
+            onPress={() => navigation.navigate("PromoteService", { userId })}
+          />
         ) : (
-
-
-          <GradientButton title="Create Job Post" paddingVertical={15} onPress={() => navigation.navigate("CreateJob", { userId })} />
+          <GradientButton
+            title="Create a Job Post For Free"
+            paddingVertical={15}
+            onPress={() => navigation.navigate("CreateJob", { userId })}
+          />
         )}
         <TouchableOpacity style={styles.leterBtn} onPress={handleCreateLater}>
           <Text style={styles.nextBtnText}>Create Later</Text>
@@ -70,8 +81,16 @@ const styles = StyleSheet.create({
     alignContent: "center",
     marginTop: 25,
   },
+  bigcircle: {
+    backgroundColor: "#39A881",
+    height: 115,
+    width: 115,
+    borderRadius: 60,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   checking: {
-    backgroundColor: "#218e67",
+    backgroundColor: "#218E67",
     height: 100,
     width: 100,
     borderRadius: 60,
@@ -81,18 +100,21 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 50,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: "#ebecf0ff",
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
     top: 9,
   },
-  icon: {
+
+  done: {
     backgroundColor: "#fff",
     width: 30,
     height: 30,
     borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   almostThere: {
     fontSize: 20,
@@ -106,20 +128,18 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_600SemiBold",
     color: "#fff",
     textAlign: "center",
-    marginBottom: 10,
   },
   subText: {
     fontSize: 28,
     fontFamily: "Montserrat_700Bold",
     color: "#CB7767",
-    marginBottom: 10,
   },
   instructionText: {
+    flex: 1,
+    paddingHorizontal: 5,
     fontSize: 18,
     color: "#FFFFFF",
     textAlign: "center",
-    width: "80%",
-    padding: 5,
   },
   jobbtn: {
     gap: 10,
@@ -133,8 +153,9 @@ const styles = StyleSheet.create({
   },
   nextBtnText: {
     color: "#fff",
-    fontWeight: "Montserrat_700Bold",
-    fontSize: 18
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 18,
+    textAlign: "center",
   },
 
   leterBtn: {

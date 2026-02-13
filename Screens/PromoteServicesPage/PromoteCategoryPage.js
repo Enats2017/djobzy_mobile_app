@@ -20,10 +20,14 @@ import GradientButton from "../../components/GradientButton";
 import Footer from "../../components/Footer";
 import Loading from "../../components/Loading";
 import { useServiceGlobalStore } from "./ServiceGlobalStore";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const PromoteCategoryPage = () => {
   const navigation = useNavigation();
-  const { categories, addCategory, removeCategory } = useServiceGlobalStore();
+  const { categories, addCategory, removeCategory, editingId  } = useServiceGlobalStore();
+
+  console.log("EDIT MODE ID:", editingId);
+
 
   const [search, setSearch] = useState("");
   const [services, setServices] = useState([]);
@@ -52,7 +56,7 @@ const PromoteCategoryPage = () => {
   }, []);
 
   const filteredServices = services.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item.name.toLowerCase().includes(search.toLowerCase()),
   );
   const handleSelectSub = (service, sub) => {
     addCategory({
@@ -83,7 +87,11 @@ const PromoteCategoryPage = () => {
       expectedTime,
       images,
       categories,
+      unique_id
+      
     } = useServiceGlobalStore.getState();
+    console.log(unique_id);
+    
 
     if (!title || !description || categories.length === 0) {
       Alert.alert("Missing Info", "Please fill all required fields.");
@@ -93,6 +101,9 @@ const PromoteCategoryPage = () => {
     const services = categories.map((c) => c.subId).join(",");
 
     let formData = new FormData();
+    if (unique_id) {
+      formData.append("unique_id", unique_id);
+    }
     formData.append("title", title);
     formData.append("description", description);
     formData.append("services", services);
@@ -124,7 +135,7 @@ const PromoteCategoryPage = () => {
       });
       const result = await response.json();
       if (result.status === 200) {
-        Alert.alert("Success", "Service Published Successfully!");
+        toastSuccess(unique_id ? "Service Updated!" : "Service Created!");
         useServiceGlobalStore.getState().reset();
         console.log("AFTER RESET:", useServiceGlobalStore.getState());
         navigation.replace("EmployeeAccount");
@@ -225,7 +236,7 @@ const PromoteCategoryPage = () => {
                     <View style={styles.subCategories}>
                       {service.subservices.map((sub) => {
                         const isSelected = categories.some(
-                          (s) => Number(s.subId) === Number(sub.subid)
+                          (s) => Number(s.subId) === Number(sub.subid),
                         );
 
                         return (

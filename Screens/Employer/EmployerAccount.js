@@ -144,7 +144,15 @@ const EmployerAccount = () => {
                       style={styles.avatar}
                     />
                     <View style={styles.profileInfoRow}>
-                      <Text style={styles.name}>{user?.full_name}</Text>
+                      <View style={styles.userNameSection}>
+                        <Text
+                          style={styles.name}
+                          numberOfLines={2}
+                          ellipsizeMode="tail"
+                        >
+                          {user?.full_name}
+                        </Text>
+                      </View>
                       <View style={styles.iconbox}>
                         <Octicons
                           name="clock-fill"
@@ -206,14 +214,6 @@ const EmployerAccount = () => {
 
                   <TouchableOpacity
                     style={styles.iconBtn}
-                    onPress={() => navigation.navigate("ProfileBoostPage")}
-                  >
-                    <Ionicons name="rocket" size={20} color="#ffffff" />
-                    <Text style={styles.iconText}>Boost</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.iconBtn}
                     onPress={() => navigation.navigate("ProfileEditPage")}
                   >
                     <Feather name="edit-3" size={20} color="#fff" />
@@ -253,7 +253,7 @@ const EmployerAccount = () => {
                     style={{ marginLeft: 5 }}
                   />
                 </View> */}
-                <QuestionMark title="Profile Title" iconColor="#fff" />
+                <QuestionMark title="Profile Title" iconColor="#fff"  tooltipMessage="Update your personal details here."/>
                 <Text style={styles.infoText2}>
                   {user.profile_title_employer}
                 </Text>
@@ -269,6 +269,51 @@ const EmployerAccount = () => {
                 </View> */}
                 <QuestionMark title="About Me" iconColor="#fff" />
                 <Text style={styles.infoText2}>{user.employer_about}</Text>
+              </View>
+
+              <Text style={styles.infoTitle}> Employer category section</Text>
+              <View style={styles.pillsWrapper}>
+                <TouchableOpacity
+                  style={styles.addBtn}
+                  onPress={() => setModalVisible(true)}
+                >
+                  <Ionicons name="add" size={18} color="#000" />
+                  <Text style={styles.addText}>Add Category</Text>
+                </TouchableOpacity>
+
+                {displayedCategories.map((item) => (
+                  <View key={item.subid} style={styles.categoryPill}>
+                    <Text style={styles.categoryText}>{item.subname}</Text>
+
+                    <TouchableOpacity
+                      onPress={() => removeCategory(item.subid)}
+                    >
+                      <Ionicons
+                        name="close"
+                        size={16}
+                        color="#fff"
+                        style={{ marginLeft: 6 }}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                {subcategory.length > 5 && (
+                  <TouchableOpacity
+                    onPress={() => setShowAllCategories((prev) => !prev)}
+                    style={styles.showMoreBtn}
+                  >
+                    <Text style={styles.showMoreText}>
+                      {showAllCategories ? "Show Less" : "Show More"}
+                    </Text>
+
+                    <Ionicons
+                      name={showAllCategories ? "chevron-up" : "chevron-down"}
+                      size={14}
+                      color="#000"
+                      style={{ marginLeft: 5 }}
+                    />
+                  </TouchableOpacity>
+                )}
               </View>
               <Text style={styles.infoTitle}> MyJobPosts</Text>
               {job?.data?.map((item, index) => (
@@ -313,55 +358,11 @@ const EmployerAccount = () => {
                   style={{ marginLeft: 5 }}
                 />
               </View> */}
-              <QuestionMark title="Employee Category" iconColor="#fff" />
-              <View style={styles.pillsWrapper}>
-                <TouchableOpacity
-                  style={styles.addBtn}
-                  onPress={() => setModalVisible(true)}
-                >
-                  <Ionicons name="add" size={18} color="#000" />
-                  <Text style={styles.addText}>Add Category</Text>
-                </TouchableOpacity>
-
-                {displayedCategories.map((item) => (
-                  <View key={item.subid} style={styles.categoryPill}>
-                    <Text style={styles.categoryText}>{item.subname}</Text>
-
-                    <TouchableOpacity
-                      onPress={() => removeCategory(item.subid)}
-                    >
-                      <Ionicons
-                        name="close"
-                        size={16}
-                        color="#fff"
-                        style={{ marginLeft: 6 }}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-                {subcategory.length > 5 && (
-                  <TouchableOpacity
-                    onPress={() => setShowAllCategories((prev) => !prev)}
-                    style={styles.showMoreBtn}
-                  >
-                    <Text style={styles.showMoreText}>
-                      {showAllCategories ? "Show Less" : "Show More"}
-                    </Text>
-
-                    <Ionicons
-                      name={showAllCategories ? "chevron-up" : "chevron-down"}
-                      size={14}
-                      color="#000"
-                      style={{ marginLeft: 5 }}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
 
               <View style={styles.dotssection}>
                 <Text style={styles.infoTitle}>Attachments</Text>
                 <Text style={styles.dots}>.........</Text>
-                <Text style={styles.infoTitle}>Current Work</Text>
+                <Text style={styles.infoTitle}>Current Contracts</Text>
                 {Current?.data?.length > 0 ? (
                   Current.data.map((item, index) => (
                     <View key={index} style={styles.card}>
@@ -392,8 +393,8 @@ const EmployerAccount = () => {
                           paddingVertical={6}
                           paddingHorizontal={22}
                           onPress={() =>
-                            navigation.navigate("PostJobDetails", {
-                              jobId: item.request_slug,
+                            navigation.navigate("ViewCurrentJobPost", {
+                              gid: item.request_slug,
                             })
                           }
                         />
@@ -404,10 +405,25 @@ const EmployerAccount = () => {
                   <Text style={styles.dots}>.........</Text>
                 )}
 
-                <Text style={styles.infoTitle}>Works History And Reviews</Text>
+                <Text style={styles.infoTitle}>Contract History And Reviews</Text>
                 <Text style={styles.dots}>.........</Text>
                 <Text style={styles.infoTitle}>Other Experience</Text>
                 <Text style={styles.dots}>.........</Text>
+
+                <View style={styles.postcard}>
+                  <Text style={styles.postText}>What needs to be done?</Text>
+                  <Text style={styles.subtitle}>
+                    It takes about 2 minutes to post a new job
+                  </Text>
+
+                  <GradientButton
+                    colors={["#000", "#000"]}
+                    onPress={()=>navigation.navigate("CreateJob")}
+                    title="Post a New Job"
+                    paddingHorizontal={26}
+                    textColor="#fff"
+                  />
+                </View>
               </View>
             </ScrollView>
           )}
@@ -577,13 +593,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#222222",
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
   },
   profileCard: {
     backgroundColor: "#ffffff1a",
     borderRadius: 15,
-    paddingVertical: 20,
-    paddingHorizontal: 20,
+    padding: 15,
   },
   profileinfo: {
     flexDirection: "row",
@@ -602,16 +617,24 @@ const styles = StyleSheet.create({
     borderColor: "#c3c3c3",
     borderRadius: 60,
   },
+  userNameSection: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: 2,
+  },
   name: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
+    flexShrink: 1,
     fontFamily: "Montserrat_500Medium",
-    marginBottom: 7,
+    marginBottom: 5,
   },
   iconbox: {
     flexDirection: "row",
     gap: 6,
-    alignItems: "flex-start",
+    alignItems: "baseline",
+    paddingVertical: 2,
     flexWrap: "wrap",
   },
   infoText: {
@@ -623,7 +646,7 @@ const styles = StyleSheet.create({
   iconRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
   },
   iconBtn: {
     alignItems: "center",
@@ -677,7 +700,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Montserrat_400Regular",
     lineHeight: 18,
-    marginBottom: 10,
+    marginTop: 4,
+    marginBottom: 15,
   },
   card: {
     borderWidth: 1,
@@ -844,11 +868,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-   textWrap: {
+  textWrap: {
     flex: 1,
   },
   linkText: {
-   paddingHorizontal: 5, 
+    paddingHorizontal: 5,
     color: "#000",
     fontSize: 15,
     fontFamily: "Montserrat_500Medium",
@@ -909,6 +933,38 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_500Medium",
     color: "#000",
   },
+  postcard: {
+    backgroundColor: "#FABB05", // exact yellow tone
+    borderRadius: 14,
+    paddingVertical: 18,
+     marginTop:10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+
+
+  subtitle: {
+    fontSize: 14,
+    color: "#000",
+    width:"70%",
+    fontFamily:"Montserrat_500Medium",
+    opacity: 0.85,
+    textAlign: "center",
+  },
+
+  postText:{
+    fontFamily:"Montserrat_700Bold",
+    fontSize:18,
+    color:"#000",
+    marginBottom:8,
+  
+
+  },
+
+
+
+
 });
 
 export default EmployerAccount;

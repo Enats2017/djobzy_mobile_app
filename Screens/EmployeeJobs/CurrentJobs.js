@@ -178,18 +178,19 @@ const styles = StyleSheet.create({
     // flex: 1,
   },
   nameRow: {
-    flexDirection: "column",
-    alignItems: "flex-start",
+  flex:1,  
     gap: 5,
   },
   userNameSection: {
     flexDirection: "row",
     alignItems: "center",
+     flexWrap: "wrap",
     gap: 5,
   },
   userName: {
     color: "#fff",
     fontSize: 16,
+      width:"80%",
     fontFamily: "Montserrat_500Medium",
   },
   starRow: {
@@ -203,6 +204,7 @@ const styles = StyleSheet.create({
   paymentRow: {
     flexDirection: "row",
     alignItems: "center",
+    gap:4,
   },
   paymentIcon: {
     fontSize: 16,
@@ -211,7 +213,7 @@ const styles = StyleSheet.create({
   paymentVerified: {
     color: "#ffffff",
     fontSize: 13,
-    marginLeft: 4,
+   
     fontFamily: "Montserrat_400Regular",
   },
   jobTitleSection: {

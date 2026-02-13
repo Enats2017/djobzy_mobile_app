@@ -1,8 +1,10 @@
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import GradientButton from "../../components/GradientButton";
+import { useNavigation } from "@react-navigation/native";
 
 const NoJobs = () => {
+  const navigation = useNavigation();
   return (
     <>
     <View style={styles.noJobContainer}>
@@ -14,7 +16,7 @@ const NoJobs = () => {
       <Text style={styles.noContractText}>You don't have any contract</Text>
       <View style={{width:"100%"}}>
 
-      <GradientButton title="View"/>
+      <GradientButton title="View" onPress={()=>navigation.navigate("MyFindJobs")}/>
       </View>
     </View>
     </>

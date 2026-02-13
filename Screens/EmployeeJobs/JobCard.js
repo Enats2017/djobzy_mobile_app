@@ -183,6 +183,7 @@ const JobCard = ({ item, isLastItem }) => {
         <View>
           <GradientButton
             title="View"
+            paddingVertical={0}
             onPress={() =>
               navigation.navigate("JobProfile", { gid: item.request_slug })
             }

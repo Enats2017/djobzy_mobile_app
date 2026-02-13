@@ -17,10 +17,10 @@ export default function EmployerContracts() {
 
   return (
     <SafeAreaView style={styles.contractcontainer}>
+      <View style={styles.container}>
       <View style={styles.headerWrapper}>
         <PageNameHeaderBar navigation={navigation} title="Contracts" />
       </View>
-
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -55,6 +55,7 @@ export default function EmployerContracts() {
           <Text style={styles.menuText}>Deactivated Jobs</Text>
         </TouchableOpacity>
       </ScrollView>
+      </View>
       <EmployerFooter/>
     </SafeAreaView>
   );
@@ -63,17 +64,20 @@ export default function EmployerContracts() {
 const styles = StyleSheet.create({
   contractcontainer: {
     flex: 1,
-    backgroundColor: "#222222",
+  
   },
-  headerWrapper: {
-    paddingHorizontal: 10,
+  container:{
+    flex:1,
+      backgroundColor: "#222222",
+      paddingHorizontal:15
   },
+
   headerTitle: {
     fontSize: 22,
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 15,
+   
   },
   menuItem: {
     paddingVertical: 18,

@@ -15,7 +15,7 @@ import {
   TouchableOpacity,
   View,
   Image,
-  Modal,
+
 } from "react-native";
 import HeaderBar from "../../components/HeaderBar";
 import { API_URL } from "../../api/ApiUrl";
@@ -27,6 +27,7 @@ import GroupJobPost from "../../assets/images/GroupJobPost.png";
 import GroupNext from "../../assets/images/GroupNext.png";
 import EmployerCard from "./EmployerCard";
 import EmployerFooter from "../../components/EmployerFooter";
+import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
 
 const DuplicateEmp = () => {
   const [activeTab, setActiveTab] = useState("jobs");
@@ -45,6 +46,7 @@ const DuplicateEmp = () => {
   const [feeds, setFeeds] = useState([]);
   const [feedLoading, setFeedLoading] = useState(false);
   const closeModal = () => setEmpDashModal(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchEmployees = useCallback(
     async (pageNum = 1) => {
@@ -54,7 +56,7 @@ const DuplicateEmp = () => {
         else setIsFetchingMore(true);
         const token = await AsyncStorage.getItem("token");
         console.log(token);
-        
+
         // console.log("📡 Fetching jobs for page:", pageNum);
         const res = await fetch(
           `${API_URL}/employer-dashboard?page=${pageNum}`,
@@ -63,7 +65,7 @@ const DuplicateEmp = () => {
               Authorization: `Bearer ${token}`,
               Accept: "application/json",
             },
-          }
+          },
         );
         const data = await res.json();
         if (!data?.suggested_profiles || data.suggested_profiles.length === 0) {
@@ -73,7 +75,7 @@ const DuplicateEmp = () => {
         setEmployees((prev) => {
           if (pageNum === 1) return data.suggested_profiles;
           const newEmployees = data.suggested_profiles.filter(
-            (item) => !prev.some((p) => p.id === item.id)
+            (item) => !prev.some((p) => p.id === item.id),
           );
 
           return [...prev, ...newEmployees];
@@ -87,7 +89,7 @@ const DuplicateEmp = () => {
         setIsFetchingMore(false);
       }
     },
-    [loading, isFetchingMore]
+    [loading, isFetchingMore],
   );
 
   useEffect(() => {
@@ -96,6 +98,14 @@ const DuplicateEmp = () => {
       fetchEmployees(1);
     }
   }, [fetchEmployees]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setHasMore(true);
+    setPage(1);
+    await fetchEmployees(1); 
+    setRefreshing(false);
+  };
 
   const fetchFeeds = async () => {
     try {
@@ -125,7 +135,12 @@ const DuplicateEmp = () => {
     }
   }, [activeTab]);
 
-
+    const handleCreateJobNavigation = () => {
+      const store = useGlobalSearch.getState();
+      store.reset();
+      store.clearCategories();
+      navigation.navigate("EmployerCategory");
+    };
 
   const renderFooter = () => {
     if (!isFetchingMore) return null;
@@ -153,9 +168,7 @@ const DuplicateEmp = () => {
               styles.smallTab,
               activeTab === "categories" && { backgroundColor: "#C96B59" },
             ]}
-            onPress={() => {
-              navigation.navigate("EmployerCategory");
-            }}
+            onPress={handleCreateJobNavigation}
           >
             <Text style={styles.tabText}>Categories</Text>
           </TouchableOpacity>
@@ -197,7 +210,7 @@ const DuplicateEmp = () => {
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <HeaderBar/>
+          <HeaderBar />
           {/* <View style={styles.tabContainer}>
             <TouchableOpacity
               style={[styles.tab, activeTab === "feeds" && styles.activeTab]}
@@ -258,6 +271,8 @@ const DuplicateEmp = () => {
                 }}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 80 }}
+                refreshing={refreshing}
+                onRefresh={onRefresh}
               />
             )
           ) : (

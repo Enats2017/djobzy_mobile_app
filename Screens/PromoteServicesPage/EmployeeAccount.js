@@ -10,8 +10,6 @@ import {
   Share,
   Platform,
   ToastAndroid,
-  TouchableWithoutFeedback,
-  Dimensions,
 } from "react-native";
 import Octicons from "@expo/vector-icons/Octicons";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -37,12 +35,6 @@ import { API_ICON, API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import CategoryModel from "../../components/CategoryModel";
-import { captureRef } from "react-native-view-shot";
-import * as Print from "expo-print";
-import * as FileSystem from "expo-file-system/legacy";
-import * as Sharing from "expo-sharing";
-import { useRef } from "react";
-
 import Delete_Category from "../../components/Delete_Category";
 import QuestionMark from "../../components/QuestionMark";
 
@@ -66,9 +58,6 @@ const EmployeeAccount = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedName, setSelectedName] = useState("");
-  const screenRef = useRef(null);
-  const scrollRef = useRef(null);
-  const [contentHeight, setContentHeight] = useState(0);
 
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -145,136 +134,11 @@ const EmployeeAccount = () => {
       }
     }
   };
-  const displayedCategories = showAllCategories ? job : job.slice(0, 5);
-
-  const generateExactUIPDF = async (mode = "color") => {
-    const isBW = mode === "bw";
-
-    const colors = {
-      bg: isBW ? "#ffffff" : "#222222",
-      card: isBW ? "#ffffff" : "rgba(255,255,255,0.1)",
-      text: isBW ? "#000000" : "#ffffff",
-      sub: isBW ? "#555" : "#c3c3c3",
-      stat: isBW ? "#000" : "#46A282",
-      accent: isBW ? "#000" : "#25dd4d",
-      pill: isBW ? "#eeeeee" : "rgba(255,255,255,0.1)",
-    };
-
-    const html = `
-  <html>
-  <head>
-    <style>
-      @page { size: A4; margin: 18px; }
-      body {
-        background:${colors.bg};
-        color:${colors.text};
-        font-family: Arial, sans-serif;
-      }
-      .profileCard {
-        background:${colors.card};
-        border-radius:15px;
-        padding:20px 10px;
-      }
-      .row { display:flex; gap:8px; }
-      .avatar {
-        width:84px; height:84px;
-        border-radius:60px;
-        border:1.5px solid ${colors.sub};
-      }
-      .name { font-size:18px; margin-bottom:7px; }
-      .iconRow { display:flex; justify-content:space-between; margin-top:12px; }
-      .iconText { font-size:12px; }
-      .statsRow { display:flex; gap:10px; margin-top:18px; }
-      .statBox {
-        background:${colors.stat};
-        padding:16px 25px;
-        border-radius:10px;
-        text-align:center;
-      }
-      .infoBox { margin-top:12px; }
-      .pill {
-        display:inline-flex;
-        background:${colors.pill};
-        padding:7px 14px;
-        border-radius:20px;
-        margin:4px;
-        font-size:12px;
-      }
-      .serviceCard {
-        width:160px;
-        padding:14px;
-        border-radius:14px;
-        border:1.5px solid ${colors.pill};
-        text-align:center;
-        display:inline-block;
-        margin-right:10px;
-      }
-      .price { color:${colors.accent}; }
-    </style>
-  </head>
-
-  <body>
-
-  <div class="profileCard">
-    <div class="row">
-      <img class="avatar" src="${user.photo || ""}" />
-      <div>
-        <div class="name">${user.full_name}</div>
-        <div style="color:${colors.sub};">Verification Level: ${user.verification_count}/7</div>
-        <div style="color:${colors.sub};">${user.address}</div>
-      </div>
-    </div>
-
-    <div class="statsRow">
-      <div class="statBox">${profile.count}<br/>Jobs</div>
-      <div class="statBox">${profile.earned}<br/>Earned</div>
-      <div class="statBox">${profile.likes?.length}<br/>Followers</div>
-    </div>
-  </div>
-
-  <div class="infoBox">
-    <b>Profile Title</b>
-    <div style="color:${colors.sub};">${user.profile_title_employee}</div>
-  </div>
-
-  <div class="infoBox">
-    <b>About Me</b>
-    <div style="color:${colors.sub};">${user.about}</div>
-  </div>
-
-  <div class="infoBox"><b>Promote Services</b></div>
-
-  ${promote
-    .map(
-      (p) => `
-    <div class="serviceCard">
-      <b>${p.subject}</b><br/>
-      <span class="price">${p.hour_minimum} CAD</span><br/>
-      <small>/hour</small>
-    </div>
-  `,
-    )
-    .join("")}
-
-  <div class="infoBox"><b>Employee Category</b></div>
-
-  ${job.map((j) => `<span class="pill">${j.subname}</span>`).join("")}
-
-  </body>
-  </html>
-  `;
-
-    const pdf = await Print.printToFileAsync({ html });
-    const uri = pdf.uri || pdf.fileUri;
-    const dest =
-      FileSystem.documentDirectory + `profile_ui_${mode}_${Date.now()}.pdf`;
-    await FileSystem.copyAsync({ from: uri, to: dest });
-    await Sharing.shareAsync(dest);
-  };
+  const displayedCategories = showAllCategories ? job : job?.slice(0, 5);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.container} ref={screenRef} collapsable={false}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <PageNameHeaderBar title="My Account" navigation={navigation} />
         </View>
@@ -282,10 +146,8 @@ const EmployeeAccount = () => {
           <Loading />
         ) : (
           <ScrollView
-            ref={scrollRef}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}
-            onContentSizeChange={(w, h) => setContentHeight(h)}
           >
             <View style={styles.profileCard}>
               <View style={styles.profileinfo}>
@@ -293,13 +155,15 @@ const EmployeeAccount = () => {
                   <Image
                     source={{
                       uri:
-                        user.photo ||
+                        user?.photo ||
                         "https://randomuser.me/api/portraits/women/44.jpg",
                     }}
                     style={styles.avatar}
                   />
                   <View style={styles.profileInfoRow}>
-                    <Text style={styles.name}>{user?.full_name}</Text>
+                    <View style={styles.userNameSection}>
+                      <Text style={styles.name}>{user?.full_name}</Text>
+                    </View>
                     <View style={styles.iconbox}>
                       <Octicons name="clock-fill" size={12} color="#c3c3c3c3" />
                       <Text style={styles.infoText}>GMT+05:30</Text>
@@ -316,7 +180,9 @@ const EmployeeAccount = () => {
                     </View>
                     <View style={styles.iconbox}>
                       <Entypo name="location-pin" size={14} color="#c3c3c3c3" />
-                      <Text style={styles.infoText}>{user?.address}</Text>
+                      <Text style={styles.infoText}>
+                        {user?.address}kandi borivali maharasta bumbai alli
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -372,6 +238,7 @@ const EmployeeAccount = () => {
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
               >
+                <View></View>
                 <View style={styles.statsRow}>
                   <View style={styles.statBox}>
                     <Text style={styles.statValue}>{profile?.count}</Text>
@@ -403,7 +270,7 @@ const EmployeeAccount = () => {
               </View> */}
               <QuestionMark title="Profile Title" iconColor="#fff" />
               <Text style={styles.infoText2}>
-                {user.profile_title_employee}
+                {user?.profile_title_employee}
               </Text>
             </View>
             <View style={styles.infoBox}>
@@ -462,30 +329,67 @@ const EmployeeAccount = () => {
               contentContainerStyle={styles.promatewrapper}
               showsHorizontalScrollIndicator={false}
             >
-              {promote.map((item, index) => (
-                <View key={index} style={styles.wrapper}>
-                  <View style={styles.iconContainer}>
-                    <Ionicons name="logo-android" size={28} color="#000" />
+              {promote?.map((item, index) => {
+                const icon =
+                  item?.seeking_services?.[0]?.get_seek_services_api?.icon;
+
+                console.log("111111", icon);
+
+                console.log(
+                  "Path",
+                  `${API_ICON}/images/servicephoto/png-image/${icon}`,
+                );
+
+                return (
+                  <View key={index} style={styles.wrapper}>
+                    {/* ICON */}
+                    <View style={styles.iconContainer}>
+                      {icon ? (
+                        <Image
+                          source={{
+                            uri: `${API_ICON}/images/servicephoto/png-image/${icon}`,
+                          }}
+                          style={styles.image}
+                          resizeMode="contain"
+                        />
+                      ) : (
+                        <Ionicons name="image-outline" size={28} color="#999" />
+                      )}
+                    </View>
+
+                    {/* CARD */}
+                    <View style={styles.card}>
+                      {/* TOP CONTENT */}
+                      <View style={styles.cardContent}>
+                        <Text style={styles.title} numberOfLines={2}>
+                          {item.subject}
+                        </Text>
+
+                        <View style={styles.priceRow}>
+                          <Text style={styles.price}>
+                            {item.hour_minimum} CAD
+                          </Text>
+                          <Text style={styles.perHour}>/hour</Text>
+                        </View>
+                      </View>
+
+                      {/* BUTTON (ALWAYS BOTTOM) */}
+                      <GradientButton
+                        title="View"
+                        fontSize={15}
+                        paddingVertical={0}
+                        paddingHorizontal={35}
+                        onPress={() =>
+                          navigation.navigate("EditPromoteSevices", {
+                            id: item.sid,
+                            type: 2,
+                          })
+                        }
+                      />
+                    </View>
                   </View>
-                  <View style={styles.card}>
-                    <Text style={styles.title}>{item.subject}</Text>
-                    <Text style={styles.price}>{item.hour_minimum} CAD</Text>
-                    <Text style={styles.perHour}>/hour</Text>
-                    <GradientButton
-                      title="View"
-                      fontSize={15}
-                      paddingVertical={10}
-                      paddingHorizontal={35}
-                      onPress={() =>
-                        navigation.navigate("EditPromoteSevices", {
-                          id: item.sid,
-                          type: 2,
-                        })
-                      }
-                    />
-                  </View>
-                </View>
-              ))}
+                );
+              })}
             </ScrollView>
             <View style={styles.infoBox}>
               {/* <View style={styles.iconbox}>
@@ -547,6 +451,8 @@ const EmployeeAccount = () => {
             <View style={styles.boostbtn}>
               <GradientButton
                 title="Boost"
+                paddingHorizontal={40}
+                paddingVertical={0}
                 onPress={() =>
                   navigation.navigate("ProfileBoostPage", {
                     categories: job,
@@ -704,16 +610,12 @@ const EmployeeAccount = () => {
               proves your qualification.
             </Text>
             <View style={styles.button}>
-              <GradientButton
-                title="Download Colored Print"
-                onPress={() => generateExactUIPDF("color")}
-              />
+              <GradientButton title="Download Colored Print" />
               <BorderButton
                 borderColor="#000"
                 color="#000"
                 fontSize={19}
                 title="Download Black & White Print"
-                onPress={() => generateExactUIPDF("bw")}
               />
             </View>
           </View>
@@ -725,7 +627,6 @@ const EmployeeAccount = () => {
         pageType={0}
         onClose={() => {
           setModalVisible(false);
-          fetchEmployee();
         }}
       />
       <Delete_Category
@@ -757,18 +658,31 @@ const styles = StyleSheet.create({
   profileinfo: {
     flexDirection: "row",
     alignItems: "center",
+    width: "100%",
+    justifyContent: "space-between",
   },
   profileRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
+    alignItems: "center",
+    gap: 7,
   },
+  profileInfoRow: {
+    flex: 1,
+    gap: 2, // 🔥 REQUIRED so text knows bounds
+  },
+
   avatar: {
     width: 84,
     height: 84,
     borderRadius: 60,
     borderWidth: 1.5,
     borderColor: "#c3c3c3",
+  },
+  userNameSection: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "flex-start",
   },
   name: {
     color: "#fff",
@@ -779,7 +693,7 @@ const styles = StyleSheet.create({
   iconbox: {
     flexDirection: "row",
     gap: 6,
-    alignItems: "flex-start",
+    alignItems: "baseline",
     flexWrap: "wrap",
   },
   infoText: {
@@ -789,9 +703,10 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
   },
   iconRow: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
   },
   iconBtn: {
     alignItems: "center",
@@ -1000,35 +915,48 @@ const styles = StyleSheet.create({
   promatewrapper: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: 20,
+    paddingTop: 8,
     gap: 10,
+  },
+
+  wrapper: {
+    position: "relative",
+    marginTop: 30,
   },
 
   iconContainer: {
     position: "absolute",
-    top: -15,
+    top: -22,
+    left: "50%",
+    transform: [{ translateX: -22.5 }],
     zIndex: 10,
-    width: 40,
-    height: 40,
-    left: 60,
-    paddingBottom: 4.2,
+    width: 45,
+    height: 45,
     borderRadius: 22.5,
-    backgroundColor: "#E7C1AF",
+    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#3D3D3D",
+  },
+
+  image: {
+    width: 25,
+    height: 25,
   },
 
   card: {
     width: 160,
+    height: 180,
     paddingTop: 27,
     paddingBottom: 18,
     paddingHorizontal: 10,
     borderRadius: 14,
     alignItems: "center",
+    justifyContent: "space-between",
     borderWidth: 1.5,
     borderColor: "#ffffff1a",
+  },
+  cardContent: {
+    alignItems: "center",
   },
 
   title: {
@@ -1037,6 +965,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
     lineHeight: 17,
+  },
+
+  priceRow: {
+    alignItems: "center",
+    gap: 4,
   },
 
   price: {
@@ -1068,9 +1001,9 @@ const styles = StyleSheet.create({
   plusbtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 7,
     backgroundColor: "#fff",
-    borderRadius: 15,
+    borderRadius: 13,
     paddingHorizontal: 8,
     width: "50%",
     paddingVertical: 5,

@@ -26,6 +26,7 @@ import GradientButton from "../../components/GradientButton";
 import { toastError, toastSuccess } from "../../utils/toast";
 import { useGlobalSearch } from "./useGlobalSearch";
 import EmployerFooter from "../../components/EmployerFooter";
+import LineDivider from "../../components/LineDivider";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -38,7 +39,7 @@ const SearchScreen = () => {
   const route = useRoute();
   const { search_type } = route.params ?? {};
   const [results, setResults] = useState([]);
-  const [searchMode, setSearchMode] = useState(search_type ?? 0);
+  const [searchMode, setSearchMode] = useState(s ?? 0);
   const [showDropdown, setShowDropdown] = useState(false);
   const [categoryModal, setCategoryModal] = useState(false);
   const [categoryName, setCategoryName] = useState("");
@@ -254,6 +255,7 @@ const SearchScreen = () => {
                 </TouchableOpacity>
               </View>
             )}
+           
 
             {loading ? (
               <View style={styles.resultLoader}>
@@ -407,6 +409,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     color: "#fff",
+      fontFamily:"Montserrat_400Regular",
     fontSize: 14,
   },
 
@@ -444,16 +447,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    borderBottomWidth:1.5,
+    borderColor:"#ffffff1a"
   },
 
   categoryText: {
     color: "#fff",
+    fontFamily:"Montserrat_400Regular",
     fontSize: 14,
+    marginBottom:8
   },
 
   requestText: {
     color: "#f5b400",
     fontSize: 14,
+      fontFamily:"Montserrat_400Regular",
     textDecorationLine: "underline",
     textDecorationColor: "#f5b400",
   },

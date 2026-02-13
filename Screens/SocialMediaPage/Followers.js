@@ -135,6 +135,8 @@ const Followers = () => {
 
   const handleUnfollow = async (userId) => {
     console.log(userId);
+
+    console.log(userId);
     setLoadingUserId(userId);
     try {
       const token = await AsyncStorage.getItem("token");
@@ -189,8 +191,16 @@ const Followers = () => {
           />
           <View style={styles.ratingsection}>
             <View style={styles.ratingrow}>
-              <Text style={styles.followname}>{item.full_name}</Text>
-              <Text style={styles.rating}>{renderStars(item.rating)}</Text>
+              <Text
+                style={styles.followname}
+                
+                ellipsizeMode="tail"
+              >
+                {item.full_name}
+              </Text>
+              <View style={styles.starsInline}>
+                <Text style={styles.rating}>{renderStars(item.rating)}</Text>
+              </View>
             </View>
             <View style={styles.iconbox}>
               <MaterialIcons name="verified" size={18} color="#34A853" />
@@ -274,8 +284,9 @@ const Followers = () => {
                       style={styles.avatar}
                     />
                     <View style={styles.profileInfoRow}>
-                      <Text style={styles.name}>{profile?.full_name}</Text>
-
+                      <View style={styles.userNameSection}>
+                        <Text style={styles.name}>{profile?.full_name}</Text>
+                      </View>
                       <View style={styles.iconbox}>
                         <Octicons
                           name="clock-fill"
@@ -300,7 +311,7 @@ const Followers = () => {
                           size={14}
                           color="#c3c3c3c3"
                         />
-                        <Text style={styles.infoText}>Mumbai, Maharshtra</Text>
+                        <Text style={styles.infoText}>{profile?.address}</Text>
                       </View>
                     </View>
                   </View>
@@ -387,8 +398,7 @@ const styles = StyleSheet.create({
   Header: {
     flexDirection: "row",
     alignItems: "center",
-
-    gap: 5,
+  
     width: "85%",
   },
   profileCard: {
@@ -398,46 +408,74 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 15,
   },
+  profileinfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   profileRow: {
     flexDirection: "row",
     gap: 10,
+    alignItems: "center",
+  },
+  profileInfoRow: {
+    flex: 1,
+    gap:3,
+  },
+  userNameSection: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: 2,
   },
   name: {
     color: "#fff",
     fontSize: 18,
-    width: "95%",
+    flexShrink: 1,
+    maxWidth: "90%",
     fontFamily: "Montserrat_500Medium",
     marginBottom: 7,
   },
   followname: {
     color: "#fff",
     fontSize: 18,
+   maxWidth:"100%",
     fontFamily: "Montserrat_500Medium",
   },
   iconbox: {
     flexDirection: "row",
+    alignItems: "baseline",
     gap: 6,
-    paddingVertical: 2,
   },
   infoText: {
     color: "#c3c3c3c3",
     fontSize: 16,
     fontFamily: "Montserrat_400Regular",
   },
+    starsInline: {
+    flexDirection: "row",
+    marginTop: 0,
+  },
 
   statsRow: {
     flexDirection: "row",
     gap: 10,
   },
+  ratingsection:{
+    flex:1,
+    gap:2,
+  },
   ratingrow: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: 5,
+     flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 2,
+    maxWidth: "100%",
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-
+    justifyContent:"space-between",
+    flex:1,
     gap: 8,
   },
   statBox: {

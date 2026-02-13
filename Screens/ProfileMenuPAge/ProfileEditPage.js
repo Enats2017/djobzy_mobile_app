@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ScrollView,
   View,
@@ -41,6 +41,106 @@ const ProfileEditPage = () => {
   const [moneySpent, setMoneySpent] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
+
+  const fetchProfileForEdit = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    const response = await fetch(`${API_URL}/employee-profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    const data = await response.json();
+    const user = data.editprofile || {};
+    console.log(user);
+    
+
+    // BASIC FIELDS
+    setProfileTitle(user.profile_title_employee || "");
+    setDescription(user.about || "");
+    setDob(user.dob || "");
+    setResume(user.resume_link || "");
+    setJobs(user.num_jobs ? String(user.num_jobs) : "");
+    setMoneySpent(user.money_spent ? String(user.money_spent) : "");
+
+    // CATEGORY
+    setCategory(
+      (data.subcategory || []).map((item) => ({
+        id: item?.subid,
+        value: item?.subname,
+      }))
+    );
+
+    // SOCIAL MEDIA
+    
+
+    // SERVICES
+     setServices(
+       (data.promote || []).map((item) => ({
+        id: item.sid,
+        value: item.subject,
+      }))
+     );
+
+    // // LANGUAGE
+    // setLanguage(
+    //   (user.languages || []).map((item, index) => ({
+    //     id: index + 1,
+    //     value: item.language || item,
+    //   }))
+    // );
+
+    // // EDUCATION
+    // setEducation(
+    //   (user.education || []).map((item, index) => ({
+    //     id: index + 1,
+    //     value: item,
+    //   }))
+    // );
+
+    // // ASSETS
+    // setAssets(
+    //   (user.assets || []).map((item, index) => ({
+    //     id: index + 1,
+    //     value: item,
+    //   }))
+    // );
+
+    // // SOFTWARE
+    // setSoftware(
+    //   (user.software || []).map((item, index) => ({
+    //     id: index + 1,
+    //     value: item,
+    //   }))
+    // );
+
+    // // VEHICLE
+    // setVehicle(
+    //   (user.vehicle || []).map((item, index) => ({
+    //     id: index + 1,
+    //     value: item,
+    //   }))
+    // );
+
+    // // CERTIFICATES
+    // setCertificates(
+    //   (user.certificates || []).map((item, index) => ({
+    //     id: index + 1,
+    //     value: item,
+    //   }))
+    // );
+  } catch (error) {
+    console.log("Edit profile fetch error =>", error);
+  }
+};
+
+useEffect(() => {
+  fetchProfileForEdit();
+}, []);
+
 
   const addItem = (type) => {
     const newItem = { id: Date.now(), value: "" };
@@ -107,57 +207,52 @@ const ProfileEditPage = () => {
     });
   };
 
-  const submitProfile = async () => {
-  try {
-    const token = await AsyncStorage.getItem("token");
-    const formData = new FormData();
+//   const submitProfile = async () => {
+//   try {
+//     const token = await AsyncStorage.getItem("token");
+//     const formData = new FormData();
 
-    formData.append("profile_title", profileTitle);
-    formData.append("description", description);
-    formData.append("category",(category.map(i => i.value)));
-    formData.append("socialMedia",(socialMedia.map(i => i.value)));
-    formData.append("services",(services.map(i => i.value)));
-    formData.append("dob", dob);
-    formData.append("resume_link", resume);
-    formData.append("num_jobs", jobs);
-    formData.append("money_spent", moneySpent);
-    formData.append("language",(language.map(i => i.value)));
-    formData.append("education",(education.map(i => i.value)));
-    formData.append("assets", (assets.map(i => i.value)));
-    formData.append("software",(software.map(i => i.value)));
-    formData.append("vehicle", (vehicle.map(i => i.value)));
-    formData.append("certificates", (certificates.map(i => i.value)));
+// formData.append("category", JSON.stringify(category.map(i => i.value)));
+// formData.append("socialMedia", JSON.stringify(socialMedia.map(i => i.value)));
+// formData.append("services", JSON.stringify(services.map(i => i.value)));
+// formData.append("language", JSON.stringify(language.map(i => i.value)));
+// formData.append("education", JSON.stringify(education.map(i => i.value)));
+// formData.append("assets", JSON.stringify(assets.map(i => i.value)));
+// formData.append("software", JSON.stringify(software.map(i => i.value)));
+// formData.append("vehicle", JSON.stringify(vehicle.map(i => i.value)));
+// formData.append("certificates", JSON.stringify(certificates.map(i => i.value)));
 
-    // file only if selected
-    if (selectedFile) {
-      formData.append("attachment", {
-        uri: selectedFile.uri,
-        type: selectedFile.type,
-        name: selectedFile.name,
-      });
-    }
 
-    const response = await fetch(`${API_URL}/employee-edit-profile/employee`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
+//     // file only if selected
+//     if (selectedFile) {
+//       formData.append("attachment", {
+//         uri: selectedFile.uri,
+//         type: selectedFile.type,
+//         name: selectedFile.name,
+//       });
+//     }
+
+//     const response = await fetch(`${API_URL}/employee-edit-profile/employee`, {
+//       method: "POST",
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         Accept: "application/json",
        
-      },
-      body: formData,
-    });
+//       },
+//       body: formData,
+//     });
 
-    const  data  =await response.json();
-    console.log("API RAW RESPONSE =>", response);
+//     const  data  =await response.json();
+//     console.log("API RAW RESPONSE =>", response);
 
-    console.log("FULL DATA => ", JSON.stringify(response.data, null, 2));
-    Alert.alert("Success", data.message || "Profile Updated");
+//     console.log("FULL DATA => ", JSON.stringify(response.data, null, 2));
+//     Alert.alert("Success", data.message || "Profile Updated");
 
-  } catch (err) {
-    console.log("Error =>", err);
-    Alert.alert("Error", "Something went wrong!");
-  }
-};
+//   } catch (err) {
+//     console.log("Error =>", err);
+//     Alert.alert("Error", "Something went wrong!");
+//   }
+// };
 
 
   return (
@@ -325,7 +420,7 @@ const ProfileEditPage = () => {
                     styles={styles}
                   />
             </View>
-            <GradientButton onPress={submitProfile} />
+            <GradientButton/>
           </ScrollView>
         </View>
         <Footer />

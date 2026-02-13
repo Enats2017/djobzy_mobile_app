@@ -128,10 +128,7 @@ const DeactivedDetailsPage = () => {
           <View style={styles.header}>
             <PageNameHeaderBar title="Details" navigation={navigation} />
           </View>
-          <ScrollView>
-             <View style={styles.msgBox}>
-                <Text style={styles.msgtext}>The Job Post is Deactivated By The Employer</Text>
-              </View>
+          <ScrollView>  
             <View style={styles.titleContainer}>
               <Text style={styles.jobTitle}>{postJob.details?.subject}</Text>
               <Text style={styles.postedTime}>upload at {postJob.details?.created}</Text>
@@ -188,7 +185,7 @@ const DeactivedDetailsPage = () => {
               </View>
             </View>
 
-             {postJob?.requirement?.length > 0 && (
+             {postJob?.requirement?.length > 1 && (
                 <View style={styles.cardContainer}>
                   <Text style={styles.cardHeading}>Requirnment</Text>
                   <View style={styles.requirementContainer}>
@@ -207,7 +204,7 @@ const DeactivedDetailsPage = () => {
             
               )}
 
-            {postJob?.language?.length > 0 && (
+            {postJob?.language?.length > 1 && (
               <View style={styles.cardContainer}>
                 <Text style={styles.cardHeading}>Language</Text>
                 <View style={styles.requirementContainer}>
@@ -534,7 +531,7 @@ const styles = StyleSheet.create({
   },
   buttonEdit: {
     flex: 1,
-    backgroundColor: "#fdbf2d",
+    backgroundColor: "#c3c3c3c3",
     borderRadius: 7,
     alignItems: "center",
     justifyContent: "center",

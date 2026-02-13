@@ -44,6 +44,7 @@ const EmployerFooter = () => {
     const store = useCreateJobGlobalStore.getState();
     store.reset();
     store.resetEditMode();
+    store.clearEditingFromReview();
     store.setActiveTab(0);
     navigation.navigate("CreateJob");
   };

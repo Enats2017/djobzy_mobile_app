@@ -32,7 +32,6 @@ export default function HomeScreen() {
       const { verification_count, admin } = user;
       console.log("1111",verification_count);
       
-
       if (verification_count >= 2 && admin == 2) {
         navigation.navigate("EmployerDashboard");
       } else if (verification_count >= 2 && admin == 0) {

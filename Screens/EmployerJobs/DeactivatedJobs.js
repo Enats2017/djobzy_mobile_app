@@ -67,44 +67,43 @@ export default function MyJobPost() {
   };
 
   const fetchFollowersAndFollowing = async () => {
-  try {
-    setLoading(true);
-    const token = await AsyncStorage.getItem("token");
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
 
-    /* FOLLOWING API */
-    const followingRes = await fetch(`${API_URL}/followings`, {
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      /* FOLLOWING API */
+      const followingRes = await fetch(`${API_URL}/followings`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    const followingJson = await followingRes.json();
+      const followingJson = await followingRes.json();
 
-    /* FOLLOWERS API */
-    const followersRes = await fetch(`${API_URL}/followers`, {
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      /* FOLLOWERS API */
+      const followersRes = await fetch(`${API_URL}/followers`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    const followersJson = await followersRes.json();
+      const followersJson = await followersRes.json();
 
-    if (followingJson.status === 200) {
-      setFollowingData(followingJson.data.liked_users);
+      if (followingJson.status === 200) {
+        setFollowingData(followingJson.data.liked_users);
+      }
+
+      if (followersJson.status === 200) {
+        setFollowersData(followersJson.data.followers);
+      }
+    } catch (error) {
+      console.log("Followers API error:", error);
+    } finally {
+      setLoading(false);
     }
-
-    if (followersJson.status === 200) {
-      setFollowersData(followersJson.data.followers);
-    }
-  } catch (error) {
-    console.log("Followers API error:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <SafeAreaView style={styles.jobpostcontainer}>
@@ -121,7 +120,7 @@ export default function MyJobPost() {
           <Loading />
         ) : (
           <ScrollView
-            contentContainerStyle={{paddingBottom:80}}
+            contentContainerStyle={{ paddingBottom: 80 }}
             showsVerticalScrollIndicator={false}
           >
             {deactivate.length > 0 ? (
@@ -130,35 +129,38 @@ export default function MyJobPost() {
                   <View style={styles.topInfoContainer}>
                     <View style={styles.leftInfo}>
                       <Text style={styles.jobTitle}>{item.subject}</Text>
-                      <Text style={styles.jobId}>Posted {item.created_at}</Text>
                     </View>
-                    <View style={styles.rightInfo}>
-                      <View style={styles.proposalsRow}>
-                        <Text style={styles.proposalsLabel}>Proposals</Text>
-                        <Text style={styles.proposalsCount}>{item.proposal}</Text>
+                    {item.proposal && (
+                      <View style={styles.rightInfo}>
+                        <View style={styles.proposalsRow}>
+                          <Text style={styles.proposalsLabel}>Proposals</Text>
+                          <Text style={styles.proposalsCount}> 
+                            {item.proposal}
+                          </Text>
+                        </View>
                       </View>
-                    </View>
+                    )}
                   </View>
                   <View style={styles.detailsCard}>
                     <View style={styles.detailsRow}>
                       <View style={styles.detailItem}>
                         <Text style={styles.detailLabel}>Total Price :</Text>
                         <Text style={styles.detailValue}>
-                          {item.fixed_price ? item.fixed_minimum : "N/A"}
+                          {item.fixed_minimum || "N/A"}
                         </Text>
                       </View>
                       <View style={styles.detailItem}>
                         <Text style={styles.detailLabel}>Hourly Rate :</Text>
                         <Text style={styles.detailValue}>
                           {" "}
-                          {item.hour_price ? item.hour_minimum : "N/A"}
+                          {item.hour_minimum || "N/A"}
                         </Text>
                       </View>
                     </View>
                     <View style={styles.detailItem}>
                       <Text style={styles.detailLabel}>Expected Hours :</Text>
                       <Text style={styles.detailValue}>
-                        {item.expected_hour ? item.expected_hour : 0}
+                        {item.expected_hour || 0}
                       </Text>
                     </View>
                   </View>
@@ -192,15 +194,16 @@ export default function MyJobPost() {
                 </View>
               ))
             ) : (
-              <Text style={{ textAlign: "center", marginTop: 50, color: "#fff" }}>
+              <Text
+                style={{ textAlign: "center", marginTop: 50, color: "#fff" }}
+              >
                 No Jobs Posted Yet
               </Text>
             )}
           </ScrollView>
         )}
-
       </View>
-      <EmployerFooter/>
+      <EmployerFooter />
     </SafeAreaView>
   );
 }
@@ -208,23 +211,21 @@ export default function MyJobPost() {
 const styles = StyleSheet.create({
   jobpostcontainer: {
     flex: 1,
-    
   },
-  container:{
-    flex:1,
-    backgroundColor:"#222222",
-    paddingHorizontal:15
+  container: {
+    flex: 1,
+    backgroundColor: "#222222",
+    paddingHorizontal: 15,
   },
   headerSection: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    
   },
   headerLeft: {
     flex: 1,
   },
-  
+
   jobCard: {
     backgroundColor: "#ffffff1a",
     borderRadius: 12,
@@ -261,7 +262,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    flexWrap: "wrap",
   },
   proposalsLabel: {
     color: "#ffffff",

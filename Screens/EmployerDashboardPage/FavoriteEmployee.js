@@ -183,7 +183,7 @@ const FavoriteEmployee = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <PageNameHeaderBar title="Favorite Employees" navigation={navigation} />
+        <PageNameHeaderBar title="Favourite Employees" navigation={navigation} />
         {loading ? (
           <Loading />
         ) : jobs.length === 0 ? (

@@ -2,6 +2,7 @@ import { Ionicons,Entypo,MaterialCommunityIcons,FontAwesome6 } from "@expo/vecto
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useServiceGlobalStore } from "../Screens/PromoteServicesPage/ServiceGlobalStore";
 
 const ACTIVE_COLOR = "#CB7767";
 const INACTIVE_COLOR = "#000";
@@ -10,6 +11,8 @@ const Footer = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const isActive = (routeName) => route.name === routeName;
+
+
   return (
     <>
       <View style={styles.bottomContainer}>
@@ -87,7 +90,7 @@ const Footer = () => {
           >
             <FontAwesome6
               name="user-large"
-              size={24}
+              size={22}
               color={isActive("ProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
             <Text
@@ -129,7 +132,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   activeText: {
-    color: "#cb7767",
+    color: "#CB7767",
+    fontSize: 14,
     fontFamily: "Montserrat_400Regular",
   },
 });

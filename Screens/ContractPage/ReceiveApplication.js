@@ -1,143 +1,171 @@
-
-import React, { useState, useEffect } from 'react'
-import { View, Text , TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native'
-import { useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context'
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
-import PageNameHeaderBar from '../../components/PageNameHeaderBar';
-import { API_URL } from '../../api/ApiUrl';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Loading from '../../components/Loading';
-import EmployerFooter from '../../components/EmployerFooter';
+import PageNameHeaderBar from "../../components/PageNameHeaderBar";
+import { API_URL } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Loading from "../../components/Loading";
+import EmployerFooter from "../../components/EmployerFooter";
 
 const ReceiveApplication = () => {
-    const navigation = useNavigation();
-    const [loading , setLoading] = useState(true)
-    const [proposals, setProposals] = useState([]);
+  const navigation = useNavigation();
+  const [loading, setLoading] = useState(true);
+  const [proposals, setProposals] = useState([]);
 
+  const fetchEmployerJob = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
 
-      const fetchEmployerJob = async () => {
-        try {
-          const token = await AsyncStorage.getItem("token");
-    
-          const response = await fetch(`${API_URL}/receive-proposal`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: "application/json",
-              },
-            }
-          );
-          if (!response.ok) throw new Error("Failed to fetch job");
-          const data = await response.json();
-          setProposals(data.gigs)
-       
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-      useEffect(() => {
-        fetchEmployerJob();
-      }, []);
-
-       
+      const response = await fetch(`${API_URL}/receive-proposal`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch job");
+      const data = await response.json();
+      setProposals(data.gigs);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchEmployerJob();
+  }, []);
 
   return (
     <>
-    <SafeAreaView style={{flex:1}}>
+      <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-            <PageNameHeaderBar title="Receive Application"  navigation={navigation}/>
-            {
-              loading?(
-                <Loading/>
-              ):(
-              <ScrollView contentContainerStyle={{paddingBottom:80}}>
-                  {proposals.length > 0 ? (
-                      proposals.map((item, index) => (
-                      <View key={index} style={styles.card}>
-                          <View style={styles.cardHeader}>
-                          <View style={styles.avatarWrapperOuter}>
-                              <Image
-                              source={{ uri: item.photo }}
-                              style={styles.avatarImage}
-                              />
-                          </View>
-
-                          <View style={styles.userInfo}>
-                              <View style={styles.nameStarsRow}>
-                              <Text style={styles.username}>{item.name}</Text>
-                              <View style={styles.starsRow}>
-                                  {[...Array(5)].map((_, i) => (
-                                  <FontAwesome key={i} name="star" size={10} color="#EBBE56" />
-                                  ))}
-                              </View>
-                              </View>
-
-                              <View style={styles.verificationRow}>
-                              <MaterialIcons name="verified" size={16} color="#C3C3C3" />
-                              <Text style={styles.verification}>
-                                  Verification Level: {item.verification_count}/7
-                              </Text>
-                              </View>
-                          </View>
-
-                          <View style={styles.offeredSection}>
-                              <Text style={styles.offeredPriceText}>Offered Price</Text>
-                              <View style={styles.cadButton}>
-                              <Text style={styles.cadButtonText}>CAD {item.bid_price}</Text>
-                              </View>
-                          </View>
-                          </View>
-
-                          <Text style={styles.title}>{item.subject}</Text>
-                          <Text style={styles.posted}>Posted On: {item.dated}</Text>
-
-                          <View style={styles.sectionBox}>
-                          <Text style={styles.sectionTitle}>Introduction Letter</Text>
-                          <Text style={styles.sectionText}>{item.desc_proposal}</Text>
-                          </View>
-
-                          <View style={styles.sectionBox}>
-                          <Text style={styles.sectionTitle}>Job Description</Text>
-                          <Text style={styles.sectionText}>{item.description}</Text>
-                          </View>
-
-                          <View style={styles.actionRow}>
-                          <TouchableOpacity style={styles.viewBtn} onPress={() => navigation.navigate("PostJobDetails", {jobId: item.request_slug})}>
-                              <Text style={styles.viewBtnText}>View</Text>
-                          </TouchableOpacity>
-
-                          <TouchableOpacity style={styles.chatBtn}>
-                              <Text style={styles.chatBtnText}>Chat</Text>
-                          </TouchableOpacity>
-                          </View>
+          <PageNameHeaderBar
+            title="Receive Application"
+            navigation={navigation}
+          />
+          {loading ? (
+            <Loading />
+          ) : (
+            <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+              {proposals.length > 0 ? (
+                proposals.map((item, index) => (
+                  <View key={index} style={styles.card}>
+                    <View style={styles.cardHeader}>
+                      <View style={styles.avatarWrapperOuter}>
+                        <Image
+                          source={{ uri: item.photo }}
+                          style={styles.avatarImage}
+                        />
                       </View>
-                      ))
-                  ) : (
-                      <Text style={{ textAlign: "center", marginTop: 50, color: "#fff" }}>
-                      No Applicants Found
+
+                      <View style={styles.userInfo}>
+                        <View style={styles.nameStarsRow}>
+                          <Text style={styles.username}>{item.name}</Text>
+                          <View style={styles.starsRow}>
+                            {[...Array(5)].map((_, i) => (
+                              <FontAwesome
+                                key={i}
+                                name="star"
+                                size={10}
+                                color="#EBBE56"
+                                 style={{ marginLeft: 3 }}
+                              />
+                            ))}
+                          </View>
+                        </View>
+
+                        <View style={styles.verificationRow}>
+                          <MaterialIcons
+                            name="verified"
+                            size={16}
+                            color="#C3C3C3"
+                          />
+                          <Text style={styles.verification}>
+                            Verification Level: {item.verification_count}/7
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.offeredSection}>
+                        <Text style={styles.offeredPriceText}>
+                          Offered Price
+                        </Text>
+                        <View style={styles.cadButton}>
+                          <Text style={styles.cadButtonText}>
+                            CAD {item.bid_price}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    <Text style={styles.title}>{item.subject}</Text>
+                    <Text style={styles.posted}>Posted On: {item.dated}</Text>
+
+                    <View style={styles.sectionBox}>
+                      <Text style={styles.sectionTitle}>
+                        Introduction Letter
                       </Text>
-                  )}
-              </ScrollView>
+                      <Text style={styles.sectionText}>
+                        {item.desc_proposal}
+                      </Text>
+                    </View>
 
+                    <View style={styles.sectionBox}>
+                      <Text style={styles.sectionTitle}>Job Description</Text>
+                      <Text style={styles.sectionText}>{item.description}</Text>
+                    </View>
+
+                    <View style={styles.actionRow}>
+                      <TouchableOpacity
+                        style={styles.viewBtn}
+                        onPress={() =>
+                          navigation.navigate("PostJobDetails", {
+                            jobId: item.request_slug,
+                          })
+                        }
+                      >
+                        <Text style={styles.viewBtnText}>View</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.chatBtn}
+                        onPress={() => navigation.navigate("ChatList")}
+                      >
+                        <Text style={styles.chatBtnText}>Chat</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text
+                  style={{ textAlign: "center", marginTop: 50, color: "#fff" }}
+                >
+                  No Applicants Found
+                </Text>
               )}
-            
-
+            </ScrollView>
+          )}
         </View>
-        <EmployerFooter/>
-    </SafeAreaView>
-      
+        <EmployerFooter />
+      </SafeAreaView>
     </>
-  )
-}
+  );
+};
 const styles = StyleSheet.create({
-    container:{
-       flex:1,
-       backgroundColor:"#222222",
-       paddingHorizontal:15
-    },
+  container: {
+    flex: 1,
+    backgroundColor: "#222222",
+    paddingHorizontal: 15,
+  },
   card: {
     backgroundColor: "#ffffff1a",
     borderRadius: 10,
@@ -148,8 +176,9 @@ const styles = StyleSheet.create({
 
   cardHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 10,
+    
   },
 
   avatarWrapperOuter: {
@@ -158,39 +187,41 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     width: 55,
     height: 55,
+    marginRight:7,
+
     overflow: "hidden",
     backgroundColor: "#222",
   },
-  avatarImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 30,
-  },
+
 
   userInfo: { flex: 1 },
 
   nameStarsRow: {
-    flexDirection: "row",
+   flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    flexWrap: "wrap",
+    gap: 1,
+    
   },
   starsRow: {
     flexDirection: "row",
+    
   },
 
   username: {
     color: "#fff",
-    fontWeight: "500",
+      flexShrink: 1,
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-    marginLeft: 8,
+ 
   },
 
   verificationRow: {
     flexDirection: "row",
     alignItems: "center",
+    gap:4,
     marginTop: 5,
-    marginLeft: 8,
+   
   },
   verification: {
     color: "#C3C3C3",
@@ -290,4 +321,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReceiveApplication
+export default ReceiveApplication;

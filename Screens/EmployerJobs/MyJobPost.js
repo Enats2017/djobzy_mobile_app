@@ -69,7 +69,7 @@ export default function MyJobPost() {
                 </View>
                 <View style={styles.rightInfo}>
                   <View style={styles.proposalsRow}>
-                    <Text style={styles.proposalsLabel}>Proposals</Text>
+                    <Text style={styles.proposalsLabel}>Proposals:</Text>
                     <Text style={styles.proposalsCount}>{item.proposal}</Text>
                   </View>
                 </View>

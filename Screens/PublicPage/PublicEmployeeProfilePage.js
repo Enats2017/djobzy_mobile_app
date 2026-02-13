@@ -309,7 +309,7 @@ export default function PublicEmployeeProfilePage({ route }) {
                 )}
                 <TouchableOpacity
                   style={styles.btnChat}
-                  onPress={() => navigation.navigate("FeedChat")}
+                  onPress={() => navigation.navigate("ChatList")}
                 >
                   <Text style={styles.btnChatText}>Chat</Text>
                 </TouchableOpacity>
@@ -326,126 +326,160 @@ export default function PublicEmployeeProfilePage({ route }) {
                 <Text style={styles.statsNumber}>{profile?.earned} CAD</Text>
               </View>
             </View>
-            <View style={styles.infoOuterContainer}>
-              <View style={styles.infoSection}>
-                <Text style={styles.sectionLabel}>Profile Title</Text>
-                <Text style={styles.profileTitleText}>
-                  {user?.profile_title_employee || "No Title Added"}
-                </Text>
+            {user && (
+              <View style={styles.infoOuterContainer}>
+                <View style={styles.infoSection}>
+                  <Text style={styles.sectionLabel}>Profile Title</Text>
+                  <Text style={styles.profileTitleText}>
+                    {user?.profile_title_employee || "No Title Added"}
+                  </Text>
+                </View>
+                <View style={styles.dividerLine} />
+                <View style={styles.infoSection}>
+                  <Text style={styles.sectionLabel}>About Me</Text>
+                  <Text style={styles.aboutMeText}>
+                    {user?.employer_about || "No about info available."}
+                  </Text>
+                </View>
+                <View style={styles.dividerLine} />
               </View>
-              <View style={styles.dividerLine} />
-              <View style={styles.infoSection}>
-                <Text style={styles.sectionLabel}>About Me</Text>
-                <Text style={styles.aboutMeText}>
-                  {user?.employer_about || "No about info available."}
-                </Text>
-              </View>
-              <View style={styles.dividerLine} />
-            </View>
-            <FlatList
-              data={feeds}
-              keyExtractor={(item) => item.id.toString()}
-              scrollEnabled={feeds.length > 5 ? true : false}
-              ListHeaderComponent={
-                <Text style={styles.recentText}>
-                  {feeds[0]?.full_name} Recent Posts
-                </Text>
-              }
-              renderItem={({ item }) => (
-                <FeedPost
-                  author={item.full_name}
-                  subtitle={item.profile_title_employer ?? "No title"}
-                  text={item?.message}
-                  avatar={{ uri: item.photo }}
-                  image={{ uri: item.file_name }}
-                  likes={item.likes_count}
-                  comments={item.comment_count}
-                  share="0"
-                />
-              )}
-            />
+            )}
 
-            <View style={styles.category}>
-              <Text style={styles.sectionLabel}>Involved Category</Text>
-              <View style={styles.categoryWrapper}>
-                {displayedCategories.map((item) => (
-                  <View key={item.subid} style={styles.categoryPill}>
-                    <Text style={styles.categoryText}>{item.subname}</Text>
-                  </View>
-                ))}
-                {subcategory.length > 5 && (
-                  <TouchableOpacity
-                    onPress={() => setShowAllCategories((prev) => !prev)}
-                    style={styles.showMoreBtn}
-                  >
-                    <Text style={styles.showMoreText}>
-                      {showAllCategories ? "Show Less" : "Show More"}
-                    </Text>
-
-                    <Ionicons
-                      name={showAllCategories ? "chevron-up" : "chevron-down"}
-                      size={14}
-                      color="#000"
-                      style={{ marginLeft: 5 }}
-                    />
-                  </TouchableOpacity>
+            {feeds.length > 0 && (
+              <FlatList
+                data={feeds}
+                keyExtractor={(item) => item.id.toString()}
+                scrollEnabled={feeds.length > 5 ? true : false}
+                ListHeaderComponent={
+                  <Text style={styles.recentText}>
+                    {feeds[0]?.full_name} Recent Posts
+                  </Text>
+                }
+                renderItem={({ item }) => (
+                  <FeedPost
+                    author={item.full_name}
+                    subtitle={item.profile_title_employer ?? "No title"}
+                    text={item?.message}
+                    avatar={{ uri: item.photo }}
+                    image={{ uri: item.file_name }}
+                    likes={item.likes_count}
+                    comments={item.comment_count}
+                    share="0"
+                  />
                 )}
-              </View>
-            </View>
-            <View style={styles.pillsWrapper}>
-              <Text style={styles.sectionLabel}>My Promoted Services</Text>
-              <TouchableOpacity style={styles.plusbtn}>
-                <AntDesign name="plus" size={18} color="#030303" />
-                <Text style={styles.plustext}>Promote Services</Text>
-              </TouchableOpacity>
+              />
+            )}
 
-              <ScrollView
-                horizontal={true}
-                contentContainerStyle={styles.promatewrapper}
-              >
-                {promote.map((item, index) => (
-                  <View style={styles.wrapper} key={index}>
-                    <View style={styles.iconContainer}>
-                      {item?.seekingServices
-                        ?.filter((s) => s?.getSeekServices)
-                        ?.slice(0, 2)
-                        ?.map((service, index) => {
-                          console.log("ICON:", service.getSeekServices.icon);
-                          return (
-                            <Image
-                              key={index}
-                              source={{
-                                uri: `${API_ICON}/images/servicephoto/png-image/${service.getSeekServices.icon}?tr=ef-grayscale`,
-                              }}
-                              style={styles.providesImg}
-                            />
-                          );
-                        })}
+            {displayedCategories.length > 0 && (
+              <View style={styles.category}>
+                <Text style={styles.sectionLabel}>Involved Category</Text>
+                <View style={styles.categoryWrapper}>
+                  {displayedCategories.map((item) => (
+                    <View key={item.subid} style={styles.categoryPill}>
+                      <Text style={styles.categoryText}>{item.subname}</Text>
                     </View>
-                    <View style={styles.card}>
-                      <Text style={styles.title}>{item?.subject}</Text>
-                      <Text style={styles.price}>{item?.hour_minimum} CAD</Text>
-                      <Text style={styles.perHour}>/hour</Text>
-                      <GradientButton
-                        title="View"
-                        fontSize={15}
-                        paddingVertical={10}
-                        paddingHorizontal={35}
-                        onPress={() =>
-                          navigation.navigate("PromoteServicesDetails", {
-                            id: item.sid,
-                            type: 2,
-                            price_negotiable: item.price_negotiable,
-                            selected_time: item.selected_time,
-                          })
-                        }
+                  ))}
+                  {subcategory.length > 5 && (
+                    <TouchableOpacity
+                      onPress={() => setShowAllCategories((prev) => !prev)}
+                      style={styles.showMoreBtn}
+                    >
+                      <Text style={styles.showMoreText}>
+                        {showAllCategories ? "Show Less" : "Show More"}
+                      </Text>
+
+                      <Ionicons
+                        name={showAllCategories ? "chevron-up" : "chevron-down"}
+                        size={14}
+                        color="#000"
+                        style={{ marginLeft: 5 }}
                       />
-                    </View>
-                  </View>
-                ))}
-              </ScrollView>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            )}
+            <LineDivider />
 
-              <LineDivider />
+            <View style={styles.pillsWrapper}>
+              {promote.length > 0 && (
+                <>
+                  <Text style={styles.sectionLabel}>My Promoted Services</Text>
+                  <ScrollView
+                    horizontal={true}
+                    contentContainerStyle={styles.promatewrapper}
+                  >
+                    {promote.map((item, index) => {
+                      const icon =
+                        item?.seeking_services?.[0]?.get_seek_services_api
+                          ?.icon;
+
+                      console.log("111111", icon);
+
+                      console.log(
+                        "Path",
+                        `${API_ICON}/images/servicephoto/png-image/${icon}`,
+                      );
+
+                      return (
+                        <View key={index} style={styles.wrapper}>
+                          {/* ICON */}
+                          <View style={styles.iconContainer}>
+                            {icon ? (
+                              <Image
+                                source={{
+                                  uri: `${API_ICON}/images/servicephoto/png-image/${icon}`,
+                                }}
+                                style={styles.image}
+                                resizeMode="contain"
+                              />
+                            ) : (
+                              <Ionicons
+                                name="image-outline"
+                                size={28}
+                                color="#999"
+                              />
+                            )}
+                          </View>
+
+                          {/* CARD */}
+                          <View style={styles.card}>
+                            {/* TOP CONTENT */}
+                            <View style={styles.cardContent}>
+                              <Text style={styles.title} numberOfLines={2}>
+                                {item.subject}
+                              </Text>
+
+                              <View style={styles.priceRow}>
+                                <Text style={styles.price}>
+                                  {item.hour_minimum} CAD
+                                </Text>
+                                <Text style={styles.perHour}>/hour</Text>
+                              </View>
+                            </View>
+
+                            {/* BUTTON (ALWAYS BOTTOM) */}
+                            <GradientButton
+                              title="View"
+                              fontSize={15}
+                              paddingVertical={10}
+                              paddingHorizontal={35}
+                              onPress={() =>
+                                navigation.navigate("EditPromoteSevices", {
+                                  id: item.sid,
+                                  type: 2,
+                                })
+                              }
+                            />
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
+                  <LineDivider />
+                </>
+              )}
+
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>Attachments</Text>
                 <Text style={styles.profileTitleText}>.........</Text>
@@ -688,40 +722,52 @@ const styles = StyleSheet.create({
   promatewrapper: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: 18,
+        paddingTop: 8,
     gap: 10,
   },
+    wrapper: {
+    position: "relative",
+    marginTop: 25,
+  },
 
-  iconContainer: {
+ iconContainer: {
     position: "absolute",
-    top: -20,
+    top: -22,
+    left: "50%",
+    transform: [{ translateX: -22.5 }],
     zIndex: 10,
-    width: 40,
-    height: 40,
-    left: 60,
-    paddingBottom: 4.2,
+    width: 45,
+    height: 45,
     borderRadius: 22.5,
-    backgroundColor: "#E7C1AF",
+    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#3D3D3D",
   },
+    image: {
+    width: 25,
+    height: 25,
+  },
+
 
   card: {
     width: 160,
+    height: 180,
     paddingTop: 27,
     paddingBottom: 18,
     paddingHorizontal: 10,
     borderRadius: 14,
     alignItems: "center",
+    justifyContent: "space-between",
     borderWidth: 1.5,
     borderColor: "#ffffff1a",
+  },
+    cardContent: {
+    alignItems: "center",
   },
 
   title: {
     color: "#ffffff",
-    fontFamily:"Montserrat_400Medium",
+    fontFamily: "Montserrat_400Medium",
     fontSize: 13,
     textAlign: "center",
     marginTop: 10,
@@ -733,6 +779,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Montserrat_600SemiBold",
     marginTop: 6,
+  },
+    priceRow: {
+    alignItems: "center",
+    gap: 4,
   },
 
   perHour: {
@@ -758,6 +808,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 7,
+    marginBottom: 6,
   },
 
   categoryPill: {
@@ -767,7 +818,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 14,
     borderRadius: 20,
-    marginBottom: 4,
+   
   },
   categoryText: {
     color: "#fff",

@@ -24,18 +24,26 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 
+
+
 const ViewCurrentJobPost = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const [loading, setLoading] = useState(true);
   const { gid } = route.params || [];
+
   const [job, setJob] = useState([]);
   const [category, setCategory] = useState([]);
   const [admin, setAdmin] = useState(0);
+   
 
   const fetchData = async () => {
     try {
+      console.log(gid);
+
       const token = await AsyncStorage.getItem("token");
+      console.log(token);
+
       const response = await fetch(
         `${API_URL}/user-current-job-details/${gid}`,
         {
@@ -47,6 +55,8 @@ const ViewCurrentJobPost = () => {
       );
       const data = await response.json();
       setJob(data);
+      console.log("1111jobdata", data);
+
       setCategory(data.category);
     } catch (error) {
       console.log("API Error:", error);
@@ -54,6 +64,8 @@ const ViewCurrentJobPost = () => {
       setLoading(false);
     }
   };
+
+  console.log("1111", job.request_status);
 
   const loadUser = async () => {
     const userStr = await AsyncStorage.getItem("user");
@@ -75,7 +87,11 @@ const ViewCurrentJobPost = () => {
         <View style={styles.container}>
           <PageNameHeaderBar
             navigation={navigation}
-            title="My Active Contract"
+            title={
+              job?.details?.request_status == 2
+                ? "My Completed Contract"
+                : "My Active Contract"
+            }
           />
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -178,8 +194,9 @@ const ViewCurrentJobPost = () => {
                       size={13}
                       color="#c3c3c3"
                       style={{ marginRight: 2 }}
+                      
                     />
-                    <Text style={styles.location}>{job.user?.address}</Text>
+                    <Text style={styles.verification}>{job.user?.address}</Text>
                   </View>
                 )}
               </View>
@@ -233,6 +250,7 @@ const ViewCurrentJobPost = () => {
             </TouchableOpacity>
           </View>
         </View>
+
         {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
     </>
@@ -266,6 +284,7 @@ const styles = StyleSheet.create({
   topBox: {
     flex: 1,
     alignItems: "center",
+    gap: 4,
     justifyContent: "center",
     minWidth: 0,
   },
@@ -311,14 +330,13 @@ const styles = StyleSheet.create({
   metaItemRowRight: {
     flexDirection: "row",
     justifyContent: "flex-end",
+    alignItems: "center",
     flex: 1,
   },
   metaLabel: {
     color: "#ffffff",
     fontSize: 12,
     fontFamily: "Montserrat_400Regular",
-    marginBottom: 1,
-    marginTop: 2,
   },
   metaValue: {
     color: "#ffffff",
@@ -409,8 +427,9 @@ const styles = StyleSheet.create({
   },
   locationRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "baseline",
     marginTop: 2,
+    gap: 4,
   },
   location: {
     color: "#c3c3c3",

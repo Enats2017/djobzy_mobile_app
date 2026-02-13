@@ -1,16 +1,36 @@
 import Footer from "../../components/Footer";
+import EmployerFooter from "../../components/EmployerFooter";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const JobBoostPaymentSection = ({ route }) => {
   const { gig } = route.params;
+  console.log("1jobpayemtn",gig);
+  
   const subject = gig?.subject;
+  console.log(subject);
+  
   const [selectedPrice, setSelectedPrice] = useState(5);
   const navigation = useNavigation();
+  const [admin, setAdmin] = useState(0);
   const prices = [5, 6, 7];
+
+  const loadUser = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    setAdmin(user?.admin);
+  };
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  console.log(admin);
+
   return (
     <>
       <SafeAreaView style={styles.safe}>
@@ -92,21 +112,19 @@ const JobBoostPaymentSection = ({ route }) => {
             <Text style={styles.buttonText}>Boost the Job post</Text>
           </TouchableOpacity>
         </View>
-        <Footer />
-
+        {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
-
     </>
   );
 };
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "#222222",
   },
   container: {
     flex: 1,
     padding: 15,
+    backgroundColor: "#222222",
   },
   headerRow: {
     flexDirection: "row",

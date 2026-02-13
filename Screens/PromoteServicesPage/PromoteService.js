@@ -34,20 +34,27 @@ const PromoteService = () => {
     setField,
     addImage,
     removeImage,
-   
+    unique_id
   } = useServiceGlobalStore();
+  console.log("EDIT MODE ID:", unique_id);
+
   const { expectedTime, setExpectedTime } = useServiceGlobalStore();
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [titleModal, setTitleModal] = useState(false);
   const [templates, setTemplates] = useState([]);
+  const [errors, setErrors] = useState({
+    title: "",
+    description: "",
+    hourlyRate: "",
+    totalPrice: "",
+  });
 
   const titleLimit = 60;
   const descLimit = 500;
 
   const handleHourlyChange = (value) => {
     setField("hourlyRate", value);
-
     const total = parseInt(totalPrice);
     const hourly = parseInt(value);
 
@@ -55,14 +62,15 @@ const PromoteService = () => {
       setExpectedTime(0);
       return;
     }
-
-    if (hourly > total) {
-      Alert.alert(
-        "Invalid Input",
-        "Hourly rate cannot be more than total price."
-      );
-      setExpectedTime(0);
-      return;
+    if(hourly && total){
+      if (hourly > total) {
+        Alert.alert(
+          "Invalid Input",
+          "Hourly rate cannot be more than total price.",
+        );
+        setExpectedTime(0);
+        return;
+      }
     }
 
     const expected = total / hourly;
@@ -71,24 +79,12 @@ const PromoteService = () => {
 
   const handleTotalPriceChange = (value) => {
     setField("totalPrice", value);
-
     const finalPrice = parseInt(value);
-    const hourly = parseInt(hourlyRate);
-
+    const hourly = parseInt(hourlyRate);    
     if (!hourly || !finalPrice) {
       setExpectedTime(0);
       return;
     }
-
-    if (hourly > finalPrice) {
-      Alert.alert(
-        "Invalid Input",
-        "Total price cannot be less than Hourly rate."
-      );
-      setExpectedTime(0);
-      return;
-    }
-
     const expected = finalPrice / hourly;
     setExpectedTime(Math.ceil(expected));
   };
@@ -113,9 +109,38 @@ const PromoteService = () => {
     }
   };
 
+  const handleNext = () => {
+    let newErrors = {};
+    if (!title || title.trim() === "") {
+      newErrors.title = "Service title is required";
+      return;
+
+    }
+    if (!description || description.trim() === "") {
+      newErrors.description = "Service description is required";
+      return;
+    }
+    if (!hourlyRate || Number(hourlyRate) <= 0) {
+      newErrors.hourlyRate = "Enter valid hourly rate";
+      return;
+    }
+    if (!totalPrice || Number(totalPrice) <= 0) {
+      newErrors.totalPrice = "Enter valid total price";
+      return;
+    }
+    if (Number(hourlyRate) > Number(totalPrice)) {
+      newErrors.totalPrice = "Total price must be greater than hourly rate";
+      return
+    }
+    
+    navigation.navigate("PromoteCategoryPage");
+  };
+
   const fetchTemplates = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
+      console.log(token);
+      
 
       const res = await fetch(`${API_URL}/get-template`, {
         method: "POST",
@@ -139,59 +164,59 @@ const PromoteService = () => {
     }
   };
 
- const handleTemplateSelect = async (item) => {
-  try {
-    setSelectedTemplate(item.title);
-
-    const token = await AsyncStorage.getItem("token");
-    const res = await fetch(`${API_URL}/fetchDetails`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        id: item.id,
-        type: 2,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (data.status !== 200) return;
-
-    const result = data.result; // ✅ DEFINE FIRST
-    const store = useServiceGlobalStore.getState(); // ✅ DEFINE STORE
-    store.setField("title", result.title || "");
-    store.setField("description", result.description || "");
-    store.setField("hourlyRate", result.hour_minimum?.toString() || "");
-    store.setField("totalPrice", result.price?.toString() || "");
-    store.setExpectedTime(0);
-
-
-    store.clearCategories();
-
-    result.subservice_id?.forEach((id, index) => {
-      store.addCategory({
-        subId: Number(id),
-        name: result.subcategories?.[index],
+  const handleTemplateSelect = async (item) => {
+    console.log(item.id);
+    
+    try {
+      setSelectedTemplate(item.title);
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/fetchDetails`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: item.id,
+          type: 2,
+        }),
       });
-    });
-
-    // images
-    if (result.attachment?.length) {
-      result.attachment.forEach((img) => {
-        store.addImage({ uri: img.attach });
+      
+      
+      const data = await res.json();
+      
+      if (data.status !== 200) return;
+      
+      const result = data.result;
+  
+      const store = useServiceGlobalStore.getState(); 
+      store.setField("title", result.title || "");
+      store.setField("description", result.description || "");
+      store.setField("hourlyRate", result.hour_minimum?.toString() || "");
+      store.setExpectedTime(
+      (result.selected_time == "no-calendar" ? 1 : result.selected_time) || 0,
+    );
+      store.clearCategories();
+      result.subservice_id?.forEach((id, index) => {
+        store.addCategory({
+          subId: Number(id),
+          name: result.subcategories?.[index],
+        });
       });
+
+      // images
+      if (result.attachment?.length) {
+        result.attachment.forEach((img) => {
+          store.addImage({ uri: img.attach });
+        });
+      }
+
+      setShowDropdown(false);
+    } catch (err) {
+      console.log("Template detail error:", err);
     }
-
-    setShowDropdown(false);
-  } catch (err) {
-    console.log("Template detail error:", err);
-  }
-};
-
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -222,11 +247,17 @@ const PromoteService = () => {
           <TextInput
             style={styles.input}
             value={title}
-            onChangeText={(v) => setField("title", v)}
+            onChangeText={(v) => {
+              setField("title", v);
+              setErrors((prev) => ({ ...prev, title: "" }));
+            }}
             maxLength={titleLimit}
             placeholder="Service title"
             placeholderTextColor="#999"
           />
+          {errors.title ? (
+            <Text style={styles.errorText}>{errors.title}</Text>
+          ) : null}
           <Text style={styles.charCount}>
             {titleLimit - title.length} characters left
           </Text>
@@ -236,12 +267,18 @@ const PromoteService = () => {
           <TextInput
             style={[styles.input, styles.textArea]}
             value={description}
-            onChangeText={(v) => setField("description", v)}
+            onChangeText={(v) => {
+              setField("description", v);
+              setErrors((prev) => ({ ...prev, description: " " }));
+            }}
             maxLength={descLimit}
             multiline
             placeholder="Give details"
             placeholderTextColor="#999"
           />
+          {errors.description ? (
+            <Text style={styles.errorText}>{errors.description}</Text>
+          ) : null}
           <Text style={styles.charCount}>
             {description.length}/{descLimit}
           </Text>
@@ -263,11 +300,17 @@ const PromoteService = () => {
               style={styles.inlineInput}
               keyboardType="numeric"
               value={hourlyRate}
-              onChangeText={handleHourlyChange}
+              onChangeText={(v) => {
+                handleHourlyChange(v);
+                setErrors((prev) => ({ ...prev, hourlyRate: "" }));
+              }}
               placeholder="0 / h"
               placeholderTextColor="#999"
             />
           </View>
+          {errors.hourlyRate ? (
+            <Text style={styles.errorText}>{errors.hourlyRate}</Text>
+          ) : null}
 
           {/* Total Price */}
           <View style={styles.rateContainer}>
@@ -286,11 +329,17 @@ const PromoteService = () => {
               style={styles.inlineInput}
               keyboardType="numeric"
               value={totalPrice}
-              onChangeText={handleTotalPriceChange}
+              onChangeText={(v) => {
+                handleTotalPriceChange(v);
+                setErrors((prev) => ({ ...prev, totalPrice: "" }));
+              }}
               placeholder="0"
               placeholderTextColor="#999"
             />
           </View>
+          {!errors.totalPrice ? (
+            <Text style={styles.errorText}>{errors.totalPrice}</Text>
+          ) : null}
           <Text
             style={{
               color: "#fff",
@@ -302,7 +351,6 @@ const PromoteService = () => {
             Expected Time Range: {expectedTime} hours
           </Text>
 
-          {/* Attach Image Button */}
           <TouchableOpacity style={styles.attachBtn} onPress={pickImage}>
             <Text style={styles.attachText}>Attach Image</Text>
           </TouchableOpacity>
@@ -327,10 +375,7 @@ const PromoteService = () => {
 
         {/* Next Button */}
         <View style={styles.categoryBtn}>
-          <GradientButton
-            title="Choose Category"
-            onPress={() => navigation.navigate("PromoteCategoryPage")}
-          />
+          <GradientButton title="Choose Category" onPress={handleNext} />
         </View>
       </View>
       <Modal
@@ -425,7 +470,7 @@ const PromoteService = () => {
                 setTitleModal(false);
               }}
             >
-              <Text style={styles.newJobButtonText}>Start a New Job</Text>
+              <Text style={styles.newJobButtonText}>Create a New Service</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -510,18 +555,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#2A2A2D",
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 4,
-    justifyContent: "space-between",
+    paddingVertical: 8,
+   
   },
   currency: {
     color: "#aaa",
+    flex:1,
+    fontFamily:"Montserrat_400Regular",
     fontSize: 14,
   },
   inlineInput: {
     color: "#fff",
     fontSize: 14,
-    flex: 1,
-    textAlign: "right",
+    fontFamily:"Montserrat_400Regular",
+    
+   
   },
   attachBtn: {
     borderRadius: 8,
@@ -650,6 +698,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#444",
     fontFamily: "Montserrat_500Medium",
+  },
+  errorText: {
+    color: "#f50808",
+    fontSize: 12,
+    marginTop: 4,
+    fontFamily: "Montserrat_400Regular",
   },
 });
 export default PromoteService;

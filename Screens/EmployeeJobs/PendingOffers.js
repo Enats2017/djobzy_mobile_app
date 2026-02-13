@@ -35,7 +35,7 @@ const PendingOffer = ({ pendingOffer = [] }, onHide) => {
       });
       const data = await response.json();
       if (data.status == 200) {
-        setSentOffer((prev) => prev.filter((offer) => offer.oid !== oid));
+        onHide(pendingOffer);
         Alert.alert("Success", " Data hide Successfully");
         setModalVisible(false);
       }
@@ -58,7 +58,7 @@ const PendingOffer = ({ pendingOffer = [] }, onHide) => {
               style={styles.avatarImage}
             />
           </View>
-          
+
           <View style={styles.userInfo}>
             <View style={styles.nameStarsRow}>
               <Text style={styles.username}>{pendingOffer.full_name}</Text>
@@ -131,7 +131,10 @@ const PendingOffer = ({ pendingOffer = [] }, onHide) => {
           >
             <Text style={styles.viewBtnText}>View</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chatBtn}>
+          <TouchableOpacity
+            style={styles.chatBtn}
+            onPress={() => navigation.navigate("ChatList")}
+          >
             <Text style={styles.chatBtnText}>Chat</Text>
           </TouchableOpacity>
         </View>
@@ -161,7 +164,7 @@ const styles = StyleSheet.create({
 
   cardHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 10,
   },
 
@@ -172,14 +175,9 @@ const styles = StyleSheet.create({
     marginRight: 2,
     width: 55,
     height: 55,
+    marginRight: 7,
     overflow: "hidden",
     backgroundColor: "#222",
-  },
-  avatarImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 30,
-    marginLeft: 1,
   },
 
   userInfo: { flex: 1 },
@@ -187,6 +185,7 @@ const styles = StyleSheet.create({
   nameStarsRow: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap: "wrap",
     gap: 5,
   },
   starsRow: {
@@ -195,17 +194,15 @@ const styles = StyleSheet.create({
 
   username: {
     color: "#fff",
-    fontWeight: "500",
+
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-    marginLeft: 8,
   },
 
   verificationRow: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 5,
-    marginLeft: 8,
   },
   verification: {
     color: "#C3C3C3",

@@ -6,8 +6,12 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
+  Modal,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import SearchBar from "../../components/SearchBar";
 import { useNavigation } from "@react-navigation/native";
@@ -17,15 +21,23 @@ import Loading from "../../components/Loading";
 import NoTransactions from "../Wallet/NoTransactions";
 import EmployerFooter from "../../components/EmployerFooter";
 import Footer from "../../components/Footer";
+import { Montserrat_500Medium } from "@expo-google-fonts/montserrat";
 
 const ChatList = () => {
   const navigation = useNavigation();
   const { notifications, admin, user } = useNotifications();
   const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [chatModal, setChatModal] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     console.log("admin from context:", admin);
   }, [admin]);
+
+  const filteredNotifications = notifications.filter((item) =>
+    item.sender_name?.toLowerCase().includes(searchText.toLowerCase()),
+  );
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -65,12 +77,17 @@ const ChatList = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <PageNameHeaderBar title="Chat" navigation={navigation} />
-        <SearchBar />
-        {notifications.length === 0 ? (
+        <SearchBar
+          value={searchText}
+          onChangeText={setSearchText}
+          showDots={false}
+          onFilterPress={() => setChatModal(true)}
+        />
+        {filteredNotifications.length === 0 ? (
           <NoTransactions title="No Conversation Found" />
         ) : (
           <FlatList
-            data={notifications}
+            data={filteredNotifications}
             keyExtractor={(item) => item.sender_id.toString()}
             renderItem={renderItem}
             refreshing={loading}
@@ -78,6 +95,23 @@ const ChatList = () => {
           />
         )}
       </View>
+      <Modal visible={chatModal} animationType="fade" transparent>
+        <TouchableOpacity
+          style={styles.overlay}
+          activeOpacity={1}
+          onPress={() => setChatModal(false)}
+        />
+        <View style={styles.dropdownWrapper}>
+          <View style={styles.modalContainer}>
+            <TouchableOpacity style={styles.section}>
+            <Text style={styles.label}>Read</Text>
+            </TouchableOpacity>
+            <Text style={styles.label}>Unread</Text>
+            <Text style={styles.label}>Archived</Text>
+            <Text style={styles.label}>Blocked</Text>
+          </View>
+        </View>
+      </Modal>
       {admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
@@ -141,7 +175,7 @@ const styles = StyleSheet.create({
   name: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Montserrat_500Medium",
   },
   time: {
     color: "rgba(255,255,255,0.5)",
@@ -155,6 +189,7 @@ const styles = StyleSheet.create({
   subtitle: {
     color: "rgba(255,255,255,0.65)",
     fontSize: 13,
+    fontFamily: "Montserrat_400Regular",
     flex: 1,
   },
   badge: {
@@ -170,6 +205,37 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     fontWeight: "700",
+  },
+
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.05)",
+  },
+
+  dropdownWrapper: {
+  position: "absolute",
+  top: 140, // just below search bar
+  right: 8,
+},
+
+
+  modalContainer: {
+    right: 15,
+    flex:1, 
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingVertical: 17,
+    paddingHorizontal: 15,
+  },
+  section:{
+    flex:1,
+    gap:4,
+    
+  },
+  label:{
+    fontFamily:"Montserrat_500Medium",
+    fontSize:16,
+    color:"#000",
   },
 });
 

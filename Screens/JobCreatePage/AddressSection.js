@@ -11,15 +11,24 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  TouchableWithoutFeedback,
+  Keyboard
 } from "react-native";
 import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const AddressSection = () => {
+const AddressSection = ({ addressError, setAddressError }) => {
   const [languageSuggestions, setLanguageSuggestions] = useState([]);
   const [activeLangId, setActiveLangId] = useState(null);
   const [loadingLang, setLoadingLang] = useState(false);
+  const [activeLevelId, setActiveLevelId] = useState(null);
+
+  const LEVEL_OPTIONS = [
+    { label: "Basic", value: "1" },
+    { label: "Medium", value: "2" },
+    { label: "Advanced", value: "3" },
+  ];
 
   const { requirements, languages, address, setField } =
     useCreateJobGlobalStore();
@@ -35,6 +44,7 @@ const AddressSection = () => {
       const res = await fetch(`${API_URL}/language`, {
         method: "POST",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -73,7 +83,7 @@ const AddressSection = () => {
   const addLanguage = () => {
     setField("languages", [
       ...languages,
-      { id: Date.now(), lang: "", level: "" },
+      { id: Date.now(), lang: "", level: "", text: "" },
     ]);
   };
 
@@ -84,133 +94,184 @@ const AddressSection = () => {
     );
   };
 
-  const updateLanguage = (id, field, text) => {
+  const updateLanguage = (id, field, value) => {
     setField(
       "languages",
-      languages.map((l) => (l.id === id ? { ...l, [field]: text } : l)),
+      languages.map((l) => (l.id === id ? { ...l, [field]: value } : l)),
     );
   };
 
   return (
-    <View style={{ height: "86%" }}>
-      <KeyboardAwareScrollView
-        extraScrollHeight={10}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Requirements Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Requirements (Optional)</Text>
-            {requirements.map((req, index) => (
-              <View key={req.id} style={styles.requirementBox}>
-                <View style={styles.numberCircle}>
-                  <Text style={styles.numberText}>{index + 1}.</Text>
-                </View>
+     <TouchableWithoutFeedback
+    onPress={() => {
+      setActiveLangId(null);
+      setActiveLevelId(null);
+      setLanguageSuggestions([]);
+      Keyboard.dismiss();
+    }}
+  >
+    <View style={{ flex: 1 }}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Requirements Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Requirements (Optional)</Text>
+          {requirements.map((req, index) => (
+            <View key={req.id} style={styles.requirementBox}>
+              <View style={styles.numberCircle}>
+                <Text style={styles.numberText}>{index + 1}.</Text>
+              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Write your requirement here"
+                value={req.value}
+                onChangeText={(text) => updateRequirement(req.id, text)}
+              />
+              <TouchableOpacity onPress={() => removeRequirement(req.id)}>
+                <FontAwesome5 name="trash" size={15} color="#666666" />
+              </TouchableOpacity>
+            </View>
+          ))}
+          <TouchableOpacity style={styles.addBtn} onPress={addRequirement}>
+            <Text style={styles.addBtnText}>
+              <Entypo name="circle-with-plus" size={18} color="black" /> Add
+              Requirement
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* Language Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Language (Optional)</Text>
+
+          {languages.map((lang) => (
+            <View key={lang.id} style={{ marginBottom: 2, zIndex: 1000 }}>
+              {/* Row */}
+              <View style={styles.languageRow}>
+                {/* Language Input */}
                 <TextInput
-                  style={styles.input}
-                  placeholder="Write your requirement here"
-                  value={req.value}
-                  onChangeText={(text) => updateRequirement(req.id, text)}
+                  style={styles.languageInput}
+                  placeholder="Add Language"
+                  value={lang.lang}
+                  onFocus={() => {
+                    setActiveLangId(lang.id);
+                    setActiveLevelId(null);
+                  }}
+                  onChangeText={(text) => {
+                    updateLanguage(lang.id, "lang", text);
+                    fetchLanguages(
+                      text,
+                      languages.map((l) => l.lang).filter(Boolean),
+                    );
+                  }}
                 />
-                <TouchableOpacity onPress={() => removeRequirement(req.id)}>
-                  <FontAwesome5 name="trash" size={15} color="#666666" />
+
+                {/* Level Dropdown */}
+                <TouchableOpacity
+                  style={styles.languageInput}
+                  onPress={() => {
+                    setActiveLevelId(lang.id);
+                    setActiveLangId(null);
+                    setLanguageSuggestions([]);
+                  }}
+                >
+                  <Text>{lang.text || "Select Level"}</Text>
+                </TouchableOpacity>
+
+                {/* Remove */}
+                <TouchableOpacity
+                  style={styles.levelInput}
+                  onPress={() => removeLanguage(lang.id)}
+                >
+                  <FontAwesome name="minus-circle" size={18} color="#666" />
                 </TouchableOpacity>
               </View>
-            ))}
-            <TouchableOpacity style={styles.addBtn} onPress={addRequirement}>
-              <Text style={styles.addBtnText}>
-                <Entypo name="circle-with-plus" size={18} color="black" /> Add
-                Requirement
-              </Text>
-            </TouchableOpacity>
-          </View>
 
-          {/* Divider */}
-          <View style={styles.divider} />
-
-          {/* Language Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Language (Optional)</Text>
-
-            {languages.map((lang) => (
-              <View key={lang.id} style={{ marginBottom: 12 }}>
-                <View style={styles.languageRow}>
-                  <TextInput
-                    style={styles.languageInput}
-                    placeholder="Add Language"
-                    value={lang.lang}
-                    onFocus={() => setActiveLangId(lang.id)}
-                    onChangeText={(text) => {
-                      updateLanguage(lang.id, "lang", text);
-                      fetchLanguages(
-                        text,
-                        languages.map((l) => l.lang).filter(Boolean),
-                      );
-                    }}
-                  />
-
-                  <TextInput
-                    style={styles.languageInput}
-                    placeholder="Add Level"
-                    value={lang.level}
-                    onChangeText={(text) =>
-                      updateLanguage(lang.id, "level", text)
-                    }
-                  />
-
-                  <TouchableOpacity style={styles.levelInput} onPress={() => removeLanguage(lang.id)}>
-                    <FontAwesome
-                      name="minus-circle"
-                      size={18}
-                      color="#666666"
-                    />
-                  </TouchableOpacity>
+              {/* ============================= */}
+              {/* Language Suggestions */}
+              {/* ============================= */}
+              {activeLangId === lang.id && languageSuggestions.length > 0 && (
+                <View style={styles.dropdown}>
+                  {languageSuggestions.map((item) => (
+                    <TouchableOpacity
+                      key={item.value}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        updateLanguage(lang.id, "lang", item.value);
+                        setActiveLangId(null);
+                        setLanguageSuggestions([]);
+                      }}
+                    >
+                      <Text>{item.label}</Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
+              )}
 
-                {/* 🔽 Suggestions Dropdown */}
-                {activeLangId === lang.id && languageSuggestions.length > 0 && (
-                  <View style={styles.suggestionBox}>
-                    {languageSuggestions.map((item) => (
-                      <TouchableOpacity
-                        key={item.value}
-                        style={styles.suggestionItem}
-                        onPress={() => {
-                          updateLanguage(lang.id, "lang", item.value);
-                          setLanguageSuggestions([]);
-                          setActiveLangId(null);
-                        }}
-                      >
-                        <Text style={styles.suggestionText}>{item.label}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-            ))}
+              {/* ============================= */}
+              {/* Level Dropdown */}
+              {/* ============================= */}
+              {activeLevelId === lang.id && (
+                <View style={styles.dropdown}>
+                  {LEVEL_OPTIONS.map((item) => (
+                    <TouchableOpacity
+                      key={item.value}
+                      style={styles.dropdownItem}
+                       
 
-            <TouchableOpacity style={styles.addBtn} onPress={addLanguage}>
-              <Text style={styles.addBtnText}>
-                <Entypo name="circle-with-plus" size={18} /> Add Language
-              </Text>
-            </TouchableOpacity>
+                      onPress={() => {
+                        setField(
+                          "languages",
+                          languages.map((l) =>
+                            l.id === lang.id
+                              ? {
+                                  ...l,
+                                  level: item.value,
+                                  text: item.label,
+                                }
+                              : l,
+                          ),
+                        );
+
+                        setActiveLevelId(null);
+                      }}
+                    >
+                      <Text>{item.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          ))}
+
+          {/* Add Language Button */}
+          <TouchableOpacity style={styles.addBtn} onPress={addLanguage}>
+            <Text style={styles.addBtnText}>Add Language</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Address Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Address of the Job</Text>
+          <View style={styles.addressInput}>
+          <TextInput
+            style={styles.input}
+            placeholder="Write the Address"
+            value={address}
+            onChangeText={(text) => {
+              setField("address", text);
+              if (text.trim()) setAddressError(false);
+            }}
+            
+          />
+
           </View>
-
-          {/* Divider */}
-          <View style={styles.divider} />
-
-          {/* Address Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Address The Job</Text>
-            <TextInput
-              style={styles.addressInput}
-              placeholder="Write an Address"
-              value={address}
-              onChangeText={(text) => setField("address", text)}
-              placeholderTextColor="#c3c3c3"
-            />
-            {/* <View style={styles.mapscetion}>
+          {addressError && (
+            <Text style={styles.errorText}>*Please Enter Your Address</Text>
+          )}
+          {/* <View style={styles.mapscetion}>
               <MapView
                 style={styles.map}
                 initialRegion={{
@@ -221,10 +282,10 @@ const AddressSection = () => {
                 }}
               />
             </View> */}
-          </View>
-        </ScrollView>
-      </KeyboardAwareScrollView>
+        </View>
+      </ScrollView>
     </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -265,10 +326,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   addressInput: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 12,
-    height: 45,
+    borderRadius: 10,
+    paddingVertical: 2,
     paddingHorizontal: 12,
     marginBottom: 10,
     backgroundColor: "#ffffff",
@@ -333,27 +392,48 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   suggestionBox: {
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#ddd",
-  borderRadius: 6,
-  marginTop: 4,
-  maxHeight: 140,
-  elevation: 3,
-},
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 6,
+    marginTop: 4,
+    maxHeight: 140,
+    elevation: 3,
+  },
 
-suggestionItem: {
-  paddingVertical: 10,
-  paddingHorizontal: 12,
-  borderBottomWidth: 1,
-  borderBottomColor: "#eee",
-},
+  suggestionItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
 
-suggestionText: {
-  fontSize: 14,
-  color: "#333",
-},
+  suggestionText: {
+    fontSize: 14,
+    color: "#333",
+  },
 
+  errorText: {
+    color: "#FF0000",
+    fontSize: 12,
+    fontFamily: "Montserrat_400Regular",
+  },
+
+  dropdown: {
+    backgroundColor: "#fff",
+
+    borderRadius: 6,
+    marginTop: 3,
+    marginBottom: 10,
+    elevation: 5,
+    zIndex: 999,
+  },
+
+  dropdownItem: {
+    padding: 10,
+
+    borderBottomColor: "#eee",
+  },
 });
 
 export default AddressSection;

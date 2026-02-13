@@ -38,6 +38,8 @@ const EmployerSentOffer = () => {
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
       setSentOffer(data.gigs);
+      console.log(data.gigs);
+      
     } catch (err) {
       setError(err.message);
     } finally {
@@ -138,10 +140,10 @@ const EmployerSentOffer = () => {
 
                     <View style={styles.sectionBox}>
                       <Text style={styles.sectionTitle}>
-                        Introduction Letter
+                        Job Offer
                       </Text>
                       <Text style={styles.sectionText}>
-                        {item.desc_proposal}
+                        {item.offer}
                       </Text>
                     </View>
 
@@ -171,7 +173,7 @@ const EmployerSentOffer = () => {
                         <Text style={styles.viewBtnText}>View</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity style={styles.chatBtn}>
+                      <TouchableOpacity style={styles.chatBtn}onPress={() => navigation.navigate("ChatList")}>
                         <Text style={styles.chatBtnText}>Chat</Text>
                       </TouchableOpacity>
                     </View>
@@ -220,6 +222,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
+     gap:7,
   },
 
   avatarWrapperOuter: {
@@ -227,6 +230,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 30,
     width: 55,
+   
     height: 55,
     overflow: "hidden",
     backgroundColor: "#222",
@@ -237,7 +241,10 @@ const styles = StyleSheet.create({
     borderRadius: 30,
   },
 
-  userInfo: { flex: 1 },
+  userInfo: { flex: 1,
+    gap:5
+  
+   },
 
   nameStarsRow: {
     flexDirection: "row",
@@ -246,6 +253,8 @@ const styles = StyleSheet.create({
   },
   starsRow: {
     flexDirection: "row",
+    gap:2
+    
   },
 
   username: {
@@ -253,14 +262,15 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-    marginLeft: 8,
+ 
   },
 
   verificationRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 5,
-    marginLeft: 8,
+    gap:4,
+    
+    
   },
   verification: {
     color: "#C3C3C3",
@@ -278,8 +288,8 @@ const styles = StyleSheet.create({
   },
   cadButtonText: {
     fontFamily: "Montserrat_700Bold",
-    color: "#fff",
-    fontSize: 13,
+    color: "#000",
+    fontSize: 14,
   },
 
   title: {

@@ -34,7 +34,10 @@ const PromoteService = () => {
     setField,
     addImage,
     removeImage,
+    unique_id
   } = useServiceGlobalStore();
+  console.log("EDIT MODE ID:", unique_id);
+
   const { expectedTime, setExpectedTime } = useServiceGlobalStore();
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -136,6 +139,8 @@ const PromoteService = () => {
   const fetchTemplates = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
+      console.log(token);
+      
 
       const res = await fetch(`${API_URL}/get-template`, {
         method: "POST",
@@ -160,9 +165,10 @@ const PromoteService = () => {
   };
 
   const handleTemplateSelect = async (item) => {
+    console.log(item.id);
+    
     try {
       setSelectedTemplate(item.title);
-
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/fetchDetails`, {
         method: "POST",
@@ -176,21 +182,22 @@ const PromoteService = () => {
           type: 2,
         }),
       });
-
+      
+      
       const data = await res.json();
-
+      
       if (data.status !== 200) return;
-
-      const result = data.result; // ✅ DEFINE FIRST
-      const store = useServiceGlobalStore.getState(); // ✅ DEFINE STORE
+      
+      const result = data.result;
+  
+      const store = useServiceGlobalStore.getState(); 
       store.setField("title", result.title || "");
       store.setField("description", result.description || "");
       store.setField("hourlyRate", result.hour_minimum?.toString() || "");
-      store.setField("totalPrice", result.price?.toString() || "");
-      store.setExpectedTime(0);
-
+      store.setExpectedTime(
+      (result.selected_time == "no-calendar" ? 1 : result.selected_time) || 0,
+    );
       store.clearCategories();
-
       result.subservice_id?.forEach((id, index) => {
         store.addCategory({
           subId: Number(id),
@@ -463,7 +470,7 @@ const PromoteService = () => {
                 setTitleModal(false);
               }}
             >
-              <Text style={styles.newJobButtonText}>Start a New Job</Text>
+              <Text style={styles.newJobButtonText}>Create a New Service</Text>
             </TouchableOpacity>
           </View>
         </View>

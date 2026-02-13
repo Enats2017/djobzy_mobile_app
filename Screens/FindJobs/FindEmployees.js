@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import {
@@ -9,13 +9,14 @@ import {
   Text,
   TouchableOpacity,
   View,
-  FlatList
+  FlatList,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LineDivider from "../../components/LineDivider";
 import GradientButton from "../../components/GradientButton";
+import { useNavigation } from "@react-navigation/native";
 
 export default function FindEmployees() {
   const [employees, setEmployees] = useState([]);
@@ -23,6 +24,7 @@ export default function FindEmployees() {
   const [loading, setLoading] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const navigation = useNavigation();
 
   const onEndReachedCalledDuringMomentum = useRef(false);
   const hasFetched = useRef(false);
@@ -57,14 +59,13 @@ export default function FindEmployees() {
 
         setEmployees((prev) => {
           const newItems = data.details.filter(
-            (emp) => !prev.some((j) => j.id === emp.id)
+            (emp) => !prev.some((j) => j.id === emp.id),
           );
           return [...prev, ...newItems];
         });
 
         setHasMore(data.details.length === 10);
         setPage(pageNum);
-
       } catch (err) {
         console.log("Error fetching employees:", err);
       } finally {
@@ -72,7 +73,7 @@ export default function FindEmployees() {
         setIsFetchingMore(false);
       }
     },
-    [loading, isFetchingMore]
+    [loading, isFetchingMore],
   );
 
   useEffect(() => {
@@ -110,7 +111,7 @@ export default function FindEmployees() {
             />
             <View style={{ flex: 1 }}>
               <View style={styles.nameRow1}>
-                <Text style={styles.userName1}> {item.full_name} </Text>
+                <Text style={styles.userName1}> {item.full_name}</Text>
                 <View style={{ flexDirection: "row", marginLeft: 6, gap: 3 }}>
                   {[...Array(5)].map((_, i) => (
                     <FontAwesome
@@ -124,18 +125,16 @@ export default function FindEmployees() {
               </View>
               <View style={styles.paymentRow1}>
                 <MaterialIcons name="verified" size={16} color="#40b68e" />
-                <Text style={styles.paymentVerified1}>{item.verification_count}/7</Text>
+                <Text style={styles.paymentVerified1}>
+                  {item.verification_count}/7
+                </Text>
               </View>
             </View>
             <TouchableOpacity
               onPress={() => setLiked1(!liked1)}
               style={styles.heartTouchable}
             >
-              <FontAwesome
-                name={"heart-o"}
-                size={20}
-                color={"#fff"}
-              />
+              <FontAwesome name={"heart-o"} size={20} color={"#fff"} />
             </TouchableOpacity>
           </View>
           {item.about ? (
@@ -166,12 +165,19 @@ export default function FindEmployees() {
                   <View key={i} style={styles.skillTag1}>
                     <Text style={styles.skillText1}>{skill}</Text>
                   </View>
-                )
+                ),
               )}
             </View>
           </View>
           <View>
-            <GradientButton title="View" onPress={() => navigation.navigate("JobProfile", { gid: item.request_slug })} />
+            <GradientButton
+              title="View"
+              onPress={() =>
+                navigation.navigate("PublicEmployeeProfilePage", {
+                  name: item?.name || "",
+                })
+              }
+            />
           </View>
         </View>
         {!isLastItem && <LineDivider />}
@@ -180,7 +186,9 @@ export default function FindEmployees() {
   };
 
   return (
-    <View style={[styles.findEmployeeContainer, { paddingBottom: insets.bottom }]}>
+    <View
+      style={[styles.findEmployeeContainer, { paddingBottom: insets.bottom }]}
+    >
       <FlatList
         data={employees}
         renderItem={renderEmployeeCard}
@@ -188,9 +196,16 @@ export default function FindEmployees() {
         ListFooterComponent={renderFooter}
         showsVerticalScrollIndicator={false}
         onEndReachedThreshold={0.5}
-        onMomentumScrollBegin={() => { onEndReachedCalledDuringMomentum.current = false; }}
+        onMomentumScrollBegin={() => {
+          onEndReachedCalledDuringMomentum.current = false;
+        }}
         onEndReached={() => {
-          if (!onEndReachedCalledDuringMomentum.current && hasMore && !isFetchingMore && !loading) {
+          if (
+            !onEndReachedCalledDuringMomentum.current &&
+            hasMore &&
+            !isFetchingMore &&
+            !loading
+          ) {
             // console.log("🚀 Triggering next page:", page + 1);
             fetchEmployee(page + 1);
             onEndReachedCalledDuringMomentum.current = true;
@@ -209,12 +224,14 @@ const styles = StyleSheet.create({
   },
   userRow1: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 10,
   },
   nameRow1: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap:"wrap",
+
   },
   avatar1: {
     width: 55,
@@ -301,9 +318,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
   },
-  locationIcon1: {
-
-  },
+  locationIcon1: {},
   locationText1: {
     flex: 1,
     fontSize: 12,

@@ -57,7 +57,7 @@ const CreateJob = () => {
 
   const route = useRoute();
   const gid = route.params?.gid;
-  console.log(gid);
+  console.log("111111", gid);
   const [titleError, setTitleError] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
@@ -153,10 +153,13 @@ const CreateJob = () => {
       formData.append(
         "languages",
         JSON.stringify(
-          state.languages.map((l) => ({
-            language: l.lang,
-            level: l.level || 2,
-          })),
+          state.languages
+            .filter((l) => l.lang)
+            .map((l) => ({
+              language: l.lang.trim(),
+              level: l.level,
+              text: l.text,
+            })),
         ),
       );
 
@@ -185,6 +188,8 @@ const CreateJob = () => {
         body: formData,
       });
       const data = await response.json();
+      //console.log("API RESPONSE:", data);
+
       if (data.status === 200) {
         reset();
         if (type === "edit") {
@@ -454,7 +459,12 @@ const CreateJob = () => {
                   setCategoryError={setCategoryError}
                 />
               )}
-              {activeTab === 2 && <AddressSection addressError={addressError} setAddressError={setAddressError} />}
+              {activeTab === 2 && (
+                <AddressSection
+                  addressError={addressError}
+                  setAddressError={setAddressError}
+                />
+              )}
               {activeTab === 3 && <FileUpload />}
               {activeTab === 4 && (
                 <TimePeriod timeError={timeError} setTimeError={setTimeError} />

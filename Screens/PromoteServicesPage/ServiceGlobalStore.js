@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 export const useServiceGlobalStore = create((set) => ({
+
   title: "",
   description: "",
   hourlyRate: "",
@@ -9,8 +10,7 @@ export const useServiceGlobalStore = create((set) => ({
   images: [],
   categories: [],
   isEdit: false,
-  editingId: null,
-
+  unique_id: null,
   setField: (field, value) => set({ [field]: value }),
   setExpectedTime: (hours) => set({ expectedTime: hours }),
   addCategory: (category) =>
@@ -35,8 +35,8 @@ export const useServiceGlobalStore = create((set) => ({
       images: state.images.filter((_, i) => i !== index),
     })),
 
-  setEditMode: (id) => set({ isEdit: true, editingId: id }),
-  resetEditMode: () => set({ isEdit: false, editingId: null }),
+  setUniqueId: (id) => set({ isEdit: true, unique_id: id }),
+  resetUniqueId: () => set({ isEdit: false, unique_id: null }),
 
   reset: () =>
     set({
@@ -48,6 +48,7 @@ export const useServiceGlobalStore = create((set) => ({
       images: [],
       categories: [],
       isEdit: false,
-      editingId: null,
+      unique_id: null,
+      
     }),
 }));

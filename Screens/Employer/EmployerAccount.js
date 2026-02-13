@@ -253,7 +253,7 @@ const EmployerAccount = () => {
                     style={{ marginLeft: 5 }}
                   />
                 </View> */}
-                <QuestionMark title="Profile Title" iconColor="#fff" />
+                <QuestionMark title="Profile Title" iconColor="#fff"  tooltipMessage="Update your personal details here."/>
                 <Text style={styles.infoText2}>
                   {user.profile_title_employer}
                 </Text>

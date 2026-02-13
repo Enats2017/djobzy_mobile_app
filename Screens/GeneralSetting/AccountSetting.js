@@ -33,14 +33,13 @@ const AccountSetting = () => {
   const { user } = route.params || {};
   const [admin, setAdmin] = useState(0);
 
-
   const handleConfirmPassword = async () => {
     try {
       if (!password) {
         Alert.alert("Error", "Please enter your password");
         return;
       }
-       setLoading(true)
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/set-confirm-pass`, {
         method: "POST",
@@ -66,8 +65,7 @@ const AccountSetting = () => {
     } catch (error) {
       console.log("Password confirm error:", error);
       Alert.alert("Error", "Something went wrong");
-    }
-    finally{
+    } finally {
       setLoading(false);
     }
   };
@@ -104,7 +102,7 @@ const AccountSetting = () => {
     }
   };
 
-    const loadUser = async () => {
+  const loadUser = async () => {
     const userStr = await AsyncStorage.getItem("user");
     if (!userStr) return;
     const user = JSON.parse(userStr);
@@ -113,7 +111,6 @@ const AccountSetting = () => {
   };
   useEffect(() => {
     loadUser();
-   
   }, []);
   return (
     <>
@@ -191,29 +188,33 @@ const AccountSetting = () => {
               />
               <View style={styles.namesection}>
                 <Text style={styles.label}>Full Name</Text>
-                <TextInput
-                  style={styles.passwordInput}
-                  placeholder="info.got"
-                  placeholderTextColor="#999"
-                  value={name}
-                  onChangeText={setName}
-                />
+                <View style={styles.passwordsection}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="info.got"
+                    placeholderTextColor="#999"
+                    value={name}
+                    onChangeText={setName}
+                  />
+                </View>
               </View>
               <View style={styles.namesection}>
                 <Text style={styles.label}>Username</Text>
-                <TextInput
-                  style={styles.passwordInput}
-                  placeholder="info.got@gmail.coom"
-                  placeholderTextColor="#999"
-                  value={username}
-                  onChangeText={setUsername}
-                />
+                <View style={styles.passwordsection}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="info.got@gmail.coom"
+                    placeholderTextColor="#999"
+                    value={username}
+                    onChangeText={setUsername}
+                  />
+                </View>
               </View>
             </View>
           )}
           <View style={styles.button}>
             <GradientButton
-            loading={loading}
+              loading={loading}
               title={activeTab === 0 ? "Continue" : "Save Changes"}
               onPress={() => {
                 if (activeTab === 0) {
@@ -226,7 +227,7 @@ const AccountSetting = () => {
             {activeTab == 1 && <BorderButton title="Close your account" />}
           </View>
         </View>
-         {admin == 2 ? <EmployerFooter /> : <Footer />}
+        {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
     </>
   );
@@ -249,17 +250,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 5,
   },
-  passwordSection: {
-    position: "relative",
+  passwordsection: {
     width: "100%",
+    height: 48,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   passwordInput: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    height: 42,
-    paddingHorizontal: 12,
-    //
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+    flex: 1,
+    color: "#000",
   },
 
   eyeIcon: {

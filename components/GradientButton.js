@@ -42,7 +42,7 @@ const GradientButton = ({
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 10,
+    height:45,
     borderRadius: 12,
     marginTop: 4,
     alignItems: "center",

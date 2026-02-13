@@ -14,7 +14,7 @@ import AdvancedSearch from "../SearchScreen/AdvanceSearch";
 
 const BestMatches = () => {
   const [activeTab, setActiveTab] = useState(true);
-    const [showFilter, setShowFilter] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
 
   return (
     <View style={styles.bestmatch}>
@@ -51,12 +51,15 @@ const BestMatches = () => {
           </TouchableOpacity>
         </View>
         <View style={styles.iconsContainer}>
-          <TouchableOpacity style={[
-                    styles.iconCircle,
-                    showFilter && styles.iconCircleActive,
-                  ]}
-                  onPress={() => setShowFilter((prev) => !prev)}>
-            <FontAwesome6 name="filter" size={18}  color={showFilter ? "#000" : "#fff"} />
+          <TouchableOpacity
+            style={[styles.iconCircle, showFilter && styles.iconCircleActive]}
+            onPress={() => setShowFilter((prev) => !prev)}
+          >
+            <FontAwesome6
+              name="filter"
+              size={18}
+              color={showFilter ? "#000" : "#fff"}
+            />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconCircle}>
             <Octicons name="filter" size={18} color="white" />
@@ -66,27 +69,25 @@ const BestMatches = () => {
       {showFilter && <AdvancedSearch />}
 
       {activeTab ? <FindJobs /> : <FindEmployees />}
-
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  bestmatch:{
-    flex:1,
+  bestmatch: {
+    flex: 1,
   },
   matchesHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 15,
-    marginBottom:20,
+    marginBottom: 20,
   },
   toggleWrapper: {
     flexDirection: "row",
     flex: 1,
     justifyContent: "center",
-    
   },
   toggleBtn: {
     flex: 1,
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     padding: 10,
   },
-    iconCircleActive: {
+  iconCircleActive: {
     backgroundColor: "#fff",
   },
   toggleText: {
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderRadius: 10,
   },
-  scrollView: { 
+  scrollView: {
     paddingHorizontal: 1,
   },
 });

@@ -134,7 +134,7 @@ export default function MyJobPost() {
                       <View style={styles.rightInfo}>
                         <View style={styles.proposalsRow}>
                           <Text style={styles.proposalsLabel}>Proposals</Text>
-                          <Text style={styles.proposalsCount}>
+                          <Text style={styles.proposalsCount}> 
                             {item.proposal}
                           </Text>
                         </View>
@@ -146,21 +146,21 @@ export default function MyJobPost() {
                       <View style={styles.detailItem}>
                         <Text style={styles.detailLabel}>Total Price :</Text>
                         <Text style={styles.detailValue}>
-                          {item.fixed_price ? item.fixed_minimum : "N/A"}
+                          {item.fixed_minimum || "N/A"}
                         </Text>
                       </View>
                       <View style={styles.detailItem}>
                         <Text style={styles.detailLabel}>Hourly Rate :</Text>
                         <Text style={styles.detailValue}>
                           {" "}
-                          {item.hour_price ? item.hour_minimum : "N/A"}
+                          {item.hour_minimum || "N/A"}
                         </Text>
                       </View>
                     </View>
                     <View style={styles.detailItem}>
                       <Text style={styles.detailLabel}>Expected Hours :</Text>
                       <Text style={styles.detailValue}>
-                        {item.expected_hour ? item.expected_hour : 0}
+                        {item.expected_hour || 0}
                       </Text>
                     </View>
                   </View>

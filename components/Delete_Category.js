@@ -62,7 +62,7 @@ const Delete_Category = ({ visible, onClose, id, onDeleted, name}) => {
       onRequestClose={onClose}
     >
       <View style={styles.deleteOverlay}>
-        <View style={styles.deleteBox}>
+        <View style={[styles.deleteBox, { paddingBottom: insets.bottom }]}>
           <TouchableOpacity
             style={styles.modalCloseIcon}
             onPress={() => {

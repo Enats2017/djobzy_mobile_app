@@ -27,6 +27,7 @@ import GroupJobPost from "../../assets/images/GroupJobPost.png";
 import GroupNext from "../../assets/images/GroupNext.png";
 import EmployerCard from "./EmployerCard";
 import EmployerFooter from "../../components/EmployerFooter";
+import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
 
 const DuplicateEmp = () => {
   const [activeTab, setActiveTab] = useState("jobs");
@@ -134,6 +135,13 @@ const DuplicateEmp = () => {
     }
   }, [activeTab]);
 
+    const handleCreateJobNavigation = () => {
+      const store = useGlobalSearch.getState();
+      store.reset();
+      store.clearCategories();
+      navigation.navigate("EmployerCategory");
+    };
+
   const renderFooter = () => {
     if (!isFetchingMore) return null;
     return (
@@ -160,9 +168,7 @@ const DuplicateEmp = () => {
               styles.smallTab,
               activeTab === "categories" && { backgroundColor: "#C96B59" },
             ]}
-            onPress={() => {
-              navigation.navigate("EmployerCategory");
-            }}
+            onPress={handleCreateJobNavigation}
           >
             <Text style={styles.tabText}>Categories</Text>
           </TouchableOpacity>

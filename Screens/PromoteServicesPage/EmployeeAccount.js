@@ -134,7 +134,7 @@ const EmployeeAccount = () => {
       }
     }
   };
-  const displayedCategories = showAllCategories ? job : job.slice(0, 5);
+  const displayedCategories = showAllCategories ? job : job?.slice(0, 5);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -155,7 +155,7 @@ const EmployeeAccount = () => {
                   <Image
                     source={{
                       uri:
-                        user.photo ||
+                        user?.photo ||
                         "https://randomuser.me/api/portraits/women/44.jpg",
                     }}
                     style={styles.avatar}
@@ -180,7 +180,9 @@ const EmployeeAccount = () => {
                     </View>
                     <View style={styles.iconbox}>
                       <Entypo name="location-pin" size={14} color="#c3c3c3c3" />
-                      <Text style={styles.infoText}>{user?.address}</Text>
+                      <Text style={styles.infoText}>
+                        {user?.address}kandi borivali maharasta bumbai alli
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -268,7 +270,7 @@ const EmployeeAccount = () => {
               </View> */}
               <QuestionMark title="Profile Title" iconColor="#fff" />
               <Text style={styles.infoText2}>
-                {user.profile_title_employee}
+                {user?.profile_title_employee}
               </Text>
             </View>
             <View style={styles.infoBox}>
@@ -327,7 +329,7 @@ const EmployeeAccount = () => {
               contentContainerStyle={styles.promatewrapper}
               showsHorizontalScrollIndicator={false}
             >
-              {promote.map((item, index) => {
+              {promote?.map((item, index) => {
                 const icon =
                   item?.seeking_services?.[0]?.get_seek_services_api?.icon;
 
@@ -375,7 +377,7 @@ const EmployeeAccount = () => {
                       <GradientButton
                         title="View"
                         fontSize={15}
-                        paddingVertical={10}
+                        paddingVertical={0}
                         paddingHorizontal={35}
                         onPress={() =>
                           navigation.navigate("EditPromoteSevices", {
@@ -450,6 +452,7 @@ const EmployeeAccount = () => {
               <GradientButton
                 title="Boost"
                 paddingHorizontal={40}
+                paddingVertical={0}
                 onPress={() =>
                   navigation.navigate("ProfileBoostPage", {
                     categories: job,
@@ -624,7 +627,6 @@ const EmployeeAccount = () => {
         pageType={0}
         onClose={() => {
           setModalVisible(false);
-          fetchEmployee();
         }}
       />
       <Delete_Category
@@ -656,14 +658,17 @@ const styles = StyleSheet.create({
   profileinfo: {
     flexDirection: "row",
     alignItems: "center",
+    width: "100%",
+    justifyContent: "space-between",
   },
   profileRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
+    alignItems: "center",
+    gap: 7,
   },
   profileInfoRow: {
-    flex: 1, // 🔥 REQUIRED so text knows bounds
+    flex: 1,
+    gap: 2, // 🔥 REQUIRED so text knows bounds
   },
 
   avatar: {
@@ -677,20 +682,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
-    gap: 2,
+    justifyContent: "flex-start",
   },
   name: {
     color: "#fff",
     fontSize: 18,
-    flexShrink: 1,
-    maxWidth: "90%",
     fontFamily: "Montserrat_500Medium",
     marginBottom: 7,
   },
   iconbox: {
     flexDirection: "row",
     gap: 6,
-    alignItems: "center",
+    alignItems: "baseline",
     flexWrap: "wrap",
   },
   infoText: {
@@ -998,9 +1001,9 @@ const styles = StyleSheet.create({
   plusbtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 7,
     backgroundColor: "#fff",
-    borderRadius: 15,
+    borderRadius: 13,
     paddingHorizontal: 8,
     width: "50%",
     paddingVertical: 5,

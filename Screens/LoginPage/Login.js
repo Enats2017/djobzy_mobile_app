@@ -171,7 +171,7 @@ const Login = ({ navigation }) => {
             <Text style={styles.label}>Email</Text>
             <View style={styles.passwordContainer}>
               <TextInput
-                style={styles.input}
+                style={styles.passwordInput}
                 placeholder="xyz@gmail.com"
                 placeholderTextColor="#888"
                 value={email}

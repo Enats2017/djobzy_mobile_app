@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   Header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+  
     width: "85%",
   },
   profileCard: {
@@ -414,12 +414,12 @@ const styles = StyleSheet.create({
   },
   profileRow: {
     flexDirection: "row",
-
     gap: 10,
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   profileInfoRow: {
-    flex: 1, // 🔥 REQUIRED so text knows bounds
+    flex: 1,
+    gap:3,
   },
   userNameSection: {
     flexDirection: "row",
@@ -443,8 +443,7 @@ const styles = StyleSheet.create({
   },
   iconbox: {
     flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
+    alignItems: "baseline",
     gap: 6,
   },
   infoText: {
@@ -462,8 +461,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   ratingsection:{
-   
-
+    flex:1,
+    gap:2,
   },
   ratingrow: {
      flexDirection: "row",
@@ -475,6 +474,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent:"space-between",
+    flex:1,
     gap: 8,
   },
   statBox: {

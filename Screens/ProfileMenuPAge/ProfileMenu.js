@@ -135,12 +135,21 @@ const EmployeeProfileMenu = () => {
     }
   };
 
-  const handleCreateJobNavigation = () => {
+  const handlePromotebNavigation = () => {
     const store = useServiceGlobalStore.getState();
     store.reset();
-    store.resetEditMode();
+    store.resetUniqueId();
     navigation.navigate("PromoteService");
   };
+
+   const handleCreateJobNavigation = () => {
+      const store = useCreateJobGlobalStore.getState();
+      store.reset();
+      store.resetEditMode();
+      store.clearEditingFromReview();
+      store.setActiveTab(0);
+      navigation.navigate("CreateJob");
+    };
 
   if (loading) return <Loading />;
   if (switchLoading) return <Loading />;
@@ -203,14 +212,14 @@ const EmployeeProfileMenu = () => {
                    type="Entypo"
                     icon="circle-with-plus"
                     title="Promote Services"
-                    onPress={handleCreateJobNavigation}
+                    onPress={handlePromotebNavigation}
                   />
                 ) : (
                   <MenuItem
                     type="Entypo"
                     icon="circle-with-plus"
                     title="Post a Job"
-                    onPress={() => navigation.navigate("CreateJob")}
+                    onPress={handleCreateJobNavigation}
                   />
                 )}
                 {user?.admin == 0 ? (

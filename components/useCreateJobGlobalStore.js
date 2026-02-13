@@ -61,7 +61,9 @@ export const useCreateJobGlobalStore = create((set) => ({
 
   reset: () =>
     set({
+      gid:null,
       title: "",
+      type:"",
       description: "",
       selectedSubs: [],
       requirements: [{ id: 1, value: "" }],

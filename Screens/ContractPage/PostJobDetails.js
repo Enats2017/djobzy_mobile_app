@@ -69,12 +69,13 @@ const PostJobDetails = () => {
   const handleEdit = () => {
     const store = useCreateJobGlobalStore.getState();
     store.reset();
-    store.setField("type", 'edit');
+    store.setField("type", "edit");
     store.setField("title", postJob.details?.subject || "");
     store.setField("description", postJob.details?.description || "");
     store.setField(
       "selectedSubs",
       postJob.category.map((c) => ({
+        serviceId:c.service,
         subId: c.subid,
         name: c.subname,
       })),
@@ -82,12 +83,22 @@ const PostJobDetails = () => {
 
     store.setField(
       "languages",
-      postJob.language?.map((l, i) => ({
-        id: i + 1,
-        lang: l.language_name,
-        level: l.level || "",
-      })) || [{ id: 1, lang: "", level: "" }],
+      postJob.language?.map((l, i) => {
+        let levelText = "";
+
+        if (l.level == "1") levelText = "Basic";
+        else if (l.level == "2") levelText = "Medium";
+        else if (l.level == "3") levelText = "Advanced";
+
+        return {
+          id: i + 1,
+          lang: l.language_name,
+          level: l.level,
+          text: levelText,
+        };
+      }) || [{ id: 1, lang: "", level: "", text: "" }],
     );
+
     store.setField(
       "requirements",
       postJob.requirement?.map((r, i) => ({
@@ -99,6 +110,56 @@ const PostJobDetails = () => {
     store.setField("totalPrice", postJob.details?.fixed_minimum || "");
     store.setField("hourlyRate", postJob.details?.hour_minimum || "");
     store.setField("expectedTime", postJob.details?.expected_hour || "");
+    // ----- SET TERM -----
+    if (postJob.details?.contract_type == 1) {
+      store.setField("selectedTerm", "short");
+    } else {
+      store.setField("selectedTerm", "employee");
+    }
+
+    // ----- SET OPTION -----
+    const contractType = postJob.details?.contract_type;
+    const durationType = postJob.details?.duration_type;
+    const durationDays = postJob.details?.duration_days;
+
+    // ----- TERM -----
+    if (contractType === "1") {
+      store.setField("selectedTerm", "short");
+    } else {
+      store.setField("selectedTerm", "employee");
+    }
+
+    // ----- OPTION -----
+    switch (durationType) {
+      case "1":
+        store.setField("selectedOption", "1");
+        break;
+
+      case "2":
+        store.setField("selectedOption", "1-7");
+        break;
+
+      case "3":
+        store.setField("selectedOption", "custom");
+        store.setField("customDays", durationDays?.toString() || "");
+        break;
+
+      case "4":
+        store.setField("selectedOption", "10-30");
+        break;
+
+      case "5":
+        store.setField("selectedOption", "30+");
+        break;
+
+      case "6":
+        store.setField("selectedOption", "customEmp");
+        store.setField("customDays", durationDays?.toString() || "");
+        break;
+
+      default:
+        store.setField("selectedOption", "");
+    }
 
     store.setEditMode(postJob?.details?.id);
     store.setActiveTab(6);
@@ -169,7 +230,7 @@ const PostJobDetails = () => {
       profileData: profileData,
     });
   };
-  console.log("gigs", postJob.gigs);
+  console.log("gigs", postJob?.language);
 
   return (
     <>
@@ -182,7 +243,10 @@ const PostJobDetails = () => {
             <Loading />
           ) : (
             <>
-              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled"> 
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
                 <View style={styles.titleContainer}>
                   <Text style={styles.jobTitle}>
                     {postJob.details?.subject}
@@ -221,7 +285,9 @@ const PostJobDetails = () => {
                     </Text>
                     <Text style={styles.projectDuration}>
                       Project Length:{" "}
-                      <Text style={styles.pricingHighlight}>NA</Text>
+                      <Text style={styles.pricingHighlight}>
+                        {postJob.details?.project_length}
+                      </Text>
                     </Text>
                     <View style={styles.hourInfoRow}>
                       <Text style={styles.hourInfo}>
@@ -273,7 +339,7 @@ const PostJobDetails = () => {
                             </Text>
                           </View>
                           <Text style={styles.requirementText}>
-                            {req.language_name}
+                            {req.language_name} : {req.level_text}
                           </Text>
                         </View>
                       ))}
@@ -524,8 +590,8 @@ const PostJobDetails = () => {
               </Text>
               <Text style={styles.deActivateModalSubtitle}>
                 After this action, your job will no longer be public. However,
-                we will save it for you in templates in case you decide to publish it
-                again.
+                we will save it for you in templates in case you decide to
+                publish it again.
               </Text>
 
               <TouchableOpacity

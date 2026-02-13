@@ -126,7 +126,7 @@ const ReviewPage = ({ setActiveTab }) => {
             marginBottom: 10,
           }}
         />
-          <View style={styles.section}>
+        <View style={styles.section}>
           <View style={styles.headerRow}>
             <Text style={styles.sectionTitle}>Duration</Text>
             <TouchableOpacity
@@ -145,9 +145,30 @@ const ReviewPage = ({ setActiveTab }) => {
           <Text style={styles.value}>
             Project Length:{" "}
             <Text style={styles.bold}>
-              {selectedOption === "custom" || selectedOption === "customEmp"
-                ? customDays || "—"
-                : selectedOption || "—"}
+              {(() => {
+                switch (selectedOption) {
+                  case "1":
+                    return "1 day or less";
+
+                  case "1-7":
+                    return "1-7 days";
+
+                  case "custom":
+                    return customDays ? `${customDays} days` : "—";
+
+                  case "10-30":
+                    return "1 month or less";
+
+                  case "30+":
+                    return "1-3 months";
+
+                  case "customEmp":
+                    return customDays ? `${customDays} months` : "—";
+
+                  default:
+                    return "—";
+                }
+              })()}
             </Text>
           </Text>
         </View>
@@ -212,7 +233,7 @@ const ReviewPage = ({ setActiveTab }) => {
           </View>
 
           {/* BODY */}
-          {requirements.length > 0 ? (
+          {requirements.length > 1 ? (
             requirements.map((r, index) => (
               <View key={index} style={styles.bulletRow}>
                 <Text style={styles.bullet}>•</Text>
@@ -248,14 +269,14 @@ const ReviewPage = ({ setActiveTab }) => {
               />
             </TouchableOpacity>
           </View>
-          {languages.length > 0 ? (
+          {languages.length > 1 ? (
             languages.map((l, index) => (
               <View key={index} style={styles.bulletRow}>
                 <Text style={styles.bullet}>•</Text>
 
                 <Text style={styles.sectionText}>
                   {l.lang}
-                  {l.level ? ` (${l.level})` : ""}
+                  {l.level ? ` : ${l.text}` : ""}
                 </Text>
               </View>
             ))
@@ -409,6 +430,9 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontFamily: "Montserrat_400Regular",
     fontSize: 20,
+  },
+  emptyText: {
+    color: "#ffffff",
   },
 });
 

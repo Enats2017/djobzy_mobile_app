@@ -18,13 +18,13 @@ import GradientButton from "../../components/GradientButton";
 
 const AllCategories = () => {
   const navigation = useNavigation();
-  const { categories, addCategory, removeCategory } = useGlobalSearch();
+  const { categories, addCategory, removeCategory, clearCategories } =
+    useGlobalSearch();
   const [search, setSearch] = useState("");
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [admin, setAdmin] = useState(0);
 
-  /* ================= LOAD USER ================= */
   const loadUser = async () => {
     const userStr = await AsyncStorage.getItem("user");
     if (!userStr) return;
@@ -58,19 +58,6 @@ const AllCategories = () => {
     fetchData();
   }, []);
 
-  const isSelected = (subId) => categories.some((item) => item.subId === subId);
-
-  const toggleSubCategory = (service, sub) => {
-    if (isSelected(sub.subid)) {
-      removeCategory(sub.subid);
-    } else {
-      addCategory({
-        serviceId: service.id,
-        subId: sub.subid,
-        name: sub.subname,
-      });
-    }
-  };
   const filteredServices = services
     .map((service) => {
       if (!search.trim()) return service;
@@ -89,12 +76,44 @@ const AllCategories = () => {
     })
     .filter(Boolean);
 
+ const handleMainCategoryPress = (service) => {
+  clearCategories();
+
+  addCategory({
+    serviceId: service.id,
+    subId: null,
+    name: service.name,
+    slug: service.slug,
+    subslug: null,
+  });
+
+  navigation.navigate("CategoryResult");
+};
+
+
+  const handleSubCategoryPress = (service, sub) => {
+  clearCategories();
+
+  addCategory({
+    serviceId: service.id,
+    subId: sub.subid,
+    name: sub.subname,
+    slug: service.slug,
+    subslug: sub.subslug,
+  });
+
+  navigation.navigate("CategoryResult");
+};
+
   /* ================= RENDER ================= */
   if (loading) return <Loading />;
 
   return (
-      <View style={styles.categoryContainer}>
-    <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+    <View style={styles.categoryContainer}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.searchBar}>
           <TextInput
             value={search}
@@ -105,60 +124,34 @@ const AllCategories = () => {
           />
           <Feather name="search" size={18} color="#999" />
         </View>
-        <View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.selectedContainer}
-          >
-            {categories.map((sub) => (
-              <View key={sub.subId} style={styles.selectedPill}>
-                <Text style={styles.selectedText}>{sub.name}</Text>
-                <TouchableOpacity onPress={() => removeCategory(sub.subId)}>
-                  <Entypo name="cross" size={17} color="#c3c3c3" />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
 
         {filteredServices.map((service) => (
           <View key={service.id} style={styles.serviceBlock}>
-            <Text style={styles.serviceTitle}>{service.name}</Text>
+            <TouchableOpacity
+              key={service.id}
+              onPress={() => handleMainCategoryPress(service)}
+            >
+              <Text style={styles.serviceTitle}>{service.name}</Text>
+            </TouchableOpacity>
 
             <View style={styles.subContainer}>
-              {service.subservices?.map((sub) => {
-                const active = isSelected(sub.subid);
-
-                return (
-                  <TouchableOpacity
-                    key={sub.subid}
-                    style={[styles.subItem, active && styles.subItemActive]}
-                    onPress={() => toggleSubCategory(service, sub)}
-                  >
-                    <Text
-                      style={[styles.subText, active && styles.subTextActive]}
-                    >
-                      {sub.subname}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+              {service.subservices?.map((sub) => (
+                <TouchableOpacity
+                  key={sub.subid}
+                  style={styles.subItem}
+                  onPress={() => handleSubCategoryPress(service, sub)}
+                >
+                  <Text style={styles.subText}>{sub.subname}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
-               <View style={styles.dividerLine} />
+            <View style={styles.dividerLine} />
           </View>
         ))}
-    </ScrollView>
-      
-    {categories.length > 0 && (
-      <View style={styles.bottomButtonWrapper}>
-    
-        <GradientButton   title="Next"/>
-      </View>
-    )}
+      </ScrollView>
 
-  </View>
-
+     
+    </View>
   );
 };
 
@@ -244,21 +237,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
   },
-   dividerLine: {
+  dividerLine: {
     height: 1,
     backgroundColor: "#FFFFFF1a",
     marginTop: 10,
   },
   bottomButtonWrapper: {
-  position: "absolute",
-   backgroundColor: "#222",
-  bottom: 79,
-  left: 0,
-  paddingVertical:10,
-  right: 0,
-  
-},
-
-
-
+    position: "absolute",
+    backgroundColor: "#222",
+    bottom: 79,
+    left: 0,
+    paddingVertical: 10,
+    right: 0,
+  },
 });

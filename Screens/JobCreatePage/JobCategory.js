@@ -57,13 +57,20 @@ const JobCategory = ({
 
 
  const handleSelectSub = (service, sub) => {
-    addCategory({
-      serviceId: service.id,
-      subId: sub.subid,
-      name: sub.subname,
-    });
-    setCategoryError(false);
-  };
+  console.log("Selected Service FULL:", service);
+  console.log("Selected Sub FULL:",sub.subname );
+  console.log("Service ID:", service.id);
+  console.log("Sub ID:", sub.subid);
+
+  addCategory({
+    serviceId: service.id,   // ✅ FIXED HERE
+    subId: sub.subid,
+    name: sub.subname,
+  });
+
+  setCategoryError(false);
+};
+
 
 
 

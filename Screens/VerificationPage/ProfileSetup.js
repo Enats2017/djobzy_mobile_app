@@ -215,7 +215,7 @@ const openGallery = async () => {
               onPress={pickImage}
             >
               <AntDesign name="camera" size={24} color="#fff" />
-              <Text style={styles.uploadText}>Upload Photo</Text>
+              <Text style={styles.uploadText}>{photoUri ? "Update Photo":"Upload Photo"}</Text>
             </TouchableOpacity>
           </View>
         </View>

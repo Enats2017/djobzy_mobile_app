@@ -59,7 +59,6 @@ const TitleScetion = ({
   const applyTemplate = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-
       const res = await fetch(
         `${API_URL}/create-job?template=${selectedTemplateId}`,
         {
@@ -68,41 +67,69 @@ const TitleScetion = ({
       );
 
       const data = await res.json();
-      const job = data.job; // 👈 now full object
+      const job = data.job;
+
+      // 👈 now full object
       if (!job) return;
       setField("title", job.subject || "");
       setField("description", job.description || "");
       setField("address", job.preferred_location || "");
-
       setField(
         "selectedTerm",
         job.contract_type === "2" ? "employee" : "short",
       );
+      switch (String(job.duration_type)) {
+        case "1":
+          setField("selectedOption", "1");
+          break;
 
-      setField("selectedOption", String(job.duration_type));
-      setField("customDays", job.duration_days || "");
+        case "2":
+          setField("selectedOption", "1-7");
+          break;
+
+        case "3":
+          setField("selectedOption", "custom");
+          setField("customDays", job.duration_days || "");
+          break;
+
+        case "4":
+          setField("selectedOption", "10-30");
+          break;
+
+        case "5":
+          setField("selectedOption", "30+");
+          break;
+
+        case "6":
+          setField("selectedOption", "customEmp");
+          setField("customDays", job.duration_days || "");
+          break;
+
+        default:
+          setField("selectedOption", "");
+      }
 
       setField("hourlyRate", job.hour_minimum || "");
       setField("totalPrice", job.fixed_minimum || "");
       setField("expectedTime", job.expected_hour || 0);
-      console.log("BEFORE setField 👉", job.gig_services);
+      //console.log("BEFORE setField 👉", job.gig_services);
 
       setField(
         "selectedSubs",
         job.gig_services.map((gs) => ({
-          subId: gs.sub_services.subid, // ✅ SAME AS EDIT
-          name: gs.sub_services.subname, // ✅ SAME AS EDIT
+          serviceId: gs.sub_services.service, // ✅ ADD THIS
+          subId: gs.sub_services.subid,
+          name: gs.sub_services.subname,
         })),
       );
 
-      setTimeout(() => {
-        console.log(
-          "AFTER setField (ZUSTAND) 👉",
-          useCreateJobGlobalStore.getState().selectedSubs,
-        );
-      }, 0);
+      // setTimeout(() => {
+      //   console.log(
+      //     "AFTER setField (ZUSTAND) 👉",
+      //     useCreateJobGlobalStore.getState().selectedSubs,
+      //   );
+      // }, 0);
 
-      // requirements
       if (job.requirements) {
         setField(
           "requirements",
@@ -117,13 +144,15 @@ const TitleScetion = ({
       if (job.languages) {
         setField(
           "languages",
-         job.language?.map((l, i) => ({
-        id: i + 1,
-        lang: l.language_name,
-        level: l.level || "",
-      })) || [{ id: 1, lang: "", level: "" }],
+          job?.languages?.map((l, i) => ({
+            id: i + 1,
+            lang: l.language_name,
+            level: String(l.level), // numeric value
+            text: l.level_text || "", // readable text from backend
+          })),
         );
       }
+
       setActiveTab(6);
       setTitleModal(false);
       toastSuccess("Template applied");
@@ -134,16 +163,15 @@ const TitleScetion = ({
 
   return (
     <>
-      
-        <View style={styles.TextSection}>
-          <View style={styles.template}>
-            <Text style={styles.label}>Title</Text>
+      <View style={styles.TextSection}>
+        <View style={styles.template}>
+          <Text style={styles.label}>Title</Text>
 
-            <TouchableOpacity onPress={() => setTitleModal(true)}>
-              <Text style={styles.templatetext}>Use Template</Text>
-            </TouchableOpacity>
-          </View>
-           <View  style={styles.passwordContainer}>
+          <TouchableOpacity onPress={() => setTitleModal(true)}>
+            <Text style={styles.templatetext}>Use Template</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.passwordContainer}>
           <TextInput
             style={[styles.input, titleError && { borderColor: "#ff0000" }]}
             value={title}
@@ -153,20 +181,19 @@ const TitleScetion = ({
             }}
             placeholder="What Should be Done?"
           />
+        </View>
 
-           </View>
+        {titleError && (
+          <Text style={styles.errorText}>*Please enter a job title</Text>
+        )}
 
-          {titleError && (
-            <Text style={styles.errorText}>*Please enter a job title</Text>
-          )}
+        <Text style={styles.belowtext}>
+          Please make your title brief and straight to the point.
+        </Text>
 
-          <Text style={styles.belowtext}>
-            Please make your title brief and straight to the point.
-          </Text>
-
-          {/* DESCRIPTION */}
-          <Text style={styles.label}>Description</Text>
-          <View  style={styles.passwordContainer}>
+        {/* DESCRIPTION */}
+        <Text style={styles.label}>Description</Text>
+        <View style={styles.passwordContainer}>
           <TextInput
             style={[
               styles.input,
@@ -179,17 +206,14 @@ const TitleScetion = ({
             }}
             placeholder="What Should be Done?"
           />
-          </View>
-
-          {descriptionError && (
-            <Text style={styles.errorText}>
-              *Please enter a job description
-            </Text>
-          )}
-
-          <Text style={styles.belowtext}>Please describe the job details.</Text>
         </View>
-     
+
+        {descriptionError && (
+          <Text style={styles.errorText}>*Please enter a job description</Text>
+        )}
+
+        <Text style={styles.belowtext}>Please describe the job details.</Text>
+      </View>
 
       <Modal
         visible={titleModal}
@@ -296,8 +320,6 @@ const styles = StyleSheet.create({
     paddingTop: 5,
   },
   sectionBtn: {
-   
-
     gap: 15,
   },
   template: {
@@ -321,7 +343,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-   passwordContainer: {
+  passwordContainer: {
     width: "100%",
     height: 48,
     borderRadius: 6,
@@ -332,7 +354,7 @@ const styles = StyleSheet.create({
   },
 
   input: {
-     flex: 1,
+    flex: 1,
     fontFamily: "Montserrat_400Regular",
     fontSize: 14,
     color: "#000",
@@ -343,7 +365,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     paddingVertical: 8,
   },
-
 
   modalOverlay: {
     flex: 1,

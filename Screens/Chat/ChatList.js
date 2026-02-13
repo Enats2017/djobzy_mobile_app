@@ -20,22 +20,12 @@ import Footer from "../../components/Footer";
 
 const ChatList = () => {
   const navigation = useNavigation();
-  const { notifications } = useNotifications();
+  const { notifications, admin, user } = useNotifications();
   const [loading, setLoading] = useState(false);
-  const [admin, setAdmin] = useState(0);
-  const [users, setUsers] = useState([]);
 
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-    console.log("uerchnage", userStr);
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-    setAdmin(user?.admin);
-    console.log(admin); 
-  };
   useEffect(() => {
-    loadUser();
-  }, []);
+    console.log("admin from context:", admin);
+  }, [admin]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity

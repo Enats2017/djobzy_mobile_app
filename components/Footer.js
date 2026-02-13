@@ -129,8 +129,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   activeText: {
-    color: "#000000ff",
-
+    color: "#cb7767",
     fontFamily: "Montserrat_400Regular",
   },
 });

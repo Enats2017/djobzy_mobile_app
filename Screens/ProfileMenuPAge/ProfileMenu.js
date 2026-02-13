@@ -19,6 +19,7 @@ import Loading from "../../components/Loading";
 import Footer from "../../components/Footer";
 import CustomSwitch from "../../components/CustomSwitch";
 import EmployerFooter from "../../components/EmployerFooter";
+import { useNotifications } from "../../context/MessageNotificationContext";
 
 const EmployeeProfileMenu = () => {
   const navigation = useNavigation();
@@ -28,6 +29,7 @@ const EmployeeProfileMenu = () => {
   const [accountType, setAccountType] = useState(null);
   const [user, setUser] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const { refreshUser } = useNotifications();
 
   const fetchUser = async () => {
     try {
@@ -69,6 +71,7 @@ const EmployeeProfileMenu = () => {
       const data = await response.json();
       await AsyncStorage.removeItem("user");
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      await refreshUser();
 
       setAccountType(data?.account_type);
       if (data?.account_type == 0) {
@@ -129,7 +132,6 @@ const EmployeeProfileMenu = () => {
 
 
   if (loading) return <Loading />
-  if (switchLoading) return <Loading />
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -207,11 +209,8 @@ const EmployeeProfileMenu = () => {
       </View>
       {user?.admin == 2 ? (
         <EmployerFooter />
-
-      ) : (
-
+    ) : (
         <Footer />
-
       )}
     </SafeAreaView>
   );

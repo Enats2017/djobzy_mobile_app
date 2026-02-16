@@ -67,7 +67,7 @@ export default function FavoriteJobs() {
       const data = await response.json();
       console.log("Unfollow response:", data);
       if (data.status == 200) {
-        toastSuccess("Unfollowed successfully");
+        toastSuccess("Unliked successfully");
         setJobs((prev) => prev.filter((j) => j.gid !== favId));
       }
     } catch (error) {

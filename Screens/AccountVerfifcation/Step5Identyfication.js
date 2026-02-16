@@ -97,14 +97,14 @@ const Step5Identyfication = () => {
     <>
       <Text style={styles.setptext}>STEP 4</Text>
       <Text style={styles.headtext}>ID Card and Certificates</Text>
-      <View>
+      {/* <View>
         <Text style={styles.setptext}>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
           minim veniam, quis nostrud exercitation ullamco laboris nisi ut
           aliquip ex ea commodo consequat.
         </Text>
-      </View>
+      </View> */}
 
       <TouchableOpacity
         style={styles.dropdownHeader}
@@ -151,7 +151,7 @@ const Step5Identyfication = () => {
         onRemove={() => setDocBack(null)}
       />
 
-      <GradientButton title="Verify Identity by Jumio" onPress={handleVerify} />
+      <GradientButton title="Verify" onPress={handleVerify} />
       <TouchableOpacity style={styles.nextBtn}>
         <Text style={styles.nextText}>Next</Text>
       </TouchableOpacity>

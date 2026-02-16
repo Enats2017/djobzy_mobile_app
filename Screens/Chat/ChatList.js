@@ -25,23 +25,15 @@ import { Montserrat_500Medium } from "@expo-google-fonts/montserrat";
 
 const ChatList = () => {
   const navigation = useNavigation();
-  const { notifications } = useNotifications();
+  const { notifications, admin, user } = useNotifications();
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [chatModal, setChatModal] = useState(false);
-  const [admin, setAdmin] = useState(0);
   const insets = useSafeAreaInsets();
 
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-    console.log("uerchnage", userStr);
-    const user = JSON.parse(userStr);
-    setAdmin(user?.admin);
-    console.log(admin);
-  };
   useEffect(() => {
-    loadUser();
-  }, []);
+    console.log("admin from context:", admin);
+  }, [admin]);
 
   const filteredNotifications = notifications.filter((item) =>
     item.sender_name?.toLowerCase().includes(searchText.toLowerCase()),

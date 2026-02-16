@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   activeText: {
     color: "#CB7767",
-        fontSize: 14,
+    fontSize: 14,
     fontFamily: "Montserrat_400Regular",
   },
 });

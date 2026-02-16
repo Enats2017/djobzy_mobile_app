@@ -27,6 +27,7 @@ import Footer from "../../components/Footer";
 import CustomSwitch from "../../components/CustomSwitch";
 import EmployerFooter from "../../components/EmployerFooter";
 import { useServiceGlobalStore } from "../PromoteServicesPage/ServiceGlobalStore";
+import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 
 const EmployeeProfileMenu = () => {
   const navigation = useNavigation();

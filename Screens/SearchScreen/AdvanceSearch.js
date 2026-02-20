@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,53 +7,80 @@ import {
   TouchableOpacity,
   Switch,
   ScrollView,
+  Pressable,
+  Keyboard,
+  Dimensions
 } from "react-native";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
-import Slider from "@react-native-community/slider";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
 import { scale, fontScale } from "../../utils/scale";
 import GradientButton from "../../components/GradientButton";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
+import { useGlobalSearch } from "./useGlobalSearch";
 
-const AdvancedSearch = () => {
-  const [fromPrice, setFromPrice] = useState("");
-  const [toPrice, setToPrice] = useState("");
+const AdvancedSearch = ({ onClose }) => {
   const [remote, setRemote] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [radius, setRadius] = useState(1);
 
   const [categoryText, setCategoryText] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const debounceTimeout = useRef(null);
+  const screenWidth = Dimensions.get("window").width;
+
+  const {
+    keyword,
+    setKeyword,
+    setField,
+    addCategory,
+    removeCategory,
+    categories,
+    reset,
+    triggerSearch
+  } = useGlobalSearch();
+
 
   const fetchCategories = async (text) => {
     setCategoryText(text);
-
-    if (text.length < 2) {
-      setSuggestions([]);
-      return;
+    setShowDropdown(true);
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
     }
+    debounceTimeout.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API_URL}/get-services`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ service_name: text || "" }),
+        });
 
-    try {
-      const res = await fetch(`${API_URL}/get-services`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ service_name: text }),
-      });
-
-      const data = await res.json();
-
-      if (data.status === 200) {
-        setSuggestions(data.data);
-      } else {
-        setSuggestions([]);
+        const data = await res.json();
+        setSuggestions(data.status === 200 ? data.data : []);
+      } catch (e) {
+        console.log("API error", e);
       }
-    } catch (e) {
-      console.log("API error", e);
-    }
+    }, 300);
+  };
+
+  const applyAdvancedSearch = () => {
+    let remoteJob = remote ? 1 : 0;
+    setKeyword(keyword);
+    setField("low_price", priceRange[0]);
+    setField("high_price", priceRange[1]);
+    setField("radius", radius);
+    setField('isRemoteJob', remoteJob);
+    triggerSearch();
+    onClose?.();
+    console.log("ADVANCED SEARCH DATA →", {
+      keyword,
+      priceRange,
+      radius,
+      remote,
+    });
   };
 
   return (
@@ -61,29 +88,41 @@ const AdvancedSearch = () => {
       <ScrollView
         contentContainerStyle={styles.scrolcontent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
           <Text style={styles.title}>Advanced Search</Text>
           <View style={{ width: 18 }} />
         </View>
         <Text style={styles.label}>Keyword</Text>
-        <TextInput style={styles.input} placeholder="Keyword" />
+        <TextInput
+          style={styles.input}
+          placeholder="Keyword"
+          placeholderTextColor="#666666"
+          value={keyword || ""}
+          onChangeText={setKeyword}
+        />
 
         <Text style={styles.label}>Category</Text>
         <View style={styles.plusInput}>
           <TextInput
             style={styles.innerInput}
-            placeholder="Add a Categroy"
+            placeholder="Add a Category"
+            placeholderTextColor="#666666"
             value={categoryText}
             onChangeText={fetchCategories}
+            onFocus={() => {
+              setShowDropdown(true);
+              fetchCategories(categoryText);
+            }}
           />
           <TouchableOpacity style={styles.inputRow}>
             <FontAwesome6 name="plus" size={14} color="#fff" />
           </TouchableOpacity>
         </View>
-        {suggestions.length > 0 && (
+        {showDropdown && suggestions.length > 0 && (
           <View style={styles.dropdown}>
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={true} nestedScrollEnabled={true}>
               {suggestions.map((service) => (
                 <View key={service.service_id}>
                   <Text style={styles.serviceTitle}>
@@ -95,13 +134,15 @@ const AdvancedSearch = () => {
                       key={sub.subid}
                       style={styles.dropdownItem}
                       onPress={() => {
-                        if (
-                          !selectedCategories.find((x) => x.subid === sub.subid)
-                        ) {
-                          setSelectedCategories([...selectedCategories, sub]);
-                        }
+                        addCategory({
+                          serviceId: service.service_id,
+                          subId: sub.subid,
+                          name: sub.subname,
+                        });
+
                         setCategoryText("");
                         setSuggestions([]);
+                        setShowDropdown(false);
                       }}
                     >
                       <Text>{sub.subname}</Text>
@@ -113,15 +154,11 @@ const AdvancedSearch = () => {
           </View>
         )}
         <View style={styles.chipRow}>
-          {selectedCategories.map((item) => (
-            <View key={item.subid} style={styles.chip}>
-              <Text style={styles.chipText}>{item.subname}</Text>
+          {categories.map((item) => (
+            <View key={item.subId} style={styles.chip}>
+              <Text style={styles.chipText}>{item.name}</Text>
               <TouchableOpacity
-                onPress={() =>
-                  setSelectedCategories(
-                    selectedCategories.filter((x) => x.subid !== item.subid),
-                  )
-                }
+                onPress={() => removeCategory(item.subId)}
               >
                 <Ionicons name="close" size={14} color="#000" />
               </TouchableOpacity>
@@ -141,7 +178,7 @@ const AdvancedSearch = () => {
                   setPriceRange([Number(v) || 0, priceRange[1]])
                 }
                 placeholder="0"
-                placeholderTextColor="#999"
+                placeholderTextColor="#666666"
                 keyboardType="numeric"
               />
             </View>
@@ -157,7 +194,7 @@ const AdvancedSearch = () => {
                   setPriceRange([priceRange[0], Number(v) || 0])
                 }
                 placeholder="0"
-                placeholderTextColor="#999"
+                placeholderTextColor="#666666"
                 keyboardType="numeric"
               />
             </View>
@@ -167,9 +204,9 @@ const AdvancedSearch = () => {
           <MultiSlider
             values={priceRange}
             min={0}
-            max={5000}
-            step={50}
-            sliderLength={330}
+            max={9999}
+            step={1}
+            sliderLength={screenWidth - 80}
             onValuesChange={(values) => setPriceRange(values)}
             selectedStyle={{ backgroundColor: "#D17B68" }}
             unselectedStyle={{ backgroundColor: "#444" }}
@@ -197,8 +234,8 @@ const AdvancedSearch = () => {
         <View style={{ paddingBottom: 10 }}></View>
         <View style={styles.address}>
           <TextInput style={styles.input} placeholder="Address" />
-          <TextInput style={styles.input} placeholder="km" />
-          <GradientButton />
+          <TextInput style={styles.input} placeholder="km" keyboardType="numeric" onChangeText={(v) => setRadius(Number(v) || 0)} />
+          <GradientButton title="Apply" onPress={applyAdvancedSearch} />
         </View>
       </ScrollView>
     </>
@@ -233,7 +270,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     borderRadius: 8,
-    padding: 3,
+    paddingHorizontal: 12,
+    paddingVertical: 3,
   },
   innerInput: {
     flex: 1,
@@ -292,12 +330,12 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   sliderRow: {
-  
-  alignItems: "center",
-},
+    width: "100%",
+    alignItems: "center",
+  },
 
   remoteRow: {
-    
+
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -306,8 +344,7 @@ const styles = StyleSheet.create({
   checkboxRow: {
     flexDirection: "row",
     alignItems: "center",
-  
-    
+    marginBottom: 10,
   },
   checkbox: {
     width: 18,
@@ -332,9 +369,10 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   dropdown: {
+    maxHeight: 250,
     backgroundColor: "#fff",
-    borderRadius: 8,
-    marginTop: 4,
+    borderRadius: 4,
+    marginTop: 5,
     elevation: 5,
   },
   dropdownItem: {
@@ -371,6 +409,6 @@ const styles = StyleSheet.create({
   currency: { fontSize: fontScale(14), color: "#666" },
   slideinput: { fontSize: 16, color: "#666" },
 
-  
- 
+
+
 });

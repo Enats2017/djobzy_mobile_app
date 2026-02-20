@@ -107,10 +107,10 @@ const SearchResult = () => {
             </View>
 
             {/* FILTER */}
-            {showFilter && <AdvanceSearch />}
+            {showFilter && <AdvanceSearch onClose={() => setShowFilter(false)} />}
 
             {/* CONTENT */}
-            {activeTab ? <JobResult /> : <EmployeeResult /> }
+            {activeTab ? <JobResult showData={showFilter} /> : <EmployeeResult showData={showFilter}/> }
 
           </View>
         </KeyboardAvoidingView>

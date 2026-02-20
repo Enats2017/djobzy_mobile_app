@@ -111,7 +111,7 @@ const CategoryResult = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <PageNameHeaderBar
-          title={keyword || "Result"}
+          title={selected?.name || "Result"}
           navigation={navigation}
         />
 

@@ -13,8 +13,9 @@ import { useNavigation } from "@react-navigation/native";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ConfirmModal from "../../components/ConfirmModal";
+import { toastSuccess } from "../../utils/toast";
 
-const PendingOffer = ({ pendingOffer = [] }, onHide) => {
+const PendingOffer = ({ pendingOffer = [], onHide }) => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
@@ -36,7 +37,7 @@ const PendingOffer = ({ pendingOffer = [] }, onHide) => {
       const data = await response.json();
       if (data.status == 200) {
         onHide(pendingOffer);
-        Alert.alert("Success", " Data hide Successfully");
+        toastSuccess("Offer Hide Successfully");
         setModalVisible(false);
       }
     } catch (error) {

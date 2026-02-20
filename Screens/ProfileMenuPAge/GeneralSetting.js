@@ -128,7 +128,7 @@ const GeneralSetting = () => {
                   type="ion"
                   icon="wallet-outline"
                   title="Billing Methods"
-                  onPress={() => navigation.navigate("UserPaymentPage")}
+                  onPress={() => navigation.navigate("BillingMethods")}
                 />
                 <MenuItem
                   type="ion"

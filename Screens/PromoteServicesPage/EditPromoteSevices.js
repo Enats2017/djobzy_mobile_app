@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  Image,
 } from "react-native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -206,15 +207,14 @@ const EditPromoteSevices = () => {
               >
                 <Ionicons name="close" size={22} color="#000" />
               </TouchableOpacity>
-              <Ionicons
-                name="warning"
-                size={60}
-                color="#d64545"
-                style={{ marginBottom: 10 }}
+             <Image
+                source={require("../../assets/images/delete_warning.png")}
+                style={{ width: 70, height: 70, marginBottom: 10 }}
+                resizeMode="contain"
               />
-              <Text style={styles.deleteTitle}>Delete Services</Text>
+              <Text style={styles.deleteTitle}>Delete your job post?</Text>
               <Text style={styles.deleteMsg}>
-                Are you Sure you Want To Delete The Services ?
+                Are you sure you want to delete this job post?
               </Text>
               <View style={styles.deleteBtns}>
                 <TouchableOpacity
@@ -222,7 +222,7 @@ const EditPromoteSevices = () => {
                   onPress={() => setDeleteModal(false)}
                   disabled={deleting}
                 >
-                  <Text style={styles.canceltext}>Cancel</Text>
+                  <Text style={styles.canceltext}>No, Cancel</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -363,8 +363,8 @@ const styles = StyleSheet.create({
   },
   modalCloseIcon: {
     position: "absolute",
-    top: 2,
-    right: 4,
+    top: 12,
+    right: 8,
     padding: 5,
     zIndex: 10,
   },
@@ -376,13 +376,13 @@ const styles = StyleSheet.create({
   deleteMsg: {
     fontSize: 15,
     marginBottom: 15,
+    textAlign: "center",
     color: "#030303",
     fontFamily: "Montserrat_500Medium",
   },
   deleteBtns: {
     flexDirection: "row",
     justifyContent: "flex-end",
-
     gap: 10,
     paddingHorizontal: 13,
   },

@@ -17,7 +17,6 @@ import { scale, fontScale } from "../../utils/scale";
 import GradientButton from "../../components/GradientButton";
 import { API_URL } from "../../api/ApiUrl";
 import { useGlobalSearch } from "./useGlobalSearch";
-
 const AdvancedSearch = ({ onClose }) => {
   const [remote, setRemote] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 5000]);
@@ -39,7 +38,6 @@ const AdvancedSearch = ({ onClose }) => {
     reset,
     triggerSearch
   } = useGlobalSearch();
-
 
   const fetchCategories = async (text) => {
     setCategoryText(text);
@@ -345,7 +343,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
-  },
+},
   checkbox: {
     width: 18,
     height: 18,

@@ -91,6 +91,8 @@ import SearchCategory from "./Screens/SearchScreen/SearchCategory";
 import SearchResult from "./Screens/SearchScreen/SearchResult";
 import CompletedContract from "./Screens/ContractPage/CompletedContract";
 import CategoryResult from "./Screens/CategorySearchScreen/CategoryResult";
+import BillingMethods from "./Screens/GeneralSetting/BillingMethods";
+
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -216,6 +218,7 @@ const App = () => {
             <Stack.Screen name="SearchResult" component={SearchResult} />
             <Stack.Screen name="CompletedContract" component={CompletedContract} />
             <Stack.Screen name = "CategoryResult" component={CategoryResult} />
+            <Stack.Screen name = "BillingMethods" component={BillingMethods} />
           </Stack.Navigator>
         </NavigationContainer>
         <Toast config={toastConfig} />

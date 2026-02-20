@@ -113,26 +113,23 @@ const PromoteService = () => {
     let newErrors = {};
     if (!title || title.trim() === "") {
       newErrors.title = "Service title is required";
-      return;
-
     }
     if (!description || description.trim() === "") {
       newErrors.description = "Service description is required";
-      return;
     }
     if (!hourlyRate || Number(hourlyRate) <= 0) {
       newErrors.hourlyRate = "Enter valid hourly rate";
-      return;
     }
     if (!totalPrice || Number(totalPrice) <= 0) {
       newErrors.totalPrice = "Enter valid total price";
-      return;
     }
     if (Number(hourlyRate) > Number(totalPrice)) {
       newErrors.totalPrice = "Total price must be greater than hourly rate";
-      return
     }
-    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
     navigation.navigate("PromoteCategoryPage");
   };
 
@@ -189,7 +186,6 @@ const PromoteService = () => {
       if (data.status !== 200) return;
       
       const result = data.result;
-  
       const store = useServiceGlobalStore.getState(); 
       store.setField("title", result.title || "");
       store.setField("description", result.description || "");
@@ -213,6 +209,14 @@ const PromoteService = () => {
       }
 
       setShowDropdown(false);
+      setTimeout(() => {
+        setErrors({
+          title: "",
+          description: "",
+          hourlyRate: "",
+          totalPrice: "",
+        });
+      }, 500);
     } catch (err) {
       console.log("Template detail error:", err);
     }

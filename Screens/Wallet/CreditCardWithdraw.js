@@ -11,7 +11,6 @@ import Entypo from "@expo/vector-icons/Entypo";
 import GradientButton from "../../components/GradientButton";
 
 export default function CreditCardWithdraw({
-
   button = "Request a Withdraw",
   onSubmit,
   initialData = null

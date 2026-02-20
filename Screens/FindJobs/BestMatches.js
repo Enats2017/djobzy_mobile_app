@@ -15,6 +15,7 @@ import AdvancedSearch from "../SearchScreen/AdvanceSearch";
 const BestMatches = () => {
   const [activeTab, setActiveTab] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   return (
     <View style={styles.bestmatch}>
@@ -61,11 +62,39 @@ const BestMatches = () => {
               color={showFilter ? "#000" : "#fff"}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconCircle}>
+          <TouchableOpacity
+            style={styles.iconCircle}
+            onPress={() => setShowDropdown((prev) => !prev)}
+          >
             <Octicons name="filter" size={18} color="white" />
           </TouchableOpacity>
         </View>
       </View>
+      {showDropdown && (
+        <>
+          <TouchableOpacity
+            style={styles.overlay}
+            activeOpacity={1}
+            onPress={() => setShowDropdown(false)}
+          />
+
+          <View style={styles.dropdownWrapper}>
+            <View style={styles.dropdownContainer}>
+              {["Distance", "Price", "Date Added"].map((item, index, arr) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.option,
+                    index === arr.length - 1 && { borderBottomWidth: 0 },
+                  ]}
+                >
+                  <Text style={styles.dropdownText}>{item}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </>
+      )}
       {showFilter && <AdvancedSearch />}
 
       {activeTab ? <FindJobs /> : <FindEmployees />}
@@ -134,6 +163,44 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     paddingHorizontal: 1,
+  },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 998, 
+    elevation: 5,
+  },
+
+  dropdownWrapper: {
+    position: "absolute",
+    top: 45,
+    right: 16,
+    zIndex: 999,
+    elevation: 10,
+  },
+
+  dropdownContainer: {
+    width: 140,
+    backgroundColor: "#fff",
+    borderRadius: 4,
+    overflow: "hidden",
+    elevation: 6,
+  },
+
+  option: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EAEAEA",
+  },
+
+  dropdownText: {
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    color: "#000",
   },
 });
 

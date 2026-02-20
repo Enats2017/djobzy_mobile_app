@@ -6,6 +6,8 @@ import {
     CheckBox,
     Text,
     TextInput,
+    KeyboardAvoidingView,
+    Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
@@ -26,6 +28,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import QuestionMark from "../../components/QuestionMark";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const BillingMethods = () => {
     const [selected, setSelected] = useState("");
@@ -37,7 +40,6 @@ const BillingMethods = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const { profileData } = route.params || {};
-    console.log("profiledata111", profileData);
 
     const fetchBillingMethod = async () => {
         try {
@@ -98,26 +100,38 @@ const BillingMethods = () => {
             });
 
             const data = await response.json();
-            setSelected(" ");
-
             if (!response.ok) {
-
-                Alert.alert("Error", data.message || "Something went wrong");
+                toastError(data.message || "Something went wrong");
                 return;
             }
+            const updatedCard = data.data;
+            setSavedMethod(prev => {
+                if (!prev || prev.length === 0) {
+                    return [updatedCard];
+                }
+                const cardExists = prev.find(item => item.id === updatedCard.id);
+                if (cardExists) {
+                    // update existing card
+                    return prev.map(item =>
+                        item.id === updatedCard.id ? updatedCard : item
+                    );
+                }
+                // first time save
+                return [updatedCard];
+            });
 
-            setCardSaved(true);
-            fetchBillingMethod();
-            Alert.alert("Success", "Card added successfully!");
+            // exit edit mode
+            setEditingCard(null);
+            setSelected("");
+            toastSuccess("Card saved successfully!");
         } catch (error) {
-            Alert.alert("Error", error.message);
+            toastError(error.message);
         }
     };
 
     const handleDelete = async (id) => {
         try {
             const token = await AsyncStorage.getItem("token");
-
             const response = await fetch(`${API_URL}/delete-billing-method/${id}`, {
                 method: "DELETE",
                 headers: {
@@ -126,20 +140,15 @@ const BillingMethods = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-
             const data = await response.json();
-
             if (!response.ok) {
                 Alert.alert("Error", data.message || "Delete failed");
                 return;
             }
-
-            Alert.alert("Success", "Deleted successfully");
-
+            toastSuccess("Deleted successfully");
             fetchBillingMethod();
-
         } catch (error) {
-            Alert.alert("Error", error.message);
+            toastError(error.message);
         }
     };
 
@@ -151,116 +160,122 @@ const BillingMethods = () => {
             <SafeAreaView style={{ flex: 1 }}>
                 <View style={styles.container}>
                     <PageNameHeaderBar title="Payment Methods" navigation={navigation} />
-                    <ScrollView
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingBottom: 80 }}
-                        keyboardShouldPersistTaps="handled"
+                    <KeyboardAvoidingView
+                        style={{ flex: 1 }}
+                        behavior={Platform.OS === "ios" ? "padding" : "height"}
+                        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
                     >
-                        <View style={styles.section}>
-                            <View style={{ paddingVertical: 7 }}>
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingBottom: 80 }}
+                            keyboardShouldPersistTaps="handled"
+                        >
+                            <View style={styles.section}>
+                                <View style={{ paddingVertical: 7 }}>
 
-                                {/* <QuestionMark title="Payment Method" /> */}
-                            </View>
-                            <PaymentOption
-                                title="Credit / Debit Card"
-                                icon={
-                                    <FontAwesome name="credit-card-alt" size={20} color="#fff" />
-                                }
-                                selected={selected === "card"}
-                                onPress={() => setSelected("card")}
-                            />
-                            <PaymentOption
-                                title="PayPal"
-                                icon={<Entypo name="paypal" size={24} color="#fff" />}
-                                selected={selected === "upi"}
-                                onPress={() => setSelected("upi")}
-                            />
-
-                            <PaymentOption
-                                title="Pay via Wallet"
-                                icon={<Ionicons name="cash-outline" size={24} color="#fff" />}
-                                selected={selected === "cod"}
-                                onPress={() => setSelected("cod")}
-                            />
-                        </View>
-                        <View style={styles.row}>
-                            <TouchableOpacity
-                                style={styles.rememberMe}
-                                onPress={() => setRemember(!remember)}
-                            >
-                                <View
-                                    style={[styles.checkbox, remember && styles.checkboxChecked]}
-                                >
-                                    {remember && (
-                                        <Ionicons name="checkmark" size={14} color="#000" />
-                                    )}
+                                    {/* <QuestionMark title="Payment Method" /> */}
                                 </View>
-                                <Text style={styles.rememberText}>
-                                    I hereby agree to abide by the{" "}
-                                    <Text
-                                        style={styles.clickText}
-                                        onPress={() => {
-                                            console.log("hii");
-                                        }}
-                                    >
-                                        Terms and Conditions
-                                    </Text>{" "}
-                                    and Policies of Djobzy.com.
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={{ paddingTop: 15 }}>
-                            {selected === "card" && (
-                                <CreditCard
-                                    button="Save"
-                                    onSubmit={handleCardSave}
-                                    initialData={editingCard}
+                                <PaymentOption
+                                    title="Credit / Debit Card"
+                                    icon={
+                                        <FontAwesome name="credit-card-alt" size={20} color="#fff" />
+                                    }
+                                    selected={selected === "card"}
+                                    onPress={() => setSelected("card")}
                                 />
-                            )}
-                            {selected === "upi" && <Paypal button="Save" />}
-                        </View>
-                        {savedMethod && savedMethod.length > 0 && !editingCard && (
-                            <View style={{ paddingTop: 20 }}>
-                                <Text style={styles.currentMethodText}>Current Method</Text>
+                                <PaymentOption
+                                    title="PayPal"
+                                    icon={<Entypo name="paypal" size={24} color="#fff" />}
+                                    selected={selected === "upi"}
+                                    onPress={() => setSelected("upi")}
+                                />
+
+                                <PaymentOption
+                                    title="Pay via Wallet"
+                                    icon={<Ionicons name="cash-outline" size={24} color="#fff" />}
+                                    selected={selected === "cod"}
+                                    onPress={() => setSelected("cod")}
+                                />
                             </View>
-                        )}
-                        {savedMethod && savedMethod.length > 0 && !editingCard && (
-                            <View style={styles.savedCardWrapper}>
-                                {savedMethod.map((item) => (
-                                    <View key={item.id} style={styles.savedCard}>
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={styles.savedCardTitle}>
-                                                Credit / Debit Card
-                                            </Text>
-                                            <Text style={styles.savedCardNumber}>
-                                                ({item.card_number})
-                                            </Text>
-                                        </View>
-
-                                        <View style={styles.savedIconRow}>
-                                            <TouchableOpacity
-                                                style={styles.circleIcon}
-                                                onPress={() => {
-                                                    setEditingCard(item);
-                                                    setSelected("card");
-                                                }}
-                                            >
-                                                <FontAwesome name="pencil" size={16} color="#555" />
-                                            </TouchableOpacity>
-
-                                            <TouchableOpacity
-                                                style={styles.circleIcon}
-                                                onPress={() => handleDelete(item.id)}
-                                            >
-                                                <Ionicons name="trash-outline" size={16} color="#444" />
-                                            </TouchableOpacity>
-                                        </View>
+                            <View style={styles.row}>
+                                <TouchableOpacity
+                                    style={styles.rememberMe}
+                                    onPress={() => setRemember(!remember)}
+                                >
+                                    <View
+                                        style={[styles.checkbox, remember && styles.checkboxChecked]}
+                                    >
+                                        {remember && (
+                                            <Ionicons name="checkmark" size={14} color="#000" />
+                                        )}
                                     </View>
-                                ))}
+                                    <Text style={styles.rememberText}>
+                                        I hereby agree to abide by the{" "}
+                                        <Text
+                                            style={styles.clickText}
+                                            onPress={() => {
+                                                console.log("hii");
+                                            }}
+                                        >
+                                            Terms and Conditions
+                                        </Text>{" "}
+                                        and Policies of Djobzy.com.
+                                    </Text>
+                                </TouchableOpacity>
                             </View>
-                        )}
+                            <View style={{ paddingTop: 15 }}>
+                                {selected === "card" && (
+                                    <CreditCard
+                                        button="Save"
+                                        onSubmit={handleCardSave}
+                                        initialData={editingCard}
+                                    />
+                                )}
+                                {selected === "upi" && <Paypal button="Save" />}
+                            </View>
+                            {savedMethod && savedMethod.length > 0 && !editingCard && (
+                                <View style={{ paddingTop: 20 }}>
+                                    <Text style={styles.currentMethodText}>Current Method</Text>
+                                </View>
+                            )}
+                            {savedMethod && savedMethod.length > 0 && !editingCard && (
+                                <View style={styles.savedCardWrapper}>
+                                    {savedMethod.map((item) => (
+                                        <View key={item.id} style={styles.savedCard}>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={styles.savedCardTitle}>
+                                                    Credit / Debit Card
+                                                </Text>
+                                                <Text style={styles.savedCardNumber}>
+                                                    ({item.card_number})
+                                                </Text>
+                                            </View>
 
-                    </ScrollView>
+                                            <View style={styles.savedIconRow}>
+                                                <TouchableOpacity
+                                                    style={styles.circleIcon}
+                                                    onPress={() => {
+                                                        setEditingCard(item);
+                                                        setSelected("card");
+                                                    }}
+                                                >
+                                                    <FontAwesome name="pencil" size={16} color="#555" />
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity
+                                                    style={styles.circleIcon}
+                                                    onPress={() => handleDelete(item.id)}
+                                                >
+                                                    <Ionicons name="trash-outline" size={16} color="#444" />
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+
+                        </ScrollView>
+                    </KeyboardAvoidingView>
                 </View>
                 <Footer />
             </SafeAreaView>

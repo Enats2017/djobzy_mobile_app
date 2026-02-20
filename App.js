@@ -217,8 +217,8 @@ const App = () => {
             <Stack.Screen name="SearchCategory" component={SearchCategory} />
             <Stack.Screen name="SearchResult" component={SearchResult} />
             <Stack.Screen name="CompletedContract" component={CompletedContract} />
-            <Stack.Screen name = "CategoryResult" component={CategoryResult} />
-            <Stack.Screen name = "BillingMethods" component={BillingMethods} />
+            <Stack.Screen name="CategoryResult" component={CategoryResult} />
+            <Stack.Screen name="BillingMethods" component={BillingMethods} />
           </Stack.Navigator>
         </NavigationContainer>
         <Toast config={toastConfig} />

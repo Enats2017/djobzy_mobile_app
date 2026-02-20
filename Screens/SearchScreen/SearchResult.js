@@ -26,8 +26,9 @@ const SearchResult = () => {
   const [activeTab, setActiveTab] = useState(userSearchMode === 0);
   const [showFilter, setShowFilter] = useState(false);
   const [admin, setAdmin] = useState(0);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
-   const loadUser = async () => {
+  const loadUser = async () => {
     const userStr = await AsyncStorage.getItem("user");
     if (!userStr) return;
     const user = JSON.parse(userStr);
@@ -36,9 +37,9 @@ const SearchResult = () => {
   };
 
   useEffect(() => {
-      loadUser();
-      
-    }, []);
+    loadUser();
+
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -100,17 +101,41 @@ const SearchResult = () => {
                   />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.iconCircle}>
+                <TouchableOpacity style={styles.iconCircle} onPress={() => setShowFilterDropdown((prev) => !prev)}>
                   <Octicons name="filter" size={18} color="#fff" />
                 </TouchableOpacity>
               </View>
             </View>
+            {showFilterDropdown && (
+              <>
+                <TouchableOpacity
+                  style={styles.overlay}
+                  activeOpacity={1}
+                  onPress={() => setShowFilterDropdown(false)}
+                />
 
+                <View style={styles.dropdownWrapper}>
+                  <View style={styles.dropdownContainer}>
+                    {["Distance", "Price", "Date Added"].map((item, index, arr) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.option,
+                          index === arr.length - 1 && { borderBottomWidth: 0 },
+                        ]}
+                      >
+                        <Text style={styles.dropdownText}>{item}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </>
+            )}
             {/* FILTER */}
             {showFilter && <AdvanceSearch onClose={() => setShowFilter(false)} />}
 
             {/* CONTENT */}
-            {activeTab ? <JobResult showData={showFilter} /> : <EmployeeResult showData={showFilter}/> }
+            {activeTab ? <JobResult showData={showFilter} /> : <EmployeeResult showData={showFilter} />}
 
           </View>
         </KeyboardAvoidingView>
@@ -180,6 +205,44 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#ffffff",
     borderRadius: 10,
+  },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 998, 
+    elevation: 5,
+  },
+
+  dropdownWrapper: {
+    position: "absolute",
+    top: 45,
+    right: 16,
+    zIndex: 999,
+    elevation: 10,
+  },
+
+  dropdownContainer: {
+    width: 140,
+    backgroundColor: "#fff",
+    borderRadius: 4,
+    overflow: "hidden",
+    elevation: 6,
+  },
+
+  option: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EAEAEA",
+  },
+
+  dropdownText: {
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    color: "#000",
   },
 });
 

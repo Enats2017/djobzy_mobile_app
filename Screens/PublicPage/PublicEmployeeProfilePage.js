@@ -465,7 +465,7 @@ export default function PublicEmployeeProfilePage({ route }) {
                               paddingVertical={10}
                               paddingHorizontal={35}
                               onPress={() =>
-                                navigation.navigate("EditPromoteSevices", {
+                                navigation.navigate("PromoteServicesDetails", {
                                   id: item.sid,
                                   type: 2,
                                 })

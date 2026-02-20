@@ -28,6 +28,7 @@ import CustomSwitch from "../../components/CustomSwitch";
 import EmployerFooter from "../../components/EmployerFooter";
 import { useNotifications } from "../../context/MessageNotificationContext";
 import { useServiceGlobalStore } from "../PromoteServicesPage/ServiceGlobalStore";
+import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 
 const EmployeeProfileMenu = () => {
   const navigation = useNavigation();

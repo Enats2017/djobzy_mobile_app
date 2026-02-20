@@ -39,7 +39,7 @@ const SearchScreen = () => {
   const route = useRoute();
   const { search_type } = route.params ?? {};
   const [results, setResults] = useState([]);
-  const [searchMode, setSearchMode] = useState(s ?? 0);
+  const [searchMode, setSearchMode] = useState(search_type ?? 0);
   const [showDropdown, setShowDropdown] = useState(false);
   const [categoryModal, setCategoryModal] = useState(false);
   const [categoryName, setCategoryName] = useState("");

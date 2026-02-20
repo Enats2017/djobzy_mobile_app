@@ -22,11 +22,11 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-const Delete_Category = ({ visible, onClose, id, onDeleted, name}) => {
+const Delete_Category = ({ visible, onClose, id, onDeleted, name }) => {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   console.log(id);
-  
+
 
   const handleDelete = async () => {
     try {
@@ -43,9 +43,9 @@ const Delete_Category = ({ visible, onClose, id, onDeleted, name}) => {
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
       onDeleted(id);   // 👈 notify the parent screen  
-      onClose(); 
+      onClose();
       console.log(data);
-      
+
     } catch (err) {
       console.log(err);
 
@@ -72,15 +72,14 @@ const Delete_Category = ({ visible, onClose, id, onDeleted, name}) => {
           >
             <Ionicons name="close" size={22} color="#000" />
           </TouchableOpacity>
-          <Ionicons
-            name="warning-outline"
-            size={45}
-            color="#d64545"
-            style={{ marginBottom: 10 }}
+          <Image
+            source={require("../assets/images/delete_warning.png")}
+            style={{ width: 70, height: 70, marginBottom: 10 }}
+            resizeMode="contain"
           />
           <Text style={styles.deleteTitle}>Delete Category</Text>
           <Text style={styles.deleteMsg}>
-            Do you want to delete the category:{" "}  
+            Do you want to delete the category:{" "}
             <Text style={{ fontWeight: "700" }}>{name}</Text>?
           </Text>
           <View style={styles.deleteBtns}>
@@ -90,7 +89,7 @@ const Delete_Category = ({ visible, onClose, id, onDeleted, name}) => {
               }}
               style={styles.cancelBtn}
             >
-              <Text>Cancel</Text>
+              <Text style={styles.canceltext}>No, Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -98,9 +97,9 @@ const Delete_Category = ({ visible, onClose, id, onDeleted, name}) => {
               style={styles.deleteBtn}
               onPress={handleDelete}
               disabled={loading}
-              //disabled={deleteLoading}
+            //disabled={deleteLoading}
             >
-              <Text style={{ color: "#fff" }}>Yes, Delete</Text>
+              <Text style={styles.deletetext}>Yes, Delete</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -130,29 +129,47 @@ const styles = StyleSheet.create({
   },
   modalCloseIcon: {
     position: "absolute",
-    top: 2,
-    right: 4,
+    top: 12,
+    right: 8,
     padding: 5,
     zIndex: 10,
   },
 
-  deleteTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10 },
-  deleteMsg: { fontSize: 15, marginBottom: 20, color: "#444" },
+  deleteTitle: {
+    fontSize: 22, fontFamily: "Montserrat_700Bold", marginBottom: 7,
+  },
+  deleteMsg: {
+    fontSize: 15, marginBottom: 15, textAlign: "center", color: "#444", fontFamily: "Montserrat_500Medium",
+  },
   deleteBtns: {
     flexDirection: "row",
     justifyContent: "flex-end",
     gap: 10,
+    paddingHorizontal: 13,
+  },
+  deletetext: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontFamily: "Montserrat_700Bold",
+    letterSpacing: 0.1,
   },
   cancelBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 6,
+    paddingVertical: 15,
+    width: "50%",
+    alignItems: "center",
+    borderRadius: 10,
     backgroundColor: "#ddd",
   },
+  canceltext: {
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#030303",
+  },
   deleteBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 6,
+    paddingVertical: 15,
+    width: "50%",
+    alignItems: "center",
+    borderRadius: 10,
     backgroundColor: "red",
   },
 });

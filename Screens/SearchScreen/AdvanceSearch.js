@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { scale, fontScale } from "../../utils/scale";
 import GradientButton from "../../components/GradientButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
+import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
 
 const AdvancedSearch = () => {
   const [fromPrice, setFromPrice] = useState("");
@@ -25,6 +26,20 @@ const AdvancedSearch = () => {
   const [categoryText, setCategoryText] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const { categories } = useGlobalSearch();
+
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+      const selected = categories[0];
+
+      setSelectedCategories([
+        {
+          subid: selected.subId || selected.serviceId,
+          subname: selected.name,
+        },
+      ]);
+    }
+  }, [categories]);
 
   const fetchCategories = async (text) => {
     setCategoryText(text);
@@ -292,12 +307,12 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   sliderRow: {
-  
-  alignItems: "center",
-},
+
+    alignItems: "center",
+  },
 
   remoteRow: {
-    
+
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -306,8 +321,8 @@ const styles = StyleSheet.create({
   checkboxRow: {
     flexDirection: "row",
     alignItems: "center",
-  
-    
+
+
   },
   checkbox: {
     width: 18,
@@ -371,6 +386,6 @@ const styles = StyleSheet.create({
   currency: { fontSize: fontScale(14), color: "#666" },
   slideinput: { fontSize: 16, color: "#666" },
 
-  
- 
+
+
 });

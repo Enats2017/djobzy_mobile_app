@@ -11,6 +11,18 @@ export const useGlobalSearch = create((set, get) => ({
   radius: 100,
   orderBy: "Distance",
   sortOrder: "ASC",
+  searchSort: null,
+  searchFilter: null,
+  showSearchDropdown: false,
+
+  setSearchSort: (value) =>
+    set({ searchSort: value, showSearchDropdown: true }),
+
+  setSearchFilter: (value) =>
+    set({ searchFilter: value, showSearchDropdown: true }),
+
+  hideSearchDropdown: () => set({ showSearchDropdown: false }),
+
   setKeyword: (value) => set({ keyword: value }),
   setUserSearchMode: (value) => set({ userSearchMode: value }),
   clearKeyword: () => set({ keyword: "" }),
@@ -30,10 +42,14 @@ export const useGlobalSearch = create((set, get) => ({
   clearCategories: () => set({ categories: [] }),
 
   getSubcategoryParam: () =>
-    get().categories.map((c) => c.subId).join(","),
+    get()
+      .categories.map((c) => c.subId)
+      .join(","),
 
   getCategoryParam: () =>
-    get().categories.map((c) => c.name).join(","),
+    get()
+      .categories.map((c) => c.name)
+      .join(","),
 
   reset: () =>
     set({
@@ -47,5 +63,8 @@ export const useGlobalSearch = create((set, get) => ({
       radius: 100,
       orderBy: "Distance",
       sortOrder: "ASC",
+      searchSort: null,
+      searchFilter: null,
+      showSearchDropdown: false,
     }),
 }));

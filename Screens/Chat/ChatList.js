@@ -22,6 +22,7 @@ import NoTransactions from "../Wallet/NoTransactions";
 import EmployerFooter from "../../components/EmployerFooter";
 import Footer from "../../components/Footer";
 import { Montserrat_500Medium } from "@expo-google-fonts/montserrat";
+import { Alert } from "react-native";
 
 const ChatList = () => {
   const navigation = useNavigation();
@@ -101,14 +102,48 @@ const ChatList = () => {
           activeOpacity={1}
           onPress={() => setChatModal(false)}
         />
+
         <View style={styles.dropdownWrapper}>
           <View style={styles.modalContainer}>
-            <TouchableOpacity style={styles.section}>
-            <Text style={styles.label}>Read</Text>
+            <TouchableOpacity
+              style={styles.option}
+              onPress={() => {
+                Alert.alert("Selected", "Read Pressed");
+                setChatModal(false);
+              }}
+            >
+              <Text style={styles.label}>Read</Text>
             </TouchableOpacity>
-            <Text style={styles.label}>Unread</Text>
-            <Text style={styles.label}>Archived</Text>
-            <Text style={styles.label}>Blocked</Text>
+
+            <TouchableOpacity
+              style={styles.option}
+              onPress={() => {
+                Alert.alert("Selected", "Unread Pressed");
+                setChatModal(false);
+              }}
+            >
+              <Text style={styles.label}>Unread</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.option}
+              onPress={() => {
+                Alert.alert("Selected", "Archived Pressed");
+                setChatModal(false);
+              }}
+            >
+              <Text style={styles.label}>Archived</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.option, { borderBottomWidth: 0 }]}
+              onPress={() => {
+                Alert.alert("Selected", "Blocked Pressed");
+                setChatModal(false);
+              }}
+            >
+              <Text style={styles.label}>Blocked</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -213,29 +248,28 @@ const styles = StyleSheet.create({
   },
 
   dropdownWrapper: {
-  position: "absolute",
-  top: 140, // just below search bar
-  right: 8,
-},
-
+    position: "absolute",
+    top: 125,
+    right: 34,
+  },
 
   modalContainer: {
-    right: 15,
-    flex:1, 
     backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingVertical: 17,
+    width: 120,
+    borderRadius: 4,
+    overflow: "hidden",
+    elevation: 6,
+  },
+  option: {
+    paddingVertical: 8,
     paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5E5",
   },
-  section:{
-    flex:1,
-    gap:4,
-    
-  },
-  label:{
-    fontFamily:"Montserrat_500Medium",
-    fontSize:16,
-    color:"#000",
+  label: {
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    color: "#000",
   },
 });
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,9 @@ import Entypo from "@expo/vector-icons/Entypo";
 import GradientButton from "../../components/GradientButton";
 
 export default function CreditCardWithdraw({
-
-  button = "Request a Withdraw"
+  button = "Request a Withdraw",
+  onSubmit,
+  initialData = null
 }
 ) {
   const [fullName, setFullName] = useState("");
@@ -25,6 +26,16 @@ export default function CreditCardWithdraw({
   const [selectedCountry, setSelectedCountry] = useState("Select Country");
 
   const countryOptions = ["India", "Canada", "USA", "Australia", "UK"];
+
+  useEffect(() => {
+    if (initialData) {
+      setFullName(initialData.name || "");
+      setCardNumber(initialData.card_number || "");
+      setExpMonth(initialData.expiry_month_card?.toString() || "");
+      setExpYear(initialData.expiry_year_card?.toString() || "");
+      setSelectedCountry(initialData.country || "Select Country");
+    }
+  }, [initialData]);
 
   const handleSubmit = () => {
     // empty field check
@@ -57,7 +68,15 @@ export default function CreditCardWithdraw({
       return;
     }
 
-    Alert.alert("Success", "Your card withdraw request has been submitted!");
+    onSubmit({
+      fullName,
+      selectedCountry,
+      cardNumber,
+      expMonth,
+      expYear,
+    });
+
+    // Alert.alert("Success", "Your card withdraw request has been submitted!");
   };
 
   return (

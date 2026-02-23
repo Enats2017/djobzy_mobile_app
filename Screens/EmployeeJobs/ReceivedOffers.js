@@ -104,7 +104,7 @@ const ReceivedOffers = () => {
       ) : (
         <ScrollView contentContainerStyle={styles.scrollView}>
           {hiddenOffer.map((offer, index) => (
-            <HiddenOffer key={index} hiddenOffer={offer} />
+            <HiddenOffer key={index} hiddenOffer={offer} onHide={moveToHidden} />
           ))}
         </ScrollView>
       )}

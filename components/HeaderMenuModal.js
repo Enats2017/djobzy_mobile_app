@@ -22,6 +22,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../api/ApiUrl";
 import LineDivider from "./LineDivider";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useServiceGlobalStore } from "../Screens/PromoteServicesPage/ServiceGlobalStore";
 
 const HeaderMenuModal = ({ visible, onClose }) => {
   const navigation = useNavigation();
@@ -155,7 +156,12 @@ const HeaderMenuModal = ({ visible, onClose }) => {
                 IconComponent={Entypo}
                 icon="circle-with-plus"
                 title="Promote Services"
-                onPress={() => go("PromoteService", { userId: user?.id })}
+                onPress={() => {
+                  const store = useServiceGlobalStore.getState();
+                  store.reset();
+                  store.resetUniqueId();
+                  go("PromoteService", { userId: user?.id })}
+                }
               />
             ) : (
               <MenuItem

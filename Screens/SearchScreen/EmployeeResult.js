@@ -25,7 +25,7 @@ import GradientButton from "../../components/GradientButton";
 import { useGlobalSearch } from "./useGlobalSearch";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
-export default function EmployeeResult() {
+export default function EmployeeResult({ showData }) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
 
@@ -211,32 +211,32 @@ export default function EmployeeResult() {
   };
 
   return (
-    <View
-      style={[styles.findEmployeeContainer, { paddingBottom: insets.bottom }]}
-    >
-      <FlatList
-        data={employees}
-        renderItem={renderEmployeeCard}
-        keyExtractor={(item) => item.id.toString()}
-        ListFooterComponent={renderFooter}
-        showsVerticalScrollIndicator={false}
-        onEndReachedThreshold={0.5}
-        onMomentumScrollBegin={() => {
-          onEndReachedCalledDuringMomentum.current = false;
-        }}
-        onEndReached={() => {
-          if (
-            !onEndReachedCalledDuringMomentum.current &&
-            hasMore &&
-            !isFetchingMore &&
-            !loading
-          ) {
-            fetchEmployee(page + 1);
-            onEndReachedCalledDuringMomentum.current = true;
-          }
-        }}
-        contentContainerStyle={{ paddingBottom: 50 }}
-      />
+    <View style={[styles.findEmployeeContainer, { paddingBottom: insets.bottom }]}>
+      {!showData && (
+        <FlatList
+          data={employees}
+          renderItem={renderEmployeeCard}
+          keyExtractor={(item) => item.id.toString()}
+          ListFooterComponent={renderFooter}
+          showsVerticalScrollIndicator={false}
+          onEndReachedThreshold={0.5}
+          onMomentumScrollBegin={() => {
+            onEndReachedCalledDuringMomentum.current = false;
+          }}
+          onEndReached={() => {
+            if (
+              !onEndReachedCalledDuringMomentum.current &&
+              hasMore &&
+              !isFetchingMore &&
+              !loading
+            ) {
+              fetchEmployee(page + 1);
+              onEndReachedCalledDuringMomentum.current = true;
+            }
+          }}
+          contentContainerStyle={{ paddingBottom: 50 }}
+        />
+      )}
     </View>
   );
 }

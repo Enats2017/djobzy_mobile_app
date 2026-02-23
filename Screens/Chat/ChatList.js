@@ -21,7 +21,6 @@ import Loading from "../../components/Loading";
 import NoTransactions from "../Wallet/NoTransactions";
 import EmployerFooter from "../../components/EmployerFooter";
 import Footer from "../../components/Footer";
-import { Montserrat_500Medium } from "@expo-google-fonts/montserrat";
 import { Alert } from "react-native";
 
 const ChatList = () => {

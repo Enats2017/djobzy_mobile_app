@@ -30,6 +30,7 @@ const QuestionMark = ({
           style={containerStyle}
         />
       </Tooltip>
+
     </View>
   );
 };

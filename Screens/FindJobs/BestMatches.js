@@ -21,8 +21,7 @@ const BestMatches = () => {
   const [activeTab, setActiveTab] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const { searchSort, searchFilter, setSearchSort, setSearchFilter } =
-    useGlobalSearch();
+  const { searchSort, searchFilter, setSearchSort, setSearchFilter } = useGlobalSearch();
 
   return (
     <View style={styles.bestmatch}>

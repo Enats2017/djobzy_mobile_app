@@ -16,7 +16,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import AdvanceSearch from "../SearchScreen/AdvanceSearch";
 import { API_URL } from "../../api/ApiUrl";
 import JobResult from "../SearchScreen/JobResult";
-import EmployeeResult from "../SearchScreen/EmployeeResult";
+import EmployeeCategoryResult from "../SearchScreen/EmployeeCategoryResult";
 import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
 import EmployerFooter from "../../components/EmployerFooter";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -29,7 +29,7 @@ const CategoryResult = () => {
   const selected = categories?.[0];
   console.log("Selected category:", selected);
 
-  const [activeTab, setActiveTab] = useState(userSearchMode === 0);
+  const [activeTab, setActiveTab] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
   const [admin, setAdmin] = useState(0);
   const [jobs, setJobs] = useState([]);
@@ -48,6 +48,14 @@ const CategoryResult = () => {
   useEffect(() => {
     loadUser();
   }, []);
+  
+  useEffect(() => {
+  if (admin === 2) {
+    setActiveTab(false);
+  } else {
+    setActiveTab(true); 
+  }
+}, [admin]);
 
   const fetchCategoryData = async (pageNum = 1) => {
     if (!selected) return;
@@ -111,7 +119,7 @@ const CategoryResult = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <PageNameHeaderBar
-          title={keyword || "Result"}
+          title={selected?.name || "Result"}
           navigation={navigation}
         />
 
@@ -190,7 +198,16 @@ const CategoryResult = () => {
                 hasMore={hasMore}
               />
             ) : (
-              <EmployeeResult />
+              <EmployeeCategoryResult
+                gigs={jobs}
+                fetchMore={() => {
+                  if (hasMore && !isFetchingMore) {
+                    fetchCategoryData(page + 1);
+                  }
+                }}
+                isFetchingMore={isFetchingMore}
+                hasMore={hasMore}
+              />
             )}
           </View>
         </KeyboardAvoidingView>

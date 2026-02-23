@@ -35,7 +35,7 @@ const ViewCurrentJobPost = () => {
   const [job, setJob] = useState([]);
   const [category, setCategory] = useState([]);
   const [admin, setAdmin] = useState(0);
-   
+
 
   const fetchData = async () => {
     try {
@@ -80,175 +80,182 @@ const ViewCurrentJobPost = () => {
     fetchData();
   }, []);
 
-  if (loading) return <Loading />;
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <PageNameHeaderBar
-            navigation={navigation}
-            title={
-              job?.details?.request_status == 2
-                ? "My Completed Contract"
-                : "My Active Contract"
-            }
-          />
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            style={{ paddingBottom: 100 }}
-          >
-            <View style={styles.topCard}>
-              <View style={styles.topRow}>
-                <View style={styles.topBox}>
-                  <Text style={styles.topLabel}>Total Price</Text>
-                  <Text style={styles.topValue}>
-                    {job.gigProp?.prop_hourly_rate}
-                    <Text style={styles.unit}> CAD</Text>
-                  </Text>
-                </View>
-                <View style={styles.vertDivider} />
-                <View style={styles.topBox}>
-                  <Text style={styles.topLabel}>Hourly Rate</Text>
-                  <Text style={styles.topValue}>
-                    {job.gigProp?.prop_total_hour}
-                    <Text style={styles.unit}> CAD</Text>
-                  </Text>
-                </View>
-                <View style={styles.vertDivider} />
-                <View style={styles.topBox}>
-                  <Text style={styles.topLabel}>Project Length</Text>
-                  <Text style={styles.topValue}>
-                    {job.gigProp?.expected_hour}
-                    <Text style={styles.unit}> hours</Text>
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.dividerLine} />
-              <View style={styles.topMetaRow}>
-                <View style={styles.metaItemRowLeft}>
-                  <Text style={styles.metaLabel}>Start Date:</Text>
-                  <Text style={styles.metaValue}>
-                    {job.details?.award_date}
-                  </Text>
-                </View>
-                <View style={styles.metaItemRowRight}>
-                  <Text style={styles.metaLabel}>Contract ID:</Text>
-                  <Text style={styles.metaValue}>{job.details?.gid}</Text>
-                </View>
-              </View>
-              <View style={styles.messagesRow}>
-                <View style={styles.newMsgBox}>
-                  <Text style={styles.metaLabel}>New Messages</Text>
-                  <Text style={styles.metaValue}>0</Text>
-                </View>
-                <TouchableOpacity style={styles.messagesBtn}>
-                  <Text style={styles.messagesBtnText}>Messages</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-            <View style={styles.userCard}>
-              <Image
-                source={{
-                  uri: job.user?.photo,
-                }}
-                style={styles.avatar}
-              />
-              <View style={styles.userInfo}>
-                <View style={styles.nameStarsWrapper}>
-                  <Text
-                    style={styles.userName}
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                  >
-                    {job.user?.full_name}
-                  </Text>
-                  <View style={styles.starsInline}>
-                    {[...Array(5)].map((_, i) => (
-                      <FontAwesome
-                        key={i}
-                        name="star"
-                        size={13}
-                        color="#EBBE56"
-                        style={{ marginLeft: 2 }}
-                      />
-                    ))}
+          {
+            loading ? (
+              <Loading />
+            ) : (
+              <>
+                <PageNameHeaderBar
+                  navigation={navigation}
+                  title={
+                    job?.details?.request_status == 2
+                      ? "My Completed Contract"
+                      : "My Active Contract"
+                  }
+                />
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  style={{ paddingBottom: 100 }}
+                >
+                  <View style={styles.topCard}>
+                    <View style={styles.topRow}>
+                      <View style={styles.topBox}>
+                        <Text style={styles.topLabel}>Total Price</Text>
+                        <Text style={styles.topValue}>
+                          {job.gigProp?.prop_hourly_rate}
+                          <Text style={styles.unit}> CAD</Text>
+                        </Text>
+                      </View>
+                      <View style={styles.vertDivider} />
+                      <View style={styles.topBox}>
+                        <Text style={styles.topLabel}>Hourly Rate</Text>
+                        <Text style={styles.topValue}>
+                          {job.gigProp?.prop_total_hour}
+                          <Text style={styles.unit}> CAD</Text>
+                        </Text>
+                      </View>
+                      <View style={styles.vertDivider} />
+                      <View style={styles.topBox}>
+                        <Text style={styles.topLabel}>Project Length</Text>
+                        <Text style={styles.topValue}>
+                          {job.gigProp?.expected_hour}
+                          <Text style={styles.unit}> hours</Text>
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.dividerLine} />
+                    <View style={styles.topMetaRow}>
+                      <View style={styles.metaItemRowLeft}>
+                        <Text style={styles.metaLabel}>Start Date:</Text>
+                        <Text style={styles.metaValue}>
+                          {job.details?.award_date}
+                        </Text>
+                      </View>
+                      <View style={styles.metaItemRowRight}>
+                        <Text style={styles.metaLabel}>Contract ID:</Text>
+                        <Text style={styles.metaValue}>{job.details?.gid}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.messagesRow}>
+                      <View style={styles.newMsgBox}>
+                        <Text style={styles.metaLabel}>New Messages</Text>
+                        <Text style={styles.metaValue}>0</Text>
+                      </View>
+                      <TouchableOpacity style={styles.messagesBtn}>
+                        <Text style={styles.messagesBtnText}>Messages</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-
-                <View style={styles.verifLevelRow}>
-                  <MaterialIcons
-                    name="verified"
-                    size={16}
-                    color="#c3c3c3"
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text style={styles.verification}>
-                    Verification Level: {job.user?.verification_count}/7
-                  </Text>
-                </View>
-
-                {job.user?.address && (
-                  <View style={styles.locationRow}>
-                    <FontAwesome5
-                      name="map-marker-alt"
-                      size={13}
-                      color="#c3c3c3"
-                      style={{ marginRight: 2 }}
-                      
+                  <View style={styles.userCard}>
+                    <Image
+                      source={{
+                        uri: job.user?.photo,
+                      }}
+                      style={styles.avatar}
                     />
-                    <Text style={styles.verification}>{job.user?.address}</Text>
-                  </View>
-                )}
-              </View>
-              <TouchableOpacity style={styles.menuButton}>
-                <Entypo name="dots-three-vertical" size={20} color="#bbb" />
-              </TouchableOpacity>
-            </View>
+                    <View style={styles.userInfo}>
+                      <View style={styles.nameStarsWrapper}>
+                        <Text
+                          style={styles.userName}
+                          numberOfLines={2}
+                          ellipsizeMode="tail"
+                        >
+                          {job.user?.full_name}
+                        </Text>
+                        <View style={styles.starsInline}>
+                          {[...Array(5)].map((_, i) => (
+                            <FontAwesome
+                              key={i}
+                              name="star"
+                              size={13}
+                              color="#EBBE56"
+                              style={{ marginLeft: 2 }}
+                            />
+                          ))}
+                        </View>
+                      </View>
 
-            <View style={styles.section}>
-              <View style={styles.rowBetween}>
-                <Text style={styles.jobTitle}>{job.details?.subject}</Text>
-              </View>
-            </View>
+                      <View style={styles.verifLevelRow}>
+                        <MaterialIcons
+                          name="verified"
+                          size={16}
+                          color="#c3c3c3"
+                          style={{ marginRight: 6 }}
+                        />
+                        <Text style={styles.verification}>
+                          Verification Level: {job.user?.verification_count}/7
+                        </Text>
+                      </View>
 
-            <View
-              style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
-            />
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Categories</Text>
-              <View style={styles.tagContainer}>
-                {category.map((cat, i) => (
-                  <View key={i} style={styles.tag}>
-                    <Text style={styles.tagText}>{cat.subname}</Text>
+                      {job.user?.address && (
+                        <View style={styles.locationRow}>
+                          <FontAwesome5
+                            name="map-marker-alt"
+                            size={13}
+                            color="#c3c3c3"
+                            style={{ marginRight: 2 }}
+
+                          />
+                          <Text style={styles.verification}>{job.user?.address}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <TouchableOpacity style={styles.menuButton}>
+                      <Entypo name="dots-three-vertical" size={20} color="#bbb" />
+                    </TouchableOpacity>
                   </View>
-                ))}
-              </View>
-            </View>
-            <View
-              style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
-            />
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.descriptionText}>
-                {job.details?.description}
-              </Text>
-            </View>
-          </ScrollView>
-          <View style={styles.btnRow}>
-            <TouchableOpacity style={styles.chatBtn}>
-              <Text style={styles.btnText}>Chat</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.payBtn}
-              onPress={() =>
-                navigation.navigate("CurrentJobPaymentPage", {
-                  gid: job.details?.gid,
-                })
-              }
-            >
-              <Text style={styles.btnText}>Payment Details</Text>
-            </TouchableOpacity>
-          </View>
+
+                  <View style={styles.section}>
+                    <View style={styles.rowBetween}>
+                      <Text style={styles.jobTitle}>{job.details?.subject}</Text>
+                    </View>
+                  </View>
+
+                  <View
+                    style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
+                  />
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Categories</Text>
+                    <View style={styles.tagContainer}>
+                      {category.map((cat, i) => (
+                        <View key={i} style={styles.tag}>
+                          <Text style={styles.tagText}>{cat.subname}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                  <View
+                    style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
+                  />
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Description</Text>
+                    <Text style={styles.descriptionText}>
+                      {job.details?.description}
+                    </Text>
+                  </View>
+                </ScrollView>
+                <View style={styles.btnRow}>
+                  <TouchableOpacity style={styles.chatBtn}>
+                    <Text style={styles.btnText}>Chat</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.payBtn}
+                    onPress={() =>
+                      navigation.navigate("CurrentJobPaymentPage", {
+                        gid: job.details?.gid,
+                      })
+                    }
+                  >
+                    <Text style={styles.btnText}>Payment Details</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )
+          }
         </View>
 
         {admin == 2 ? <EmployerFooter /> : <Footer />}
@@ -260,13 +267,8 @@ const ViewCurrentJobPost = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-  },
-  loaderOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#161616",
+    paddingHorizontal: 15,
+    backgroundColor: "#222222"
   },
   topCard: {
     padding: 12,
@@ -376,7 +378,7 @@ const styles = StyleSheet.create({
   },
   userCard: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     padding: 13,
     paddingVertical: 20,
     backgroundColor: "#444",

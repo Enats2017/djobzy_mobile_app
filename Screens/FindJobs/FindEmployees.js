@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LineDivider from "../../components/LineDivider";
 import GradientButton from "../../components/GradientButton";
 import { useNavigation } from "@react-navigation/native";
+import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
 
 export default function FindEmployees() {
   const [employees, setEmployees] = useState([]);
@@ -30,6 +31,50 @@ export default function FindEmployees() {
   const hasFetched = useRef(false);
   const insets = useSafeAreaInsets();
 
+  const {
+    keyword,
+    latitude,
+    longitude,
+    getSubcategoryParam,
+    low_price,
+    high_price,
+    radius,
+    isRemoteJob,
+    orderBy,
+    sortOrder,
+    searchTrigger,
+  } = useGlobalSearch();
+
+  const subcategory = getSubcategoryParam();
+
+  const queryString = React.useMemo(() => {
+    return new URLSearchParams({
+      keyword: keyword || "",
+      subcategory: subcategory || "",
+      low: low_price,
+      high: high_price,
+      latitude: latitude || 0,
+      longitude: longitude || 0,
+      radius: radius || 0,
+      sortBy: orderBy || "",
+      sortOrder: sortOrder || "",
+      isRemoteJob: isRemoteJob || 0,
+    }).toString();
+  }, [
+    keyword,
+    subcategory,
+    low_price,
+    high_price,
+    latitude,
+    longitude,
+    radius,
+    orderBy,
+    sortOrder,
+    isRemoteJob
+  ]);
+
+  console.log("🔍 Employee query string:", queryString);
+
   const fetchEmployee = useCallback(
     async (pageNum = 1) => {
       if (loading || isFetchingMore) return;
@@ -42,7 +87,7 @@ export default function FindEmployees() {
       }
 
       try {
-        const res = await fetch(`${API_URL}/employee-gigs?page=${pageNum}`, {
+        const res = await fetch(`${API_URL}/employee-gigs?${queryString}&page=${pageNum}`, {
           headers: {
             Accept: "application/json",
           },
@@ -73,16 +118,15 @@ export default function FindEmployees() {
         setIsFetchingMore(false);
       }
     },
-    [loading, isFetchingMore],
+    [loading, isFetchingMore, queryString],
   );
 
   useEffect(() => {
-    if (!hasFetched.current) {
-      hasFetched.current = true;
-      fetchEmployee(1);
-    }
-  }, [fetchEmployee]);
-
+    setEmployees([]);
+    setPage(1);
+    setHasMore(true);
+    fetchEmployee(1);
+  }, [queryString]);
   // -----------------------------
   // FOOTER
   // -----------------------------
@@ -230,7 +274,7 @@ const styles = StyleSheet.create({
   nameRow1: {
     flexDirection: "row",
     alignItems: "center",
-    flexWrap:"wrap",
+    flexWrap: "wrap",
 
   },
   avatar1: {

@@ -16,15 +16,24 @@ export const useGlobalSearch = create((set, get) => ({
   searchSort: null,
   searchFilter: null,
   showSearchDropdown: false,
-
   setSearchSort: (value) =>
-    set({ searchSort: value, showSearchDropdown: true }),
+    set((state) => ({
+      searchSort: value,
+      orderBy: value,
+      searchFilter: state.searchFilter ?? "Ascending",
+      sortOrder: state.searchFilter
+        ? state.sortOrder
+        : "ASC",
 
+      showSearchDropdown: true,
+    })),
   setSearchFilter: (value) =>
-    set({ searchFilter: value, showSearchDropdown: true }),
-
+    set({
+      searchFilter: value,
+      sortOrder: value === "Ascending" ? "ASC" : "DESC",
+      showSearchDropdown: true,
+    }),
   hideSearchDropdown: () => set({ showSearchDropdown: false }),
-  searchTrigger: 0,
 
   triggerSearch: () => set((state) => ({ searchTrigger: state.searchTrigger + 1 })),
   setKeyword: (value) => set({ keyword: value }),
@@ -67,7 +76,7 @@ export const useGlobalSearch = create((set, get) => ({
       radius: 0,
       isRemoteJob: 0,
       address: "",
-      orderBy: "Distance",
+      orderBy: null,
       sortOrder: "ASC",
       searchSort: null,
       searchFilter: null,

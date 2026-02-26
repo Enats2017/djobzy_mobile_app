@@ -11,11 +11,12 @@ export const useGlobalSearch = create((set, get) => ({
   radius: 0,
   isRemoteJob: 0,
   address: '',
-  orderBy: "Distance",
+  sortBy: "Distance",
   sortOrder: "ASC",
   searchSort: null,
   searchFilter: null,
   showSearchDropdown: false,
+  searchTrigger: 0,
 
   setSearchSort: (value) =>
     set({ searchSort: value, showSearchDropdown: true }),
@@ -24,7 +25,6 @@ export const useGlobalSearch = create((set, get) => ({
     set({ searchFilter: value, showSearchDropdown: true }),
 
   hideSearchDropdown: () => set({ showSearchDropdown: false }),
-  searchTrigger: 0,
 
   triggerSearch: () => set((state) => ({ searchTrigger: state.searchTrigger + 1 })),
   setKeyword: (value) => set({ keyword: value }),
@@ -67,7 +67,7 @@ export const useGlobalSearch = create((set, get) => ({
       radius: 0,
       isRemoteJob: 0,
       address: "",
-      orderBy: "Distance",
+      sortBy: "Distance",
       sortOrder: "ASC",
       searchSort: null,
       searchFilter: null,

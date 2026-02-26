@@ -4,15 +4,13 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { truncateWords } from "../../api/TruncateWords";
 import { useNavigation } from "@react-navigation/native";
-import LineDivider from "../../components/LineDivider";
 import GradientButton from "../../components/GradientButton";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import { toastError, toastSuccess } from "../../utils/toast";
 
-const JobCard = ({ item, isLastItem }) => {
-  const navigation = useNavigation();
+const JobCard = React.memo(({ item, navigation }) => {
   const servicesCount = item.gigServices ? item.gigServices.length : 0;
   const maxVisibleServices = 2;
   const [isLiked, setIsLiked] = useState(item?.is_like == 1);
@@ -189,11 +187,10 @@ const JobCard = ({ item, isLastItem }) => {
             }
           />
         </View>
-        {!isLastItem && <LineDivider />}
       </View>
     </>
   );
-};
+});
 
 export default JobCard;
 

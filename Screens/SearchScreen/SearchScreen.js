@@ -145,6 +145,7 @@ const SearchScreen = () => {
   useEffect(() => {
     loadUser();
     reset();
+    setUserSearchMode(search_type);
   }, []);
 
   return (
@@ -219,7 +220,7 @@ const SearchScreen = () => {
                 style={styles.input}
               />
 
-              <Ionicons name="search" size={15} color="#FFFFFF"
+              <Ionicons name="search" size={18} color="#FFFFFF"
                 onPress={() => navigation.navigate("SearchResult")}
               />
             </View>

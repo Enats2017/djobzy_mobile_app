@@ -5,36 +5,30 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import {
-  ActivityIndicator,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  FlatList,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, View, FlatList } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import LineDivider from "../../components/LineDivider";
-import GradientButton from "../../components/GradientButton";
 import { useGlobalSearch } from "./useGlobalSearch";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import EmployeeCard from "./EmployeeCard";
+import { useNavigation } from "@react-navigation/native";
+import LineDivider from "../../components/LineDivider";
 
 export default function EmployeeResult({ showData }) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-
   const {
     keyword,
     latitude,
     longitude,
     getSubcategoryParam,
     getCategoryParam,
+    low_price,
+    high_price,
+    radius,
+    searchTrigger,
+    sortBy,
+    sortOrder,
   } = useGlobalSearch();
 
   const subcategory = getSubcategoryParam();
@@ -43,11 +37,12 @@ export default function EmployeeResult({ showData }) {
   const [employees, setEmployees] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-
   const onEndReachedCalledDuringMomentum = useRef(false);
   const hasFetched = useRef(false);
+  const isFirstRender = useRef(true);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams({
@@ -57,24 +52,26 @@ export default function EmployeeResult({ showData }) {
       keyword: keyword || "",
       subcategory: subcategory || "",
       category: category || "",
+      low: low_price,
+      high: high_price,
+      radius: radius || 0,
+      sortBy: sortBy || "Distance",
+      sortOrder: sortOrder || "ASC",
     });
 
     return params.toString();
-  }, [keyword, latitude, longitude, subcategory, category]);
+  }, [keyword, latitude, longitude, subcategory, category, low_price, high_price, radius, sortBy, sortOrder]);
 
-  const fetchEmployee = useCallback(
-    async (pageNum = 1) => {
+  const fetchEmployee = useCallback(async (reset = false) => {
       if (loading || isFetchingMore) return;
-
-      if (pageNum === 1) {
-        setLoading(true);
-      } else {
-        setIsFetchingMore(true);
+      if (reset) {
+        setJobs([]);
+        setHasMore(true);
       }
+      setIsInitialLoading(true);
 
       try {
-        const url = `${API_URL}/employee-search-result?${queryString}&page=${pageNum}`;
-
+        const url = `${API_URL}/employee-search-result?${queryString}`;
         const res = await fetch(url, {
           headers: {
             Accept: "application/json",
@@ -82,7 +79,6 @@ export default function EmployeeResult({ showData }) {
         });
 
         const data = await res.json();
-
         if (!data?.details || data.details.length === 0) {
           setHasMore(false);
           return;
@@ -94,25 +90,84 @@ export default function EmployeeResult({ showData }) {
           );
           return [...prev, ...newItems];
         });
-
         setHasMore(data.details.length === 10);
-        setPage(pageNum);
       } catch (err) {
         console.log("Error fetching employees:", err);
       } finally {
-        setLoading(false);
+        setIsInitialLoading(false);
+      }
+    }, [queryString, loading, isFetchingMore]);
+
+  useEffect(() => {
+      // initial mount
+      if (isFirstLoad.current) {
+        isFirstLoad.current = false;
+        fetchEmployee(true);
+        return;
+      }
+  
+      // advanced search triggered
+      if (searchTrigger > 0) {
+        console.log("🔁 Filters changed — resetting pagination");
+        fetchEmployee(true);
+      }
+    }, [queryString, searchTrigger, fetchEmployee]);
+
+  const advanceSearchFilter = useCallback(async () => {
+      try {
+        if (loading || isFetchingMore || !hasMore) return;
+        setIsFetchingMore(true);
+
+        const payload = {
+          skip: employees.length,
+          keyword,
+          subcat: subcategory || null,
+          latitude: latitude || 0,
+          longitude: longitude || 0,
+          radius: radius,
+          low: low_price,
+          high: high_price,
+          job_type: 2,
+        };
+        console.log("📡 ADVANCED POST FOR EMPLOYYEEE:", payload);
+        const res = await fetch(`${API_URL}/search-advance-result`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (!data?.gigs || data.gigs.length === 0) {
+          setHasMore(false);
+          return;
+        }
+        setEmployees((prev) => {
+          const newItems = data.gigs.filter(
+            (emp) => !prev.some((j) => j.id === emp.id),
+          );
+          return [...prev, ...newItems];
+        });
+        setHasMore(data.gigs.length === 10);
+      } catch (err) {
+        console.log("❌ Advanced search error:", err);
+      } finally {
         setIsFetchingMore(false);
       }
     },
-    [loading, isFetchingMore, queryString],
+    [
+      employees.length,
+      keyword,
+      subcategory,
+      latitude,
+      longitude,
+      radius,
+      low_price,
+      high_price,
+    ]
   );
-
-  useEffect(() => {
-    if (!hasFetched.current) {
-      hasFetched.current = true;
-      fetchEmployee(1);
-    }
-  }, [fetchEmployee]);
 
   const renderFooter = () => {
     if (!isFetchingMore) return null;
@@ -123,92 +178,11 @@ export default function EmployeeResult({ showData }) {
     );
   };
 
-  if (loading && page === 1) return <Loading />;
+  const renderEmployeeCard = useCallback(({ item }) => {
+    return <EmployeeCard item={item} navigation={navigation} />;
+  }, [navigation, employees.length]);
 
-  const renderEmployeeCard = ({ item, index }) => {
-    const isLastItem = index === employees.length - 1;
-    return (
-      <>
-        <View style={styles.jobCard1}>
-          <View style={styles.userRow1}>
-            <Image
-              source={{
-                uri: item.photo,
-              }}
-              style={styles.avatar1}
-            />
-            <View style={{ flex: 1 }}>
-              <View style={styles.nameRow1}>
-                <Text style={styles.userName1}> {item.full_name} </Text>
-                <View style={{ flexDirection: "row", marginLeft: 6, gap: 3 }}>
-                  {[...Array(5)].map((_, i) => (
-                    <FontAwesome
-                      key={i}
-                      name="star"
-                      size={15}
-                      color="#EBBE56"
-                    />
-                  ))}
-                </View>
-              </View>
-              <View style={styles.paymentRow1}>
-                <MaterialIcons name="verified" size={16} color="#40b68e" />
-                <Text style={styles.paymentVerified1}>
-                  {item.verification_count}/7
-                </Text>
-              </View>
-            </View>
-            <TouchableOpacity style={styles.heartTouchable}>
-              <FontAwesome name={"heart-o"} size={20} color={"#fff"} />
-            </TouchableOpacity>
-          </View>
-          {item.about ? (
-            <>
-              <Text style={styles.jobTitle1}>About Me</Text>
-              <Text style={styles.jobDesc1}>{item.about}</Text>
-            </>
-          ) : null}
-          <View style={styles.locationRow1}>
-            <FontAwesome6
-              name="location-dot"
-              size={14}
-              color="#eb8676"
-              style={styles.locationIcon1}
-            />
-            <Text style={styles.locationText1}> {item.address} </Text>
-          </View>
-          <View style={styles.parentContainer1}>
-            <Text style={styles.sectionTitle1}>Promoted Services</Text>
-            <View style={styles.promotedRow1}>
-              <View style={styles.promotedBox1} />
-              <View style={styles.promotedBox1} />
-            </View>
-            <Text style={styles.sectionTitle1}>Categories</Text>
-            <View style={styles.skillRow1}>
-              {["Website design", "Website design", "Website design"].map(
-                (skill, i) => (
-                  <View key={i} style={styles.skillTag1}>
-                    <Text style={styles.skillText1}>{skill}</Text>
-                  </View>
-                ),
-              )}
-            </View>
-          </View>
-          <View>
-            <GradientButton
-              title="View"
-              onPress={() =>
-                navigation.navigate("PublicEmployeeProfilePage", {
-                  name: item?.name || "",
-                })
-              }
-            />
-          </View>
-        </View>
-        {!isLastItem && <LineDivider />}
-      </>
-    );
-  };
+  if (isInitialLoading) return <Loading />;
 
   return (
     <View style={[styles.findEmployeeContainer, { paddingBottom: insets.bottom }]}>
@@ -220,21 +194,27 @@ export default function EmployeeResult({ showData }) {
           ListFooterComponent={renderFooter}
           showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0.5}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           onMomentumScrollBegin={() => {
             onEndReachedCalledDuringMomentum.current = false;
           }}
           onEndReached={() => {
+            if (employees.length < 10) return;
             if (
               !onEndReachedCalledDuringMomentum.current &&
               hasMore &&
               !isFetchingMore &&
               !loading
             ) {
-              fetchEmployee(page + 1);
+              advanceSearchFilter();
               onEndReachedCalledDuringMomentum.current = true;
             }
           }}
           contentContainerStyle={{ paddingBottom: 50 }}
+          ItemSeparatorComponent={() => <LineDivider />}
         />
       )}
     </View>
@@ -245,120 +225,5 @@ export default function EmployeeResult({ showData }) {
 const styles = StyleSheet.create({
   findEmployeeContainer: {
     flex: 1,
-  },
-  userRow1: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  nameRow1: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  avatar1: {
-    width: 55,
-    height: 55,
-    borderRadius: 100,
-    borderWidth: 2,
-    borderColor: "#fff",
-    marginRight: 12,
-  },
-  userName1: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Montserrat_500Medium",
-  },
-  paymentRow1: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 3,
-  },
-  paymentVerified1: {
-    color: "#fff",
-    fontSize: 14,
-    marginLeft: 7,
-    fontFamily: "Montserrat_400Regular",
-  },
-  jobTitle1: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Montserrat_600SemiBold",
-  },
-  jobDesc1: {
-    fontSize: 16,
-    marginTop: 5,
-    marginBottom: 14,
-    fontFamily: "Montserrat_400Regular",
-    color: "#fff",
-  },
-  parentContainer1: {
-    backgroundColor: "#EDC8B81A",
-    borderRadius: 18,
-    padding: 14,
-    marginTop: 8,
-  },
-  sectionTitle1: {
-    color: "#fff",
-    fontFamily: "Montserrat_600SemiBold",
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  promotedRow1: {
-    flexDirection: "row",
-    gap: 5,
-    marginBottom: 22,
-  },
-  promotedBox1: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    backgroundColor: "#cfcfcf",
-  },
-  skillRow1: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 4,
-  },
-  skillTag1: {
-    paddingHorizontal: 11,
-    paddingVertical: 11,
-    borderRadius: 30,
-    backgroundColor: "#575454",
-  },
-  skillText1: {
-    color: "#fff",
-    fontFamily: "Montserrat_500Medium",
-    fontSize: 10,
-  },
-  jobFooter1: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 10,
-  },
-  locationRow1: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  locationIcon1: {},
-  locationText1: {
-    flex: 1,
-    fontSize: 12,
-    lineHeight: 16,
-    color: "#fff",
-    marginLeft: 5,
-    fontFamily: "Montserrat_400Regular",
-  },
-  viewBtn1: {
-    backgroundColor: "#eb8676",
-    borderRadius: 10,
-    alignItems: "center",
-    paddingVertical: 10,
-    marginTop: 18,
-  },
-  viewBtnText1: {
-    color: "#fff",
-    fontSize: 18,
-    fontFamily: "Montserrat_700Bold",
   },
 });

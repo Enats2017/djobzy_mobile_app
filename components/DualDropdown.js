@@ -6,8 +6,7 @@ import {
   Pressable,
   Dimensions,
 } from "react-native";
-import React, { useState, useEffect, useRef } from "react";
-import { Modal } from "react-native";
+import React, { useState, useEffect } from "react";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -22,7 +21,6 @@ const DualDropdown = ({
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [leftSelected, setLeftSelected] = useState(leftLabel);
   const [rightSelected, setRightSelected] = useState(rightLabel);
-  const containerRef = useRef(null);
 
   useEffect(() => {
     setLeftSelected(leftLabel);
@@ -32,94 +30,83 @@ const DualDropdown = ({
     setRightSelected(rightLabel);
   }, [rightLabel]);
 
-  const renderDropdownList = (options, isLeft, selectedValue, onSelect) => (
-    <Modal 
-      transparent 
-      animationType="fade" 
-      visible={true}
-      onRequestClose={() => setActiveDropdown(null)}
+  useEffect(() => {
+    setActiveDropdown(null);
+  }, [leftLabel, rightLabel]);
+
+  const renderDropdownList = (options, isLeft, onSelect) => (
+    <View
+      style={[styles.dropdownList, isLeft ? styles.leftList : styles.rightList]}
     >
-      <Pressable 
-        style={StyleSheet.absoluteFillObject}
-        onPress={() => setActiveDropdown(null)}
-      >
-        <View style={[
-          styles.dropdownList,
-          isLeft ? styles.leftList : styles.rightList
-        ]}>
-          {options.map((item, index) => (
-            <TouchableOpacity
-              key={`${isLeft ? 'left' : 'right'}-${index}`}
-              style={styles.option}
-              onPress={() => {
-                onSelect(item);
-                setActiveDropdown(null);
-              }}
-            >
-              <Text style={styles.optionText}>{item}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </Pressable>
-    </Modal>
+      {options[0] && (
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => {
+            onSelect(options[0]);
+            setActiveDropdown(null);
+          }}
+        >
+          <Text style={styles.optionText}>{options[0]}</Text>
+        </TouchableOpacity>
+      )}
+
+      {options[1] && (
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => {
+            onSelect(options[1]);
+            setActiveDropdown(null);
+          }}
+        >
+          <Text style={styles.optionText}>{options[1]}</Text>
+        </TouchableOpacity>
+      )}
+
+      {options[2] && (
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => {
+            onSelect(options[2]);
+            setActiveDropdown(null);
+          }}
+        >
+          <Text style={styles.optionText}>{options[2]}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 
   return (
-    <View style={{ width: "100%" }} ref={containerRef}>
-      <Pressable
-        style={{ width: "100%" }}
-        onPress={() => {
-          setActiveDropdown(null);
-        }}
-      >
-        <View style={styles.container}>
-          {/* LEFT DROPDOWN */}
-          <TouchableOpacity
-            style={[styles.dropdownBtn, styles.leftDropdown]}
-            onPress={() =>
-              setActiveDropdown(activeDropdown === "left" ? null : "left")
-            }
-            activeOpacity={0.8}
-          >
-            <Text style={styles.dropdownText}>{leftSelected}</Text>
-          </TouchableOpacity>
+    <View style={{ width: "100%", position: "relative" }}>
+      <View style={styles.container}>
+        <TouchableOpacity
+          style={[styles.dropdownBtn, styles.leftDropdown]}
+          onPress={() => setActiveDropdown(activeDropdown === 1 ? null : 1)}
+        >
+          <Text style={styles.dropdownText}>{leftSelected}</Text>
+        </TouchableOpacity>
 
-          <View style={styles.divider} />
+        <View style={styles.divider} />
 
-          {/* RIGHT DROPDOWN */}
-          <TouchableOpacity
-            style={[styles.dropdownBtn, styles.rightDropdown]}
-            onPress={() =>
-              setActiveDropdown(activeDropdown === "right" ? null : "right")
-            }
-            activeOpacity={0.8}
-          >
-            <Text style={styles.dropdownText}>{rightSelected}</Text>
-          </TouchableOpacity>
-        </View>
-      </Pressable>
+        <TouchableOpacity
+          style={[styles.dropdownBtn, styles.rightDropdown]}
+          onPress={() => setActiveDropdown(activeDropdown === 2 ? null : 2)}
+        >
+          <Text style={styles.dropdownText}>{rightSelected}</Text>
+        </TouchableOpacity>
+      </View>
 
-      {/* LEFT DROPDOWN LIST */}
-      {activeDropdown === "left" && renderDropdownList(
-        leftOptions, 
-        true, 
-        leftSelected, 
-        (item) => {
+      {activeDropdown === 1 &&
+        renderDropdownList(leftOptions, true, (item) => {
           setLeftSelected(item);
           onLeftSelect?.(item);
-        }
-      )}
+        })}
 
-      {/* RIGHT DROPDOWN LIST */}
-      {activeDropdown === "right" && renderDropdownList(
-        rightOptions, 
-        false, 
-        rightSelected, 
-        (item) => {
+      {activeDropdown === 2 &&
+        renderDropdownList(rightOptions, false, (item) => {
           setRightSelected(item);
           onRightSelect?.(item);
-        }
-      )}
+        })}
     </View>
   );
 };
@@ -167,31 +154,29 @@ const styles = StyleSheet.create({
   },
   dropdownList: {
     position: "absolute",
-    top: 247, // Exactly dropdown height + 8px gap
-    backgroundColor: "#ffffff",
+    top: 45,
+    backgroundColor: "#fff",
     borderRadius: 8,
     elevation: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
-    maxHeight: 220,
-    overflow: "hidden",
+    zIndex: 999,
   },
   leftList: {
-    width: "45%",
+    width: "50%",
     right: "50%",
     borderTopLeftRadius: 8,
   },
   rightList: {
-    width: "45%",
+    width: "50%",
     left: "50%",
     borderTopRightRadius: 8,
   },
   option: {
     paddingHorizontal: 14,
     paddingVertical: 14,
-    borderBottomWidth: 1,
     borderBottomColor: "#f5f5f5",
   },
   optionText: {

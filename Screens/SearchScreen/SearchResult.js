@@ -19,10 +19,22 @@ import EmployeeResult from "./EmployeeResult";
 import { useGlobalSearch } from "./useGlobalSearch";
 import EmployerFooter from "../../components/EmployerFooter";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DualDropdown from "../../components/DualDropdown";
 
 const SearchResult = () => {
   const navigation = useNavigation();
-  const { keyword, userSearchMode } = useGlobalSearch();
+  const {
+    keyword,
+    userSearchMode,
+    searchSort,
+    sortOrder,
+    searchFilter,
+    setSearchSort,
+    setSearchFilter,
+    setField,
+    triggerSearch,
+  } = useGlobalSearch();
+
   const [activeTab, setActiveTab] = useState(userSearchMode === 0);
   const [showFilter, setShowFilter] = useState(false);
   const [admin, setAdmin] = useState(0);
@@ -116,17 +128,44 @@ const SearchResult = () => {
 
                 <View style={styles.dropdownWrapper}>
                   <View style={styles.dropdownContainer}>
-                    {["Distance", "Price", "Date Added"].map((item, index, arr) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          styles.option,
-                          index === arr.length - 1 && { borderBottomWidth: 0 },
-                        ]}
-                      >
-                        <Text style={styles.dropdownText}>{item}</Text>
-                      </TouchableOpacity>
-                    ))}
+                    <TouchableOpacity
+                      style={styles.option}
+                      onPress={() => {
+                        setSearchSort("Distance");
+                        setField("sortBy", "Distance");
+
+                        setShowFilterDropdown(false);
+                        triggerSearch();
+                      }}
+                    >
+                      <Text style={styles.dropdownText}>Distance</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.option}
+                      onPress={() => {
+                        setSearchSort("Price");
+                        setField("sortBy", "Price");
+
+                        setShowFilterDropdown(false);
+                        triggerSearch();
+                      }}
+                    >
+                      <Text style={styles.dropdownText}>Price</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[styles.option, { borderBottomWidth: 0 }]}
+                      onPress={() => {
+                        setSearchSort("Date Added");
+                        setField("sortBy", "Date added");
+
+                        setShowFilterDropdown(false);
+                        triggerSearch();
+                      }}
+                    >
+                      <Text style={styles.dropdownText}>Date Added</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </>
@@ -134,6 +173,32 @@ const SearchResult = () => {
             {/* FILTER */}
             {showFilter && <AdvanceSearch onClose={() => setShowFilter(false)} />}
 
+            {searchSort && (
+              <DualDropdown
+                leftLabel={searchSort || "Sort"}
+                rightLabel={searchFilter || "Ascending"}
+                leftOptions={["Distance", "Price", "Date Added"]}
+                rightOptions={["Ascending", "Descending"]}
+                onLeftSelect={(value) => {
+                  setSearchSort(value);
+                  let mappedSort = "";
+                  if (value === "Price") mappedSort = "Price";
+                  if (value === "Distance") mappedSort = "Distance";
+                  if (value === "Date Added") mappedSort = "Date added";
+
+                  setField("sortBy", mappedSort);
+                  triggerSearch();
+                }}
+                onRightSelect={(value) => {
+                  setSearchFilter(value);
+
+                  let order = value === "Ascending" ? "ASC" : "DESC";
+
+                  setField("sortOrder", order);
+                  triggerSearch();
+                }}
+              />
+            )}
             {/* CONTENT */}
             {activeTab ? <JobResult showData={showFilter} /> : <EmployeeResult showData={showFilter} />}
 
@@ -154,6 +219,8 @@ const styles = StyleSheet.create({
   },
   bestmatch: {
     flex: 1,
+    position: "relative",
+    zIndex: 0,
   },
   matchesHeader: {
     flexDirection: "row",
@@ -161,6 +228,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 15,
     marginBottom: 10,
+    overflow: "visible",
   },
   toggleWrapper: {
     flexDirection: "row",
@@ -230,6 +298,10 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     overflow: "hidden",
     elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 4,
   },
 
   option: {
@@ -243,6 +315,13 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_500Medium",
     fontSize: 14,
     color: "#000",
+  },
+  dropdownWrapper: {
+    position: "absolute",
+    top: 45,
+    right: 16,
+    zIndex: 9999,
+    elevation: 20,
   },
 });
 

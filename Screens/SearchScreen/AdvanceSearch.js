@@ -73,12 +73,6 @@ const AdvancedSearch = ({ onClose }) => {
     setField('isRemoteJob', remoteJob);
     triggerSearch();
     onClose?.();
-    console.log("ADVANCED SEARCH DATA →", {
-      keyword,
-      priceRange,
-      radius,
-      remote,
-    });
   };
 
   return (

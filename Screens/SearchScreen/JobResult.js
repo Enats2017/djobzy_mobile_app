@@ -41,7 +41,7 @@ export default function JobResult({ showData }) {
   const [hasMore, setHasMore] = useState(true);
   const onEndReachedCalledDuringMomentum = useRef(false);
   const hasFetched = useRef(false);
-  const isFirstRender = useRef(true);
+  const isFirstLoad = useRef(true);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams({
@@ -96,7 +96,7 @@ export default function JobResult({ showData }) {
       } finally {
         setIsInitialLoading(false);
       }
-    }, [queryString, loading, isFetchingMore]);
+    }, [queryString]);
 
   useEffect(() => {
     // initial mount
@@ -112,17 +112,6 @@ export default function JobResult({ showData }) {
       fetchJobs(true);
     }
   }, [queryString, searchTrigger, fetchJobs]);
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (searchTrigger === 0) return;
-    console.log("🔁 Filters changed — resetting pagination");
-    setJobs([]);
-    fetchJobs();
-  }, [searchTrigger, fetchJobs]);
 
   const advanceSearchFilter = useCallback(async () => {
       try {

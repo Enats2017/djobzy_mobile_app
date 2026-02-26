@@ -42,7 +42,7 @@ export default function EmployeeResult({ showData }) {
   const [hasMore, setHasMore] = useState(true);
   const onEndReachedCalledDuringMomentum = useRef(false);
   const hasFetched = useRef(false);
-  const isFirstRender = useRef(true);
+  const isFirstLoad = useRef(true);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams({
@@ -65,7 +65,7 @@ export default function EmployeeResult({ showData }) {
   const fetchEmployee = useCallback(async (reset = false) => {
       if (loading || isFetchingMore) return;
       if (reset) {
-        setJobs([]);
+        setEmployees([]);
         setHasMore(true);
       }
       setIsInitialLoading(true);
@@ -96,7 +96,7 @@ export default function EmployeeResult({ showData }) {
       } finally {
         setIsInitialLoading(false);
       }
-    }, [queryString, loading, isFetchingMore]);
+    }, [queryString]);
 
   useEffect(() => {
       // initial mount
@@ -105,7 +105,7 @@ export default function EmployeeResult({ showData }) {
         fetchEmployee(true);
         return;
       }
-  
+
       // advanced search triggered
       if (searchTrigger > 0) {
         console.log("🔁 Filters changed — resetting pagination");

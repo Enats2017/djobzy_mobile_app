@@ -15,14 +15,21 @@ import { Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import DualDropdown from "../../components/DualDropdown";
 import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 const BestMatches = () => {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const { searchSort, searchFilter, setSearchSort, setSearchFilter } = useGlobalSearch();
+  const { searchSort, searchFilter, setSearchSort, setSearchFilter, reset } = useGlobalSearch();
 
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, []);
   return (
     <View style={styles.bestmatch}>
       <View style={styles.matchesHeader}>
@@ -111,23 +118,25 @@ const BestMatches = () => {
               <TouchableOpacity
                 style={[styles.option]}
                 onPress={() => {
-                  setSearchSort("Date Added");
+                  setSearchSort("Date added");
                   setShowDropdown(false);
                   // navigation.navigate("SearchResult");
                 }}
               >
-                <Text style={styles.dropdownText}>Date Added</Text>
+                <Text style={styles.dropdownText}>Date added</Text>
               </TouchableOpacity>
             </View>
           </View>
         </>
       )}
-      {showFilter && <AdvancedSearch />}
+      {showFilter && (
+        <AdvancedSearch onClose={() => setShowFilter(false)} />
+      )}
       {searchSort && (
         <DualDropdown
           leftLabel={searchSort || "Sort"}
           rightLabel={searchFilter || "Filter"}
-          leftOptions={["Distance", "Price", "Date Added"]}
+          leftOptions={["Distance", "Price", "Date added"]}
           rightOptions={["Ascending", "Descending"]}
           onLeftSelect={(value) => {
             setSearchSort(value);
@@ -180,7 +189,7 @@ const styles = StyleSheet.create({
   toggleText: {
     fontFamily: "Montserrat_600SemiBold",
     color: "#c3c3c3",
-    fontSize: 14,
+    fontSize: 12,
     textAlign: "center",
   },
   inactiveText: {

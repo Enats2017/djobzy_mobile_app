@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -9,6 +9,7 @@ import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import JobCard from "../EmployeeJobs/JobCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
 
 export default function FindJobs() {
   const [jobs, setJobs] = useState([]);
@@ -19,6 +20,45 @@ export default function FindJobs() {
   const onEndReachedCalledDuringMomentum = useRef(false);
   const hasFetched = useRef(false);
   const insets = useSafeAreaInsets();
+  const {
+    keyword,
+    latitude,
+    longitude,
+    getSubcategoryParam,
+    getCategoryParam,
+    low_price,
+    high_price,
+    radius,
+    isRemoteJob,
+    searchTrigger,
+    orderBy: orderBy,
+    sortOrder: sortOrder,
+  } = useGlobalSearch();
+
+  const subcategory = getSubcategoryParam();
+  const category = getCategoryParam();
+
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams({
+      search_dropdown: 0,
+      latitude: latitude || 0,
+      longitude: longitude || 0,
+      keyword: keyword || "",
+      subcategory: subcategory || "",
+      category: category || "",
+      low: low_price,
+      high: high_price,
+      radius: radius || 0,
+      isRemoteJob: isRemoteJob || 0,
+      sortBy: orderBy,
+      sortOrder: sortOrder
+    });
+
+    console.log("🔍 Constructed query string:", params.toString());
+
+    return params.toString();
+  }, [keyword, latitude, longitude, subcategory, category, low_price, high_price, radius, isRemoteJob, orderBy,
+    sortOrder]);
 
   const fetchJobs = useCallback(async (pageNum = 1) => {
     try {
@@ -26,7 +66,7 @@ export default function FindJobs() {
       if (pageNum === 1) setLoading(true);
       else setIsFetchingMore(true);
       // console.log("📡 Fetching jobs for page:", pageNum);
-      const res = await fetch(`${API_URL}/best-matches?page=${pageNum}`, {
+      const res = await fetch(`${API_URL}/best-matches?${queryString}&page=${pageNum}`, {
         headers: {
           Accept: "application/json",
         },
@@ -52,14 +92,15 @@ export default function FindJobs() {
       setLoading(false);
       setIsFetchingMore(false);
     }
-  }, [loading, isFetchingMore]);
+  }, [loading, isFetchingMore, queryString]);
 
   useEffect(() => {
-    if (!hasFetched.current) {
-      hasFetched.current = true;
-      fetchJobs(1);
-    }
-  }, [fetchJobs]);
+    hasFetched.current = true;
+    setJobs([]);
+    setPage(1);
+    setHasMore(true);
+    fetchJobs(1);
+  }, [queryString]);
 
   if (loading) return <Loading />;
   const renderFooter = () => {

@@ -17,13 +17,23 @@ export const useGlobalSearch = create((set, get) => ({
   searchFilter: null,
   showSearchDropdown: false,
   searchTrigger: 0,
-
   setSearchSort: (value) =>
-    set({ searchSort: value, showSearchDropdown: true }),
+    set((state) => ({
+      searchSort: value,
+      orderBy: value,
+      searchFilter: state.searchFilter ?? "Ascending",
+      sortOrder: state.searchFilter
+        ? state.sortOrder
+        : "ASC",
 
+      showSearchDropdown: true,
+    })),
   setSearchFilter: (value) =>
-    set({ searchFilter: value, showSearchDropdown: true }),
-
+    set({
+      searchFilter: value,
+      sortOrder: value === "Ascending" ? "ASC" : "DESC",
+      showSearchDropdown: true,
+    }),
   hideSearchDropdown: () => set({ showSearchDropdown: false }),
 
   triggerSearch: () => set((state) => ({ searchTrigger: state.searchTrigger + 1 })),

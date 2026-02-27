@@ -10,15 +10,10 @@ import Loading from "../../components/Loading";
 import JobCard from "../EmployeeJobs/JobCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
+import { useNavigation } from "@react-navigation/native";
+import LineDivider from "../../components/LineDivider";
 
-export default function FindJobs() {
-  const [jobs, setJobs] = useState([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [isFetchingMore, setIsFetchingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const onEndReachedCalledDuringMomentum = useRef(false);
-  const hasFetched = useRef(false);
+export default function FindJobs({ showData }) {
   const insets = useSafeAreaInsets();
   const {
     keyword,
@@ -31,12 +26,35 @@ export default function FindJobs() {
     radius,
     isRemoteJob,
     searchTrigger,
-    orderBy: orderBy,
-    sortOrder: sortOrder,
+    sortBy,
+    sortOrder,
   } = useGlobalSearch();
 
   const subcategory = getSubcategoryParam();
   const category = getCategoryParam();
+  const navigation = useNavigation();
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const onEndReachedCalledDuringMomentum = useRef(false);
+  const hasFetched = useRef(false);
+  const isFirstLoad = useRef(true);
+  const isFirstRender = useRef(true);
+  const sortByMap = {
+    "Distance": 1,
+    "Price": 2,
+    "Date added": 3,
+  };
+
+  const sortOrderMap = {
+    "ASC": 1,
+    "DESC": 2,
+  };
+
+  const backendSortBy = sortByMap[sortBy] || 1;
+  const backendSortOrder = sortOrderMap[sortOrder] || 1;
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams({
@@ -50,23 +68,23 @@ export default function FindJobs() {
       high: high_price,
       radius: radius || 0,
       isRemoteJob: isRemoteJob || 0,
-      sortBy: orderBy,
-      sortOrder: sortOrder
+      sortBy: sortBy || "Distance",
+      sortOrder: sortOrder || "ASC",
     });
 
-    console.log("🔍 Constructed query string:", params.toString());
-
     return params.toString();
-  }, [keyword, latitude, longitude, subcategory, category, low_price, high_price, radius, isRemoteJob, orderBy,
+  }, [keyword, latitude, longitude, subcategory, category, low_price, high_price, radius, isRemoteJob, sortBy,
     sortOrder]);
 
-  const fetchJobs = useCallback(async (pageNum = 1) => {
+  const fetchJobs = useCallback(async (reset = false) => {
+    if (loading || isFetchingMore) return;
+    if (reset) {
+      setJobs([]);
+      setHasMore(true);
+    }
+    setIsInitialLoading(true);
     try {
-      if (loading || isFetchingMore) return;
-      if (pageNum === 1) setLoading(true);
-      else setIsFetchingMore(true);
-      // console.log("📡 Fetching jobs for page:", pageNum);
-      const res = await fetch(`${API_URL}/best-matches?${queryString}&page=${pageNum}`, {
+      const res = await fetch(`${API_URL}/best-matches?${queryString}`, {
         headers: {
           Accept: "application/json",
         },
@@ -85,59 +103,137 @@ export default function FindJobs() {
         return [...prev, ...newGigs];
       });
       setHasMore(data.gigs.length === 10);
-      setPage(pageNum);
     } catch (err) {
       console.log("❌ Error fetching jobs:", err);
     } finally {
-      setLoading(false);
-      setIsFetchingMore(false);
-    }
-  }, [loading, isFetchingMore, queryString]);
+      setIsInitialLoading(false);
 
-  useEffect(() => {
-    hasFetched.current = true;
-    setJobs([]);
-    setPage(1);
-    setHasMore(true);
-    fetchJobs(1);
+    }
   }, [queryString]);
 
-  if (loading) return <Loading />;
+
+
+  useEffect(() => {
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      fetchJobs(true);
+      return;
+    }
+
+    if (searchTrigger > 0) {
+      console.log("🔁 Filters changed — resetting pagination");
+      fetchJobs(true);
+    }
+  }, [queryString, searchTrigger, fetchJobs]);
+
+  const advanceSearchFilter = useCallback(async () => {
+    if (loading || isFetchingMore || !hasMore) return;
+    setIsFetchingMore(true);
+
+    try {
+      const payload = {
+        skip: jobs.length,
+        keyword,
+        subcat: subcategory || null,
+        latitude: latitude || 0,
+        longitude: longitude || 0,
+        radius: radius,
+        low: low_price,
+        high: high_price,
+        isRemoteJob: isRemoteJob ? 1 : 0,
+        gigId: jobs.map((j) => j.gid),
+        job_type: 1,
+        sortBy: backendSortBy,
+        sortOrder: backendSortOrder,
+      };
+      console.log("📡 ADVANCED POST:", payload);
+      const res = await fetch(`${API_URL}/search-advance-result`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!data?.gigs || data.gigs.length === 0) {
+        setHasMore(false);
+        return;
+      }
+      setJobs((prev) => {
+        const newGigs = data.gigs.filter(
+          (gig) => !prev.some((j) => j.gid === gig.gid),
+        );
+        return [...prev, ...newGigs];
+      });
+      setHasMore(data.gigs.length === 10);
+    } catch (err) {
+      console.log("❌ Advanced search error:", err);
+    } finally {
+      setIsFetchingMore(false);
+    }
+  }, [
+    jobs.length,
+    keyword,
+    subcategory,
+    latitude,
+    longitude,
+    radius,
+    low_price,
+    high_price,
+    isRemoteJob,
+  ]);
+
   const renderFooter = () => {
     if (!isFetchingMore) return null;
     return (
-      <View style={{ paddingBottom: 10 }}>
+      <View style={{ paddingVertical: 12 }}>
         <ActivityIndicator size="large" color="#ffffff" />
       </View>
     );
   };
 
-  const renderJobCard = ({ item, index }) => {
-    const isLastItem = index === jobs.length - 1;
-    return <JobCard item={item} lastItem={isLastItem} />
-  };
+  const renderJobCard = useCallback(({ item }) => {
+    return <JobCard item={item} navigation={navigation} />;
+  }, [navigation, jobs.length]);
+
+  if (isInitialLoading) return <Loading />;
 
   return (
     <View style={[styles.findJobContainer, { paddingBottom: insets.bottom }]}>
-      <FlatList
-        data={jobs}
-        renderItem={renderJobCard}
-        keyExtractor={(item) => item.gid.toString()}
-        ListFooterComponent={renderFooter}
-        onEndReachedThreshold={0.5}
-        onMomentumScrollBegin={() => { onEndReachedCalledDuringMomentum.current = false; }}
-        onEndReached={() => {
-          if (!onEndReachedCalledDuringMomentum.current && hasMore && !isFetchingMore && !loading) {
-            // console.log("🚀 Triggering next page:", page + 1);
-            fetchJobs(page + 1);
-            onEndReachedCalledDuringMomentum.current = true;
-          }
-        }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 50 }}
-      />
+      {!showData && (
+        <FlatList
+          data={jobs}
+          renderItem={renderJobCard}
+          keyExtractor={(item) => item.gid.toString()}
+          ListFooterComponent={renderFooter}
+          onEndReachedThreshold={0.5}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
+          onMomentumScrollBegin={() => {
+            onEndReachedCalledDuringMomentum.current = false;
+          }}
+          onEndReached={() => {
+            if (
+              !onEndReachedCalledDuringMomentum.current &&
+              hasMore &&
+              !isFetchingMore &&
+              !loading
+            ) {
+              advanceSearchFilter();
+              onEndReachedCalledDuringMomentum.current = true;
+            }
+          }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 50 }}
+          ItemSeparatorComponent={() => <LineDivider />}
+        />
+      )}
     </View>
-  );
+  ); 
 }
 
 const styles = StyleSheet.create({

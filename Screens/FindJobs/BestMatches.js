@@ -23,7 +23,7 @@ const BestMatches = () => {
   const [activeTab, setActiveTab] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const { searchSort, searchFilter, setSearchSort, setSearchFilter, reset } = useGlobalSearch();
+  const { searchSort, searchFilter, setSearchSort, setSearchFilter, reset, setField, triggerSearch } = useGlobalSearch();
 
   useEffect(() => {
     return () => {
@@ -97,8 +97,9 @@ const BestMatches = () => {
                 style={styles.option}
                 onPress={() => {
                   setSearchSort("Distance");
+                  setField("sortBy", "Distance");
                   setShowDropdown(false);
-                  // navigation.replace("SearchResult");
+                  triggerSearch();
                 }}
               >
                 <Text style={styles.dropdownText}>Distance</Text>
@@ -108,21 +109,24 @@ const BestMatches = () => {
                 style={styles.option}
                 onPress={() => {
                   setSearchSort("Price");
+                  setField("sortBy", "Price");
                   setShowDropdown(false);
-                  // navigation.navigate("SearchResult");
+                  triggerSearch();
                 }}
               >
                 <Text style={styles.dropdownText}>Price</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.option]}
+                style={styles.option}
                 onPress={() => {
-                  setSearchSort("Date added");
+                  setSearchSort("Date Added");
+                  setField("sortBy", "Date added");
                   setShowDropdown(false);
-                  // navigation.navigate("SearchResult");
+                  triggerSearch();
                 }}
               >
+
                 <Text style={styles.dropdownText}>Date added</Text>
               </TouchableOpacity>
             </View>
@@ -135,19 +139,29 @@ const BestMatches = () => {
       {searchSort && (
         <DualDropdown
           leftLabel={searchSort || "Sort"}
-          rightLabel={searchFilter || "Filter"}
-          leftOptions={["Distance", "Price", "Date added"]}
+          rightLabel={searchFilter || "Ascending"}
+          leftOptions={["Distance", "Price", "Date Added"]}
           rightOptions={["Ascending", "Descending"]}
           onLeftSelect={(value) => {
             setSearchSort(value);
+            let mappedSort = "";
+            if (value === "Price") mappedSort = "Price";
+            if (value === "Distance") mappedSort = "Distance";
+            if (value === "Date added") mappedSort = "Date added";
+
+            setField("sortBy", mappedSort);
+            triggerSearch();
           }}
           onRightSelect={(value) => {
             setSearchFilter(value);
+            let order = value === "Ascending" ? "ASC" : "DESC";
+            setField("sortOrder", order);
+            triggerSearch();
           }}
         />
       )}
 
-      {activeTab ? <FindJobs /> : <FindEmployees />}
+      {activeTab ? <FindJobs showData={showFilter} /> : <FindEmployees showData={showFilter} />}
     </View>
   );
 };

@@ -133,7 +133,6 @@ const SearchResult = () => {
                       onPress={() => {
                         setSearchSort("Distance");
                         setField("sortBy", "Distance");
-
                         setShowFilterDropdown(false);
                         triggerSearch();
                       }}
@@ -146,7 +145,6 @@ const SearchResult = () => {
                       onPress={() => {
                         setSearchSort("Price");
                         setField("sortBy", "Price");
-
                         setShowFilterDropdown(false);
                         triggerSearch();
                       }}
@@ -159,7 +157,6 @@ const SearchResult = () => {
                       onPress={() => {
                         setSearchSort("Date Added");
                         setField("sortBy", "Date added");
-
                         setShowFilterDropdown(false);
                         triggerSearch();
                       }}

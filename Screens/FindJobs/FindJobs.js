@@ -111,8 +111,6 @@ export default function FindJobs({ showData }) {
     }
   }, [queryString]);
 
-
-
   useEffect(() => {
     if (isFirstLoad.current) {
       isFirstLoad.current = false;

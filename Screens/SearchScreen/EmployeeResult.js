@@ -43,6 +43,19 @@ export default function EmployeeResult({ showData }) {
   const onEndReachedCalledDuringMomentum = useRef(false);
   const hasFetched = useRef(false);
   const isFirstLoad = useRef(true);
+  const sortByMap = {
+    "Distance": 1,
+    "Price": 2,
+    "Date added": 3,
+  };
+
+  const sortOrderMap = {
+    "ASC": 1,
+    "DESC": 2,
+  };
+
+  const backendSortBy = sortByMap[sortBy] || 1;
+  const backendSortOrder = sortOrderMap[sortOrder] || 1;
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams({
@@ -128,6 +141,8 @@ export default function EmployeeResult({ showData }) {
           low: low_price,
           high: high_price,
           job_type: 2,
+          sortBy: backendSortBy,
+          sortOrder: backendSortOrder,
         };
         console.log("📡 ADVANCED POST FOR EMPLOYYEEE:", payload);
         const res = await fetch(`${API_URL}/search-advance-result`, {

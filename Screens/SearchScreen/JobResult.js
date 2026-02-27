@@ -42,6 +42,19 @@ export default function JobResult({ showData }) {
   const onEndReachedCalledDuringMomentum = useRef(false);
   const hasFetched = useRef(false);
   const isFirstLoad = useRef(true);
+  const sortByMap = {
+    "Distance": 1,
+    "Price": 2,
+    "Date added": 3,
+  };
+
+  const sortOrderMap = {
+    "ASC": 1,
+    "DESC": 2,
+  };
+
+  const backendSortBy = sortByMap[sortBy] || 1;
+  const backendSortOrder = sortOrderMap[sortOrder] || 1;
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams({
@@ -130,6 +143,8 @@ export default function JobResult({ showData }) {
           isRemoteJob: isRemoteJob ? 1 : 0,
           gigId: jobs.map((j) => j.gid),
           job_type: 1,
+          sortBy: backendSortBy,
+          sortOrder: backendSortOrder,
         };
         console.log("📡 ADVANCED POST:", payload);
         const res = await fetch(`${API_URL}/search-advance-result`, {

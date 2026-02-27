@@ -34,45 +34,29 @@ const DualDropdown = ({
     setActiveDropdown(null);
   }, [leftLabel, rightLabel]);
 
-  const renderDropdownList = (options, isLeft, onSelect) => (
+  const renderDropdownList = (options = [], isLeft, onSelect) => (
     <View
       style={[styles.dropdownList, isLeft ? styles.leftList : styles.rightList]}
     >
-      {options[0] && (
-        <TouchableOpacity
-          style={styles.option}
-          onPress={() => {
-            onSelect(options[0]);
-            setActiveDropdown(null);
-          }}
-        >
-          <Text style={styles.optionText}>{options[0]}</Text>
-        </TouchableOpacity>
-      )}
-
-      {options[1] && (
-        <TouchableOpacity
-          style={styles.option}
-          onPress={() => {
-            onSelect(options[1]);
-            setActiveDropdown(null);
-          }}
-        >
-          <Text style={styles.optionText}>{options[1]}</Text>
-        </TouchableOpacity>
-      )}
-
-      {options[2] && (
-        <TouchableOpacity
-          style={styles.option}
-          onPress={() => {
-            onSelect(options[2]);
-            setActiveDropdown(null);
-          }}
-        >
-          <Text style={styles.optionText}>{options[2]}</Text>
-        </TouchableOpacity>
-      )}
+      {options.map((item, index) => (
+        item ? (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.option,
+              index === options.filter(Boolean).length - 1 && {
+                borderBottomWidth: 0,
+              },
+            ]}
+            onPress={() => {
+              onSelect(item);
+              setActiveDropdown(null);
+            }}
+          >
+            <Text style={styles.optionText}>{item}</Text>
+          </TouchableOpacity>
+        ) : null
+      ))}
     </View>
   );
 
@@ -176,12 +160,13 @@ const styles = StyleSheet.create({
   },
   option: {
     paddingHorizontal: 14,
-    paddingVertical: 14,
-    borderBottomColor: "#f5f5f5",
+    paddingVertical: 10,
+    borderBottomColor: "#eaeaea",
+    borderBottomWidth: 1,
   },
   optionText: {
-    color: "#333",
+    fontFamily: "Montserrat_500Medium",
     fontSize: 14,
-    fontFamily: "Montserrat_400Regular",
+    color: "#000",
   },
 });

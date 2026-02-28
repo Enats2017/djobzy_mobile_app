@@ -1,17 +1,51 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Modal,
+  Dimensions,
+} from "react-native";
 
-let activeSetter = null; // only one tooltip open
+const { width, height } = Dimensions.get("window");
+let activeSetter = null;
 
 const HelpTooltip = ({ text }) => {
   const [visible, setVisible] = useState(false);
+  const [position, setPosition] = useState({
+    top: 0,
+    left: 0,
+    arrowLeft: 0,
+    showAbove: false,
+  });
+
+  const iconRef = useRef(null);
 
   const openTooltip = () => {
     if (activeSetter && activeSetter !== setVisible) {
-      activeSetter(false); // close previous
+      activeSetter(false);
     }
-    activeSetter = setVisible;
-    setVisible(true);
+
+    iconRef.current.measureInWindow((x, y, w, h) => {
+      const tooltipWidth = 260;
+      const tooltipHeight = 120;
+      let left = x + w / 2 - tooltipWidth / 2;
+      let top = y + h + 10;
+      let showAbove = false;
+
+      if (left < 10) left = 10;
+      if (left + tooltipWidth > width - 10)
+        left = width - tooltipWidth - 10;
+      if (top + tooltipHeight > height - 20) {
+        top = y - tooltipHeight - 10;
+        showAbove = true;
+      }
+      const arrowLeft = x + w / 2 - left - 6;
+      setPosition({ top, left, arrowLeft, showAbove });
+      setVisible(true);
+      activeSetter = setVisible;
+    });
   };
 
   const closeTooltip = () => {
@@ -19,19 +53,10 @@ const HelpTooltip = ({ text }) => {
     activeSetter = null;
   };
 
-  // auto close when unmount
-  useEffect(() => {
-    return () => {
-      if (activeSetter === setVisible) {
-        activeSetter = null;
-      }
-    };
-  }, []);
-
   return (
     <View style={styles.wrapper}>
-      {/* Question Icon */}
       <Pressable
+        ref={iconRef}
         onPress={visible ? closeTooltip : openTooltip}
         style={[
           styles.icon,
@@ -41,25 +66,36 @@ const HelpTooltip = ({ text }) => {
         <Text style={styles.iconText}>?</Text>
       </Pressable>
 
-      {/* Tooltip */}
-      {visible && (
-        <>
-          <View style={styles.fullScreen}>
-            <Pressable style={StyleSheet.absoluteFill} onPress={closeTooltip} />
+      <Modal transparent visible={visible} animationType="fade">
+        <Pressable style={styles.overlay} onPress={closeTooltip}>
+          <View
+            style={[
+              styles.tooltipBox,
+              { top: position.top, left: position.left },
+            ]}
+          >
+            <View style={styles.headerRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.tooltipText}>{text}</Text>
+              </View>
+
+              <Pressable onPress={closeTooltip} style={styles.closeBtn}>
+                <Text style={styles.closeText}>✕</Text>
+              </Pressable>
+            </View>
+
+            <View
+              style={[
+                styles.arrow,
+                { left: position.arrowLeft },
+                position.showAbove
+                  ? styles.arrowDown
+                  : styles.arrowUp,
+              ]}
+            />
           </View>
-
-          <View style={styles.tooltipBox}>
-            {/* Cross Button */}
-            <Pressable style={styles.closeBtn} onPress={closeTooltip}>
-              <Text style={styles.closeText}>×</Text>
-            </Pressable>
-
-            <Text style={styles.tooltipText}>{text}</Text>
-
-            <View style={styles.arrow} />
-          </View>
-        </>
-      )}
+        </Pressable>
+      </Modal>
     </View>
   );
 };
@@ -68,10 +104,8 @@ export default HelpTooltip;
 
 const styles = StyleSheet.create({
   wrapper: {
-    position: "relative",
-    marginLeft: 6,
+    alignSelf: "flex-start",
   },
-
   icon: {
     width: 22,
     height: 22,
@@ -79,62 +113,67 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
+    backgroundColor: "#ffffff",
   },
-
   iconText: {
-    color: "#000",
     fontWeight: "bold",
+    color: "#000",
   },
-
+  overlay: {
+    flex: 1,
+  },
   tooltipBox: {
     position: "absolute",
-    bottom: 35,
-    left: -100,
     width: 260,
     backgroundColor: "#fff",
     padding: 12,
-    borderRadius: 8,
-    elevation: 6,
+    borderRadius: 10,
+    elevation: 10,
     shadowColor: "#000",
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.12,
     shadowRadius: 6,
-    zIndex: 999,
+    shadowOffset: { width: 0, height: 3 },
   },
-
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
   tooltipText: {
-    fontSize: 14,
     color: "#000",
+    fontSize: 14,
   },
-
   closeBtn: {
     position: "absolute",
-    top: 6,
-    right: 8,
+    right: -8,
+    top: -10,
+    padding: 2,
   },
-
   closeText: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#000",
   },
-
   arrow: {
     position: "absolute",
-    bottom: -8,
-    left: 110,
     width: 0,
     height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderTopWidth: 8,
+  },
+  arrowUp: {
+    top: -6,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderBottomWidth: 6,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderBottomColor: "#fff",
+  },
+  arrowDown: {
+    bottom: -6,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 6,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
     borderTopColor: "#fff",
-  },
-  fullScreen: {
-    position: "absolute",
-    top: -1000,
-    bottom: -1000,
-    left: -1000,
-    right: -1000,
   },
 });

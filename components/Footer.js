@@ -1,4 +1,4 @@
-import { Ionicons,Entypo,MaterialCommunityIcons,FontAwesome6 } from "@expo/vector-icons";
+import { Ionicons, Entypo, MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -19,7 +19,6 @@ const Footer = () => {
         <View style={styles.BottomBar}>
           <TouchableOpacity
             style={styles.tab}
-            
           >
             <Entypo
               name="home"
@@ -46,7 +45,7 @@ const Footer = () => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("ChatList")}
           >
@@ -62,6 +61,24 @@ const Footer = () => {
               ]}
             >
               Chat
+            </Text>
+          </TouchableOpacity> */}
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => navigation.navigate("EmployeeAccount")}
+          >
+            <Ionicons
+              name="person"
+              size={24}
+              color={isActive("EmployeeAccount") ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
+            <Text
+              style={[
+                styles.label,
+                isActive("EmployeeAccount") && styles.activeText,
+              ]}
+            >
+              Account
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

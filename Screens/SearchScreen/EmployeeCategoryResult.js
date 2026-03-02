@@ -169,7 +169,7 @@ export default function EmployeeCategoryResult({
                         fetchMore();
                     }
                 }}
-                contentContainerStyle={{ paddingBottom: 50 }}
+                contentContainerStyle={{ paddingBottom: 100 }}
             />
         </View>
     );

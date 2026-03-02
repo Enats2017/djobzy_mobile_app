@@ -20,6 +20,7 @@ import SliderScreen from "./Screens/HomeScreen/SliderScreen";
 import FourthScreen from "./Screens/HomeScreen/FourthScreen";
 import Login from "./Screens/LoginPage/Login";
 import Signup from "./Screens/RegisterPage/Signup";
+import VerifyRegisterEmail from "./Screens/RegisterPage/VerifyRegisterEmail";
 import Dashboard from "./Screens/DashboardPage/Dashboard";
 import CreateJob from "./Screens/JobCreatePage/CreateJob";
 import JobProfile from "./Screens/JobProfile/JobProfile";
@@ -219,6 +220,7 @@ const App = () => {
             <Stack.Screen name="CompletedContract" component={CompletedContract} />
             <Stack.Screen name="CategoryResult" component={CategoryResult} />
             <Stack.Screen name="BillingMethods" component={BillingMethods} />
+            <Stack.Screen name="VerifyRegisterEmail" component={VerifyRegisterEmail} />
           </Stack.Navigator>
         </NavigationContainer>
         <Toast config={toastConfig} />

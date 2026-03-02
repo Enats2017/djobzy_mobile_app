@@ -60,10 +60,6 @@ const AccountSetup = ({
   //    //setEmailVerified(userDetails.confirmation || 0);
   //  }, []);
 
-  console.log("PHONE:", phoneNumber);
-  console.log("COUNTRY CODE:", mobileCountryId);
-  console.log("COUNTRY ISO:", mobileCountryISO);
-
   const isoToFlag = (iso) =>
     iso
       ?.toUpperCase()
@@ -211,7 +207,7 @@ const AccountSetup = ({
                 style={{
                   position: "absolute",
                   right: 12,
-                  top: "30%",
+                  top: "50%",
                   transform: [{ translateY: -11 }],
                 }}
               />

@@ -18,6 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import GradientButton from "../../components/GradientButton";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { toastError, toastSuccess } from "../../utils/toast";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
@@ -90,7 +91,10 @@ const Signup = () => {
         toastError(data.message || "Registration failed.");
         return;
       }
-      navigation.replace("Register_Success", { email: email });
+      await AsyncStorage.setItem("token", data.token);
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      navigation.replace("VerifyRegisterEmail", { email: email });
+      toastSuccess("Success", "Register successful");
     } catch (err) {
       console.log(err);
       toastError("Failed to connect to server.");

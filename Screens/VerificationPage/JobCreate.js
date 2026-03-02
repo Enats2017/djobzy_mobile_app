@@ -56,13 +56,11 @@ const JobCreate = ({ admin, userId }) => {
             title="Create Promoted Services for Free"
             textColor="#303030"
             colors={["#fff", "#fff"]}
-            paddingVertical={15}
             onPress={() => navigation.navigate("PromoteService", { userId })}
           />
         ) : (
           <GradientButton
             title="Create a Job Post For Free"
-            paddingVertical={15}
             onPress={() => navigation.navigate("CreateJob", { userId })}
           />
         )}

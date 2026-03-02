@@ -20,6 +20,7 @@ import { useGlobalSearch } from "./useGlobalSearch";
 import EmployerFooter from "../../components/EmployerFooter";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DualDropdown from "../../components/DualDropdown";
+import FilterDropdown from "../../components/FilterDropdown";
 
 const SearchResult = () => {
   const navigation = useNavigation();
@@ -44,13 +45,11 @@ const SearchResult = () => {
     const userStr = await AsyncStorage.getItem("user");
     if (!userStr) return;
     const user = JSON.parse(userStr);
-
     setAdmin(user?.admin);
   };
 
   useEffect(() => {
     loadUser();
-
   }, []);
 
   return (
@@ -119,53 +118,17 @@ const SearchResult = () => {
               </View>
             </View>
             {showFilterDropdown && (
-              <>
-                <TouchableOpacity
-                  style={styles.overlay}
-                  activeOpacity={1}
-                  onPress={() => setShowFilterDropdown(false)}
-                />
-
-                <View style={styles.dropdownWrapper}>
-                  <View style={styles.dropdownContainer}>
-                    <TouchableOpacity
-                      style={styles.option}
-                      onPress={() => {
-                        setSearchSort("Distance");
-                        setField("sortBy", "Distance");
-                        setShowFilterDropdown(false);
-                        triggerSearch();
-                      }}
-                    >
-                      <Text style={styles.dropdownText}>Distance</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.option}
-                      onPress={() => {
-                        setSearchSort("Price");
-                        setField("sortBy", "Price");
-                        setShowFilterDropdown(false);
-                        triggerSearch();
-                      }}
-                    >
-                      <Text style={styles.dropdownText}>Price</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={[styles.option, { borderBottomWidth: 0 }]}
-                      onPress={() => {
-                        setSearchSort("Date Added");
-                        setField("sortBy", "Date added");
-                        setShowFilterDropdown(false);
-                        triggerSearch();
-                      }}
-                    >
-                      <Text style={styles.dropdownText}>Date Added</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </>
+              <FilterDropdown
+                visible={showFilterDropdown}
+                selectedValue={searchSort}
+                options={["Distance", "Price", "Date Added"]}
+                onClose={() => setShowFilterDropdown(false)}
+                onSelect={(value) => {
+                  setSearchSort(value);
+                  setField("sortBy", value);
+                  triggerSearch();
+                }}
+              />
             )}
             {/* FILTER */}
             {showFilter && <AdvanceSearch onClose={() => setShowFilter(false)} />}
@@ -188,9 +151,7 @@ const SearchResult = () => {
                 }}
                 onRightSelect={(value) => {
                   setSearchFilter(value);
-
                   let order = value === "Ascending" ? "ASC" : "DESC";
-
                   setField("sortOrder", order);
                   triggerSearch();
                 }}

@@ -11,7 +11,7 @@ import {
 const { width, height } = Dimensions.get("window");
 let activeSetter = null;
 
-const HelpTooltip = ({ text }) => {
+const Tooltip = ({ text }) => {
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({
     top: 0,
@@ -19,9 +19,8 @@ const HelpTooltip = ({ text }) => {
     arrowLeft: 0,
     showAbove: false,
   });
-
+  const [tooltipHeight, setTooltipHeight] = useState(0);
   const iconRef = useRef(null);
-
   const openTooltip = () => {
     if (activeSetter && activeSetter !== setVisible) {
       activeSetter(false);
@@ -29,22 +28,30 @@ const HelpTooltip = ({ text }) => {
 
     iconRef.current.measureInWindow((x, y, w, h) => {
       const tooltipWidth = 260;
-      const tooltipHeight = 120;
       let left = x + w / 2 - tooltipWidth / 2;
-      let top = y + h + 10;
-      let showAbove = false;
-
       if (left < 10) left = 10;
-      if (left + tooltipWidth > width - 10)
-        left = width - tooltipWidth - 10;
-      if (top + tooltipHeight > height - 20) {
-        top = y - tooltipHeight - 10;
-        showAbove = true;
-      }
-      const arrowLeft = x + w / 2 - left - 6;
-      setPosition({ top, left, arrowLeft, showAbove });
+      if (left + tooltipWidth > width - 10) left = width - tooltipWidth - 10;
+      setPosition((prev) => ({ ...prev, left }));
       setVisible(true);
       activeSetter = setVisible;
+      requestAnimationFrame(() => {
+        iconRef.current.measureInWindow((x2, y2, w2, h2) => {
+          let top = y2 + h2 + 10;
+          let showAbove = false;
+
+          if (top + tooltipHeight > height - 20) {
+            top = y2 - tooltipHeight - 10;
+            showAbove = true;
+          }
+          const arrowLeft = x2 + w2 / 2 - left - 6;
+          setPosition({
+            top,
+            left,
+            arrowLeft,
+            showAbove,
+          });
+        });
+      });
     });
   };
 
@@ -69,6 +76,7 @@ const HelpTooltip = ({ text }) => {
       <Modal transparent visible={visible} animationType="fade">
         <Pressable style={styles.overlay} onPress={closeTooltip}>
           <View
+            onLayout={(e) => setTooltipHeight(e.nativeEvent.layout.height)}
             style={[
               styles.tooltipBox,
               { top: position.top, left: position.left },
@@ -88,9 +96,7 @@ const HelpTooltip = ({ text }) => {
               style={[
                 styles.arrow,
                 { left: position.arrowLeft },
-                position.showAbove
-                  ? styles.arrowDown
-                  : styles.arrowUp,
+                position.showAbove ? styles.arrowDown : styles.arrowUp,
               ]}
             />
           </View>
@@ -100,7 +106,7 @@ const HelpTooltip = ({ text }) => {
   );
 };
 
-export default HelpTooltip;
+export default Tooltip;
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -113,7 +119,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    backgroundColor: "#ffffff",
   },
   iconText: {
     fontWeight: "bold",

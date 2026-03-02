@@ -24,6 +24,7 @@ import JobCard from "../EmployeeJobs/JobCard";
 import FeedPost from "../SocialMediaPage/FeedPost";
 import { ScrollView } from "react-native-gesture-handler";
 import Loading from "../../components/Loading";
+import LineDivider from "../../components/LineDivider";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("jobs");
@@ -224,10 +225,9 @@ const Dashboard = () => {
     );
   };
 
-  const renderJobCard = ({ item, index }) => {
-    const isLastItem = index === jobs.length - 1;
-    return <JobCard item={item} lastItem={isLastItem} />;
-  };
+  const renderJobCard = useCallback(({ item }) => {
+    return <JobCard item={item} navigation={navigation} />;
+  }, [navigation, jobs.length]);
 
   const renderFeedItem = ({ item }) => {
     return (
@@ -343,6 +343,10 @@ const Dashboard = () => {
                 ListHeaderComponent={renderHeader}
                 ListFooterComponent={renderFooter}
                 onEndReachedThreshold={0.5}
+                initialNumToRender={10}
+                maxToRenderPerBatch={10}
+                windowSize={5}
+                removeClippedSubviews={true}
                 onMomentumScrollBegin={() => {
                   onEndReachedCalledDuringMomentum.current = false;
                 }}
@@ -359,6 +363,7 @@ const Dashboard = () => {
                 }}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 80 }}
+                ItemSeparatorComponent={() => <LineDivider />}
               />
             )
           ) : (

@@ -76,40 +76,40 @@ export default function JobResult({ showData }) {
   }, [keyword, latitude, longitude, subcategory, category, low_price, high_price, radius, isRemoteJob, sortBy, sortOrder]);
 
   const fetchJobs = useCallback(async (reset = false) => {
-      if (loading || isFetchingMore) return;
-      if (reset) {
-        setJobs([]);
-        setHasMore(true);
-      }
-      setIsInitialLoading(true);
-      try {
-        const url = `${API_URL}/search-result?${queryString}`;
-        console.log("📡 Fetching Jobs URL:", url);
-        const res = await fetch(url, {
-          headers: {
-            Accept: "application/json",
-          },
-        });
+    if (loading || isFetchingMore) return;
+    if (reset) {
+      setJobs([]);
+      setHasMore(true);
+    }
+    setIsInitialLoading(true);
+    try {
+      const url = `${API_URL}/search-result?${queryString}`;
+      console.log("📡 Fetching Jobs URL:", url);
+      const res = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+        },
+      });
 
-        const data = await res.json();
-        if (!data?.gigs || data.gigs.length === 0) {
-          setHasMore(false);
-          return;
-        }
-
-        setJobs((prev) => {
-          const newGigs = data.gigs.filter(
-            (gig) => !prev.some((j) => j.gid === gig.gid),
-          );
-          return [...prev, ...newGigs];
-        });
-        setHasMore(data.gigs.length === 10);
-      } catch (err) {
-        console.log("❌ Error fetching jobs:", err);
-      } finally {
-        setIsInitialLoading(false);
+      const data = await res.json();
+      if (!data?.gigs || data.gigs.length === 0) {
+        setHasMore(false);
+        return;
       }
-    }, [queryString]);
+
+      setJobs((prev) => {
+        const newGigs = data.gigs.filter(
+          (gig) => !prev.some((j) => j.gid === gig.gid),
+        );
+        return [...prev, ...newGigs];
+      });
+      setHasMore(data.gigs.length === 10);
+    } catch (err) {
+      console.log("❌ Error fetching jobs:", err);
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, [queryString]);
 
   useEffect(() => {
     // initial mount

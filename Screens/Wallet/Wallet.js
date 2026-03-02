@@ -26,6 +26,7 @@ import BankTransfer from "./BankWithdraw";
 import GradientButton from "../../components/GradientButton";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
+import QuestionMark from "../../components/QuestionMark";
 
 export default function Wallet() {
   const navigation = useNavigation();
@@ -127,15 +128,12 @@ export default function Wallet() {
             >
               <View style={styles.contentWrapper}>
                 <View style={styles.inputSection}>
-                  <View style={styles.labelRow}>
-                    <Text style={styles.label}>My Balance</Text>
-                    <TouchableOpacity style={styles.questionIcon}>
-                      <MaterialCommunityIcons
-                        name="help-circle"
-                        size={20}
-                        color="#c3c3c3"
-                      />
-                    </TouchableOpacity>
+                  <View style={styles.label}>
+                    <QuestionMark 
+                      title="My Balance" 
+                      iconColor="#fff" 
+                      tooltipMessage="Total credited balance available in your account. This does not include funds currently held in escrow." 
+                    />
                   </View>
                   <View style={styles.inputRow}>
                     <View style={styles.currencyBox}>
@@ -151,15 +149,12 @@ export default function Wallet() {
                 </View>
 
                 <View style={styles.inputSection}>
-                  <View style={styles.labelRow}>
-                    <Text style={styles.label}>Withdraw Amount</Text>
-                    <TouchableOpacity style={styles.questionIcon}>
-                      <MaterialCommunityIcons
-                        name="help-circle"
-                        size={20}
-                        color="#c3c3c3"
-                      />
-                    </TouchableOpacity>
+                  <View style={styles.label}>
+                    <QuestionMark 
+                      title="Withdraw Amount" 
+                      iconColor="#fff" 
+                      tooltipMessage="Minimum withdrawal amount is 50 CAD. You can only withdraw available (non-escrow) funds." 
+                    />
                   </View>
                   <View style={styles.inputRow}>
                     <View style={styles.currencyBox}>

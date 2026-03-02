@@ -111,7 +111,6 @@ const VerificationPage = () => {
                   return (
                     <View key={index} style={styles.stepItem}>
                       <View style={styles.topRow}>
-                        {/* 🔥 TOUCHABLE CIRCLE (BIG HIT AREA) */}
                         <TouchableOpacity
                           activeOpacity={0.7}
                           style={styles.circleTouch}

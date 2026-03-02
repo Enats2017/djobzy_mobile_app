@@ -259,30 +259,12 @@ const EmployeeAccount = () => {
               </ScrollView>
             </View>
             <View style={styles.infoBox}>
-              {/* <View style={styles.iconbox}>
-                <Text style={styles.infoTitle}>Profile Title</Text>
-                <FontAwesome
-                  name="question-circle"
-                  size={16}
-                  color="#ffffff"
-                  style={{ marginLeft: 5 }}
-                />
-              </View> */}
               <QuestionMark title="Profile Title" iconColor="#fff" />
               <Text style={styles.infoText2}>
                 {user?.profile_title_employee}
               </Text>
             </View>
             <View style={styles.infoBox}>
-              {/* <View style={styles.iconbox}>
-                <Text style={styles.infoTitle}>About Me</Text>
-                <FontAwesome
-                  name="question-circle"
-                  size={16}
-                  color="#ffffff"
-                  style={{ marginLeft: 5 }}
-                />
-              </View> */}
               <QuestionMark title="About Me" iconColor="#fff" />
               <Text style={styles.infoText2}>{user?.about}</Text>
             </View>
@@ -305,15 +287,6 @@ const EmployeeAccount = () => {
               </View>
             </View> */}
             <View style={styles.infoBox}>
-              {/* <View style={styles.iconbox}>
-                <Text style={styles.infoTitle}>Pomate Services</Text>
-                <FontAwesome
-                  name="question-circle"
-                  size={16}
-                  color="#ffffff"
-                  style={{ marginLeft: 5 }}
-                />
-              </View> */}
               <QuestionMark title="Pomate Services" iconColor="#fff" />
             </View>
 

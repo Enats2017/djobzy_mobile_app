@@ -19,7 +19,6 @@ import {
 } from "react-native";
 import HeaderBar from "../../components/HeaderBar";
 import { API_URL } from "../../api/ApiUrl";
-import JobCard from "../EmployeeJobs/JobCard";
 import FeedPost from "../SocialMediaPage/FeedPost";
 import { ScrollView } from "react-native-gesture-handler";
 import LineDivider from "../../components/LineDivider";

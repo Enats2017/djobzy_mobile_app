@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     color: "#ffffff",
-    fontFamily: "Montserrat_400",
+    fontFamily: "Montserrat_400Regular",
     fontSize: 16,
     lineHeight: 24,
   },

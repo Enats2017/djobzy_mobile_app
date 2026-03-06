@@ -94,7 +94,7 @@ const Signup = () => {
       await AsyncStorage.setItem("token", data.token);
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
       navigation.replace("VerifyRegisterEmail", { email: email });
-      toastSuccess("Success", "Register successful");
+      toastSuccess("Register successful");
     } catch (err) {
       console.log(err);
       toastError("Failed to connect to server.");

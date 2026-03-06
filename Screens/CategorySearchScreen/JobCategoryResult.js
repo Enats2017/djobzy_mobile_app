@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { ActivityIndicator, StyleSheet, View, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import JobCard from "../EmployeeJobs/JobCard";
+import { useNavigation } from "@react-navigation/native";
 
 const JobCategoryResult = ({
   gigs,
@@ -11,6 +12,7 @@ const JobCategoryResult = ({
 }) => {
   const insets = useSafeAreaInsets();
   const onEndReachedCalledDuringMomentum = useRef(false);
+  const navigation = useNavigation();
 
   const renderFooter = () => {
     if (!isFetchingMore) return null;
@@ -25,7 +27,7 @@ const JobCategoryResult = ({
   const renderJobCard = ({ item, index }) => {
 
     const isLastItem = index === gigs.length - 1;
-    return <JobCard item={item} lastItem={isLastItem} />;
+    return <JobCard item={item} lastItem={isLastItem} navigation={navigation} />;
   };
 
   return (

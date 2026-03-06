@@ -12,6 +12,7 @@ import Toast from "react-native-toast-message";
 import { toastConfig } from "./utils/toastConfig";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+import * as Linking from "expo-linking";
 import { MessageNotificationProvider } from "./context/MessageNotificationContext";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -93,9 +94,13 @@ import SearchResult from "./Screens/SearchScreen/SearchResult";
 import CompletedContract from "./Screens/ContractPage/CompletedContract";
 import CategoryResult from "./Screens/CategorySearchScreen/CategoryResult";
 import BillingMethods from "./Screens/GeneralSetting/BillingMethods";
+import PaymentSuccess from "./components/PaymentSuccess";
+import PaymentFailed from "./components/PaymentFailed";
+import { createNavigationContainerRef } from "@react-navigation/native";
 
 
 const Stack = createStackNavigator();
+export const navigationRef = createNavigationContainerRef();
 const App = () => {
   const [appIsReady, setAppIsReady] = useState(false);
   const [fontsLoaded] = useFonts({
@@ -109,9 +114,77 @@ const App = () => {
   useEffect(() => {
     if (fontsLoaded) {
       setAppIsReady(true);
-
     }
   }, [fontsLoaded]);
+
+  useEffect(() => {
+    const handleDeepLink = (event) => {
+      const data = Linking.parse(event.url);
+      console.log("DeepLink:", data);
+
+      const status = data.queryParams?.status;
+      const type = data.queryParams?.type;
+
+      if (!navigationRef.isReady()) return;
+
+      setTimeout(() => {
+        switch (status) {
+          case "success":
+            navigationRef.reset({
+              index: 0,
+              routes: [{ name: "PaymentSuccess", params: { type } }],
+            });
+            break;
+
+          case "failed":
+            navigationRef.reset({
+              index: 0,
+              routes: [{ name: "PaymentFailed", params: { type } }],
+            });
+            break;
+
+          default:
+            console.log("Unknown payment status");
+        }
+      }, 500);
+    };
+
+    const subscription = Linking.addEventListener("url", handleDeepLink);
+
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    const checkInitialUrl = async () => {
+      const url = await Linking.getInitialURL();
+      if (!url) return;
+
+      const data = Linking.parse(url);
+      const status = data.queryParams?.status;
+      const type = data.queryParams?.type;
+
+      if (!navigationRef.isReady()) return;
+
+      setTimeout(() => {
+        if (status === "success") {
+          navigationRef.reset({
+            index: 0,
+            routes: [{ name: "PaymentSuccess", params: { type } }],
+          });
+        }
+
+        if (status === "failed") {
+          navigationRef.reset({
+            index: 0,
+            routes: [{ name: "PaymentFailed", params: { type } }],
+          });
+        }
+      }, 500);
+    };
+
+    checkInitialUrl();
+  }, []);
+
   const onLayoutRootView = useCallback(async () => {
     if (appIsReady) {
       await SplashScreen.hideAsync();
@@ -137,8 +210,7 @@ const App = () => {
   return (
     <View style={{ flex: 1 }}>
       <MessageNotificationProvider>
-        <NavigationContainer>
-
+        <NavigationContainer ref={navigationRef}>
           <Stack.Navigator
             initialRouteName="Home"
             screenOptions={{ headerShown: false }}
@@ -221,6 +293,8 @@ const App = () => {
             <Stack.Screen name="CategoryResult" component={CategoryResult} />
             <Stack.Screen name="BillingMethods" component={BillingMethods} />
             <Stack.Screen name="VerifyRegisterEmail" component={VerifyRegisterEmail} />
+            <Stack.Screen name="PaymentSuccess" component={PaymentSuccess} />
+            <Stack.Screen name="PaymentFailed" component={PaymentFailed} />
           </Stack.Navigator>
         </NavigationContainer>
         <Toast config={toastConfig} />

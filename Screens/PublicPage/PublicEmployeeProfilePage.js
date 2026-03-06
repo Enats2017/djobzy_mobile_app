@@ -399,7 +399,7 @@ export default function PublicEmployeeProfilePage({ route }) {
                 </View>
               </View>
             )}
-            <LineDivider />
+            {/* <LineDivider /> */}
 
             <View style={styles.pillsWrapper}>
               {promote.length > 0 && (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   Image,
   StyleSheet,
@@ -9,15 +9,19 @@ import {
   StatusBar,
   Text,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useNotifications } from "../context/MessageNotificationContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import HeaderMenuModal from "./HeaderMenuModal";
 
-const HeaderBar = ({  showMenu = true, showSearch = true }) => {
+const HeaderBar = ({ showMenu = true, showSearch = true }) => {
   const navigation = useNavigation();
-  const { messageCount } = useNotifications();
+  const route = useRoute();
+  const { notificationCount } = useNotifications();
+  const isActive = (routeName) => route.name === routeName;
   const [menuVisible, setMenuVisible] = useState(false);
+  const ACTIVE_COLOR = "#CB7767";
+  const INACTIVE_COLOR = "#ffffff";
 
   const goToSearch = async () => {
     const userStr = await AsyncStorage.getItem("user");
@@ -28,21 +32,21 @@ const HeaderBar = ({  showMenu = true, showSearch = true }) => {
   };
   return (
     <>
-    <View style={styles.container}>
-      <View style={styles.left}>
-        <Image
-          source={require("../assets/images/d_logo.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-      <View style={styles.right}>
-        {showSearch && (
-          <TouchableOpacity style={styles.iconWrapper} onPress={goToSearch}>
-            <Feather name="search" size={18} color="#fff" />
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity
+      <View style={styles.container}>
+        <View style={styles.left}>
+          <Image
+            source={require("../assets/images/d_logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+        <View style={styles.right}>
+          {showSearch && (
+            <TouchableOpacity style={styles.iconWrapper} onPress={goToSearch}>
+              <Feather name="search" size={18} color="#fff" />
+            </TouchableOpacity>
+          )}
+          {/* <TouchableOpacity
           style={styles.iconWrapper}
           onPress={() => navigation.navigate("ChatList")}
         >
@@ -54,14 +58,37 @@ const HeaderBar = ({  showMenu = true, showSearch = true }) => {
               </Text>
             </View>
           )}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
-        <TouchableOpacity style={styles.iconWrapper} onPress={() => setMenuVisible(true)}>
-          <Feather name="menu" size={20} color="#fff" />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconWrapper}
+            onPress={() => navigation.navigate("NotificationScreen")}
+          >
+            <MaterialCommunityIcons
+              name="bell-badge"
+              size={24}
+              color={
+                isActive("NotificationScreen") ? ACTIVE_COLOR : INACTIVE_COLOR
+              }
+            />
+            {notificationCount > 0 && (
+              <View style={styles.messageBadge}>
+                <Text style={styles.messageBadgeText}>
+                  {notificationCount > 99 ? "99+" : notificationCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.iconWrapper}
+            onPress={() => setMenuVisible(true)}
+          >
+            <Feather name="menu" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-    {showMenu && (
+      {showMenu && (
         <HeaderMenuModal
           visible={menuVisible}
           onClose={() => setMenuVisible(false)}

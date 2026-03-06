@@ -24,6 +24,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import ReviewPage from "../JobCreatePage/ReviewPage";
 import EmployerFooter from "../../components/EmployerFooter";
 import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const PostJobDetails = () => {
   const navigation = useNavigation();
@@ -33,6 +34,8 @@ const PostJobDetails = () => {
   const [profileData, setProfileData] = useState([]);
   const route = useRoute();
   const { jobId } = route.params || [];
+  console.log(jobId);
+  
 
   const [postJob, setPostJob] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
@@ -50,6 +53,7 @@ const PostJobDetails = () => {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
+            "Content-Type": "application/json",
           },
         },
       );
@@ -75,7 +79,7 @@ const PostJobDetails = () => {
     store.setField(
       "selectedSubs",
       postJob.category.map((c) => ({
-        serviceId:c.service,
+        serviceId: c.service,
         subId: c.subid,
         name: c.subname,
       })),
@@ -230,7 +234,6 @@ const PostJobDetails = () => {
       profileData: profileData,
     });
   };
-  console.log("gigs", postJob?.language);
 
   return (
     <>
@@ -414,8 +417,6 @@ const PostJobDetails = () => {
                           <TouchableOpacity
                             style={styles.biddingPayHireBtn}
                             onPress={() => {
-                              console.log("1111", gig?.id);
-
                               navigation.navigate("EmployeeHire", {
                                 gid: gig?.prp_id,
                               });
@@ -447,14 +448,33 @@ const PostJobDetails = () => {
                 <Text style={styles.buttonEditText}>Edit</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.buttonBoost}
-                onPress={() =>
-                  navigation.navigate("JobBoostPaymentSection", {
-                    gig: postJob.details,
-                  })
+                style={[
+                  styles.buttonBoost,
+                  postJob.details?.featured === 1 && styles.buttonBoosted
+                ]}
+                disabled={postJob.details?.featured === 1}
+                onPress={
+                  postJob.details?.featured !== 1
+                    ? () =>
+                      navigation.navigate("JobBoostPaymentSection", {
+                        gig: postJob.details,
+                      })
+                    : null
                 }
               >
-                <Text style={styles.buttonBoostText}>Boost</Text>
+                {postJob.details?.featured === 1 ? (
+                  <>
+                    <MaterialCommunityIcons
+                      name="rocket-launch"
+                      size={20}
+                      color="#fff"
+                      style={{ marginRight: 5 }}
+                    />
+                    <Text style={styles.buttonBoostText}>Boosted</Text>
+                  </>
+                ) : (
+                  <Text style={styles.buttonBoostText}>Boost</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -745,6 +765,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 12,
     marginTop: 10,
+  },
+  buttonBoosted: {
+    flex: 1,
+    backgroundColor: "#46a282",
+    borderRadius: 7,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    marginTop: 10,
+    flexDirection: "row",
   },
   buttonBoostText: {
     color: "#ffffff",

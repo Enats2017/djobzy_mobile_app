@@ -216,8 +216,8 @@ const AccountSetup = ({
           {!emailVerified && email ? (
             <TouchableOpacity
               style={styles.verifyButton}
-              onPress={() => handleVerifyEmail(email)}
-            ></TouchableOpacity>
+              // onPress={() => handleVerifyEmail(email)}
+            >Verify Your Email</TouchableOpacity>
           ) : null}
           <View style={styles.label}>
             <QuestionMark title="Phone Number" />

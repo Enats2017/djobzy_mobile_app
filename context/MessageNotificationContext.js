@@ -10,8 +10,8 @@ export const MessageNotificationProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
     const [admin, setAdmin] = useState(0);
+    const [notificationCounts, setNotificationCounts] = useState(0);
 
-    /* 🔹 Load user once */
     const loadUser = async () => {
         try {
             const userStr = await AsyncStorage.getItem("user");
@@ -55,9 +55,33 @@ export const MessageNotificationProvider = ({ children }) => {
         }
     };
 
+    const fetchNotifications = async () => {
+        try {
+            setLoading(true);
+            const token = await AsyncStorage.getItem("token");
+            if (!token) return;
+
+            const res = await fetch(`${API_URL}/app-notification`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                },
+            });
+
+            const data = await res.json();
+            setNotificationCounts(data?.unreadCount ?? 0);
+        } catch (e) {
+            console.error("Notification fetch failed", e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         loadUser();
         fetchMessageNotifications();
+        fetchNotifications();
         const interval = setInterval(fetchMessageNotifications, 50000);
         return () => clearInterval(interval);
     }, []);
@@ -66,6 +90,7 @@ export const MessageNotificationProvider = ({ children }) => {
         <MessageNotificationContext.Provider
             value={{
                 messageCount,
+                notificationCounts,
                 notifications,
                 loading,
                 user,

@@ -238,7 +238,7 @@ export default AdvancedSearch;
 
 const styles = StyleSheet.create({
   scrolcontent: {
-    paddingBottom: 50,
+    paddingBottom: 100,
   },
   title: {
     color: "#fff",

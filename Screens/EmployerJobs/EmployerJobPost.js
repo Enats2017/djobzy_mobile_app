@@ -39,7 +39,7 @@ export default function EmployerJobPost() {
   useEffect(() => {
     fetchReviews();
   }, []);
-  
+
   return (
     <SafeAreaView style={styles.jobpostcontainer}>
       <View style={styles.container}>
@@ -55,104 +55,108 @@ export default function EmployerJobPost() {
           </View>
         </View>
         {
-          loading?(
-            <Loading/>
-          ):(
-          <ScrollView
-            contentContainerStyle={{paddingBottom:100}}
-            showsVerticalScrollIndicator={false}
-          >
-            {postJob.length > 0 ? (
-              postJob.map((item, index) => (
-                <View key={index} style={styles.jobCard}>
-                  <View style={styles.topInfoContainer}>
-                    <View style={styles.leftInfo}>
-                      <Text style={styles.jobTitle}>{item.subject}</Text>
-                      <Text style={styles.jobId}>Posted : {item.created}</Text>
-                    </View>
-                    <View style={styles.rightInfo}>
-                      <View style={styles.proposalsRow}>
-                        <Text style={styles.proposalsLabel}>Proposals :</Text>
-                        <Text style={styles.proposalsCount}>{item.proposal}</Text>
+          loading ? (
+            <Loading />
+          ) : (
+            <ScrollView
+              contentContainerStyle={{ paddingBottom: 100 }}
+              showsVerticalScrollIndicator={false}
+            >
+              {postJob.length > 0 ? (
+                postJob.map((item, index) => (
+                  <View key={index} style={styles.jobCard}>
+                    <View style={styles.topInfoContainer}>
+                      <View style={styles.leftInfo}>
+                        <Text style={styles.jobTitle}>{item.subject}</Text>
+                        <Text style={styles.jobId}>Posted : {item.created}</Text>
+                      </View>
+                      <View style={styles.rightInfo}>
+                        <View style={styles.proposalsRow}>
+                          <Text style={styles.proposalsLabel}>Proposals :</Text>
+                          <Text style={styles.proposalsCount}>{item.proposal}</Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                  <View style={styles.detailsCard}>
-                    <View style={styles.detailsRow}>
+                    <View style={styles.detailsCard}>
+                      <View style={styles.detailsRow}>
+                        <View style={styles.detailItem}>
+                          <Text style={styles.detailLabel}>Total Price :</Text>
+                          <Text style={styles.detailValue}>
+                            {item.fixed_price ? item.fixed_minimum : "N/A"}
+                          </Text>
+                        </View>
+                        <View style={styles.detailItem}>
+                          <Text style={styles.detailLabel}>Hourly Rate :</Text>
+                          <Text style={styles.detailValue}> {item.hour_price ? item.hour_minimum : "N/A"}</Text>
+                        </View>
+                      </View>
                       <View style={styles.detailItem}>
-                        <Text style={styles.detailLabel}>Total Price :</Text>
+                        <Text style={styles.detailLabel}>Expected Hours :</Text>
                         <Text style={styles.detailValue}>
-                          {item.fixed_price ? item.fixed_minimum : "N/A"}
+                          {item.expected_hour ? item.expected_hour : 0}
                         </Text>
                       </View>
-                      <View style={styles.detailItem}>
-                        <Text style={styles.detailLabel}>Hourly Rate :</Text>
-                        <Text style={styles.detailValue}> {item.hour_price ? item.hour_minimum : "N/A"}</Text>
-                      </View>
                     </View>
-                    <View style={styles.detailItem}>
-                      <Text style={styles.detailLabel}>Expected Hours :</Text>
-                      <Text style={styles.detailValue}>
-                        {item.expected_hour ? item.expected_hour : 0}
+                    <View style={styles.jobDescriptionCard}>
+                      <Text style={styles.jobDescriptionLabel}>Job Description</Text>
+                      <Text style={styles.jobDescriptionText}>
+                        {item.description}
                       </Text>
                     </View>
-                  </View>             
-                  <View style={styles.jobDescriptionCard}>
-                    <Text style={styles.jobDescriptionLabel}>Job Description</Text>
-                    <Text style={styles.jobDescriptionText}>
-                      {item.description}
-                    </Text>
-                  </View>              
-                  <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                      style={styles.viewBtn}
-                      onPress={() =>
-                        navigation.navigate("PostJobDetails", {
-                          jobId: item.request_slug,
-                        })
+                    <View style={styles.buttonContainer}>
+                      <TouchableOpacity
+                        style={styles.viewBtn}
+                        onPress={() =>
+                          navigation.navigate("PostJobDetails", {
+                            jobId: item.request_slug,
+                          })
+                        }
+                      >
+                        <Text style={styles.viewBtnText}>View</Text>
+                      </TouchableOpacity>
+                      {
+                        item.featured != 1 && (
+                          <TouchableOpacity style={styles.boostBtn} onPress={() =>
+                            navigation.navigate("JobBoostPaymentSection", {
+                              gig: item
+                            })
+                          }>
+                            <Text style={styles.boostBtnText}>Boost</Text>
+                          </TouchableOpacity>
+                        )
                       }
-                    >
-                      <Text style={styles.viewBtnText}>View</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.boostBtn} onPress={() =>
-                  navigation.navigate("JobBoostPaymentSection", {
-                    gig: item
-                  })
-                }>
-                      <Text style={styles.boostBtnText}>Boost</Text>
-                    </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              ))
-            ) : (
-              <Text style={{ textAlign: "center", marginTop: 50, color: "#fff" }}>
-                No Jobs Posted Yet
-              </Text>
-            )}
-          </ScrollView>
+                ))
+              ) : (
+                <Text style={{ textAlign: "center", marginTop: 50, color: "#fff" }}>
+                  No Jobs Posted Yet
+                </Text>
+              )}
+            </ScrollView>
           )
         }
-      
+
       </View>
-      <EmployerFooter/>
+      <EmployerFooter />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   jobpostcontainer: {
-    flex: 1, 
+    flex: 1,
   },
-  container:{
-    flex:1,
+  container: {
+    flex: 1,
     backgroundColor: "#222222",
-    paddingHorizontal:15
+    paddingHorizontal: 15
 
   },
   headerSection: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center", 
+    alignItems: "center",
   },
 
   viewBoostedJobsBtn: {
@@ -166,7 +170,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
   },
- 
+
   jobCard: {
     backgroundColor: "#ffffff1a",
     borderRadius: 12,
@@ -204,7 +208,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-   
+
   },
 
   proposalsLabel: {
@@ -286,6 +290,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
+    paddingVertical: 10,
   },
   viewBtnText: {
     color: "#FFFFFF",

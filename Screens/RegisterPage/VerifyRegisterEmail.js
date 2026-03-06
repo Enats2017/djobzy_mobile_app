@@ -112,7 +112,7 @@ export default function VerifyRegisterEmail({ route }) {
                 });
             }
         } catch (error) {
-            toastError('Verification Failed', error.message);
+            toastError(error.message);
         } finally {
             setLoading(false);
         }
@@ -134,9 +134,9 @@ export default function VerifyRegisterEmail({ route }) {
             );
 
             setTimer(RESEND_SECONDS);
-            toastSuccess('Success', 'Verification code resent.');
+            toastSuccess('Verification code resent.');
         } catch (error) {
-            toastError('Error', 'Failed to resend code.');
+            toastError('Failed to resend code. ' . error);
         }
     };
 

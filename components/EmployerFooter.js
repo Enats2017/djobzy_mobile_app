@@ -5,6 +5,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useCreateJobGlobalStore } from "./useCreateJobGlobalStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../api/ApiUrl"; // path check karo
+import { useNotifications } from "../context/MessageNotificationContext";
+import { Alert } from "react-native";
+import Octicons from "@expo/vector-icons/Octicons";
 
 const ACTIVE_COLOR = "#CB7767";
 const INACTIVE_COLOR = "#000";
@@ -39,6 +44,7 @@ const EmployerFooter = () => {
   const isHomeActive = () => Home_Screen.includes(route.name);
   const isProfile = () => Profile_Screen.includes(route.name);
   const isActive = (routeName) => route.name === routeName;
+  const { refreshUser } = useNotifications();
 
   const handleCreateJobNavigation = () => {
     const store = useCreateJobGlobalStore.getState();
@@ -48,10 +54,58 @@ const EmployerFooter = () => {
     store.setActiveTab(0);
     navigation.navigate("CreateJob");
   };
+
+  const handleSwitchAccount = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/user-switch-account`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      await AsyncStorage.removeItem("user");
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
+      await refreshUser();
+
+      if (data?.account_type == 0) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Dashboard" }],
+        });
+      } else if (data?.account_type == 2) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "EmployerDashboard" }],
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Failed to switch account");
+    }
+  };
   return (
     <>
       <View style={styles.bottomContainer}>
         <View style={styles.BottomBar}>
+          <TouchableOpacity style={styles.tab} onPress={handleSwitchAccount}>
+            <Octicons name="arrow-switch" size={25} color={INACTIVE_COLOR} />
+            {/* <Entypo
+              name="home"
+              size={25}
+              color={isActive === "jobs" ? "#007bff" : "#000000"}
+            /> */}
+            <Text style={[styles.label, isActive == 0 && styles.activeText]}>
+              Switch
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("EmployerDashboard")}
@@ -67,6 +121,7 @@ const EmployerFooter = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tab}
+            // onPress={() => navigation.navigate("PaymentSuccess")}
             onPress={() => navigation.navigate("EmployerContracts")}
           >
             <Ionicons
@@ -97,7 +152,7 @@ const EmployerFooter = () => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("ChatList")}
           >
@@ -114,7 +169,7 @@ const EmployerFooter = () => {
             >
               Chat
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity
             style={styles.tab}

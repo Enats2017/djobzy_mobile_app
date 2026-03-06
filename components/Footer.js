@@ -1,8 +1,18 @@
-import { Ionicons,Entypo,MaterialCommunityIcons,FontAwesome6 } from "@expo/vector-icons";
+import {
+  Ionicons,
+  Entypo,
+  MaterialCommunityIcons,
+  FontAwesome6,
+} from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useServiceGlobalStore } from "../Screens/PromoteServicesPage/ServiceGlobalStore";
+import Octicons from "@expo/vector-icons/Octicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../api/ApiUrl";
+import { useNotifications } from "../context/MessageNotificationContext";
+import { Alert } from "react-native";
 
 const ACTIVE_COLOR = "#CB7767";
 const INACTIVE_COLOR = "#000";
@@ -10,24 +20,59 @@ const INACTIVE_COLOR = "#000";
 const Footer = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { refreshUser } = useNotifications();
   const isActive = (routeName) => route.name === routeName;
+  const handleSwitchAccount = async () => {
+    console.log("SWITCH BUTTON PRESSED 🔥");
+    try {
+      const token = await AsyncStorage.getItem("token");
 
+      const response = await fetch(`${API_URL}/user-switch-account`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      await AsyncStorage.removeItem("user");
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
+      await refreshUser();
+
+      if (data?.account_type == 0) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Dashboard" }],
+        });
+      } else if (data?.account_type == 2) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "EmployerDashboard" }],
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Failed to switch account");
+    }
+  };
 
   return (
     <>
       <View style={styles.bottomContainer}>
         <View style={styles.BottomBar}>
-          <TouchableOpacity
-            style={styles.tab}
-            
-          >
-            <Entypo
+          <TouchableOpacity style={styles.tab} onPress={handleSwitchAccount}>
+            <Octicons name="arrow-switch" size={25} color={INACTIVE_COLOR} />
+            {/* <Entypo
               name="home"
               size={25}
               color={isActive === "jobs" ? "#007bff" : "#000000"}
-            />
+            /> */}
             <Text style={[styles.label, isActive == 0 && styles.activeText]}>
-              Home
+              Switch
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -48,6 +93,21 @@ const Footer = () => {
 
           <TouchableOpacity
             style={styles.tab}
+            onPress={() => navigation.navigate("EmployeeAccount")}
+          >
+            <Ionicons
+              name="person"
+              size={24}
+              color={isActive("EmployeeAccount") ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
+            <Text
+              style={[styles.label, isActive("EmployeeAccount") && styles.activeText]}
+            >
+              Account
+            </Text>
+          </TouchableOpacity>
+          {/* <TouchableOpacity
+            style={styles.tab}
             onPress={() => navigation.navigate("ChatList")}
           >
             <Ionicons
@@ -56,14 +116,11 @@ const Footer = () => {
               color={isActive("ChatList") ? ACTIVE_COLOR : INACTIVE_COLOR}
             />
             <Text
-              style={[
-                styles.label,
-                isActive("ChatList") && styles.activeText,
-              ]}
+              style={[styles.label, isActive("ChatList") && styles.activeText]}
             >
               Chat
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("NotificationScreen")}

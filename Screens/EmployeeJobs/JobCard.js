@@ -205,7 +205,6 @@ const styles = StyleSheet.create({
   userRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-
     marginBottom: 10,
     gap: 10,
   },
@@ -244,7 +243,6 @@ const styles = StyleSheet.create({
   },
   starRow: {
     flexDirection: "row",
-
     gap: 3,
   },
   heartColumn: {

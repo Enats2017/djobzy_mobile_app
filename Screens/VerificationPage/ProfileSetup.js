@@ -135,7 +135,6 @@ const openGallery = async () => {
       formData.append("title", title);
       formData.append("about", description);
       formData.append("online_resume_link", onlineResumeLink);
-      formData.append("step_flag",3)
       if (resumeFile) {
         formData.append("resume", {
           uri: resumeFile.uri,

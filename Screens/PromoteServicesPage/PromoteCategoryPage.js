@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   categoryBtn: {
-    paddingBottom: 47,
+    paddingBottom: 50,
     paddingTop: 4,
   },
 });

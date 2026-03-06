@@ -14,7 +14,7 @@ import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import EmployerFooter from "../../components/EmployerFooter";
 
 const CompletedContract = () => {
-  const [currentJobs, setCurrnetJobs] = useState([]);
+  const [currentJobs, setCurrentJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
@@ -31,7 +31,7 @@ const CompletedContract = () => {
       const data = await response.json();
       console.log(data);
 
-      setCurrnetJobs(data.employee || []);
+      setCurrentJobs(data.closed_jobs || []);
     } catch (error) {
       console.log("API Error:", error);
     } finally {

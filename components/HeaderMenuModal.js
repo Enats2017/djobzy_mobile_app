@@ -135,7 +135,7 @@ const HeaderMenuModal = ({ visible, onClose }) => {
         activeOpacity={1}
         onPress={onClose}
       />
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container]}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"

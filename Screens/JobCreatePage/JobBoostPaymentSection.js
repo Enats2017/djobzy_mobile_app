@@ -6,15 +6,18 @@ import { useState, useEffect } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_ICON, API_URL } from "../../api/ApiUrl";
+import { toastError } from "../../utils/toast";
+import GradientButton from "../../components/GradientButton";
+import * as Linking from "expo-linking";
 
 const JobBoostPaymentSection = ({ route }) => {
   const { gig } = route.params;
-  console.log("1jobpayemtn",gig);
-  
+  // console.log("1jobpayemtn", gig);
   const subject = gig?.subject;
-  console.log(subject);
-  
+
   const [selectedPrice, setSelectedPrice] = useState(5);
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const [admin, setAdmin] = useState(0);
   const prices = [5, 6, 7];
@@ -29,7 +32,45 @@ const JobBoostPaymentSection = ({ route }) => {
     loadUser();
   }, []);
 
-  console.log(admin);
+  const openWebsite = async () => {
+    try {
+      setLoading(true);
+      const redirectUrl = Linking.createURL("payment-success");
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/promote-job`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: gig?.id,
+          featurePrice: selectedPrice,
+          app_redirect_url: Linking.createURL("payment-success")
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Promote Response:", data);
+      if (data.success) {
+        const paymentUrl = data?.data?.payment_url;
+        if (paymentUrl) {
+          setLoading(false);
+          Linking.openURL(paymentUrl); // 🔥 Opens web payment page
+        } else {
+          toastError("Payment URL not received.");
+        }
+      } else {
+        toastError(data.message || "Something went wrong.");
+      }
+    } catch (error) {
+      console.log("Promote Error:", error);
+      toastError("Network error.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -106,11 +147,7 @@ const JobBoostPaymentSection = ({ route }) => {
               <Text style={styles.dollor}>USD</Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#D17B68" }]}
-          >
-            <Text style={styles.buttonText}>Boost the Job post</Text>
-          </TouchableOpacity>
+          <GradientButton title="Boost the Job post" onPress={openWebsite} disabled={loading} loading={loading} />
         </View>
         {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>

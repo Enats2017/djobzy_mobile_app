@@ -61,7 +61,7 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
 
       const payload = {
         type: role,
-        step_flag: 2,
+        step_flag: 'step3',
         service: selectedServices,
       };
 

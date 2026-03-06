@@ -219,6 +219,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_600SemiBold",
     color: "#FFFFFF",
     paddingBottom: 8,
+    fontSize: 14,
   },
   underline: {
     height: 2,

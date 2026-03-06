@@ -12,7 +12,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  
+
 } from "react-native";
 import PhoneNumberInput from "../../components/PhoneNumberInput";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
@@ -23,6 +23,7 @@ import { toastError, toastSuccess } from "../../utils/toast";
 import { getCountryCallingCode } from "libphonenumber-js";
 import QuestionMark from "../../components/QuestionMark";
 import BorderButton from "../../components/BorderButton";
+import { useNavigation } from "@react-navigation/native";
 
 const AccountSetup = ({
   countries,
@@ -50,6 +51,7 @@ const AccountSetup = ({
   const [usernameError, setUsernameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [canVerify, setCanVerify] = useState(false);
+  const navigation = useNavigation();
 
   // const [emailVerified, setEmailVerified] = useState([]);
 
@@ -95,6 +97,7 @@ const AccountSetup = ({
     }
     const fullNumber = `+${mobileCountryId}${phoneNumber}`;
     const updatedFullNumber = `${mobileCountryId}${phoneNumber}`;
+
     const isPhoneValid = isValidPhoneNumber(fullNumber, mobileCountryISO);
     if (!isPhoneValid) {
       toastError("Please enter a valid phone number.");
@@ -213,12 +216,6 @@ const AccountSetup = ({
               />
             )}
           </View>
-          {!emailVerified && email ? (
-            <TouchableOpacity
-              style={styles.verifyButton}
-              // onPress={() => handleVerifyEmail(email)}
-            >Verify Your Email</TouchableOpacity>
-          ) : null}
           <View style={styles.label}>
             <QuestionMark title="Phone Number" />
           </View>
@@ -255,6 +252,17 @@ const AccountSetup = ({
             }}
           />
 
+          {!emailVerified && (
+            <BorderButton
+              title="Verify your Email"
+              marginTop={10}
+              onPress={() => {
+                //handleVerifyPhone(); // your verify API
+                navigation.navigate("VerifyRegisterEmail", { email: email });
+              }}
+            />
+          )}
+
           <GradientButton
             title="Next"
             marginTop={25}
@@ -284,8 +292,8 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#faf6f6ff",
     paddingHorizontal: 10,
-    fontSize:14,
-    fontFamily:"Montserrat_400Regular",
+    fontSize: 14,
+    fontFamily: "Montserrat_400Regular",
     borderRadius: 10,
     height: 50,
     color: "#111010ff",

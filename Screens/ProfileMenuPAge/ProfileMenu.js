@@ -13,7 +13,7 @@ import {
 import {
   Ionicons,
   MaterialIcons,
-  FontAwesome5,
+  FontAwesome6,
   Entypo,
   Fontisto,
 } from "@expo/vector-icons";
@@ -299,8 +299,8 @@ const EmployeeProfileMenu = () => {
                   title="Settings"
                   onPress={() => navigation.navigate("GeneralSetting")}
                 />
-                 <MenuItem  type="ion"
-                  icon="coin"  title="Djobzy Coin | Invest with Us"
+                 <FontAwesome type="Font"
+                  icon="dollar-sign"  title="Djobzy Coin | Invest with Us"
                   onPress={() => Linking.openURL("https://www.djobzy.com/invest")}
                   /> 
               </View>

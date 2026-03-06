@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Animated,
@@ -68,6 +68,7 @@ const CreateJob = () => {
   const [loading, setLoading] = useState(false);
   const totalSteps = 7;
   const navigation = useNavigation();
+  const stepsScrollRef = useRef(null);
 
   const handleBack = () => {
     setPriceError(false);
@@ -333,7 +334,14 @@ const CreateJob = () => {
   };
 
   const isLastStep = activeTab === totalSteps - 1;
+  useEffect(() => {
+    const stepWidth = 100;
 
+    stepsScrollRef.current?.scrollTo({
+      x: activeTab * stepWidth,
+      animated: true,
+    });
+  }, [activeTab]);
   const primaryButtonText = isEditingFromReview
     ? "Update"
     : isLastStep
@@ -360,6 +368,7 @@ const CreateJob = () => {
           </View>
           <View>
             <ScrollView
+              ref={stepsScrollRef}
               horizontal={true}
               showsHorizontalScrollIndicator={false}
             >

@@ -1,9 +1,4 @@
-import {
-  Ionicons,
-  Entypo,
-  MaterialCommunityIcons,
-  FontAwesome6,
-} from "@expo/vector-icons";
+import { Ionicons, Entypo, MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -67,6 +62,10 @@ const Footer = () => {
           <TouchableOpacity style={styles.tab} onPress={handleSwitchAccount}>
             <Octicons name="arrow-switch" size={25} color={INACTIVE_COLOR} />
             {/* <Entypo
+          <TouchableOpacity
+            style={styles.tab}
+          >
+            <Entypo
               name="home"
               size={25}
               color={isActive === "jobs" ? "#007bff" : "#000000"}
@@ -91,7 +90,7 @@ const Footer = () => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("EmployeeAccount")}
           >
@@ -121,6 +120,24 @@ const Footer = () => {
               Chat
             </Text>
           </TouchableOpacity> */}
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => navigation.navigate("EmployeeAccount")}
+          >
+            <Ionicons
+              name="person"
+              size={24}
+              color={isActive("EmployeeAccount") ? ACTIVE_COLOR : INACTIVE_COLOR}
+            />
+            <Text
+              style={[
+                styles.label,
+                isActive("EmployeeAccount") && styles.activeText,
+              ]}
+            >
+              Account
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("NotificationScreen")}

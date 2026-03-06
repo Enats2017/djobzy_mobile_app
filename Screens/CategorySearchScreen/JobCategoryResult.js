@@ -52,7 +52,7 @@ const JobCategoryResult = ({
           }
         }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 50 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
       />
     </View>
   );

@@ -225,7 +225,7 @@ const HeaderMenuModal = ({ visible, onClose }) => {
             />
             <MenuItem
               icon="settings-outline"
-              title="Setting"
+              title="Settings"
               onPress={() => go("GeneralSetting")}
             />
           </View>

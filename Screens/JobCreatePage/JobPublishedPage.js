@@ -2,7 +2,7 @@ import EmployerFooter from "../../components/EmployerFooter";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 
@@ -15,7 +15,10 @@ const JobPublishedPage = ({ route }) => {
         <View style={styles.container}>
           <PageNameHeaderBar navigation={navigation} title="Publish a Job" />
 
-          <View style={styles.content}>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
             <Image
               source={require("../../assets/images/Group-10.png")}
               style={styles.image}
@@ -33,18 +36,18 @@ const JobPublishedPage = ({ route }) => {
             <Text style={styles.highlight}>
               The promotion will last for 1 week.
             </Text>
-          </View>
+          </ScrollView>
           <View style={styles.sectionBtn}>
             <TouchableOpacity
               style={[styles.button, { backgroundColor: "#D17B68" }]}
-              onPress={() => navigation.navigate("JobBoostPaymentSection", { gig : gig })}
+              onPress={() => navigation.navigate("JobBoostPaymentSection", { gig: gig })}
             >
               <Text style={styles.buttonText}>Boost the Job post</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.button, { borderColor: "#ccc", borderWidth: 1 }]}
-              onPress={()=>navigation.navigate("EmployerJobPost")}
+              onPress={() => navigation.navigate("EmployerJobPost")}
             >
               <Text style={styles.buttonText}>Continue without boosting</Text>
             </TouchableOpacity>
@@ -66,9 +69,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   content: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingBottom: 20,
   },
   image: {
     marginBottom: 30,
@@ -92,7 +95,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Montserrat_400Regular",
     textAlign: "center",
-    width: 350,
+    width: "100%",
 
     marginBottom: 15,
   },

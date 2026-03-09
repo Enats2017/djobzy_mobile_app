@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,20 +18,19 @@ import { API_URL } from "../../api/ApiUrl";
 import EmployerFooter from "../../components/EmployerFooter";
 import { ScrollView } from "react-native-gesture-handler";
 import Loading from "../../components/Loading";
-import { toastSuccess } from "../../utils/toast";
+import { toastError, toastSuccess } from "../../utils/toast";
+import * as Linking from "expo-linking";
 
 const EmployeeHire = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { gid } = route.params;
-  console.log(gid);
-  
-   const [profileData, setProfileData] = useState(null);
+  const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [submit, setSubmit] = useState(false);
 
-   const fetchUserAppliedDetials = async () => {
+  const fetchUserAppliedDetials = async () => {
     try {
       setLoading(true)
       const token = await AsyncStorage.getItem("token");
@@ -42,55 +41,55 @@ const EmployeeHire = () => {
         },
       });
       const data = await response.json();
-      console.log("1111",data);
-      
       setProfileData(data?.profile);
     } catch (err) {
       console.log(err);
       setError(err.message);
     } finally {
-    setLoading(false)
+      setLoading(false)
     }
   };
-    useEffect(() => {
+  useEffect(() => {
     if (gid) {
       fetchUserAppliedDetials();
     }
   }, [gid]);
 
-
   const hireEmployer = async () => {
-  try {
-    setSubmit(true);
-    const token = await AsyncStorage.getItem("token");
-    const response = await fetch(`${API_URL}/hire-employer`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: gid, 
-      }),
-    });
-    const data = await response.json();
-    console.log("Hire response:", data);
-    if (data.status === 200) {
-      toastSuccess("Employee hired successfully");
-       navigation.navigate("UserPaymentPage", {
-        profileData: data.result 
-    });
-    } else {
-      alert(data.message || "Something went wrong");
+    try {
+      setSubmit(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/hire-employer`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: gid,
+        }),
+      });
+      const data = await response.json();
+      console.log("Hire response:", data);
+      if (data.status === 200) {
+        const paymentUrl = `${data?.payment_url}?pt=${token}`;
+        if (paymentUrl) {
+          setSubmit(false);
+          Linking.openURL(paymentUrl); // payment page
+        } else {
+          toastError("Payment URL not received.");
+        }
+      } else {
+        toastError(data.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.log(error);
+      toastError("Network error");
+    } finally {
+      setSubmit(false);
     }
-  } catch (error) {
-    console.log(error);
-    alert("Network error");
-  } finally {
-    setSubmit(false);
-  }
-};
+  };
 
   return (
     <>
@@ -98,72 +97,72 @@ const EmployeeHire = () => {
         <View style={styles.container}>
           <PageNameHeaderBar title="Details" navigation={navigation} />
           {
-            loading ?(
-                <Loading/>
-            ):(
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:20}}>
-            <View style={styles.userInfoRow}>
-                <Image
-                source={{
-                    uri:  profileData?.photo || "https://randomuser.me/api/portraits/women/82.jpg",
-                }}
-                style={styles.avatar}
-                />
+            loading ? (
+              <Loading />
+            ) : (
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+                <View style={styles.userInfoRow}>
+                  <Image
+                    source={{
+                      uri: profileData?.photo || "https://randomuser.me/api/portraits/women/82.jpg",
+                    }}
+                    style={styles.avatar}
+                  />
 
-                <View style={styles.userDetails}>
-                <View style={styles.headerRow}>
-                    <Text style={styles.userName}> {profileData?.full_name}</Text>
-                    <TouchableOpacity style={styles.menuButton}>
-                    {/* <Entypo name="dots-three-vertical" size={20} color="#bbb" /> */}
-                    </TouchableOpacity>
-                </View>
+                  <View style={styles.userDetails}>
+                    <View style={styles.headerRow}>
+                      <Text style={styles.userName}> {profileData?.full_name}</Text>
+                      <TouchableOpacity style={styles.menuButton}>
+                        {/* <Entypo name="dots-three-vertical" size={20} color="#bbb" /> */}
+                      </TouchableOpacity>
+                    </View>
 
-                <View style={styles.verifyRow}>
-                    <MaterialIcons name="verified" size={16} color="#c3c3c3" />
-                    <Text style={styles.verifyText}>Verification Level:  {profileData?.verification_count ?? "0"}/7</Text>
-                </View>
+                    <View style={styles.verifyRow}>
+                      <MaterialIcons name="verified" size={16} color="#c3c3c3" />
+                      <Text style={styles.verifyText}>Verification Level:  {profileData?.verification_count ?? "0"}/7</Text>
+                    </View>
 
-                <View style={styles.locationRow}>
-                    <Entypo name="location-pin" size={16} color="#c3c3c3" />
-                    <Text style={styles.locationText}>{profileData?.preferred_location||"No Location"}</Text>
+                    <View style={styles.locationRow}>
+                      <Entypo name="location-pin" size={16} color="#c3c3c3" />
+                      <Text style={styles.locationText}>{profileData?.preferred_location || "No Location"}</Text>
+                    </View>
+                  </View>
                 </View>
+                <View style={styles.priceContainer}>
+                  <View style={styles.priceBox}>
+                    <Text style={styles.priceLabel}>Total Price</Text>
+                    <Text style={styles.priceValue}>{profileData?.bid_price} CAD</Text>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.priceBox}>
+                    <Text style={styles.priceLabel}>Hourly Rate</Text>
+                    <Text style={styles.priceValue}>{profileData?.prop_hourly_rate} CAD</Text>
+                  </View>
                 </View>
-            </View>
-            <View style={styles.priceContainer}>
-                <View style={styles.priceBox}>
-                <Text style={styles.priceLabel}>Total Price</Text>
-                <Text style={styles.priceValue}>{profileData?.bid_price} CAD</Text>
+                <View style={styles.description}>
+                  <Text style={styles.desText}>
+                    {profileData?.desc_proposal}
+                  </Text>
                 </View>
-                <View style={styles.divider} />
-                <View style={styles.priceBox}>
-                <Text style={styles.priceLabel}>Hourly Rate</Text>
-                <Text style={styles.priceValue}>{profileData?.prop_hourly_rate} CAD</Text>
-                </View>
-            </View>
-            <View style={styles.description}>
-                <Text style={styles.desText}>
-                {profileData?.desc_proposal}
-                </Text>
-            </View>
-            <TouchableOpacity style={styles.offerHeader} activeOpacity={0.7}>
-                <FontAwesome name="question-circle" size={18} color="#c3c3c3" />
-                <Text style={styles.offerText}>
-                Make sure to contract the employee via chat to arrange the
-                details.
-                </Text>
-            </TouchableOpacity>
-            <View style={styles.buttonRow}>
-                 <TouchableOpacity style={styles.buttonEdit} onPress={hireEmployer}>
+                <TouchableOpacity style={styles.offerHeader} activeOpacity={0.7}>
+                  <FontAwesome name="question-circle" size={18} color="#c3c3c3" />
+                  <Text style={styles.offerText}>
+                    Make sure to contract the employee via chat to arrange the
+                    details.
+                  </Text>
+                </TouchableOpacity>
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity style={styles.buttonEdit} onPress={hireEmployer}>
                     {
-                        submit?(
-                              <ActivityIndicator color="#fff"  size={18} />
-                        ):(
-                            <Text style={styles.buttonEditText}>Pay & Hire</Text>
-                        )
+                      submit ? (
+                        <ActivityIndicator color="#fff" size={18} />
+                      ) : (
+                        <Text style={styles.buttonEditText}>Pay & Hire</Text>
+                      )
                     }
-                
-                </TouchableOpacity> 
-                {/* <GradientButton 
+
+                  </TouchableOpacity>
+                  {/* <GradientButton 
                 paddingVertical={12} 
                paddingHorizontal={0}
                 borderRadius={7} 
@@ -172,17 +171,17 @@ const EmployeeHire = () => {
                 loading={submit}  
                  onPress={hireEmployer}
                  /> */}
-                <TouchableOpacity style={styles.buttonBoost}>
-                <Text style={styles.buttonBoostText}>Chat</Text>
-                </TouchableOpacity>
-            </View>
+                  <TouchableOpacity style={styles.buttonBoost}>
+                    <Text style={styles.buttonBoostText}>Chat</Text>
+                  </TouchableOpacity>
+                </View>
 
-            </ScrollView>
+              </ScrollView>
 
             )
           }
         </View>
-        <EmployerFooter/>
+        <EmployerFooter />
       </SafeAreaView>
     </>
   );
@@ -306,13 +305,13 @@ const styles = StyleSheet.create({
   offerText: {
     color: "#ffffff",
     fontSize: 14,
-    flex:1,
+    flex: 1,
     fontFamily: "Montserrat_500Medium",
   },
-    buttonRow: {
+  buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-   
+
     paddingTop: 15,
   },
   buttonEdit: {

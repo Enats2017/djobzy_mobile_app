@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import GradientButton from "../../components/GradientButton";
-import { toastSuccess } from "../../utils/toast";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const DefaultProfile = ({ services, filtered, onNext }) => {
   const [search, setSearch] = useState("");
@@ -46,12 +46,12 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
   };
   const handleSubmit = async () => {
     if (role == null) {
-      Alert.alert("Error", "Please select your profile type.");
+      toastError("Please select your profile type.");
       return;
     }
 
-    if (selectedServices.length == null) {
-      Alert.alert("Error", "Please select at least one category.");
+    if (selectedServices.length === 0) {
+      toastError("Please select at least one category.");
       return;
     }
 

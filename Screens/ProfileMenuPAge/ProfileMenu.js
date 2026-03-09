@@ -299,10 +299,12 @@ const EmployeeProfileMenu = () => {
                   title="Settings"
                   onPress={() => navigation.navigate("GeneralSetting")}
                 />
-                 <FontAwesome type="Font"
-                  icon="dollar-sign"  title="Djobzy Coin | Invest with Us"
+                <MenuItem
+                  type="Font"
+                  icon="dollar-sign"
+                  title="Djobzy Coin | Invest with Us"
                   onPress={() => Linking.openURL("https://www.djobzy.com/invest")}
-                  /> 
+                />
               </View>
               <TouchableOpacity
                 style={styles.logoutContainer}

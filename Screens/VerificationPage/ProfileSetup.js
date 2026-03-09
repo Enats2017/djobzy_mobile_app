@@ -2,25 +2,22 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Foundation from "@expo/vector-icons/Foundation";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import axios from "axios";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import {
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
   Alert,
-  Platform
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import GradientButton from "../../components/GradientButton";
-import { toastSuccess } from "../../utils/toast";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const ProfileSetup = ({ userId, onNext }) => {
   const [photoUri, setPhotoUri] = useState(null);
@@ -40,69 +37,66 @@ const ProfileSetup = ({ userId, onNext }) => {
   const isGenerateEnabled = wordCount >= MIN_WORDS;
 
   const requestPermissions = async () => {
-  const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
-  const galleryPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+    const galleryPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-  if (
-    cameraPerm.status !== "granted" ||
-    galleryPerm.status !== "granted"
-  ) {
+    if (
+      cameraPerm.status !== "granted" ||
+      galleryPerm.status !== "granted"
+    ) {
+      Alert.alert(
+        "Permission required",
+        "Camera and Gallery permissions are required"
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const openCamera = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const openGallery = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const pickImage = () => {
     Alert.alert(
-      "Permission required",
-      "Camera and Gallery permissions are required"
+      "Upload Photo",
+      "Choose an option",
+      [
+        { text: "Camera", onPress: openCamera },
+        { text: "Gallery", onPress: openGallery },
+        { text: "Cancel", style: "cancel" },
+      ],
+      { cancelable: true }
     );
-    return false;
-  }
-  return true;
-};
-
-const openCamera = async () => {
-  const hasPermission = await requestPermissions();
-  if (!hasPermission) return;
-
-  const result = await ImagePicker.launchCameraAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 0.7,
-  });
-
-  if (!result.canceled) {
-    setPhotoUri(result.assets[0].uri);
-  }
-};
-
-const openGallery = async () => {
-  const hasPermission = await requestPermissions();
-  if (!hasPermission) return;
-
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 0.7,
-  });
-
-  if (!result.canceled) {
-    setPhotoUri(result.assets[0].uri);
-  }
-};
-
-
-
- const pickImage = () => {
-  Alert.alert(
-    "Upload Photo",
-    "Choose an option",
-    [
-      { text: "Camera", onPress: openCamera },
-      { text: "Gallery", onPress: openGallery },
-      { text: "Cancel", style: "cancel" },
-    ],
-    { cancelable: true }
-  );
-};
-
+  };
 
   const pickResume = async () => {
     const result = await DocumentPicker.getDocumentAsync({
@@ -161,11 +155,11 @@ const openGallery = async () => {
       );
 
       if (response.data.status === 200) {
-        //alert("Profile setup successful!");
+        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
         toastSuccess("Profile setup successfull!");
         if (onNext) onNext(response.data.user_admin);
       } else {
-        alert(response.data.message || "Failed to save data");
+        toastError(response.data.message || "Failed to save data");
         console.log(response.data.message);
       }
     } catch (error) {
@@ -173,7 +167,7 @@ const openGallery = async () => {
         "Profile setup error:",
         error.response?.data || error.message
       );
-      alert("Error saving profile data");
+      toastError("Error saving profile data");
     } finally {
       setLoading(false);
     }
@@ -214,45 +208,42 @@ const openGallery = async () => {
               onPress={pickImage}
             >
               <AntDesign name="camera" size={24} color="#fff" />
-              <Text style={styles.uploadText}>{photoUri ? "Update Photo":"Upload Photo"}</Text>
+              <Text style={styles.uploadText}>{photoUri ? "Update Photo" : "Upload Photo"}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         <Text style={styles.label}>
-          Profile Title <Text style={{fontFamily:"Montserrat_400Regular"}}>(Employer)</Text>{" "}
+          Profile Title <Text style={{ fontFamily: "Montserrat_400Regular" }}>(Employer)</Text>{" "}
         </Text>
         <Text style={styles.subLabel}>
           Profile title should shortly describe your main focus on Djobzy. E.g.
           I am a Plumber or I am hiring labor workers.
         </Text>
         <View style={styles.titleinput}>
-        <TextInput
-          style={styles.input}
-          placeholder="Example: Plumber or Hiring labor workers"
-          placeholderTextColor="#c3c3c3c3"
-          value={title}
-          onChangeText={setTitle}
-          
-          
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Example: Plumber or Hiring labor workers"
+            placeholderTextColor="#c3c3c3c3"
+            value={title}
+            onChangeText={setTitle}
+          />
         </View>
         <Text style={styles.charCount}>{titleCharsLeft} characters left</Text>
         <Text style={styles.label}>Profile Description</Text>
         <Text style={styles.subLabel}>Describe your experiences or goals.</Text>
 
         <View style={styles.aidescription}>
-        <TextInput
-          style={styles.aiinput}
-          multiline
-          placeholder="Tell me about your self"
-          value={description}
-          placeholderTextColor="#c3c3c3c3"
-          onChangeText={setDescription}
-          textAlignVertical="top"
-        />
+          <TextInput
+            style={styles.aiinput}
+            multiline
+            placeholder="Tell me about your self"
+            value={description}
+            placeholderTextColor="#c3c3c3c3"
+            onChangeText={setDescription}
+            textAlignVertical="top"
+          />
         </View>
-
 
         <View style={styles.Count}>
           <Text style={styles.charCount}>
@@ -260,9 +251,6 @@ const openGallery = async () => {
               ? `Minimum ${MIN_WORDS} words`
               : "You can generate with AI ✨"}
           </Text>
-          {/* <Text style={styles.charCount}>
-            {descriptionChars}/{maxDescriptionChars}
-          </Text> */}
         </View>
         <TouchableOpacity
           style={[
@@ -275,16 +263,16 @@ const openGallery = async () => {
             console.log("AI generate triggered");
           }}
         >
-            <Image
-                    source={require("../../assets/images/aiimg.png")}
-                    style={styles.logo}
-                    resizeMode="contain"
-                  />
+          <Image
+            source={require("../../assets/images/aiimg.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.generateText}>Generate with AI</Text>
         </TouchableOpacity>
 
-        <Text style={styles.label}>Resume <Text style={{fontFamily:"Montserrat_400Regular"}}>(Optional)
-          </Text> </Text>
+        <Text style={styles.label}>Resume <Text style={{ fontFamily: "Montserrat_400Regular" }}>(Optional)
+        </Text> </Text>
         <Text style={styles.subLabel}>
           Showcase your skills and experience by uploading your resume.
         </Text>
@@ -305,15 +293,11 @@ const openGallery = async () => {
             </View>
 
             <TouchableOpacity
-                style={styles.removePhoto}
-                onPress={removeResume}
-              >
-                <Ionicons name="close" size={15} color="#d66e58" />
-              </TouchableOpacity>
-
-            {/* <TouchableOpacity onPress={removeResume}>
-              <Ionicons name="close-circle" size={20} color="#e74c3c" />
-            </TouchableOpacity> */}
+              style={styles.removePhoto}
+              onPress={removeResume}
+            >
+              <Ionicons name="close" size={15} color="#d66e58" />
+            </TouchableOpacity>
           </View>
         )}
 
@@ -322,13 +306,13 @@ const openGallery = async () => {
           Link your profile from other platform. (e.g. LinkedIn)
         </Text>
         <View style={styles.titleinput}>
-        <TextInput
-          style={styles.input}
-          placeholder="https://www.linkedin.com/in/..."
-          placeholderTextColor="#c3c3c3"
-          value={onlineResumeLink}
-          onChangeText={setOnlineResumeLink}
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="https://www.linkedin.com/in/..."
+            placeholderTextColor="#c3c3c3"
+            value={onlineResumeLink}
+            onChangeText={setOnlineResumeLink}
+          />
 
         </View>
         <TouchableOpacity onPress={pickResume} style={styles.uploadBtn}>
@@ -364,7 +348,7 @@ const styles = StyleSheet.create({
     color: "#d66e58",
     fontSize: 28,
     marginBottom: 5,
-    fontFamily:"Montserrat_600SemiBold",
+    fontFamily: "Montserrat_600SemiBold",
   },
   photoContainer: {
     position: "relative",
@@ -402,7 +386,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF0D",
     padding: 25,
     flex: 1,
-   
+
     borderRadius: 10,
     borderWidth: 1,
     borderStyle: "dashed",
@@ -428,36 +412,31 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
     marginBottom: 10,
   },
-  titleinput:{
-     backgroundColor: "#FFFFFF0D",
+  titleinput: {
+    backgroundColor: "#FFFFFF0D",
     borderRadius: 8,
     marginBottom: 5,
-    paddingHorizontal:8,
-
-    height:40,
-
+    paddingHorizontal: 8,
+    height: 40,
   },
   input: {
     color: "#fff",
     fontFamily: "Montserrat_500Medium",
     fontSize: 13,
     fontStyle: "italic",
-  
   },
   aidescription: {
     height: 90,
     padding: 10,
     backgroundColor: "#FFFFFF0D",
-    borderRadius: 8,   
+    borderRadius: 8,
   },
 
-  aiinput:{
-     fontFamily:"Montserrat_500Medium",
-    fontSize:14,
-    color:"#ffff",
-     fontStyle: "italic",
-  
-   
+  aiinput: {
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    color: "#ffff",
+    fontStyle: "italic",
   },
 
   Count: {
@@ -467,19 +446,19 @@ const styles = StyleSheet.create({
   charCount: {
     color: "#aaa",
     fontSize: 12,
-    fontFamily:"Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
     textAlign: "right",
   },
   generateButton: {
-    flexDirection:"row",
+    flexDirection: "row",
     backgroundColor: "#C96B59",
     padding: 15,
     width: "55%",
     borderRadius: 10,
     marginTop: 10,
     alignItems: "center",
-    justifyContent:"center",
-    gap:7,
+    justifyContent: "center",
+    gap: 7,
     marginBottom: 15,
   },
   disabledBtn: {
@@ -500,8 +479,8 @@ const styles = StyleSheet.create({
 
   generateText: {
     color: "#fff",
- fontFamily:"Montserrat_500Medium",
- fontSize: 14,
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
   },
   uploadResumeButton: {
     backgroundColor: "#FFFFFF0D",

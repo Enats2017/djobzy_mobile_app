@@ -97,7 +97,7 @@ import BillingMethods from "./Screens/GeneralSetting/BillingMethods";
 import PaymentSuccess from "./components/PaymentSuccess";
 import PaymentFailed from "./components/PaymentFailed";
 import { createNavigationContainerRef } from "@react-navigation/native";
-
+import { StackActions } from "@react-navigation/native";
 
 const Stack = createStackNavigator();
 export const navigationRef = createNavigationContainerRef();
@@ -130,17 +130,15 @@ const App = () => {
       setTimeout(() => {
         switch (status) {
           case "success":
-            navigationRef.reset({
-              index: 0,
-              routes: [{ name: "PaymentSuccess", params: { type } }],
-            });
+            navigationRef.dispatch(
+              StackActions.replace("PaymentSuccess", { type })
+            );
             break;
 
           case "failed":
-            navigationRef.reset({
-              index: 0,
-              routes: [{ name: "PaymentFailed", params: { type } }],
-            });
+            navigationRef.dispatch(
+              StackActions.replace("PaymentFailed", { type })
+            );
             break;
 
           default:
@@ -167,17 +165,15 @@ const App = () => {
 
       setTimeout(() => {
         if (status === "success") {
-          navigationRef.reset({
-            index: 0,
-            routes: [{ name: "PaymentSuccess", params: { type } }],
-          });
+          navigationRef.dispatch(
+            StackActions.replace("PaymentSuccess", { type })
+          );
         }
 
         if (status === "failed") {
-          navigationRef.reset({
-            index: 0,
-            routes: [{ name: "PaymentFailed", params: { type } }],
-          });
+          navigationRef.dispatch(
+            StackActions.replace("PaymentFailed", { type })
+          );
         }
       }, 500);
     };

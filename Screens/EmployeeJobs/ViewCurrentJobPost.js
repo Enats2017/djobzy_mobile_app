@@ -106,7 +106,7 @@ const ViewCurrentJobPost = () => {
                       <View style={styles.topBox}>
                         <Text style={styles.topLabel}>Total Price</Text>
                         <Text style={styles.topValue}>
-                          {job.gigProp?.prop_hourly_rate}
+                          {job.gigProp?.bid_price}
                           <Text style={styles.unit}> CAD</Text>
                         </Text>
                       </View>
@@ -114,7 +114,7 @@ const ViewCurrentJobPost = () => {
                       <View style={styles.topBox}>
                         <Text style={styles.topLabel}>Hourly Rate</Text>
                         <Text style={styles.topValue}>
-                          {job.gigProp?.prop_total_hour}
+                          {job.gigProp?.prop_hourly_rate}
                           <Text style={styles.unit}> CAD</Text>
                         </Text>
                       </View>
@@ -122,7 +122,7 @@ const ViewCurrentJobPost = () => {
                       <View style={styles.topBox}>
                         <Text style={styles.topLabel}>Project Length</Text>
                         <Text style={styles.topValue}>
-                          {job.gigProp?.expected_hour}
+                          {job.gigProp?.prop_total_hour}
                           <Text style={styles.unit}> hours</Text>
                         </Text>
                       </View>

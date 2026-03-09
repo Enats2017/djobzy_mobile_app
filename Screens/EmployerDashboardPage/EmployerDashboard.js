@@ -15,7 +15,7 @@ import {
   TouchableOpacity,
   View,
   Image,
-
+  // Modal
 } from "react-native";
 import HeaderBar from "../../components/HeaderBar";
 import { API_URL } from "../../api/ApiUrl";
@@ -28,7 +28,7 @@ import EmployerCard from "./EmployerCard";
 import EmployerFooter from "../../components/EmployerFooter";
 import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
 
-const DuplicateEmp = () => {
+const EmployerDashboard = () => {
   const [activeTab, setActiveTab] = useState("jobs");
   const [employees, setEmployees] = useState([]);
   const [empDashModal, setEmpDashModal] = useState(false);
@@ -384,20 +384,19 @@ const DuplicateEmp = () => {
                     <Image
                       source={GroupNext}
                       style={styles.modalImage}
-                      resizeMode="cover"
+                      // resizeMode="cover"
                     />
 
                     <View style={styles.modalTitleContainer}>
                       <Text style={styles.modalTitleLine}>Welcome to your</Text>
                       <Text style={styles.modalTitleLine}>
-                        <Text style={styles.employerColor}>Employer</Text>{" "}
-                        Profile
+                        <Text style={styles.employerColor}>Employer</Text> Profile
                       </Text>
                     </View>
 
                     <Text style={styles.modalDescription}>
-                      A space for businesses to post jobs, showcase their
-                      company, and manage hiring with reviews and ratings.
+                      A space for businesses to post jobs, showcase their company,
+                      and manage hiring with reviews and ratings.
                     </Text>
 
                     <TouchableOpacity
@@ -416,8 +415,7 @@ const DuplicateEmp = () => {
                     />
 
                     <Text style={styles.modalTitle}>
-                      Start <Text style={styles.djobzyColor}>Djobzy</Text>{" "}
-                      Journey
+                      Start <Text style={styles.djobzyColor}>Djobzy</Text> Journey
                     </Text>
 
                     <View style={styles.modalDescriptionContainer}>
@@ -640,6 +638,229 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#000",
   },
+
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(34,34,34,0.33)",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  modalCard: {
+    width: "100%",
+    height: 480,
+    backgroundColor: "#fffcfa",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingVertical: 38,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    elevation: 10,
+    marginBottom: 0,
+  },
+  modalContent: {
+    alignItems: "center",
+    width: "100%",
+  },
+  modalImage: {
+    height: 190,
+    marginBottom: 28,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "Montserrat_600SemiBold",
+    marginBottom: 12,
+    color: "#303030",
+    textAlign: "center",
+  },
+  employerColor: {
+    color: "#CB7767",
+    fontWeight: "bold",
+  },
+  djobzyColor: {
+    color: "#CB7767",
+    fontFamily: "Montserrat_800ExtraBold",
+    fontSize: 20,
+  },
+  modalDescription: {
+    color: "#303030",
+    fontSize: 14,
+    fontFamily: "Montserrat_400Regular",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  yellowButton: {
+    backgroundColor: "#fdbf2d",
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    marginBottom: 15,
+    marginTop: 2,
+    elevation: 1,
+    shadowColor: "#Fdbf2d",
+    shadowOpacity: 0.07,
+    shadowRadius: 2,
+  },
+  yellowButtonText: {
+    color: "#1d1d1d",
+    fontSize: 18,
+    fontFamily: "Montserrat_600SemiBold",
+  },
+  slideIndicatorRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 4,
+    marginBottom: 2,
+    gap: 6,
+  },
+  slideDot: {
+    width: 20,
+    height: 2,
+    borderRadius: 10,
+    backgroundColor: "#ffe8b7",
+  },
+  slideDotActive: {
+    backgroundColor: "#000000",
+  },
+  slideDotInactive: {
+    backgroundColor: "#c3c3c3",
+  },
+
+  modalTitleContainer: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  modalTitleLine: {
+    fontSize: 22,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#303030",
+    textAlign: "center",
+    lineHeight: 30,
+  },
+
+  employerColor: {
+    color: "#cb7767",
+    fontFamily: "Montserrat_800ExtraBold",
+  },
+
+  modalDescriptionContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 28,
+    paddingHorizontal: 10,
+  },
+
+  modalDescriptionLine: {
+    color: "#222",
+    fontSize: 15,
+    fontFamily: "Montserrat_400Regular",
+    textAlign: "center",
+    lineHeight: 22,
+  },
+
+  // social media
+  postcontainer: {
+    backgroundColor: "#FFFFFF1a",
+    marginTop: 25,
+    borderRadius: 10,
+    marginBottom: 25,
+  },
+  postBox: {
+    padding: 7,
+  },
+
+  input: {
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    color: "#FFFFFF",
+    borderColor: "#FFFFFF33",
+    padding: 15,
+    marginHorizontal: 10,
+    marginBottom: 10,
+  },
+  logo: {
+    height: 21,
+    width: 21,
+    marginRight: 7,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 5,
+  },
+  buttonText: {
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    color: "#c3c3c3c3",
+  },
+  feed: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 11,
+    paddingHorizontal: 10,
+  },
+  anylog: {
+    flexDirection: "row",
+    gap: 3,
+  },
+  textfeed: {
+    fontSize: 22,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#fff",
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
+    paddingTop: 80,
+    paddingRight: 15,
+  },
+  popup: {
+    width: 160,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    elevation: 7,
+  },
+
+  text: {
+    fontSize: 15,
+    color: "#000",
+  },
+  loaderOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  showMoreBtn: {
+    marginTop: 10,
+    paddingVertical: 7.5,
+    paddingHorizontal: 12,
+    backgroundColor: "#ececec",
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  showMoreText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#000",
+  },
 });
 
-export default DuplicateEmp;
+export default EmployerDashboard;

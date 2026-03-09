@@ -62,16 +62,12 @@ const NotificationScreen = () => {
     const userStr = await AsyncStorage.getItem("user");
     if (!userStr) return; 
     const user = JSON.parse(userStr);
-    console.log("11111",user);
     setAdmin((user?.admin));     
   };
   useEffect(() => {
     fetchNotifications();
     loadUser();
   }, []);
-
-
-   
 
   return (
     <SafeAreaView style={styles.safeArea}>

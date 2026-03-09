@@ -132,12 +132,12 @@ const ViewCurrentJobPost = () => {
                       <View style={styles.metaItemRowLeft}>
                         <Text style={styles.metaLabel}>Start Date:</Text>
                         <Text style={styles.metaValue}>
-                          {job.details?.award_date}
+                          {job.details?.payment_date}
                         </Text>
                       </View>
                       <View style={styles.metaItemRowRight}>
                         <Text style={styles.metaLabel}>Contract ID:</Text>
-                        <Text style={styles.metaValue}>{job.details?.gid}</Text>
+                        <Text style={styles.metaValue}>{job.details?.contract_id}</Text>
                       </View>
                     </View>
                     <View style={styles.messagesRow}>

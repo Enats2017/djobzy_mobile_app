@@ -89,7 +89,7 @@ export default function VerifyRegisterEmail({ route }) {
                 throw new Error(data.message || 'Verification failed');
             }
 
-            toastSuccess('Success', 'Email verified successfully!');
+            toastSuccess('Email verified successfully!');
             const { verification_count, admin } = data.user;
 
             if (verification_count < 2) {

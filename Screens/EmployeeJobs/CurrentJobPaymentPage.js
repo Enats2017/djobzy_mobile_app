@@ -265,16 +265,6 @@ export default function CurrentJobPaymentPage() {
                         <Text style={styles.tableValue}>{val.ref}</Text>
                       </View>
                     </View>
-                    <View style={styles.dividerHoriz} />
-                    <View style={styles.tableRow}>
-                      <View style={styles.tableLeftCell}>
-                        <Text style={styles.tableLabel}>All Payments</Text>
-                      </View>
-                      <View style={styles.dividerVert} />
-                      <View style={styles.tableRightCell}>
-                        <Text style={styles.tableValue}>CAD {val.amount}</Text>
-                      </View>
-                    </View>
                   </View>
                   {data.authUser?.admin !== 0 && (
                     <View style={styles.tableCard}>
@@ -343,6 +333,18 @@ export default function CurrentJobPaymentPage() {
 
                     </View>
                   )}
+
+                  <View style={styles.tableCard}>
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>All Payments</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <Text style={styles.tableValue}>CAD {data.total_payment}</Text>
+                      </View>
+                    </View>
+                  </View>
                 </React.Fragment>
               ))
             }

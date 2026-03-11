@@ -25,6 +25,7 @@ import FeedPost from "../SocialMediaPage/FeedPost";
 import { ScrollView } from "react-native-gesture-handler";
 import Loading from "../../components/Loading";
 import LineDivider from "../../components/LineDivider";
+import ProfileTutorial from "../../components/ProfileTutorial";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("jobs");
@@ -44,6 +45,8 @@ const Dashboard = () => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const searchTimer = useRef(null);
+  const [employeeDashModal, setEmployeeDashModal] = useState(false);
+  const closeModal = () => setEmployeeDashModal(false);
 
   const fetchJobs = useCallback(
     async (pageNum = 1) => {
@@ -128,7 +131,7 @@ const Dashboard = () => {
 
     try {
       const token = await AsyncStorage.getItem("token");
-      console.log(token);      
+      console.log(token);
       const res = await fetch(`${API_URL}/filter-by-keyword`, {
         method: "POST",
         headers: {
@@ -145,8 +148,8 @@ const Dashboard = () => {
 
       const data = await res.json();
       console.log(data);
-   
-      
+
+
     } catch (err) {
       console.log("Suggestion error:", err);
     }
@@ -253,7 +256,7 @@ const Dashboard = () => {
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <HeaderBar/>
+          <HeaderBar />
           {/* <Modal transparent visible={menuVisible} animationType="fade">
             <TouchableOpacity
               style={styles.overlay}
@@ -458,6 +461,21 @@ const Dashboard = () => {
           )}
         </View>
 
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={employeeDashModal}
+          onRequestClose={closeModal}
+        >
+          <ProfileTutorial
+            role="employee"
+            closeModal={closeModal}
+            onPrimaryAction={() => {
+              closeModal();
+              navigation.navigate("PromoteService");
+            }}
+          />
+        </Modal>
         <Footer />
       </SafeAreaView>
     </>
@@ -480,23 +498,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    marginTop:7,
+    marginTop: 7,
     justifyContent: "center",
   },
 
   chip: {
     backgroundColor: "#ffffff1a",
     flex: 1,
-    borderRadius:50,
-    padding:10,
-    
+    borderRadius: 50,
+    padding: 10,
+
   },
 
   chipText: {
     color: "#ffffff",
     fontSize: 12,
     fontFamily: "Montserrat_500Medium",
-     textAlign: "center",
+    textAlign: "center",
   },
   loaderOverlay: {
     flex: 1,

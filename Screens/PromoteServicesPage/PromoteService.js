@@ -21,6 +21,8 @@ import { useState } from "react";
 import Entypo from "@expo/vector-icons/Entypo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
+import QuestionMark from "../../components/QuestionMark";
+import { tooltipMessage } from "../../components/TooltipMessage";
 
 const PromoteService = () => {
   const navigation = useNavigation();
@@ -288,14 +290,8 @@ const PromoteService = () => {
           </Text>
 
           {/* Hourly Rate */}
-          <View style={styles.rateContainer}>
-            <Text style={styles.label}>Add hourly rate</Text>
-            <Ionicons
-              name="help-circle"
-              size={16}
-              color="#ffffff"
-              style={{ marginLeft: 5, marginBottom: 5 }}
-            />
+          <View style={styles.label}>
+            <QuestionMark title="Add hourly rate" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_servicepack_prices} />
           </View>
 
           <View style={styles.inlineInputContainer}>
@@ -317,14 +313,8 @@ const PromoteService = () => {
           ) : null}
 
           {/* Total Price */}
-          <View style={styles.rateContainer}>
-            <Text style={styles.label}>Add total price</Text>
-            <Ionicons
-              name="help-circle"
-              size={16}
-              color="#ffffff"
-              style={{ marginLeft: 5, marginBottom: 5 }}
-            />
+          <View style={styles.label}>
+            <QuestionMark title="Add Total rate" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_servicepack_prices} />
           </View>
 
           <View style={styles.inlineInputContainer}>

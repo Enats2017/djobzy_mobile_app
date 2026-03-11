@@ -19,6 +19,7 @@ import GradientButton from "../../components/GradientButton";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { toastError, toastSuccess } from "../../utils/toast";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import QuestionMark from "../../components/QuestionMark";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
@@ -219,7 +220,17 @@ const Signup = () => {
               <Text style={styles.errorText}>{passwordError}</Text>
             ) : null}
 
-            <Text style={styles.label}>Referral's username (Optional)</Text>
+            <View style={styles.label}>
+              <QuestionMark title="Referral's username (Optional)" 
+                iconColor="#fff" 
+                tooltipMessage="The Referral System allows you to earn a passive income of 3% from every completed
+                contract of a user you invited. If you invite someone who earned $1000,
+                you get $30. If you invite someone who paid $1000 for a service, you get $30.
+                The invited person also benefits by getting a 40% discount on fees when hiring and a
+                15% discount when providing services. These benefits last for 6 months from the day of the invitation.
+                To join the Referral Program, please navigate to: https://www.djobzy.com/referral-wallet"
+              />
+            </View>
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}

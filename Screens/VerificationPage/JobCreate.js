@@ -159,10 +159,11 @@ const styles = StyleSheet.create({
   leterBtn: {
     borderWidth: 1,
     borderColor: "#fff",
-    padding: 16,
+    height:45,
     width: "100%",
     borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center"
   },
 });
 

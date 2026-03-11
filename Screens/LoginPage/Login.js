@@ -108,7 +108,7 @@ const Login = ({ navigation }) => {
       setLoading(false);
 
       if (!response.ok) {
-        toastError("Login Failed", data.message || "Invalid credentials");
+        toastError(data.message || "Invalid credentials");
         return;
       }
       await AsyncStorage.setItem("token", data.token);
@@ -136,7 +136,6 @@ const Login = ({ navigation }) => {
       }
     } catch (error) {
       Alert.alert("Error", "Something went wrong: " + error.message);
-
       console.log(error);
     } finally {
       setLoading(false);

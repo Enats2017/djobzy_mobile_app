@@ -18,7 +18,6 @@ const Footer = () => {
   const { refreshUser } = useNotifications();
   const isActive = (routeName) => route.name === routeName;
   const handleSwitchAccount = async () => {
-    console.log("SWITCH BUTTON PRESSED 🔥");
     try {
       const token = await AsyncStorage.getItem("token");
 

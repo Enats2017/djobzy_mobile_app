@@ -6,6 +6,8 @@ import GroupJobPostEmployee from "../assets/images/GroupJobPostEmployee.png";
 // import GroupNext from "../assets/images/GroupNext.png";
 import GroupNextEmployee from "../assets/images/GroupNextEmployee.png";
 import GroupNextEmployer from "../assets/images/GroupNextEmployer.png";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../api/ApiUrl";
 
 const ProfileTutorial = ({
   role = "employer",
@@ -15,8 +17,30 @@ const ProfileTutorial = ({
   const pagerRef = useRef(null);
   const [page, setPage] = useState(0);
 
-  const goNext = () => {
-    pagerRef.current.setPage(1);
+  const goNext = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/profile-tutorial-update`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: "profile tutorial",
+        }),
+      });
+
+      const data = await res.json();
+      console.log(data);
+      
+      if (data.status === 200) {
+        pagerRef.current?.setPage(1);
+      }
+    } catch (error) {
+      console.log("Tutorial API error:", error);
+    }
   };
 
   const isEmployer = role === "employer";
@@ -95,13 +119,6 @@ const ProfileTutorial = ({
                 </>
               ) : (
                 <>
-                  {/* <Text style={styles.modalDescriptionLine}>
-                                        There is still more to do... Promote your services for free and perfect jobs will find you
-                                    </Text>
-                                    <Text style={styles.modalDescriptionLine}>
-                                        and apply to your first job
-                                    </Text> */}
-
                   <Text style={styles.modalDescriptionLine}>
                     There is still more to do... Promote your services for free
                     and perfect jobs will find you
@@ -212,7 +229,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 30,
-    marginBottom: 40,
+    marginBottom: 35,
     marginTop: 2,
     elevation: 1,
   },

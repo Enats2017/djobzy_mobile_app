@@ -127,7 +127,7 @@ const EmployeeVerification = () => {
       case 6:
         return <Step6Payment onNext={goNext} />;
       case 7:
-        return <Step7Interview onNext={goNext} />;
+        return <Step7Interview onNext={goNext} interviewRequested={userDetails?.is_interview_requested} />;
 
       default:
         return null;
@@ -149,61 +149,6 @@ const EmployeeVerification = () => {
     if (isVerified(step) || isActive(step)) return "#fff";
     return "#c3c3c3";
   };
-
-  // const pickResume = async () => {
-  //   const result = await DocumentPicker.getDocumentAsync({
-  //     type: "application/pdf",
-  //   });
-
-  //   if (!result.canceled && result.assets?.length > 0) {
-  //     setResumeFile(result.assets[0]);
-  //   }
-  // };
-
-  // const removeResume = () => {
-  //   setResumeFile(null);
-  // };
-
-  // const submitContactInfo = async () => {
-  //   if (!postal || !location) {
-  //     alert("Fill the  all Input");
-  //     return;
-  //   }
-  //   const formData = new FormData();
-  //   formData.append("postal_code", postal);
-  //   formData.append("searchInput", location);
-  //   formData.append("images", {
-  //     uri: resumeFile.uri,
-  //     name: resumeFile.name,
-  //     type: "application/pdf",
-  //   });
-  //   try {
-  //     setSubmitting(true);
-  //     const token = await AsyncStorage.getItem("token");
-  //     const res = await fetch(`${API_URL}/step4-post`, {
-  //       method: "POST",
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //         Accept: "application/json",
-  //       },
-  //       body: formData,
-  //     });
-
-  //     const result = await res.json();
-
-  //     if (result.status == 200) {
-  //       alert("Contact info saved successfully");
-  //     } else {
-  //       alert(result.message || "Something went wrong");
-  //     }
-  //   } catch (error) {
-  //     console.error("API Error:", error);
-  //     toastWarning("netweork error")
-
-  //   } finally {
-  //     setSubmitting(false);
-  //   }
-  // };
 
   if (activeStep !== null) {
     return (
@@ -265,6 +210,9 @@ const EmployeeVerification = () => {
                     color={getIconColor(1)}
                   />
                 </View>
+                {!isVerified(1) && (
+                  <Text style={styles.time}>1-2 min</Text>
+                )}
                 <Text style={[styles.number, getTextStyle(1)]}>01</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -278,6 +226,9 @@ const EmployeeVerification = () => {
                   </Text>
                   <Feather name="phone" size={18} color={getIconColor(2)} />
                 </View>
+                {!isVerified(2) && (
+                  <Text style={styles.time}>1-2 min</Text>
+                )}
                 <Text style={[styles.number, getTextStyle(2)]}>02</Text>
               </TouchableOpacity>
             </View>
@@ -285,7 +236,6 @@ const EmployeeVerification = () => {
               <TouchableOpacity
                 style={[styles.box, getBoxStyle(3)]}
                 onPress={() => handleStepPress(3)}
-                //disabled={isDisabled(3)}
               >
                 <View style={styles.topRow}>
                   <Text style={[styles.label, getTextStyle(3)]}>
@@ -297,6 +247,9 @@ const EmployeeVerification = () => {
                     color={getIconColor(3)}
                   />
                 </View>
+                {!isVerified(3) && (
+                  <Text style={styles.time}>1-2 min</Text>
+                )}
                 <Text style={[styles.number, getTextStyle(3)]}>03</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -312,7 +265,9 @@ const EmployeeVerification = () => {
                     color={getIconColor(4)}
                   />
                 </View>
-                <Text style={styles.time}>1-2 min</Text>
+                {!isVerified(4) && (
+                  <Text style={styles.time}>1-2 min</Text>
+                )}
                 <Text style={[styles.number, getTextStyle(4)]}>04</Text>
               </TouchableOpacity>
             </View>
@@ -332,7 +287,9 @@ const EmployeeVerification = () => {
                     color={getIconColor(5)}
                   />
                 </View>
-                <Text style={styles.time}>1-2 min</Text>
+                {!isVerified(5) && (
+                  <Text style={styles.time}>1-2 min</Text>
+                )}
                 <Text style={[styles.number, getTextStyle(5)]}>05</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -350,7 +307,9 @@ const EmployeeVerification = () => {
                     color={getIconColor(6)}
                   />
                 </View>
-                <Text style={styles.time}>1-2 min</Text>
+                {!isVerified(6) && (
+                  <Text style={styles.time}>1-2 min</Text>
+                )}
                 <Text style={[styles.number, getTextStyle(6)]}>06</Text>
               </TouchableOpacity>
             </View>
@@ -370,7 +329,9 @@ const EmployeeVerification = () => {
                     color={getIconColor(7)}
                   />
                 </View>
-                <Text style={styles.time}>1-2 min</Text>
+                {!isVerified(7) && (
+                  <Text style={styles.time}>1-2 min</Text>
+                )}
                 <Text style={[styles.number, getTextStyle(7)]}>07</Text>
               </TouchableOpacity>
             </View>

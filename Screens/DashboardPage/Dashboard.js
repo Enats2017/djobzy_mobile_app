@@ -65,6 +65,9 @@ const Dashboard = () => {
           }
         );
         const data = await res.json();
+        if(data?.skip_tutorial == 0) {
+          setEmployeeDashModal(true);
+        }
         if (!data?.gigs || data.gigs.length === 0) {
           setHasMore(false);
           return;

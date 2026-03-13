@@ -8,35 +8,34 @@ import {
 import GradientButton from "../../components/GradientButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
+import { toastError, toastSuccess } from "../../utils/toast";
 
-const Step7Interview = () => {
+const Step7Interview = ({ onNext, interviewRequested }) => {
   const [loading, setLoading] = useState(false);
-  const [isInterviewRequested, setIsInterviewRequested] = useState(0);
+  const [isInterviewRequested, setIsInterviewRequested] = useState(interviewRequested);
 
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-    console.log("11111", user);
-    setIsInterviewRequested(user?.is_interview_requested);
-  };
   useEffect(() => {
-    loadUser();
+    setIsInterviewRequested(interviewRequested);
   }, []);
 
   const handleFinish = async () => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("token");
-      console.log(token);
-      const response = await fetch(`${API_URL}/request_interview`, {
+      const response = await fetch(`${API_URL}/request-interview`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-      const result = await response.json();
+      const data = await response.json();
+      if(data.status === 200) {
+        toastSuccess(data.message);
+        setIsInterviewRequested(data.is_interview_requested);
+      } else {
+        toastError('Unable to submit your interview request. Please try again.');
+      }
     } catch (error) {
       console.log("Error:", error);
     } finally {
@@ -48,14 +47,6 @@ const Step7Interview = () => {
     <>
       <Text style={styles.setptext}>STEP 7</Text>
       <Text style={styles.headtext}>Interview & Background Check</Text>
-      <View>
-        <Text style={styles.setptext}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat.
-        </Text>
-      </View>
       {isInterviewRequested == 1 ? (
         <View style={styles.thankcontainer}>
           <Text style={styles.title}>
@@ -71,7 +62,7 @@ const Step7Interview = () => {
       ) : (
         <GradientButton onPress={handleFinish} loading={loading} />
       )}
-      <TouchableOpacity style={styles.nextBtn}>
+      <TouchableOpacity style={styles.nextBtn} onPress={onNext}>
         <Text style={styles.nextText}>Finish</Text>
       </TouchableOpacity>
     </>

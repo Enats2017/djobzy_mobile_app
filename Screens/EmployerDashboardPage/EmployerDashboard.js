@@ -29,7 +29,7 @@ import ProfileTutorial from "../../components/ProfileTutorial";
 const EmployerDashboard = () => {
   const [activeTab, setActiveTab] = useState("jobs");
   const [employees, setEmployees] = useState([]);
-  const [empDashModal, setEmpDashModal] = useState(true);
+  const [empDashModal, setEmpDashModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const navigation = useNavigation();
@@ -64,6 +64,9 @@ const EmployerDashboard = () => {
           },
         );
         const data = await res.json();
+        if(data?.skip_tutorial_popup_employer == 0) {
+          setEmpDashModal(true);
+        }
         if (!data?.suggested_profiles || data.suggested_profiles.length === 0) {
           setHasMore(false);
           return;

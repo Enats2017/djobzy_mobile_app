@@ -31,7 +31,6 @@ export default function ViewHirePage() {
   const route = useRoute();
   const { jobId } = route.params || [];
   console.log(jobId);
-  
 
   const fetchEmployerJob = async () => {
     try {
@@ -57,142 +56,139 @@ export default function ViewHirePage() {
   useEffect(() => {
     fetchEmployerJob();
   }, []);
-  console.log("11111",employee);
-  
+  console.log("11111", employee);
 
- 
-  
-  const handleSelectJob = async (item) => {  
-     setSelectedJob(item); 
-  setDropdownOpen(false);
-  try {
-    const token = await AsyncStorage.getItem("token");
-    const res = await fetch(`${API_URL}/onchange-job-details`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: item.gid,
-        emp_id: employee, 
-      }),
-    });
-    const data = await res.json();
-    console.log(data);
-    
+
+
+
+  const handleSelectJob = async (item) => {
+    setSelectedJob(item);
     setDropdownOpen(false);
-    navigation.navigate("SendJobOffer", { jobDetails: data});
-  } catch (err) {
-    console.log("Job details fetch error", err);
-  }
-};
-   
-  
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/onchange-job-details`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: item.gid,
+          emp_id: employee,
+        }),
+      });
+      const data = await res.json();
+      console.log(data);
 
+      setDropdownOpen(false);
+      navigation.navigate("SendJobOffer", { jobDetails: data });
+    } catch (err) {
+      console.log("Job details fetch error", err);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.hireContainer}>
         {
-          loading?(
-            <Loading/>
-          ):(
+          loading ? (
+            <Loading />
+          ) : (
             <>
-            <PageNameHeaderBar navigation={navigation} title={profile.name} />        
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-              <View style={styles.cardBox}>
-                <View style={styles.profileRow}>
-                  <Image
-                    style={styles.avatar}
-                    source={{
-                      uri: "https://randomuser.me/api/portraits/men/47.jpg",
-                    }}
-                  />
-                  <View style={styles.profileTextContent}>
-                    <Text style={styles.profileName}>{profile?.full_name}</Text>
-                    <View style={styles.verificationRow}>
-                      <View style={styles.iconTextRow}>
-                        <MaterialIcons name="verified" size={18} color="#c3c3c3" />
-                        <Text style={styles.verificationText}>
-                          Verification Level: {profile?.verification_count}/7
-                        </Text>
-                      </View>
-                      <View style={styles.iconTextRow}>
-                        <FontAwesome6
-                          name="location-dot"
-                          size={18}
-                          color="#c3c3c3"
-                        />
-                        <Text style={styles.locationText}>USA</Text>
+              <PageNameHeaderBar navigation={navigation} title={profile.name} />
+              <ScrollView contentContainerStyle={styles.scrollContent}>
+                <View style={styles.cardBox}>
+                  <View style={styles.profileRow}>
+                    <Image
+                      style={styles.avatar}
+                      source={{
+                        uri: "https://randomuser.me/api/portraits/men/47.jpg",
+                      }}
+                    />
+                    <View style={styles.profileTextContent}>
+                      <Text style={styles.profileName}>{profile?.full_name}</Text>
+                      <View style={styles.verificationRow}>
+                        <View style={styles.iconTextRow}>
+                          <MaterialIcons name="verified" size={18} color="#c3c3c3" />
+                          <Text style={styles.verificationText}>
+                            Verification Level: {profile?.verification_count}/7
+                          </Text>
+                        </View>
+                        <View style={styles.iconTextRow}>
+                          <FontAwesome6
+                            name="location-dot"
+                            size={18}
+                            color="#c3c3c3"
+                          />
+                          <Text style={styles.locationText}>USA</Text>
+                        </View>
                       </View>
                     </View>
                   </View>
                 </View>
-              </View>
-              <View style={styles.hireStatsContainer}>
-                <View style={styles.hireStatsBox}>
-                  <Text style={styles.hireStatsLabel}>Total Contracts</Text>
-                  <Text style={styles.hireStatsNumber}>9</Text>
+                <View style={styles.hireStatsContainer}>
+                  <View style={styles.hireStatsBox}>
+                    <Text style={styles.hireStatsLabel}>Total Contracts</Text>
+                    <Text style={styles.hireStatsNumber}>9</Text>
+                  </View>
+                  <View style={styles.hireVerticalDivider} />
+                  <View style={styles.hireStatsBox}>
+                    <Text style={styles.hireStatsLabel}>Money Earn</Text>
+                    <Text style={styles.hireStatsNumber}>189 CAD</Text>
+                  </View>
                 </View>
-                <View style={styles.hireVerticalDivider} />
-                <View style={styles.hireStatsBox}>
-                  <Text style={styles.hireStatsLabel}>Money Earn</Text>
-                  <Text style={styles.hireStatsNumber}>189 CAD</Text>
-                </View>
-              </View>
-              <View style={styles.offerSection}>
-                <Text style={styles.offerTitle}>Send a job offer</Text>
-                <Text style={styles.dropdownLabel}>Choose A Job</Text>
-                <View
-                  style={[
-                    styles.dropdownFullBox,
-                    dropdownOpen && styles.dropdownFullBoxActive,
-                  ]}
-                >
-                  <TouchableOpacity
-                    style={styles.dropdownField}
-                    onPress={() => setDropdownOpen(!dropdownOpen)}
-                    activeOpacity={0.8}
+                <View style={styles.offerSection}>
+                  <Text style={styles.offerTitle}>Send a job offer</Text>
+                  <Text style={styles.dropdownLabel}>Choose A Job</Text>
+                  <View
+                    style={[
+                      styles.dropdownFullBox,
+                      dropdownOpen && styles.dropdownFullBoxActive,
+                    ]}
                   >
-                    <Text
-                      style={
-                        selectedJob
-                          ? styles.dropdownTextSelected
-                          : styles.dropdownTextPlaceholder
-                      }
+                    <TouchableOpacity
+                      style={styles.dropdownField}
+                      onPress={() => setDropdownOpen(!dropdownOpen)}
+                      activeOpacity={0.8}
                     >
-                      {selectedJob ? selectedJob?.subject : "Choose A Job"}
-                    </Text>
-                    <FontAwesome
-                      name={dropdownOpen ? "chevron-up" : "chevron-down"}
-                      size={16}
-                      color="#666666"
-                    />
-                  </TouchableOpacity>
-                  <View style={styles.dropdownDivider} />
-                  {dropdownOpen && (
-                    <ScrollView style={styles.dropdownScrollArea}>
-                      {gigs?.map((item, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          onPress={() => handleSelectJob(item)}
-                          style={[
-                            styles.dropdownOption,
-                            index === gigs.length - 1 && styles.dropdownOptionLast,
-                          ]}
-                        >
-                          <Text style={styles.dropdownOptionText}>
-                            {item.subject}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  )}
+                      <Text
+                        style={
+                          selectedJob
+                            ? styles.dropdownTextSelected
+                            : styles.dropdownTextPlaceholder
+                        }
+                      >
+                        {selectedJob ? selectedJob?.subject : "Choose A Job"}
+                      </Text>
+                      <FontAwesome
+                        name={dropdownOpen ? "chevron-up" : "chevron-down"}
+                        size={16}
+                        color="#666666"
+                      />
+                    </TouchableOpacity>
+                    <View style={styles.dropdownDivider} />
+                    {dropdownOpen && (
+                      <ScrollView style={styles.dropdownScrollArea}>
+                        {gigs?.map((item, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            onPress={() => handleSelectJob(item)}
+                            style={[
+                              styles.dropdownOption,
+                              index === gigs.length - 1 && styles.dropdownOptionLast,
+                            ]}
+                          >
+                            <Text style={styles.dropdownOptionText}>
+                              {item.subject}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    )}
+                  </View>
                 </View>
-              </View>
-            </ScrollView>
+              </ScrollView>
             </>
           )
         }
@@ -207,7 +203,7 @@ export default function ViewHirePage() {
           </View>
         )} */}
       </View>
-      <EmployerFooter/>
+      <EmployerFooter />
     </SafeAreaView>
   );
 }

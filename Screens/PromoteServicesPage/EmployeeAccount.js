@@ -10,17 +10,17 @@ import {
   Share,
   Platform,
   ToastAndroid,
+  TextInput,
+  ActivityIndicator
 } from "react-native";
 import Octicons from "@expo/vector-icons/Octicons";
 import Entypo from "@expo/vector-icons/Entypo";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Ionicons,
   Feather,
   FontAwesome,
+  FontAwesome6,
   MaterialIcons,
   AntDesign,
 } from "@expo/vector-icons";
@@ -37,14 +37,13 @@ import Loading from "../../components/Loading";
 import CategoryModel from "../../components/CategoryModel";
 import Delete_Category from "../../components/Delete_Category";
 import QuestionMark from "../../components/QuestionMark";
+import { toastError, toastSuccess } from "../../utils/toast";
+import { Linking } from "react-native";
+import SocialButton from "../../components/SocialButton";
+import { tooltipMessage } from "../../components/TooltipMessage";
 
 const EmployeeAccount = () => {
-  const route = useRoute();
-  const { name } = route.params || [];
-  const employeeLink = `${API_ICON}/employee-profile/${name}`;
-  const employerLink = `${API_ICON}/employer-profile/${name}`;
   const [copyModel, setCopyModel] = useState(false);
-  const [copyText, setCopyText] = useState(employeeLink);
   const [modalVisible, setModalVisible] = useState(false);
   const [job, setJob] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,22 +57,15 @@ const EmployeeAccount = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedName, setSelectedName] = useState("");
+  const [socialMediaModal, setSocialMediaModal] = useState(false);
+  const [socialMediaLoading, setSocialMediaLoading] = useState(false);
+  const [links, setLinks] = useState({});
+  const [socialLinks, setSocialLinks] = useState([]);
+  const employeeLink = `${API_ICON}/employee/${user?.name}`;
+  const employerLink = `${API_ICON}/employer/${user?.name}`;
 
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const handleCopy = async () => {
-    try {
-      await Clipboard.setStringAsync(copyText);
-      if (Platform.OS === "android") {
-        ToastAndroid.show("Copied to clipboard!", ToastAndroid.SHORT);
-      } else {
-        Alert.alert("Copied!", "Link copied to clipboard.");
-      }
-    } catch (error) {
-      console.log("Clipboard Error:", error);
-      alert("Copy failed");
-    }
-  };
   const fetchEmployee = async () => {
     setLoading(true);
     try {
@@ -89,9 +81,9 @@ const EmployeeAccount = () => {
       setJob(data.subcategory);
       setPromote(data.promote);
       setProfile(data);
+      setSocialLinks(data.socialLinks);
     } catch (err) {
       setError(err.message);
-      console.log(err);
     } finally {
       setLoading(false);
     }
@@ -115,11 +107,120 @@ const EmployeeAccount = () => {
     handleCloseDelete();
   };
 
-  // const onCategoryDeleted = (id) => {
-  //   // remove locally so UI updates immediately
-  //   setSubcategory((prev) => prev.filter((c) => c.subid !== id));
-  //   // optionally refetch from server: fetchEmployee();
-  // };
+  const handleCopy = async (text) => {
+    try {
+      await Clipboard.setStringAsync(text);
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Copied to clipboard!", ToastAndroid.SHORT);
+      } else {
+        toastSuccess("Link copied to clipboard.");
+      }
+    } catch (error) {
+      console.log("Clipboard Error:", error);
+      toastError("Copy failed");
+    }
+  };
+  const handleCopyCloseModal = () => {
+    setCopyModel(false);
+    setActiveTab("employee");
+  };
+
+  const socialPlatforms = [
+    { key: "facebook", icon: "facebook", type: "fa", placeholder: "https://www.facebook.com/your.profile" },
+    { key: "linkedin", icon: "linkedin", type: "fa", placeholder: "https://www.linkedin.com/your.profile" },
+    { key: "instagram", icon: "instagram", type: "fa", placeholder: "https://www.instagram.com/your.profile" },
+    { key: "youtube", icon: "youtube-play", type: "fa", placeholder: "https://www.youtube.com/your.channel" },
+    { key: "x", icon: "x-twitter", type: "fa6", placeholder: "https://x.com/your.profile" },
+    { key: "tiktok", icon: "tiktok", type: "fa6", placeholder: "https://www.tiktok.com/your.profile" },
+    { key: "telegram", icon: "telegram", type: "fa", placeholder: "https://t.me/yourusername" },
+    { key: "snapchat", icon: "snapchat", type: "fa", placeholder: "https://www.snapchat.com/add/username" },
+    { key: "pinterest", icon: "pinterest", type: "fa", placeholder: "https://www.pinterest.com/your.profile" },
+    { key: "vk", icon: "vk", type: "fa", placeholder: "https://www.vk.com/your.profile" },
+    { key: "global", icon: "globe", type: "fa", placeholder: "https://yourwebsite.com" },
+  ];
+
+  const socialPlatformsConfig = {
+    facebook: { icon: "facebook", type: "fa", color: "#1877F2" },
+    linkedin: { icon: "linkedin", type: "fa", color: "#0077B5" },
+    instagram: { icon: "instagram", type: "fa", color: "#E4405F" },
+    youtube: { icon: "youtube-play", type: "fa", color: "#FF0000" },
+    x: { icon: "x-twitter", type: "fa6", color: "#000000" },
+    tiktok: { icon: "tiktok", type: "fa6", color: "#000000" },
+    telegram: { icon: "telegram", type: "fa", color: "#0088cc" },
+    snapchat: { icon: "snapchat", type: "fa", color: "#FFFC00" },
+    pinterest: { icon: "pinterest", type: "fa", color: "#E60023" },
+    vk: { icon: "vk", type: "fa", color: "#4C75A3" },
+    global: { icon: "globe", type: "fa", color: "#555" },
+  };
+  // update input value
+  const updateLink = (key, value) => {
+    setLinks(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+  // clear input when delete clicked
+  const clearLink = (key) => {
+    setLinks(prev => ({
+      ...prev,
+      [key]: ""
+    }));
+  };
+
+  // add new input
+  const addNewLink = () => {
+    setLinks([
+      ...links,
+      {
+        id: Date.now(),
+        url: "",
+      },
+    ]);
+  };
+
+  const openSocialLink = (url) => {
+    if (url) {
+      Linking.openURL(url);
+    }
+  };
+
+  const saveSocialMediaLinks = async () => {
+    const payload = Object.entries(links)
+      .filter(([k, v]) => v && v.trim() !== "")
+      .map(([k, v]) => ({
+        platform: k,
+        url: v,
+      }));
+
+    try {
+      setSocialMediaLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/save-social-links`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          links: payload,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toastError(data.message);
+      }
+
+      toastSuccess("Social links saved successfully");
+      setSocialMediaModal(false);
+    } catch (error) {
+      toastError(error.message);
+    } finally {
+      setSocialMediaLoading(false);
+    }
+  };
 
   const handleShare = async () => {
     try {
@@ -256,10 +357,27 @@ const EmployeeAccount = () => {
                   </View>
                 </View>
               </ScrollView>
+
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 15 }}>
+                {socialLinks?.map((item, index) => {
+                  const platform = socialPlatformsConfig[item.social_type];
+                  if (!platform) return null;
+                  return (
+                    <SocialButton
+                      key={index}
+                      icon={platform.icon}
+                      type={platform.type}
+                      color={platform.color}
+                      url={item.social_link}
+                    />
+                  );
+                })}
+              </View>
             </View>
             <View>
               <TouchableOpacity
                 style={styles.socialMediaBtn}
+                onPress={() => setSocialMediaModal(true)}
               >
                 <Text style={styles.mediaBtnText}>Social Media Accounts</Text>
                 <View style={styles.iconCircle}>
@@ -268,13 +386,13 @@ const EmployeeAccount = () => {
               </TouchableOpacity>
             </View>
             <View style={styles.infoBox}>
-              <QuestionMark title="Profile Title" iconColor="#fff" />
+              <QuestionMark title="Profile Title" iconColor="#fff" tooltipMessage={tooltipMessage.employee_profile_title_tooltip} />
               <Text style={styles.infoText2}>
                 {user?.profile_title_employee}
               </Text>
             </View>
             <View style={styles.infoBox}>
-              <QuestionMark title="About Me" iconColor="#fff" />
+              <QuestionMark title="About Me" iconColor="#fff" tooltipMessage={tooltipMessage.employee_about_me_tooltip} />
               <Text style={styles.infoText2}>{user?.about}</Text>
             </View>
             {/* <View style={styles.calendarBox}>
@@ -296,7 +414,7 @@ const EmployeeAccount = () => {
               </View>
             </View> */}
             <View style={styles.infoBox}>
-              <QuestionMark title="Pomate Services" iconColor="#fff" />
+              <QuestionMark title="Pomate Services" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_provided_services} />
             </View>
 
             <TouchableOpacity
@@ -314,13 +432,6 @@ const EmployeeAccount = () => {
               {promote?.map((item, index) => {
                 const icon =
                   item?.seeking_services?.[0]?.get_seek_services_api?.icon;
-
-                console.log("111111", icon);
-
-                console.log(
-                  "Path",
-                  `${API_ICON}/images/servicephoto/png-image/${icon}`,
-                );
 
                 return (
                   <View key={index} style={styles.wrapper}>
@@ -374,16 +485,7 @@ const EmployeeAccount = () => {
               })}
             </ScrollView>
             <View style={styles.infoBox}>
-              {/* <View style={styles.iconbox}>
-                <Text style={styles.infoTitle}>Employee Category</Text>
-                <FontAwesome
-                  name="question-circle"
-                  size={16}
-                  color="#ffffff"
-                  style={{ marginLeft: 5 }}
-                />
-              </View> */}
-              <QuestionMark title="Employee Category" iconColor="#fff" />
+              <QuestionMark title="Employee Category" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_involved_category} />
             </View>
             <View style={styles.pillsWrapper}>
               <TouchableOpacity
@@ -461,15 +563,13 @@ const EmployeeAccount = () => {
         animationType="slide"
         transparent={true}
         visible={copyModel}
-        onRequestClose={() => setCopyModel(false)}
+        onRequestClose={handleCopyCloseModal}
       >
         <View style={[styles.modalOverlay]}>
-          <View
-            style={[styles.modalContainer, { paddingBottom: insets.bottom }]}
-          >
+          <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Copy Link</Text>
-              <TouchableOpacity onPress={() => setCopyModel(false)}>
+              <TouchableOpacity onPress={handleCopyCloseModal}>
                 <Ionicons name="close" size={26} color="#303030" />
               </TouchableOpacity>
             </View>
@@ -486,7 +586,6 @@ const EmployeeAccount = () => {
                 ]}
                 onPress={() => {
                   setActiveTab("employee");
-                  setCopyText(employeeLink);
                 }}
               >
                 <Text
@@ -507,7 +606,6 @@ const EmployeeAccount = () => {
                 ]}
                 onPress={() => {
                   setActiveTab("employer");
-                  setCopyText(employerLink);
                 }}
               >
                 <Text
@@ -521,49 +619,31 @@ const EmployeeAccount = () => {
                 </Text>
               </TouchableOpacity>
             </View>
-            {activeTab === "employee" ? (
-              <View style={styles.inputRow}>
-                <View style={styles.textWrap}>
-                  <Text
-                    style={styles.linkText}
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                  >
-                    {copyText}
-                  </Text>
-                </View>
-                <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
-                  <Text style={styles.copyText}>Copy Link</Text>
-                  <Ionicons
-                    name="copy-outline"
-                    size={18}
-                    color="#fff"
-                    style={{ marginLeft: 4 }}
-                  />
-                </TouchableOpacity>
+            <View style={styles.inputRow}>
+              <View style={styles.textWrap}>
+                <Text
+                  style={styles.linkText}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {activeTab === "employee" ? employeeLink : employerLink}
+                </Text>
               </View>
-            ) : (
-              <View style={styles.inputRow}>
-                <View style={styles.textWrap}>
-                  <Text
-                    style={styles.linkText}
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                  >
-                    {copyText}
-                  </Text>
-                </View>
-                <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
-                  <Text style={styles.copyText}>Copy Link</Text>
-                  <Ionicons
-                    name="copy-outline"
-                    size={18}
-                    color="#fff"
-                    style={{ marginLeft: 4 }}
-                  />
-                </TouchableOpacity>
-              </View>
-            )}
+
+              <TouchableOpacity
+                style={styles.copyBtn}
+                onPress={() =>
+                  handleCopy(activeTab === "employee" ? employeeLink : employerLink)
+                }
+              >
+                <Ionicons
+                  name="copy-outline"
+                  size={18}
+                  color="#fff"
+                  style={{ marginLeft: 4 }}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -574,9 +654,7 @@ const EmployeeAccount = () => {
         onRequestClose={() => setDownloadModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View
-            style={[styles.modalContainer, { paddingBottom: insets.bottom }]}
-          >
+          <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Download PDF</Text>
               <TouchableOpacity onPress={() => setDownloadModal(false)}>
@@ -599,6 +677,79 @@ const EmployeeAccount = () => {
                 fontSize={19}
                 title="Download Black & White Print"
               />
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={socialMediaModal}
+        onRequestClose={() => setSocialMediaModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.socialModalContainer, { paddingBottom: insets.bottom }]}>
+            {/* Close */}
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={() => setSocialMediaModal(false)}
+            >
+              <MaterialIcons name="close" size={24} color="#000" />
+            </TouchableOpacity>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {socialPlatforms.map((item, index) => (
+                <View key={item.key}>
+                  <View style={styles.linkRow}>
+                    <View style={styles.linkLeft}>
+                      <View style={styles.mediaIconCircle}>
+                        {item.type === "fa" && (
+                          <FontAwesome name={item.icon} size={16} color="#C76C59" />
+                        )}
+                        {item.type === "fa6" && (
+                          <FontAwesome6 name={item.icon} size={16} color="#C76C59" />
+                        )}
+                      </View>
+                      <TextInput
+                        style={styles.linkInput}
+                        placeholder={item.placeholder}
+                        placeholderTextColor="#9a9a9a"
+                        value={links[item.key] || ""}
+                        onChangeText={(text) => updateLink(item.key, text)}
+                      />
+                    </View>
+                    <TouchableOpacity onPress={() => clearLink(item.key)}>
+                      <MaterialIcons name="delete" size={20} color="#000" />
+                    </TouchableOpacity>
+                  </View>
+                  {index !== socialPlatforms.length - 1 && (
+                    <View style={styles.separator} />
+                  )}
+                </View>
+              ))}
+              <TouchableOpacity style={styles.addLinkBtn}>
+                <Text style={styles.addLinkText}>+ Add New Link</Text>
+              </TouchableOpacity>
+            </ScrollView>
+            <View style={styles.bottomBtns}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setSocialMediaModal(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.saveBtn}
+                onPress={saveSocialMediaLinks}
+              >
+                {
+                  socialMediaLoading ? (
+                    <ActivityIndicator color="#fff" size={19} />
+                  ) : (
+                    <Text style={styles.saveText}>Save</Text>
+                  )
+                }
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -766,7 +917,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     justifyContent: "center",
     alignItems: "center",
-  }, 
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -1054,4 +1205,106 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_500Medium",
     color: "#000",
   },
+
+  socialModalContainer: {
+    backgroundColor: "#fff",
+    width: "100%",
+    paddingBottom: 20,
+    paddingTop: 40,
+    paddingHorizontal: 15,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "80%"
+  },
+
+  closeBtn: {
+    position: "absolute",
+    right: 15,
+    top: 15,
+    zIndex: 10,
+  },
+
+  linkRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+
+  linkLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  mediaIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#f3f3f3",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  linkText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: "#333",
+  },
+
+  separator: {
+    height: 1,
+    backgroundColor: "#e5e5e5",
+  },
+
+  addLinkBtn: {
+    marginTop: 20,
+    backgroundColor: "#EFEFEF",
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  addLinkText: {
+    fontWeight: "600",
+    color: "#000",
+  },
+
+  bottomBtns: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 15,
+    gap: 12,
+  },
+
+  cancelBtn: {
+    flex: 1,
+    backgroundColor: "#DCDCDC",
+    paddingVertical: 15,
+    borderRadius: 16,
+    alignItems: "center",
+  },
+
+  saveBtn: {
+    flex: 1,
+    backgroundColor: "#C76C59",
+    paddingVertical: 15,
+    borderRadius: 16,
+    alignItems: "center",
+  },
+
+  cancelText: {
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#000",
+  },
+
+  saveText: {
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#fff",
+  },
+  linkInput: {
+    width: "100%"
+  }
 });

@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
 } from "react-native";
 import GradientButton from "../../components/GradientButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -16,15 +14,15 @@ const Step7Interview = () => {
   const [isInterviewRequested, setIsInterviewRequested] = useState(0);
 
   const loadUser = async () => {
-      const userStr = await AsyncStorage.getItem("user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
-      console.log("11111", user);
-      setIsInterviewRequested(user?.is_interview_requested);
-    };
-    useEffect(() => {
-      loadUser();
-    }, []);
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    console.log("11111", user);
+    setIsInterviewRequested(user?.is_interview_requested);
+  };
+  useEffect(() => {
+    loadUser();
+  }, []);
 
   const handleFinish = async () => {
     try {
@@ -38,8 +36,8 @@ const Step7Interview = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-    const result = await response.json();
-    }catch (error) {
+      const result = await response.json();
+    } catch (error) {
       console.log("Error:", error);
     } finally {
       setLoading(false);

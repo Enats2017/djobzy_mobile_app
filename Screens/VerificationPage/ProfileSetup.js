@@ -18,8 +18,9 @@ import {
 import { API_URL } from "../../api/ApiUrl";
 import GradientButton from "../../components/GradientButton";
 import { toastError, toastSuccess } from "../../utils/toast";
+import * as FileSystem from "expo-file-system/legacy";
 
-const ProfileSetup = ({ userId, onNext }) => {
+const ProfileSetup = ({ onNext }) => {
   const [photoUri, setPhotoUri] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -27,30 +28,34 @@ const ProfileSetup = ({ userId, onNext }) => {
   const [onlineResumeLink, setOnlineResumeLink] = useState("");
   const [loading, setLoading] = useState(false);
   const titleCharsLeft = 60 - title.length;
-  const descriptionChars = description.length;
-  const maxDescriptionChars = 500;
-
-  const MIN_WORDS = 18;
-
-  const wordCount = description.replace(/\s/g, "").length;
-
+  const MIN_WORDS = 20;
+  const wordCount = description.trim().split(/\s+/).filter(word => word.length > 0).length;
   const isGenerateEnabled = wordCount >= MIN_WORDS;
 
   const requestPermissions = async () => {
     const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
     const galleryPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (
-      cameraPerm.status !== "granted" ||
-      galleryPerm.status !== "granted"
-    ) {
-      Alert.alert(
-        "Permission required",
-        "Camera and Gallery permissions are required"
-      );
+    if (cameraPerm.status !== "granted" || galleryPerm.status !== "granted") {
+      Alert.alert("Permission required", "Camera and Gallery permissions are required");
       return false;
     }
     return true;
+  };
+
+  const validateImageSize = async (uri) => {
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      const maxSize = 3 * 1024 * 1024; // 3M
+      if (fileInfo.size > maxSize) {
+        toastError("Image must be smaller than 3MB");
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.log("Image size check error:", error);
+      return false;
+    }
   };
 
   const openCamera = async () => {
@@ -58,14 +63,17 @@ const ProfileSetup = ({ userId, onNext }) => {
     if (!hasPermission) return;
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.7,
+      quality: 0.8,
     });
 
     if (!result.canceled) {
-      setPhotoUri(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      const isValid = await validateImageSize(uri);
+      if (!isValid) return;
+      setPhotoUri(uri);
     }
   };
 
@@ -74,21 +82,22 @@ const ProfileSetup = ({ userId, onNext }) => {
     if (!hasPermission) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.7,
+      quality: 0.8,
     });
 
     if (!result.canceled) {
-      setPhotoUri(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      const isValid = await validateImageSize(uri);
+      if (!isValid) return;
+      setPhotoUri(uri);
     }
   };
 
   const pickImage = () => {
-    Alert.alert(
-      "Upload Photo",
-      "Choose an option",
+    Alert.alert("Upload Photo", "Choose an option",
       [
         { text: "Camera", onPress: openCamera },
         { text: "Gallery", onPress: openGallery },
@@ -117,8 +126,12 @@ const ProfileSetup = ({ userId, onNext }) => {
   };
 
   const handleSubmit = async () => {
-    if (!title || !description) {
-      alert("Please fill title and description");
+    if (!title) {
+      toastError("Please fill title");
+      return;
+    }
+    if (!description) {
+      toastError("Please fill description");
       return;
     }
 
@@ -129,20 +142,21 @@ const ProfileSetup = ({ userId, onNext }) => {
       formData.append("title", title);
       formData.append("about", description);
       formData.append("online_resume_link", onlineResumeLink);
+      if (photoUri) {
+        const base64Image = await FileSystem.readAsStringAsync(photoUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        const imageData = `data:image/jpeg;base64,${base64Image}`;
+        formData.append("image", imageData);
+      }
       if (resumeFile) {
         formData.append("resume", {
           uri: resumeFile.uri,
-          name: resumeFile.name,
+          name: resumeFile.name || "resume.pdf",
           type: "application/pdf",
         });
       }
-      if (photoUri) {
-        formData.append("photo", {
-          uri: photoUri,
-          name: "profile.jpg",
-          type: "image/jpeg",
-        });
-      }
+
       const response = await axios.post(
         `${API_URL}/user-profile-picture`,
         formData,
@@ -480,7 +494,7 @@ const styles = StyleSheet.create({
   generateText: {
     color: "#fff",
     fontFamily: "Montserrat_500Medium",
-    fontSize: 14,
+    fontSize: 16,
   },
   uploadResumeButton: {
     backgroundColor: "#FFFFFF0D",

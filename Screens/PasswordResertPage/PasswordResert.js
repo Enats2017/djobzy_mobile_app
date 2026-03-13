@@ -29,7 +29,7 @@ const PasswordResert = () => {
           <View style={styles.mainSection}>
             <View style={styles.imglogo}>
               <Image
-                source={require("../../assets/images/Login-icon.png")}
+                source={require("../../assets/images/d_logo.png")}
                 style={styles.logo}
               />
             </View>
@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#222222",
     paddingHorizontal: 20,
   },
+  logo: { width: 50, height: 50, resizeMode: "contain" },
   mainSection: {
     paddingTop: 40,
     alignItems: "center",

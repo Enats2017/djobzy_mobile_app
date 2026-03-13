@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   View,
   Text,
@@ -6,21 +7,44 @@ import {
   StyleSheet,
   Image,
 } from "react-native";
-const Step3Social = ({onNext}) => {
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../api/ApiUrl";
+import { toastError, toastSuccess } from "../../utils/toast";
+
+const Step3Social = ({ onNext }) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/step3-post`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+      const result = await response.json();
+      if (result.status == 200) {
+        toastSuccess("Social Media info saved successfully");
+        onNext();
+      } else {
+        toastError(result.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.log("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.socialContainer}>
       <Text style={styles.setptext}>STEP 3</Text>
       <Text style={styles.headtext}>Connect Social Media Accounts</Text>
-      <View>
-        <Text style={styles.setptext}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat.
-        </Text>
-      </View>
       <View style={styles.card}>
-        {/* Top Row */}
         <View style={styles.topRow}>
           <View style={styles.leftRow}>
             <Image
@@ -44,7 +68,7 @@ const Step3Social = ({onNext}) => {
           exercitation ullamco laboris nisi ut aliquip ex ea
         </Text>
       </View>
-      <TouchableOpacity style={styles.nextBtn} onPress={onNext}>
+      <TouchableOpacity style={styles.nextBtn} onPress={handleSubmit} loading={loading}>
         <Text style={styles.nextText}>Next</Text>
       </TouchableOpacity>
     </View>
@@ -110,15 +134,15 @@ const styles = StyleSheet.create({
 
   nextBtn: {
     backgroundColor: "#FDBF2D",
-    paddingVertical:10,
-    borderRadius:10,
-    marginTop:20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 20,
     alignItems: "center",
     justifyContent: "center",
   },
-  nextText:{
-    color:"#000000",
-    fontFamily:"Montserrat_700Bold",
-    fontSize:20
+  nextText: {
+    color: "#000000",
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 20
   }
 });

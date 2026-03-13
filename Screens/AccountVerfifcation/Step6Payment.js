@@ -8,20 +8,58 @@ import {
 } from "react-native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import GradientButton from "../../components/GradientButton";
+import QuestionMark from "../../components/QuestionMark";
+import { tooltipMessage } from "../../components/TooltipMessage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../api/ApiUrl";
+import { toastError } from "../../utils/toast";
+import * as Linking from "expo-linking";
 
 const Step6Payment = () => {
   const [selected, setSelected] = useState("card");
+  const [loading, setLoading] = useState(false);
+
+  const handlePayment = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/step6-card-verification`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          item_type: 'card-verification',
+        }),
+      });
+      const data = await response.json();
+      console.log(data);
+      if (data.status === 200) {
+        const paymentUrl = `${data?.payment_url}?pt=${token}`;
+        if (paymentUrl) {
+          setLoading(false);
+          Linking.openURL(paymentUrl);
+        } else {
+          toastError("Payment URL not received.");
+        }
+      } else {
+        toastError(data.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.log(error);
+      toastError("Network error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Text style={styles.setptext}>STEP 6</Text>
-      <Text style={styles.headtext}>Credit / Debit Card Verification</Text>
-      <View>
-        <Text style={styles.desc}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat.
-        </Text>
+      <View style={styles.headtext}>
+        <QuestionMark title="Credit / Debit Card Verification" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_payment_methods} />
       </View>
       <TouchableOpacity
         style={[styles.option, selected === "paypal" && styles.activeOption]}
@@ -46,18 +84,18 @@ const Step6Payment = () => {
       </TouchableOpacity>
 
       <Text style={styles.infoText}>
-        You'll be 1 dollar to link a verified account.
+        Please add your credit or debit card to your account. An amount of 1 CAD will be charged for verification.
       </Text>
 
       {selected === "card" && (
         <>
-          <TextInput
+          {/* <TextInput
             placeholder="Card number"
             placeholderTextColor="#999"
             style={styles.input}
-          />
+          /> */}
 
-          <View style={styles.row}>
+          {/* <View style={styles.row}>
             <TextInput
               placeholder="First Name"
               placeholderTextColor="#999"
@@ -87,9 +125,9 @@ const Step6Payment = () => {
             placeholder="Full Address Associated With the card"
             placeholderTextColor="#999"
             style={styles.input}
-          />
+          /> */}
 
-          <GradientButton title="Add Payment Method" />
+          <GradientButton title="Pay and Verify Card" onPress={handlePayment} loading={loading} disabled={loading} />
         </>
       )}
       <TouchableOpacity style={styles.nextBtn}>
@@ -111,7 +149,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_600SemiBold",
     color: "#ffffff",
     fontSize: 18,
-    marginBottom: 5,
+    marginBottom: 10,
   },
   desc: {
     fontFamily: "Montserrat_500Medium",
@@ -138,14 +176,14 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 16,
     fontFamily: "Montserrat_600SemiBold",
-
     color: "#000",
   },
 
   infoText: {
-    color: "#ccc",
-    fontSize: 12,
+    color: "#c3c3c3",
+    fontSize: 14,
     marginVertical: 10,
+    fontFamily: "Montserrat_400Regular",
   },
 
   input: {

@@ -7,34 +7,59 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-   Alert,
-  Linking,
-  Platform,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { API_URL } from "../../api/ApiUrl";
 import GradientButton from "../../components/GradientButton";
 import { toastError, toastSuccess } from "../../utils/toast";
 
 
-const NewPassword = ({ onNext }) => {
+const NewPassword = ({ email }) => {
+  const navigation = useNavigation();
   const [showPassword, setShowPassword] = useState(false);
-
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showConfirmPassword, setShowConfirmPassword] = useState("");
-
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const isValidLength = password.length >= 8;
   const isMatch = password === confirmPassword && confirmPassword.length > 0;
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isValidLength) {
-       toastError("Password must be at least 8 characters");
+      toastError("Password must be at least 8 characters");
       return;
     }
     if (!isMatch) {
       toastError("Passwords do not match");
       return;
     }
-    onNext();
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/reset-password`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          password_confirmation: confirmPassword,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Password update failed");
+      }
+
+      toastSuccess("Password updated successfully");
+      navigation.replace("Login");
+    } catch (error) {
+      toastError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -108,13 +133,16 @@ const NewPassword = ({ onNext }) => {
           </Text>
         )}
 
-        <GradientButton marginTop={25} title="Send" onPress={handleSubmit} />
+        <GradientButton marginTop={25} title="Send" onPress={handleSubmit} disabled={loading} loading={loading} />
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  heading: {
+    flex: 1,
+  },
   title: {
     fontSize: 34,
     color: "#fff",
@@ -127,7 +155,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: "Montserrat_600SemiBold",
     color: "#fff",
-    lineHeight: "24",
+    lineHeight: 24,
   },
   emalInput: {
     margin: 15,
@@ -160,7 +188,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlignVertical: "center",
     fontFamily: "Montserrat_400Regular",
-    color: "#666666",
+    color: "#000",
   },
 
   requirementRow: {
@@ -175,7 +203,7 @@ const styles = StyleSheet.create({
   requirementText: {
     color: "#ecf0ecff",
     fontSize: 14,
-    fontFamily:"Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
     marginLeft: 6,
   },
   loginBtn: {

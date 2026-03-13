@@ -42,7 +42,7 @@ const getResponsiveValues = () => {
     buttonRadius: isSmall ? 6 : isTablet ? 12 : 8,
     inputHeight: isSmall ? 42 : isTablet ? 55 : 48,
     inputRadius: isSmall ? 6 : isTablet ? 12 : 8,
-    logoSize: isSmall ? 80 : isTablet ? 150 : 100,
+    logoSize: isSmall ? 50 : isTablet ? 100 : 50,
     eyeIconSize: isSmall ? 16 : isTablet ? 26 : 20,
     checkIconSize: isSmall ? 12 : isTablet ? 20 : 14,
     socialIconSize: isSmall ? 18 : isTablet ? 28 : 22,
@@ -101,7 +101,10 @@ const Login = ({ navigation }) => {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email,
+          password,
+        }),
       });
 
       const data = await response.json();
@@ -157,7 +160,7 @@ const Login = ({ navigation }) => {
           >
             <View style={styles.logoContainer}>
               <Image
-                source={require("../../assets/images/Login-icon.png")}
+                source={require("../../assets/images/d_logo.png")}
                 style={styles.logo}
               />
             </View>
@@ -291,7 +294,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: "center",
-    paddingTop: 20,
+    paddingVertical: 20,
   },
 
   logo: { width: logoSize, height: logoSize, resizeMode: "contain" },

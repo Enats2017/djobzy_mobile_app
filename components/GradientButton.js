@@ -7,31 +7,29 @@ const GradientButton = ({
   onPress,
   paddingHorizontal = 10,
   marginTop = 10,
-  borderRadius=12,
+  borderRadius = 12,
   paddingVertical = 10,
-  fontSize = 20,
+  fontSize = 18,
   loading = false,
   disabled = false,
-   colors = ["#C96B59", "#D17B68"],
-    textColor = "#fff",
-
-
+  colors = ["#C96B59", "#D17B68"],
+  textColor = "#fff",
   styleOverride = {},
 }) => {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8}   disabled={disabled || loading}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8} disabled={disabled || loading}>
       <LinearGradient
-       colors={colors}
+        colors={colors}
         style={[
           styles.button,
-          { paddingHorizontal, marginTop, paddingVertical, borderRadius},
-          styleOverride, 
-           (disabled || loading)
+          { paddingHorizontal, marginTop, paddingVertical, borderRadius },
+          styleOverride,
+          (disabled || loading)
         ]}
-        
+
       >
         {loading ? (
-          <ActivityIndicator color="#fff"  size={26} />
+          <ActivityIndicator color="#fff" size={26} />
         ) : (
           <Text style={[styles.buttonText, { color: textColor, fontSize }]}>{title}</Text>
         )}
@@ -42,7 +40,7 @@ const GradientButton = ({
 
 const styles = StyleSheet.create({
   button: {
-    height:45,
+    height: 45,
     borderRadius: 12,
     marginTop: 4,
     alignItems: "center",
@@ -51,7 +49,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 20,
-    textAlign:"center",
+    textAlign: "center",
     fontFamily: "Montserrat_700Bold",
   },
 });

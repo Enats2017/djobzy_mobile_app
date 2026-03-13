@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
   },
   logo: {
-    width: 55,
-    height: 55,
+    width: 40,
+    height: 40,
   },
   right: {
     flexDirection: "row",

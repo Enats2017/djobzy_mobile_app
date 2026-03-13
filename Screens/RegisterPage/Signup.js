@@ -121,7 +121,7 @@ const Signup = () => {
           >
             <View style={styles.logoContainer}>
               <Image
-                source={require("../../assets/images/Login-icon.png")}
+                source={require("../../assets/images/d_logo.png")}
                 style={styles.logo}
               />
             </View>
@@ -320,8 +320,12 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: "center",
-    paddingTop: 20,
+    paddingVertical: 20,
   },
+  logo: {
+    width: 50,
+    height: 50
+  },  
 
   title: {
     fontSize: 30,

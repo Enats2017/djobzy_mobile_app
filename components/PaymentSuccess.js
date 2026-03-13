@@ -154,6 +154,7 @@ export default function PaymentSuccess() {
     const redirectMap = {
         "job-payment": "ActiveContract",
         "job-promote": "EmployerJobPost",
+        "card-verification": "EmployeeVerification",
     };
 
     const navigateAfterPayment = () => {

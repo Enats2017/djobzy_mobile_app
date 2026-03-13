@@ -5,67 +5,68 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator
 } from "react-native";
-import CountryPicker from "react-native-country-picker-modal";
 import * as DocumentPicker from "expo-document-picker";
 import MapView, { Marker } from "react-native-maps";
 import { Ionicons, SimpleLineIcons } from "@expo/vector-icons";
 import GradientButton from "../../components/GradientButton";
 import FilePreview from "../../components/FilePreview";
-import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
-import { toastSuccess } from "../../utils/toast";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const Step4Address = ({ onNext }) => {
-  const [country, setCountry] = useState("India");
-  const [countryCode, setCountryCode] = useState("IN");
-  const [open, setOpen] = useState(false);
-  const [selectedCity, setSelectedCity] = useState("");
-  const [resumeFile, setResumeFile] = useState(null);
+  const [addressDocs, setAddressDocs] = useState([]);
   const [postal, setPostal] = useState("");
   const [location, setLocation] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const navigation = useNavigation();
-
-  const cities = [
-    "Mumbai",
-    "Delhi",
-    "Bangalore",
-    "Chennai",
-    "Hyderabad",
-    "Pune",
-    "Kolkata",
-    "Ahmedabad",
-  ];
 
   const pickResume = async () => {
     const result = await DocumentPicker.getDocumentAsync({
-      type: "application/pdf",
+      type: [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ],
+      multiple: true,
     });
 
     if (!result.canceled && result.assets?.length > 0) {
-      setResumeFile(result.assets[0]);
+      setAddressDocs((prev) => [...prev, ...result.assets]);
     }
   };
 
-  const removeResume = () => {
-    setResumeFile(null);
+  const removeResume = (index) => {
+    const updated = [...addressDocs];
+    updated.splice(index, 1);
+    setAddressDocs(updated);
   };
 
   const submitContactInfo = async () => {
-    if (!postal || !location) {
-      alert("Fill the  all Input");
+    if (!location) {
+      toastError("Location is required");
       return;
     }
+    if (addressDocs.length === 0) {
+      toastError("Address document is required");
+      return;
+    }
+    let imageNames = [];
     const formData = new FormData();
     formData.append("postal_code", postal);
     formData.append("searchInput", location);
-    formData.append("images", {
-      uri: resumeFile.uri,
-      name: resumeFile.name,
-      type: "application/pdf",
+    addressDocs.forEach((file) => {
+      imageNames.push(file.name);
+      formData.append("adress_docs[]", {
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType || file.type || "application/octet-stream",
+      });
     });
+    formData.append("images", imageNames.join(","));
 
     try {
       setSubmitting(true);
@@ -75,6 +76,7 @@ const Step4Address = ({ onNext }) => {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
+          "Content-Type": "multipart/form-data",
         },
         body: formData,
       });
@@ -98,62 +100,7 @@ const Step4Address = ({ onNext }) => {
     <>
       <Text style={styles.setptext}>STEP 4</Text>
       <Text style={styles.headtext}>Address</Text>
-      <View>
-        <Text style={styles.setptext}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat.
-        </Text>
-      </View>
-      <View style={styles.inputBox}>
-        <TouchableOpacity style={styles.row}>
-          <CountryPicker
-            countryCode={countryCode}
-            withFilter
-            withFlag
-            withCountryNameButton
-            onSelect={(c) => {
-              setCountryCode(c.cca2);
-              setCountry(c.name.common);
-            }}
-          />
-          <Ionicons name="chevron-down" size={20} color="#666" />
-        </TouchableOpacity>
-      </View>
-      <TouchableOpacity style={styles.dropdown} onPress={() => setOpen(!open)}>
-        <Text style={styles.placeholder}>
-          {selectedCity || "State / Province / City"}
-        </Text>
-        <Ionicons
-          name={open ? "chevron-up" : "chevron-down"}
-          size={20}
-          color="#666"
-        />
-      </TouchableOpacity>
 
-      {open && (
-        <View style={styles.listContainer}>
-          {cities.map((city, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.listItem}
-              onPress={() => {
-                setSelectedCity(city);
-                setOpen(false);
-              }}
-            >
-              <Text style={styles.cityText}>{city}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-      {/* Street */}
-      <TextInput
-        placeholder="Street, building number, apartment"
-        placeholderTextColor="#777"
-        style={styles.input}
-      />
       <TextInput
         placeholder="Postal Code"
         placeholderTextColor="#777"
@@ -174,16 +121,25 @@ const Step4Address = ({ onNext }) => {
       </View>
 
       <View style={styles.fileRow}>
-        <FilePreview
-          file={resumeFile}
-          onRemove={removeResume}
-          fileText={styles.customFileText}
-          removeicon={styles.customRemoveIcon}
-        />
+        {addressDocs.map((file, index) => (
+          <FilePreview
+            file={file}
+            key={index}
+            fileText={styles.customFileText}
+            onRemove={() => removeResume(index)}
+            removeicon={styles.customRemoveIcon}
+          />
+        ))}
       </View>
       <GradientButton title="Uplaod document" onPress={pickResume} />
-      <TouchableOpacity style={styles.nextBtn} onPress={submitContactInfo}>
-        <Text style={styles.nextText}>Next</Text>
+      <TouchableOpacity style={styles.nextBtn} onPress={submitContactInfo} >
+        {
+          submitting ? (
+            <ActivityIndicator color="#fff" size={28} />
+          ) : (
+            <Text style={styles.nextText}>Next</Text>
+          )
+        }
       </TouchableOpacity>
     </>
   );
@@ -248,6 +204,7 @@ const styles = StyleSheet.create({
   locationinput: {
     fontSize: 14,
     color: "#000",
+    width: "100%"
   },
 
   input: {

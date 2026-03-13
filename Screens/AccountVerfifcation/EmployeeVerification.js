@@ -44,7 +44,7 @@ import Step3Social from "./Step3Social";
 import EmployerFooter from "../../components/EmployerFooter";
 import Step4Address from "./Step4Address";
 import Step5Identyfication from "./Step5Identyfication";
-import Step5Payment from "./Step6Payment";
+import Step6Payment from "./Step6Payment";
 import Step7Interview from "./Step7Interview";
 
 const EmployeeVerification = () => {
@@ -125,7 +125,7 @@ const EmployeeVerification = () => {
       case 5:
         return <Step5Identyfication  onNext={goNext} />;
       case 6:
-        return <Step5Payment onNext={goNext} />;
+        return <Step6Payment onNext={goNext} />;
       case 7:
         return <Step7Interview onNext={goNext} />;
 
@@ -224,7 +224,7 @@ const EmployeeVerification = () => {
                   <Ionicons name="chevron-back" size={30} color="#ffffff" />
                 </View>
 
-                <Text style={styles.title}>Verification</Text>
+                <Text style={styles.title}>Verification Level</Text>
               </TouchableOpacity>
 
               {renderStepScreen()}

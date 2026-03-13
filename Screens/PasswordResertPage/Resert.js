@@ -14,6 +14,7 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import GradientButton from "../../components/GradientButton";
 import { useNavigation } from "@react-navigation/native";
+import { toastSuccess } from "../../utils/toast";
 
 const Resert = ({ onNext }) => {
   const [email, setEmail] = useState("");
@@ -39,7 +40,7 @@ const Resert = ({ onNext }) => {
       });
       const data = await response.json(); 
       if (response.ok && data.status === true) {
-        Alert.alert("Success", data.message);
+        toastSuccess(data.message);
         onNext(email);
       } else {
         setError(data.message || "No account found with this email address");
@@ -96,7 +97,7 @@ const Resert = ({ onNext }) => {
 
           <GradientButton 
             marginTop={22} 
-            title="Send Email"  
+            title="Send OTP"
             disabled={loading} 
             loading={loading} 
             onPress={handleForgotPassword}

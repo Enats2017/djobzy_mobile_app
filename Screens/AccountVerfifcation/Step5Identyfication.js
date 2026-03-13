@@ -13,83 +13,107 @@ import NewUploadBox from "../../components/NewUploadBox";
 import GradientButton from "../../components/GradientButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const Step5Identyfication = () => {
   const [personalPhoto, setPersonalPhoto] = useState(null);
   const [docFront, setDocFront] = useState(null);
   const [docBack, setDocBack] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [isCardVerified, setIsCardVerified] = useState(0);
   const [selected, setSelected] = useState("Select Document Type");
 
   const data = ["Driving License", "Passport", "National ID"];
-  // const normalizeUri = (uri) =>
-  //   Platform.OS === "android" ? uri.replace("file://", "") : uri;
-
-  // const isValidImage = (uri) => {
-  //   const ext = uri.split(".").pop().toLowerCase();
-  //   return ["jpg", "jpeg", "png"].includes(ext);
-  // };
 
   const handleVerify = async () => {
-    if (
-      !personalPhoto ||
-      !docFront ||
-      !docBack ||
-      selected === "Select Document Type"
-    ) {
+    if (!personalPhoto || !docFront || !docBack || selected === "Select Document Type") {
       Alert.alert("Error", "Please upload all required images");
       return;
     }
 
     const formData = new FormData();
-
     formData.append("card_type", selected);
-
     formData.append("FacePhoto", {
       uri: personalPhoto.uri,
-      name: "face.jpg",
-      type: "image/jpeg",
+      name: personalPhoto.fileName || personalPhoto.uri.split("/").pop(),
+      type: personalPhoto.mimeType || "image/jpeg",
     });
-
     formData.append("DocumentFront", {
       uri: docFront.uri,
-      name: "front.jpg",
-      type: "image/jpeg",
+      name: docFront.fileName || docFront.uri.split("/").pop(),
+      type: docFront.mimeType || "image/jpeg",
     });
-
     formData.append("DocumentBack", {
       uri: docBack.uri,
-      name: "back.jpg",
-      type: "image/jpeg",
+      name: docBack.fileName || docBack.uri.split("/").pop(),
+      type: docBack.mimeType || "image/jpeg",
     });
-
-    console.log("firstimg", personalPhoto.uri);
-    console.log("secondimg", docFront.uri);
-    console.log("thirdimg", docBack.uri);
-
     try {
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
-      console.log("hiii");
-
       const res = await fetch(`${API_URL}/verify-doc`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
+          "Content-Type": "multipart/form-data",
         },
         body: formData,
-      });``
+      });
 
       const data = await res.json();
       console.log("API RESPONSE:", data);
       if (data.status == 200) {
-        Alert.alert("Success", "Document verified successfully");
+        toastSuccess("Document verified successfully");
+        setVerified(true);
+        setIsCardVerified(data.cardVerified);
       } else {
-        Alert.alert("Error", data.message);
+        toastError(data.message);
       }
     } catch (err) {
       console.log("UPLOAD ERROR:", err);
-      Alert.alert("Error", "Upload failed");
+      toastError("Upload failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitVerify = async () => {
+    if(verified) {
+      try {
+        setLoading(true);
+        const token = await AsyncStorage.getItem("token");
+        const res = await fetch(`${API_URL}/step5-post`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: {
+            card_type: selected,
+            is_verified : isCardVerified
+          },
+        });
+  
+        const result = await res.json();
+  
+        if (result.status == 200) {
+          toastSuccess("Documents verified successfully.");
+          onNext();
+        } else {
+          toastError(result.message || "Something went wrong");
+        }
+      } catch (error) {
+        console.error("API Error:", error);
+        toastWarning("netweork error");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      toastError('Please complete document verification.');
     }
   };
 
@@ -97,15 +121,6 @@ const Step5Identyfication = () => {
     <>
       <Text style={styles.setptext}>STEP 4</Text>
       <Text style={styles.headtext}>ID Card and Certificates</Text>
-      {/* <View>
-        <Text style={styles.setptext}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat.
-        </Text>
-      </View> */}
-
       <TouchableOpacity
         style={styles.dropdownHeader}
         onPress={() => setOpenDropdown(!openDropdown)}
@@ -151,9 +166,19 @@ const Step5Identyfication = () => {
         onRemove={() => setDocBack(null)}
       />
 
-      <GradientButton title="Verify" onPress={handleVerify} />
-      <TouchableOpacity style={styles.nextBtn}>
-        <Text style={styles.nextText}>Next</Text>
+      {
+        !verified && (
+          <GradientButton title="Verify" onPress={handleVerify} loading={loading} disabled={loading} />
+        )
+      }
+      <TouchableOpacity style={styles.nextBtn} onPress={submitVerify}>
+        {
+          loading ? (
+            <ActivityIndicator color="#fff" size={28} />
+          ) : (
+            <Text style={styles.nextText}>Next</Text>
+          )
+        }
       </TouchableOpacity>
     </>
   );

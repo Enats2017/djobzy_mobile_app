@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { scale } from "../../utils/scale";
 
-const { height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,7 @@ export default function HomeScreen() {
       const user = JSON.parse(userStr);
       const { verification_count, admin } = user;
       console.log("1111",verification_count);
-      
+
       if (verification_count >= 2 && admin == 2) {
         navigation.navigate("EmployerDashboard");
       } else if (verification_count >= 2 && admin == 0) {
@@ -95,16 +95,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   circleBox: {
-    width: 680,
-    height: 680,
+    width: width * 1.8,
+    height: width * 1.8,
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
   },
 
   outerCircle: {
-    width: 670,
-    height: 670,
+    width: width * 1.6,
+    height: width * 1.6,
     borderRadius: 500,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.15)",
@@ -113,8 +113,8 @@ const styles = StyleSheet.create({
   },
 
   middleCircle: {
-    width: 435,
-    height: 435,
+    width: width * 1.15,
+    height: width * 1.15,
     borderRadius: 400,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.15)",
@@ -123,8 +123,8 @@ const styles = StyleSheet.create({
   },
 
   innerCircle: {
-    width: 260,
-    height: 260,
+    width: width * 0.7,
+    height: width * 0.7,
     borderRadius: 150,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.15)",
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
 
   arrowBtn: {
     position: "absolute",
-    bottom: -22,
+    bottom: 13,
     alignSelf: "center",
     width: 56,
     height: 56,

@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import PagerView from "react-native-pager-view";
-
 import GroupJobPostEmployer from "../assets/images/GroupJobPostEmployer.png";
 import GroupJobPostEmployee from "../assets/images/GroupJobPostEmployee.png";
 // import GroupNext from "../assets/images/GroupNext.png";
@@ -148,6 +147,7 @@ const ProfileTutorial = ({
       </View>
     </View>
   );
+
 };
 
 export default ProfileTutorial;

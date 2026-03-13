@@ -35,7 +35,6 @@ const JobBoostPaymentSection = ({ route }) => {
   const openWebsite = async () => {
     try {
       setLoading(true);
-      const redirectUrl = Linking.createURL("payment-success");
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/promote-job`, {
         method: "POST",
@@ -45,7 +44,7 @@ const JobBoostPaymentSection = ({ route }) => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          id: gig?.id,
+          id: gig?.id ?? gig?.gid,
           featurePrice: selectedPrice,
           app_redirect_url: Linking.createURL("payment-success")
         }),
@@ -54,10 +53,10 @@ const JobBoostPaymentSection = ({ route }) => {
       const data = await response.json();
       console.log("Promote Response:", data);
       if (data.success) {
-        const paymentUrl = data?.data?.payment_url;
+        const paymentUrl = `${data?.data?.payment_url}?pt=${token}`;
         if (paymentUrl) {
           setLoading(false);
-          Linking.openURL(paymentUrl); // 🔥 Opens web payment page
+          Linking.openURL(paymentUrl); // payment page
         } else {
           toastError("Payment URL not received.");
         }

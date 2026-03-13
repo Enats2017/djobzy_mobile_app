@@ -61,7 +61,7 @@ const JobProfile = () => {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           <PageNameHeaderBar navigation={navigation} title="Job Details" />
 
@@ -214,20 +214,8 @@ const JobProfile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-  },
-  loaderOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#161616",
-  },
-  headerCard: {
-    backgroundColor: "#222",
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 15,
-    marginBottom: 12,
+    paddingHorizontal: 15,
+    backgroundColor: "#222222"
   },
   userInfoRow: {
     flexDirection: "row",

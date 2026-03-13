@@ -238,7 +238,6 @@ const EmployeeAccount = () => {
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
               >
-                <View></View>
                 <View style={styles.statsRow}>
                   <View style={styles.statBox}>
                     <Text style={styles.statValue}>{profile?.count}</Text>
@@ -257,6 +256,16 @@ const EmployeeAccount = () => {
                   </View>
                 </View>
               </ScrollView>
+            </View>
+            <View>
+              <TouchableOpacity
+                style={styles.socialMediaBtn}
+              >
+                <Text style={styles.mediaBtnText}>Social Media Accounts</Text>
+                <View style={styles.iconCircle}>
+                  <MaterialIcons name="add" size={24} color="#000" />
+                </View>
+              </TouchableOpacity>
             </View>
             <View style={styles.infoBox}>
               <QuestionMark title="Profile Title" iconColor="#fff" />
@@ -733,6 +742,31 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
     lineHeight: 18,
   },
+  socialMediaBtn: {
+    backgroundColor: "#46A282",
+    padding: 10,
+    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    marginVertical: 15,
+  },
+
+  mediaBtnText: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontFamily: "Montserrat_600SemiBold",
+  },
+
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 20,
+    backgroundColor: "#ffffff",
+    justifyContent: "center",
+    alignItems: "center",
+  }, 
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",

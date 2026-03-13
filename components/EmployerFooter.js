@@ -171,7 +171,7 @@ const EmployerFooter = () => {
             </Text>
           </TouchableOpacity> */}
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("NotificationScreen")}
           >
@@ -190,7 +190,7 @@ const EmployerFooter = () => {
             >
               Notification
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             style={styles.tab}
             onPress={() => navigation.navigate("ProfileMenu")}

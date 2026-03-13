@@ -10,10 +10,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNotifications } from "../context/MessageNotificationContext";
 
 export default function PaymentSuccess() {
     const navigation = useNavigation();
+    const route = useRoute();
+    const { type } = route.params || {};
+    const { admin } = useNotifications();
     const circleScale = useRef(new Animated.Value(0)).current;
     const circleOpacity = useRef(new Animated.Value(0)).current;
     const checkOpacity = useRef(new Animated.Value(0)).current;
@@ -147,6 +151,17 @@ export default function PaymentSuccess() {
     const onPressOut = () =>
         Animated.spring(btnScale, { toValue: 1, friction: 4, useNativeDriver: true }).start();
 
+    const redirectMap = {
+        "job-payment": "ActiveContract",
+        "job-promote": "EmployerJobPost",
+    };
+
+    const navigateAfterPayment = () => {
+        let screen = redirectMap[type];
+        if (!screen) { screen = admin === 2 ? "EmployerDashboard" : "Dashboard";}
+        navigation.replace(screen);
+    };
+
     return (
         <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
             <StatusBar barStyle="light-content" backgroundColor="#10B981" />
@@ -224,12 +239,7 @@ export default function PaymentSuccess() {
                         activeOpacity={1}
                         onPressIn={onPressIn}
                         onPressOut={onPressOut}
-                        onPress={() =>
-                            navigation.reset({
-                                index: 0,
-                                routes: [{ name: "EmployerDashboard" }],
-                            })
-                        }
+                        onPress={navigateAfterPayment}
                         style={styles.button}
                     >
                         <Text style={styles.buttonText}>Back to Home</Text>

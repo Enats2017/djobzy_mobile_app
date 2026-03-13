@@ -44,8 +44,6 @@ export default function CurrentJobPaymentPage() {
       });
       const data = await response.json();
       setGigs(data.gig);
-      console.log(data.orders);
-      
       setUser(data.user);
       setData(data);
 
@@ -115,7 +113,7 @@ export default function CurrentJobPaymentPage() {
                 </View>
                 <View style={styles.metaItemRowRight}>
                   <Text style={styles.metaLabel}>Contract ID:</Text>
-                  <Text style={styles.metaValue}>{gigs.gid}</Text>
+                  <Text style={styles.metaValue}>{gigs.contract_id}</Text>
                 </View>
               </View>
               <View style={styles.messagesRow}>
@@ -169,103 +167,187 @@ export default function CurrentJobPaymentPage() {
                   </Text>
                 </View>
 
-                <View style={styles.locationRow}>
-                  <FontAwesome5
-                    name="map-marker-alt"
-                    size={13}
-                    color="#c3c3c3"
-                    style={{ marginRight: 2 }}
-                  />
-                  <Text style={styles.location}>{user.address}</Text>
-                </View>
+                {
+                  user.address && (
+                    <View style={styles.locationRow}>
+                      <FontAwesome5
+                        name="map-marker-alt"
+                        size={13}
+                        color="#c3c3c3"
+                        style={{ marginRight: 2 }}
+                      />
+                      <Text style={styles.location}>{user.address}</Text>
+                    </View>
+                  )
+                }
               </View>
             </View>
             <Text style={styles.payForTitle}>Payment For</Text>
             <Text style={styles.payForJob}>{gigs.subject}</Text>
             {data &&
               data.orders.map((val, index) => (
-                <View style={styles.tableCard} key={index}>
-                  <View style={styles.tableRow}>
-                    <View style={styles.tableLeftCell}>
-                      <Text style={styles.tableLabel}>Date</Text>
+                <React.Fragment key={index}>
+                  <View style={styles.tableCard}>
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Date</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <Text style={styles.tableValue}>{val.payment_date}</Text>
+                      </View>
                     </View>
-                    <View style={styles.dividerVert} />
-                    <View style={styles.tableRightCell}>
-                      <Text style={styles.tableValue}>{val.payment_date}</Text>
+                    <View style={styles.dividerHoriz} />
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Payment Type</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <View>
+                          {data.authUser?.id == data.gigProp?.prop_user_id ? (
+                            <Text style={styles.tableValue}>Expenses</Text>
+                          ) : (
+                            <Text style={styles.tableValue}>Income</Text>
+                          )}
+                        </View>
+                      </View>
                     </View>
-                  </View>
-                  <View style={styles.dividerHoriz} />
-                  <View style={styles.tableRow}>
-                    <View style={styles.tableLeftCell}>
-                      <Text style={styles.tableLabel}>Payment Type</Text>
-                    </View>
-                    <View style={styles.dividerVert} />
-                    <View style={styles.tableRightCell}>
-                      <View>
-                        {data.authUser?.id == data.gigProp?.prop_user_id ? (
-                          <Text style={styles.tableValue}>Expenses</Text>
+                    <View style={styles.dividerHoriz} />
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Payment Status</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        {val.status && val.status == 1 ? (
+                          <>
+                            {
+                              val.payment_release_status == 0 ? (
+                                <Text style={styles.tableValue}>In Escrow Account</Text>
+                              ) : (
+                                <Text style={styles.tableValue}>Completed</Text>
+                              )
+                            }
+                          </>
                         ) : (
-                          <Text style={styles.tableValue}>Income</Text>
+                          <Text style={styles.tableValue}>Pending</Text>
                         )}
                       </View>
                     </View>
-                  </View>
-                  <View style={styles.dividerHoriz} />
-                  <View style={styles.tableRow}>
-                    <View style={styles.tableLeftCell}>
-                      <Text style={styles.tableLabel}>Payment Status</Text>
+                    <View style={styles.dividerHoriz} />
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Payment Method</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <Text style={styles.tableValue}>{val.ptype}</Text>
+                      </View>
                     </View>
-                    <View style={styles.dividerVert} />
-                    <View style={styles.tableRightCell}>
-                      {val.status && val.status == 1 ? (
-                        <Text style={styles.tableValue}>Completed</Text>
-                      ) : (
-                        <Text style={styles.tableValue}>Pending</Text>
-                      )}
+                    <View style={styles.dividerHoriz} />
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Price</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <Text style={styles.tableValue}>CAD {val.amount}</Text>
+                      </View>
                     </View>
-                  </View>
-                  <View style={styles.dividerHoriz} />
-                  <View style={styles.tableRow}>
-                    <View style={styles.tableLeftCell}>
-                      <Text style={styles.tableLabel}>Payment Method</Text>
-                    </View>
-                    <View style={styles.dividerVert} />
-                    <View style={styles.tableRightCell}>
-                      <Text style={styles.tableValue}>{val.ptype}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.dividerHoriz} />
-                  <View style={styles.tableRow}>
-                    <View style={styles.tableLeftCell}>
-                      <Text style={styles.tableLabel}>Price</Text>
-                    </View>
-                    <View style={styles.dividerVert} />
-                    <View style={styles.tableRightCell}>
-                      <Text style={styles.tableValue}>CAD {val.amount}</Text>
+                    <View style={styles.dividerHoriz} />
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Reference ID</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <Text style={styles.tableValue}>{val.ref}</Text>
+                      </View>
                     </View>
                   </View>
-                  <View style={styles.dividerHoriz} />
-                  <View style={styles.tableRow}>
-                    <View style={styles.tableLeftCell}>
-                      <Text style={styles.tableLabel}>Reference ID</Text>
+                  {data.authUser?.admin !== 0 && (
+                    <View style={styles.tableCard}>
+
+                      <View style={styles.tableRow}>
+                        <View style={styles.tableLeftCell}>
+                          <Text style={styles.tableLabel}>Date</Text>
+                        </View>
+                        <View style={styles.dividerVert} />
+                        <View style={styles.tableRightCell}>
+                          <Text style={styles.tableValue}>{val.payment_date}</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.dividerHoriz} />
+
+                      <View style={styles.tableRow}>
+                        <View style={styles.tableLeftCell}>
+                          <Text style={styles.tableLabel}>Payment Type</Text>
+                        </View>
+                        <View style={styles.dividerVert} />
+                        <View style={styles.tableRightCell}>
+                          <Text style={styles.tableValue}>Fee</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.dividerHoriz} />
+
+                      <View style={styles.tableRow}>
+                        <View style={styles.tableLeftCell}>
+                          <Text style={styles.tableLabel}>Payment Status</Text>
+                        </View>
+                        <View style={styles.dividerVert} />
+                        <View style={styles.tableRightCell}>
+                          <Text style={styles.tableValue}>
+                            {val.status === 0 ? "Pending" : "Completed"}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.dividerHoriz} />
+
+                      <View style={styles.tableRow}>
+                        <View style={styles.tableLeftCell}>
+                          <Text style={styles.tableLabel}>Payment Method</Text>
+                        </View>
+                        <View style={styles.dividerVert} />
+                        <View style={styles.tableRightCell}>
+                          <Text style={styles.tableValue}>{val.ptype}</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.dividerHoriz} />
+
+                      <View style={styles.tableRow}>
+                        <View style={styles.tableLeftCell}>
+                          <Text style={styles.tableLabel}>Fee</Text>
+                        </View>
+                        <View style={styles.dividerVert} />
+                        <View style={styles.tableRightCell}>
+                          <Text style={styles.tableValue}>
+                            CAD {val.processing_fee}
+                          </Text>
+                        </View>
+                      </View>
+
                     </View>
-                    <View style={styles.dividerVert} />
-                    <View style={styles.tableRightCell}>
-                      <Text style={styles.tableValue}>{val.ref}</Text>
+                  )}
+
+                  <View style={styles.tableCard}>
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>All Payments</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <Text style={styles.tableValue}>CAD {data.total_payment}</Text>
+                      </View>
                     </View>
                   </View>
-                   <View style={styles.dividerHoriz} />
-                  <View style={styles.tableRow}>
-                    <View style={styles.tableLeftCell}>
-                      <Text style={styles.tableLabel}>All Payments</Text>
-                    </View>
-                    <View style={styles.dividerVert} />
-                    <View style={styles.tableRightCell}>
-                      <Text style={styles.tableValue}>CAD {val.amount}</Text>
-                    </View>
-                  </View>
-                </View>
-              ))}
+                </React.Fragment>
+              ))
+            }
             <View style={styles.footer}>
               <GradientButton title="Download PDF" />
             </View>
@@ -281,7 +363,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#222222",
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
   },
 
   topCard: {
@@ -301,7 +383,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap:4,
+    gap: 4,
     minWidth: 0,
   },
   topLabel: {
@@ -346,14 +428,13 @@ const styles = StyleSheet.create({
   metaItemRowRight: {
     flexDirection: "row",
     justifyContent: "flex-end",
-     alignItems:"center",
+    alignItems: "center",
     flex: 1,
   },
   metaLabel: {
     color: "#ffffff",
     fontSize: 12,
     fontFamily: "Montserrat_400Regular",
-  
   },
   metaValue: {
     color: "#ffffff",
@@ -393,13 +474,12 @@ const styles = StyleSheet.create({
   },
   userCard: {
     flexDirection: "row",
-     alignItems: "flex-start",
-    padding: 13,
+    alignItems: "center",
+    padding: 12,
     paddingVertical: 20,
     backgroundColor: "#444",
     borderRadius: 12,
-    marginBottom: 16,
-    marginTop: 14,
+    marginVertical: 16,
   },
   avatar: {
     width: 90,

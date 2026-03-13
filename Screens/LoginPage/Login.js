@@ -108,15 +108,13 @@ const Login = ({ navigation }) => {
       setLoading(false);
 
       if (!response.ok) {
-        toastError("Login Failed", data.message || "Invalid credentials");
+        toastError(data.message || "Invalid credentials");
         return;
       }
       await AsyncStorage.setItem("token", data.token);
-
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
-      toastSuccess("Success", "Login successful");
+      toastSuccess("Login successful");
       const { verification_count, admin } = data.user;
-
       if (verification_count < 2) {
         navigation.reset({
           index: 0,
@@ -138,7 +136,6 @@ const Login = ({ navigation }) => {
       }
     } catch (error) {
       Alert.alert("Error", "Something went wrong: " + error.message);
-
       console.log(error);
     } finally {
       setLoading(false);

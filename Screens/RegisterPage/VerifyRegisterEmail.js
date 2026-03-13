@@ -89,7 +89,7 @@ export default function VerifyRegisterEmail({ route }) {
                 throw new Error(data.message || 'Verification failed');
             }
 
-            toastSuccess('Success', 'Email verified successfully!');
+            toastSuccess('Email verified successfully!');
             const { verification_count, admin } = data.user;
 
             if (verification_count < 2) {
@@ -136,7 +136,7 @@ export default function VerifyRegisterEmail({ route }) {
             setTimer(RESEND_SECONDS);
             toastSuccess('Verification code resent.');
         } catch (error) {
-            toastError('Failed to resend code. ' . error);
+            toastError('Failed to resend code. '.error);
         }
     };
 
@@ -195,19 +195,10 @@ export default function VerifyRegisterEmail({ route }) {
                         </View>
 
                         <View style={{ marginTop: 20 }}>
-                            {timer > 0 ? (
+                            {timer > 0 && (
                                 <Text style={styles.timer}>
                                     00:{timer < 10 ? `0${timer}` : timer} left
                                 </Text>
-                            ) : (
-                                <View style={styles.resendRow}>
-                                    <Text style={styles.resendGrey}>
-                                        Didn’t receive the code?{' '}
-                                    </Text>
-                                    <TouchableOpacity onPress={handleResend}>
-                                        <Text style={styles.resendRed}>Click to resend</Text>
-                                    </TouchableOpacity>
-                                </View>
                             )}
                         </View>
                         <View style={{ width: "100%" }}>
@@ -218,6 +209,18 @@ export default function VerifyRegisterEmail({ route }) {
                                 loading={loading}
                             />
                         </View>
+                        {
+                            timer == 0 && (
+                                <View style={styles.resendRow}>
+                                    <Text style={styles.resendGrey}>
+                                        Didn’t receive the code?{' '}
+                                    </Text>
+                                    <TouchableOpacity onPress={handleResend}>
+                                        <Text style={styles.resendRed}>Click to resend</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )
+                        }
                     </View>
                 </KeyboardAwareScrollView>
             </LinearGradient>
@@ -265,8 +268,8 @@ const styles = StyleSheet.create({
     },
 
     input: {
-        width: 55,
-        height: 60,
+        flex: 1,
+        height: 55,
         borderWidth: 1.5,
         borderColor: '#444',
         borderRadius: 14,
@@ -292,6 +295,7 @@ const styles = StyleSheet.create({
     resendRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginTop: 15,
     },
     resendGrey: {
         color: '#888',

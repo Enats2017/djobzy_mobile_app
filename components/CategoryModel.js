@@ -18,10 +18,8 @@ import { API_URL, API_ICON } from "../api/ApiUrl";
 import { useCategoryGlobalStore } from "./CategoryGlobalStore";
 import Loading from "./Loading";
 import GradientButton from "./GradientButton";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { toastError, toastSuccess } from "../utils/toast";
 
 const CategoryModel = ({ visible, onClose, type, pageType }) => {
   const insets = useSafeAreaInsets();
@@ -30,6 +28,7 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expandedServices, setExpandedServices] = useState({});
+  const [emptyCat, setEmptyCat] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +60,7 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
       subId: sub.subid,
       name: sub.subname,
     });
+    setEmptyCat('');
   };
 
   const handleRemoveSub = (subId) => {
@@ -75,13 +75,8 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
   const handlePublish = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("token");
-
-    //const { categories } = useServiceGlobalStore.getState();
-
     const services = categories.map((c) => c.subId).join(",");
-
     let formData = new FormData();
-
     formData.append("services", services);
     console.log("1111service", services);
     formData.append("service_type", type); // 0 = employee, 2 = promote
@@ -101,14 +96,15 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
       const result = await response.json();
       console.log(result);
       if (result.status === 200) {
-        Alert.alert("Success", "Service Published Successfully!");
+        toastSuccess("Categories added Successfully!");
         useCategoryGlobalStore.getState().reset();
         onClose();
       } else {
-        Alert.alert("Error", result.message);
+        // toastError(result.message);
+        setEmptyCat(result.message);
       }
     } catch (error) {
-      Alert.alert("Error", "API Network Error");
+      toastError("API Network Error");
     } finally {
       setLoading(false);
     }
@@ -139,7 +135,11 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
                 onChangeText={(text) => setSearch(text)}
               />
             </View>
-
+            {emptyCat && (
+                <View>
+                  <Text style={{ color: "#d81818ff", fontSize: 15,}}> {emptyCat} </Text>
+                </View>
+            )}
             <View>
               <ScrollView
                 horizontal
@@ -227,7 +227,7 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
             <View style={styles.categoryBtn}>
               <GradientButton
                 loading={loading}
-                title="Save and Publish"
+                title="Save"
                 onPress={handlePublish}
               />
             </View>

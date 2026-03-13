@@ -15,25 +15,22 @@ import {
   TouchableOpacity,
   View,
   Image,
-
+  Modal
 } from "react-native";
 import HeaderBar from "../../components/HeaderBar";
 import { API_URL } from "../../api/ApiUrl";
 import FeedPost from "../SocialMediaPage/FeedPost";
 import { ScrollView } from "react-native-gesture-handler";
-import LineDivider from "../../components/LineDivider";
-import GroupJobPost from "../../assets/images/GroupJobPost.png";
-import GroupNext from "../../assets/images/GroupNext.png";
 import EmployerCard from "./EmployerCard";
 import EmployerFooter from "../../components/EmployerFooter";
 import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
+import ProfileTutorial from "../../components/ProfileTutorial";
 
-const DuplicateEmp = () => {
+const EmployerDashboard = () => {
   const [activeTab, setActiveTab] = useState("jobs");
   const [employees, setEmployees] = useState([]);
-  const [empDashModal, setEmpDashModal] = useState(false);
+  const [empDashModal, setEmpDashModal] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(1);
   const [menuVisible, setMenuVisible] = useState(false);
   const navigation = useNavigation();
   const [page, setPage] = useState(1);
@@ -102,7 +99,7 @@ const DuplicateEmp = () => {
     setRefreshing(true);
     setHasMore(true);
     setPage(1);
-    await fetchEmployees(1); 
+    await fetchEmployees(1);
     setRefreshing(false);
   };
 
@@ -134,12 +131,12 @@ const DuplicateEmp = () => {
     }
   }, [activeTab]);
 
-    const handleCreateJobNavigation = () => {
-      const store = useGlobalSearch.getState();
-      store.reset();
-      store.clearCategories();
-      navigation.navigate("EmployerCategory");
-    };
+  const handleCreateJobNavigation = () => {
+    const store = useGlobalSearch.getState();
+    store.reset();
+    store.clearCategories();
+    navigation.navigate("EmployerCategory");
+  };
 
   const renderFooter = () => {
     if (!isFetchingMore) return null;
@@ -365,103 +362,21 @@ const DuplicateEmp = () => {
             </>
           )}
         </View>
-        {/* <Modal
+        <Modal
           animationType="slide"
           transparent={true}
           visible={empDashModal}
           onRequestClose={closeModal}
         >
-          <View style={styles.modalBackground}>
-            <View style={styles.modalCard}>
-              <View
-                style={[
-                  styles.modalContent,
-                  { flex: 1, justifyContent: "center" },
-                ]}
-              >
-                {currentSlide === 1 ? (
-                  <>
-                    <Image
-                      source={GroupNext}
-                      style={styles.modalImage}
-                      resizeMode="cover"
-                    />
-
-                    <View style={styles.modalTitleContainer}>
-                      <Text style={styles.modalTitleLine}>Welcome to your</Text>
-                      <Text style={styles.modalTitleLine}>
-                        <Text style={styles.employerColor}>Employer</Text>{" "}
-                        Profile
-                      </Text>
-                    </View>
-
-                    <Text style={styles.modalDescription}>
-                      A space for businesses to post jobs, showcase their
-                      company, and manage hiring with reviews and ratings.
-                    </Text>
-
-                    <TouchableOpacity
-                      style={styles.yellowButton}
-                      onPress={() => setCurrentSlide(2)}
-                    >
-                      <Text style={styles.yellowButtonText}>Next</Text>
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <>
-                    <Image
-                      source={GroupJobPost}
-                      style={styles.modalImage}
-                      resizeMode="cover"
-                    />
-
-                    <Text style={styles.modalTitle}>
-                      Start <Text style={styles.djobzyColor}>Djobzy</Text>{" "}
-                      Journey
-                    </Text>
-
-                    <View style={styles.modalDescriptionContainer}>
-                      <Text style={styles.modalDescriptionLine}>
-                        In order to get things done, create
-                      </Text>
-                      <Text style={styles.modalDescriptionLine}>
-                        your first job post
-                      </Text>
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.yellowButton}
-                      onPress={closeModal}
-                    >
-                      <Text style={styles.yellowButtonText}>
-                        Create a Job Post
-                      </Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-
-                <View style={styles.slideIndicatorRow}>
-                  <View
-                    style={[
-                      styles.slideDot,
-                      currentSlide === 1
-                        ? styles.slideDotActive
-                        : styles.slideDotInactive,
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.slideDot,
-                      currentSlide === 2
-                        ? styles.slideDotActive
-                        : styles.slideDotInactive,
-                    ]}
-                  />
-                </View>
-              </View>
-            </View>
-          </View>
-        </Modal> */}
+          <ProfileTutorial
+            role="employer"
+            onClose={closeModal}
+            onPrimaryAction={() => {
+              closeModal();
+              navigation.navigate("CreateJob");
+            }}
+          />
+        </Modal>
         <EmployerFooter />
       </SafeAreaView>
     </>
@@ -640,6 +555,107 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#000",
   },
+
+  // social media
+  postcontainer: {
+    backgroundColor: "#FFFFFF1a",
+    marginTop: 25,
+    borderRadius: 10,
+    marginBottom: 25,
+  },
+  postBox: {
+    padding: 7,
+  },
+
+  input: {
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    color: "#FFFFFF",
+    borderColor: "#FFFFFF33",
+    padding: 15,
+    marginHorizontal: 10,
+    marginBottom: 10,
+  },
+  logo: {
+    height: 21,
+    width: 21,
+    marginRight: 7,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 5,
+  },
+  buttonText: {
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    color: "#c3c3c3c3",
+  },
+  feed: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 11,
+    paddingHorizontal: 10,
+  },
+  anylog: {
+    flexDirection: "row",
+    gap: 3,
+  },
+  textfeed: {
+    fontSize: 22,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#fff",
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
+    paddingTop: 80,
+    paddingRight: 15,
+  },
+  popup: {
+    width: 160,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    elevation: 7,
+  },
+
+  text: {
+    fontSize: 15,
+    color: "#000",
+  },
+  loaderOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  showMoreBtn: {
+    marginTop: 10,
+    paddingVertical: 7.5,
+    paddingHorizontal: 12,
+    backgroundColor: "#ececec",
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  showMoreText: {
+    fontSize: 12,
+    fontFamily: "Montserrat_500Medium",
+    color: "#000",
+  },
 });
 
-export default DuplicateEmp;
+export default EmployerDashboard;

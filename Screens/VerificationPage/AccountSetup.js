@@ -1,8 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import {
-  ActivityIndicator,
   Alert,
   StyleSheet,
   Text,
@@ -10,9 +9,7 @@ import {
   Platform,
   ScrollView,
   TextInput,
-  TouchableOpacity,
   View,
-
 } from "react-native";
 import PhoneNumberInput from "../../components/PhoneNumberInput";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
@@ -23,10 +20,9 @@ import { toastError, toastSuccess } from "../../utils/toast";
 import { getCountryCallingCode } from "libphonenumber-js";
 import QuestionMark from "../../components/QuestionMark";
 import BorderButton from "../../components/BorderButton";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 const AccountSetup = ({
-  countries,
   fullName,
   username,
   setFullName,
@@ -36,8 +32,6 @@ const AccountSetup = ({
   onNext,
   userDetails,
 }) => {
-  console.log(username);
-
   const [loading, setLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState(
     userDetails.mobile_number || "",
@@ -46,21 +40,19 @@ const AccountSetup = ({
     userDetails.mobile_country_id || "",
   );
   const [mobileCountryISO, setMobileCountryISO] = useState("");
-  const phoneInputRef = useRef(null);
-  const [phoneVerified, setPhoneVerified] = useState(false);
   const [usernameError, setUsernameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [canVerify, setCanVerify] = useState(false);
   const navigation = useNavigation();
 
-  // const [emailVerified, setEmailVerified] = useState([]);
-
-  //  useEffect(() => {
-  //    setFullName(userDetails.full_name || "");
-  //    setUsername(userDetails.name || "");
-  //    setEmail(userDetails.email || "");
-  //    //setEmailVerified(userDetails.confirmation || 0);
-  //  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (userDetails) {
+        setMobileCountryISO((prev) => prev || userDetails.iso2);
+        setMobileCountryId((prev) => prev || userDetails.phonecode);
+      }
+    }, [userDetails]),
+  );
 
   const isoToFlag = (iso) =>
     iso
@@ -77,7 +69,7 @@ const AccountSetup = ({
     }
   };
 
-  const countryISO = userDetails?.iso2 || "CA";
+  const countryISO = mobileCountryISO || userDetails?.iso2 || "CA";
   const defaultCountryISO = countryISO;
   const defaultCallingCode = isoToCallingCode(countryISO);
   const defaultFlag = isoToFlag(countryISO) || "🇨🇦";
@@ -98,7 +90,7 @@ const AccountSetup = ({
     const fullNumber = `+${mobileCountryId}${phoneNumber}`;
     const updatedFullNumber = `${mobileCountryId}${phoneNumber}`;
 
-    const isPhoneValid = isValidPhoneNumber(fullNumber, mobileCountryISO);
+    const isPhoneValid = isValidPhoneNumber( fullNumber, mobileCountryISO || userDetails?.iso2);
     if (!isPhoneValid) {
       toastError("Please enter a valid phone number.");
       return;
@@ -152,6 +144,27 @@ const AccountSetup = ({
     }
   };
 
+  const handleResend = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      fetch(`${API_URL}/resend-email-link`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      toastSuccess('Verification code sent');
+      navigation.navigate("VerifyRegisterEmail", { email });
+    } catch (error) {
+      toastError('Failed to sent verification code');
+      console.log(error);
+    }
+  };
+
   return (
     <View style={styles.safe}>
       <View style={styles.header}>
@@ -183,7 +196,7 @@ const AccountSetup = ({
             value={username}
             onChangeText={(text) => {
               setUsername(text);
-              setUsernameError(false);
+              setUsernameError("");
             }}
           />
           {usernameError ? (
@@ -221,18 +234,20 @@ const AccountSetup = ({
           </View>
           <PhoneNumberInput
             value={phoneNumber}
+            countryISO={mobileCountryISO}
+            countryCode={mobileCountryId}
             onChange={({ phone, countryCode, countryISO }) => {
               setPhoneNumber(phone);
               setMobileCountryId(countryCode);
               setMobileCountryISO(countryISO);
-              setPhoneError(false);
+              setPhoneError("");
               const full = `+${countryCode}${phone}`;
               const valid = isValidPhoneNumber(full, countryISO);
               setCanVerify(valid);
             }}
             defaultFlag={defaultFlag}
             defaultCallingCode={defaultCallingCode}
-            defaultCountryISO={defaultCountryISO}
+            defaultCountryISO={countryISO}
           />
 
           <Text style={styles.phoneText}>
@@ -256,10 +271,7 @@ const AccountSetup = ({
             <BorderButton
               title="Verify your Email"
               marginTop={10}
-              onPress={() => {
-                //handleVerifyPhone(); // your verify API
-                navigation.navigate("VerifyRegisterEmail", { email: email });
-              }}
+              onPress={handleResend}
             />
           )}
 

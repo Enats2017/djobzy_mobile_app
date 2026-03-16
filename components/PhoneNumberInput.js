@@ -80,6 +80,7 @@ const PhoneNumberInput = ({
           <Text style={styles.callingCode}>{callingCode}</Text>
         </TouchableOpacity>
 
+        <View style={styles.divider} />
         <TextInput
           style={styles.textInput}
           placeholder={placeholder}
@@ -200,4 +201,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
   },
+  divider: {
+    width: 1,
+    height: 30,
+    backgroundColor: "#838383",
+    marginHorizontal: 10
+  }
 });

@@ -1,60 +1,106 @@
 import { View, Text, StyleSheet } from "react-native";
 import NoTransactions from "./NoTransactions";
 
-export default function Incomes({ data }) {
-  const hasData = data?.data?.length > 0;
-  // console.log(hasData);
+export default function Incomes({ data, cardVerification }) {
+  const hasTransactions = data?.data?.length > 0;
+  const hasCardVerification = !!cardVerification;
+  // console.log(hasTransactions);
 
   return (
     <View style={styles.pageBackground}>
-      {hasData ? (
-        data.data.map((item, index) => (
-          <View key={index} style={styles.visualTableWrapper}>
-            <View style={styles.visualTableRow}>
-              <Text style={styles.visualTableLabel}>Date</Text>
-              <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.award_date}</Text>
-            </View>
-            <View style={styles.visualTableHorizontalLine} />
+      {
+        hasCardVerification && (
+          <>
+            <Text style={styles.sectionTitle}>Card Verification</Text>
+            <View style={styles.visualTableWrapper}>
+              <View style={styles.visualTableRow}>
+                <Text style={styles.visualTableLabel}>Date</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>{cardVerification?.created_at}</Text>
+              </View>
+              <View style={styles.visualTableHorizontalLine} />
 
-            <View style={styles.visualTableRow}>
-              <Text style={styles.visualTableLabel}>Employer</Text>
-              <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.full_name}</Text>
-            </View>
-            <View style={styles.visualTableHorizontalLine} />
+              <View style={styles.visualTableRow}>
+                <Text style={styles.visualTableLabel}>Income Type</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>Card verification</Text>
+              </View>
+              <View style={styles.visualTableHorizontalLine} />
 
-            <View style={styles.visualTableRow}>
-              <Text style={styles.visualTableLabel}>Job Name</Text>
-              <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.subject}</Text>
-            </View>
-            <View style={styles.visualTableHorizontalLine} />
+              <View style={styles.visualTableRow}>
+                <Text style={styles.visualTableLabel}>Status</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>Completed</Text>
+              </View>
+              <View style={styles.visualTableHorizontalLine} />
 
-            <View style={styles.visualTableRow}>
-              <Text style={styles.visualTableLabel}>Status</Text>
-              <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.payment_release_status == 0 ? "In Escrow Account" : "Completed"}</Text>
-            </View>
-            <View style={styles.visualTableHorizontalLine} />
+              <View style={styles.visualTableRow}>
+                <Text style={styles.visualTableLabel}>Amount</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>1</Text>
+              </View>
+              <View style={styles.visualTableHorizontalLine} />
 
-            <View style={styles.visualTableRow}>
-              <Text style={styles.visualTableLabel}>Amount</Text>
-              <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.actual_price_amount}</Text>
+              <View style={styles.visualTableRow}>
+                <Text style={styles.visualTableLabel}>ID</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>{cardVerification?.reference_id}</Text>
+              </View>
             </View>
-            <View style={styles.visualTableHorizontalLine} />
+          </>
+        )
+      }
+      {hasTransactions ? (
+        <>
+          <Text style={styles.sectionTitle}>Work Income</Text>
+          {data.data.map((item, index) => (
+            <View key={index} style={styles.visualTableWrapper}>
+              <View style={styles.visualTableRow}>
+                <Text style={styles.visualTableLabel}>Date</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>{item.award_date}</Text>
+              </View>
+              <View style={styles.visualTableHorizontalLine} />
 
-            <View style={styles.visualTableRowLast}>
-              <Text style={styles.visualTableLabel}>ID</Text>
-              <View style={styles.visualTableVerticalAbsolute} />
-              <Text style={styles.visualTableValue}>{item.order_reference_id}</Text>
+              <View style={styles.visualTableRow}>
+                <Text style={styles.visualTableLabel}>Employer</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>{item.full_name}</Text>
+              </View>
+              <View style={styles.visualTableHorizontalLine} />
+
+              <View style={styles.visualTableRow}>
+                <Text style={styles.visualTableLabel}>Job Name</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>{item.subject}</Text>
+              </View>
+              <View style={styles.visualTableHorizontalLine} />
+
+              <View style={styles.visualTableRow}>
+                <Text style={styles.visualTableLabel}>Status</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>{item.payment_release_status == 0 ? "In Escrow Account" : "Completed"}</Text>
+              </View>
+              <View style={styles.visualTableHorizontalLine} />
+
+              <View style={styles.visualTableRow}>
+                <Text style={styles.visualTableLabel}>Amount</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>{item.actual_price_amount}</Text>
+              </View>
+              <View style={styles.visualTableHorizontalLine} />
+
+              <View style={styles.visualTableRowLast}>
+                <Text style={styles.visualTableLabel}>ID</Text>
+                <View style={styles.visualTableVerticalAbsolute} />
+                <Text style={styles.visualTableValue}>{item.order_reference_id}</Text>
+              </View>
             </View>
-          </View>
-        ))
-      ) : (
+          ))}
+        </>
+      ) : !hasCardVerification ? (
         <NoTransactions />
-      )}
+      ) : null}
     </View>
   );
 }
@@ -106,4 +152,10 @@ const styles = StyleSheet.create({
     textAlign: "left",
     flexWrap: "wrap",
   },
+  sectionTitle: {
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    marginVertical: 10,
+    color: "#fff"
+  }
 });

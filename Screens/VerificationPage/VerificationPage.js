@@ -29,7 +29,7 @@ const VerificationPage = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [countries, setCountries] = useState([]);
   const [userDetails, setUserDetails] = useState({});
-  const [emailVerified, setEmailVerified] = useState([]);
+  const [emailVerified, setEmailVerified] = useState(0);
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -94,7 +94,6 @@ const VerificationPage = () => {
   }, []);
 
   return (
-    <>
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView behavior="padding" style={styles.container}>
           <HeaderBar showSearch={false} showMenu={false} />
@@ -220,7 +219,6 @@ const VerificationPage = () => {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </>
   );
 };
 

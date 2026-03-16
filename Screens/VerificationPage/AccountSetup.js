@@ -215,7 +215,7 @@ const AccountSetup = ({
               keyboardType="email-address"
               editable={!emailVerified}
             />
-            {emailVerified && (
+            {emailVerified === 1 && (
               <Ionicons
                 name="checkmark-done-circle-sharp"
                 size={24}
@@ -302,12 +302,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   input: {
-    backgroundColor: "#faf6f6ff",
-    paddingHorizontal: 10,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 15,
     fontSize: 14,
     fontFamily: "Montserrat_400Regular",
     borderRadius: 10,
-    height: 50,
+    height: 55,
     color: "#111010ff",
   },
   phoneInputContainer: {

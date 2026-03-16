@@ -39,6 +39,7 @@ export default function Wallet() {
   const [loading, setLoading] = useState(false);
   const [myBalance, setMyBalance] = useState(0);
   const [income, setIncome] = useState([]);
+  const [cardVerification, setCardVerification] = useState([]);
   const [withdrawal, setWithdrawal] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [promotionalExpenses, setPromotionalExpenses] = useState([]);
@@ -66,6 +67,7 @@ export default function Wallet() {
       setRefunds(data.refund);
       setReferralWallet(data.completeReferrals);
       setSettings(data.settings);
+      setCardVerification(data.card_verification);
     } catch (error) {
       console.error("Error fetching User:", error);
     } finally {
@@ -254,7 +256,7 @@ export default function Wallet() {
                 </ScrollView>
               </View>
               <View style={styles.tabContent}>
-                {activeTab === 1 && <Incomes data={income} loading={loading} setting={settings} />}
+                {activeTab === 1 && <Incomes data={income} cardVerification={cardVerification} loading={loading} setting={settings} />}
 
                 {activeTab === 2 && <Withdrawals data={withdrawal} loading={loading} setting={settings} />}
 

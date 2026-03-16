@@ -201,8 +201,6 @@ const App = () => {
   }
   TextInput.defaultProps.allowFontScaling = false;
 
-
-
   return (
     <View style={{ flex: 1 }}>
       <MessageNotificationProvider>

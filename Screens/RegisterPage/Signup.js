@@ -132,7 +132,7 @@ const Signup = () => {
               <TextInput
                 style={styles.passwordInput}
                 placeholder=" Enter Full Name/Company Name"
-                placeholderTextColor="#888"
+                placeholderTextColor="#838383"
                 value={fullName}
                 onChangeText={(text) => {
                   setFullName(text);
@@ -148,7 +148,7 @@ const Signup = () => {
               <TextInput
                 style={styles.passwordInput}
                 placeholder="xyz@gmail.com"
-                placeholderTextColor="#888"
+                placeholderTextColor="#838383"
                 onChangeText={(text) => {
                   setEmail(text);
                   setEmailError("");
@@ -165,7 +165,7 @@ const Signup = () => {
               <TextInput
                 style={styles.passwordInput}
                 placeholder=" Type a password"
-                placeholderTextColor="#888"
+                placeholderTextColor="#838383"
                 secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={(text) => {
@@ -183,8 +183,8 @@ const Signup = () => {
               >
                 <Ionicons
                   name={showPassword ? "eye-outline" : "eye-off-outline"}
-                  size={20}
-                  color="#888"
+                  size={15}
+                  color="#838383"
                 />
               </TouchableOpacity>
             </View>
@@ -193,7 +193,7 @@ const Signup = () => {
               <TextInput
                 style={styles.passwordInput}
                 placeholder=" Type the password again"
-                placeholderTextColor="#888"
+                placeholderTextColor="#838383"
                 secureTextEntry={!showConfirmPassword}
                 value={confirmPassword}
                 onChangeText={(text) => {
@@ -211,8 +211,8 @@ const Signup = () => {
               >
                 <Ionicons
                   name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
-                  size={20}
-                  color="#888"
+                  size={15}
+                  color="#838383"
                 />
               </TouchableOpacity>
             </View>
@@ -221,7 +221,7 @@ const Signup = () => {
             ) : null}
 
             <View style={styles.label}>
-              <QuestionMark title="Referral's username (Optional)" 
+              <QuestionMark title="Referral username (Optional)" 
                 iconColor="#fff" 
                 tooltipMessage="The Referral System allows you to earn a passive income of 3% from every completed
                 contract of a user you invited. If you invite someone who earned $1000,
@@ -235,7 +235,7 @@ const Signup = () => {
               <TextInput
                 style={styles.passwordInput}
                 placeholder="username"
-                placeholderTextColor="#888"
+                placeholderTextColor="#838383"
                 value={referralUsername}
                 onChangeText={setReferralUsername}
               />
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   rememberMe: { flexDirection: "row", alignItems: "center" },
   rememberText: {
     color: "#fff",
-    marginLeft: 5,
+    marginLeft: 12,
     fontFamily: "Montserrat_400Regular",
     fontSize: 14,
   },
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     color: "#CB7767",
     textDecorationLine: "underline",
     fontFamily: "Montserrat_400Regular",
-    marginLeft: 24,
+    marginLeft: 32,
     fontSize: 14,
   },
 
@@ -392,15 +392,15 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     width: "100%",
   },
-  line: { flex: 1, height: 1, backgroundColor: "#888" },
+  line: { flex: 1, height: 1, backgroundColor: "#ffffff33" },
   orText: {
     color: "#fff",
     marginHorizontal: 10,
     fontFamily: "Montserrat_500Medium",
   },
   checkbox: {
-    width: 18,
-    height: 18,
+    width: 20,
+    height: 20,
     borderRadius: 4,
     borderWidth: 2,
     borderColor: "#fff",
@@ -417,8 +417,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#6a6565ff",
     width: "100%",
-    height: 45,
-    borderRadius: 6,
+    height: 50,
+    borderRadius: 10,
+    gap: 6,
   },
 
   socialIcon: {
@@ -441,8 +442,9 @@ const styles = StyleSheet.create({
   },
   linkText: {
     color: "#CB7767",
-    fontSize: 18,
+    fontSize: 16,
     textDecorationLine: "underline",
+    fontFamily: "Montserrat_500Medium",
   },
 });
 

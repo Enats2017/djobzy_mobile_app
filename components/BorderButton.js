@@ -6,27 +6,29 @@ const BorderButton = ({
   onPress,
   disabled = false,
   paddingHorizontal = 0,
+  paddingVertical = 10,
   marginTop = 10,
-  fontSize = 20,
+  fontSize = 18,
   color = "#fff",
-  borderColor= "#c3c3c3",
+  borderColor = "#c3c3c3",
+  borderRadius = 12,
   styleOverride = {},
 }) => {
   return (
     <>
       <TouchableOpacity onPress={onPress} activeOpacity={0.8}
-       style={[
-        styles.button,
-        { paddingHorizontal, borderColor, marginTop },
-        disabled && styles.disabledButton, // 🔥 dull style
-        styleOverride,
-      ]}
+        style={[
+          styles.button,
+          { paddingHorizontal, marginTop, borderColor, paddingVertical, borderRadius },
+          disabled && styles.disabledButton,
+          styleOverride,
+        ]}
         disabled={disabled}
       >
-        <Text  style={[
+        <Text style={[
           styles.buttonText,
           { color, fontSize },
-          disabled && styles.disabledText, // 🔥 dull text
+          disabled && styles.disabledText,
         ]}>{title}</Text>
       </TouchableOpacity>
     </>
@@ -34,7 +36,7 @@ const BorderButton = ({
 };
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 9,
+    height: 45,
     borderRadius: 12,
     borderColor: "#ccc",
     borderWidth: 1,
@@ -47,7 +49,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "Montserrat_700Bold",
   },
-    disabledButton: {
+  disabledButton: {
     borderColor: "#666",
     backgroundColor: "#2a2a2a",
     opacity: 0.45,

@@ -4,13 +4,19 @@ import { useNavigation } from "@react-navigation/native";
 import { fontScale, scale } from "../../utils/scale";
 import Feather from "@expo/vector-icons/Feather";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 const ThirdScreen = () => {
   const navigation = useNavigation();
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.container}>
+      <LinearGradient
+        colors={["#39A881", "#218E67"]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={styles.container}
+      >
         <View style={styles.logoContainer}>
           <Image
             source={require("../../assets/images/Group2.png")}
@@ -30,7 +36,7 @@ const ThirdScreen = () => {
           <Text style={styles.subtitle}>Get Hired Faster</Text>
 
           <Text style={styles.description}>
-            Connecting ambition to opportunity
+            Connecting ambition{"\n"}to opportunity
           </Text>
         </View>
 
@@ -48,7 +54,7 @@ const ThirdScreen = () => {
             </View>
           </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
     </SafeAreaView>
   );
 };
@@ -90,14 +96,14 @@ const styles = StyleSheet.create({
 
   title: {
     fontFamily: "Montserrat_400Regular",
-    fontSize: fontScale(40),
-    lineHeight: scale(52),
+    fontSize: fontScale(35),
+    lineHeight: scale(40),
     color: "#fff",
   },
 
   subtitle: {
     fontFamily: "Montserrat_700Bold",
-    fontSize: fontScale(30),
+    fontSize: fontScale(35),
     color: "#fff",
     textAlign: "center",
   },
@@ -105,9 +111,9 @@ const styles = StyleSheet.create({
   description: {
     fontSize: fontScale(16),
     color: "#fff",
-    fontFamily:"Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
     textAlign: "center",
-    lineHeight: scale(22),
+    marginTop: scale(10),
   },
 
   /* BUTTON */
@@ -122,7 +128,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#111",
     padding: scale(10),
-
     borderRadius: scale(30),
   },
 

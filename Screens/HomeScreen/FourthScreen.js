@@ -1,4 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
   Dimensions,
@@ -11,9 +12,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const { width, height } = Dimensions.get("window");
 
-// Responsive helpers
+const { width, height } = Dimensions.get("window");
 const scale = (size) => (width / 375) * size;
 
 const BUTTON_SIZE = width * 0.41;
@@ -23,72 +23,74 @@ const FourthScreen = () => {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Images */}
-        <View style={styles.imageContainer}>
-          <Image
-            source={require("../../assets/images/Group2.png")}
-            style={styles.baseImage}
-            resizeMode="contain"
-          />
-          <Image
-            source={require("../../assets/images/Team work.png")}
-            style={styles.overlayImage}
-            resizeMode="contain"
-          />
-        </View>
-
-        {/* Text Section */}
-        <View style={styles.section}>
-          <Text style={styles.heading}>Select Your</Text>
-          <Text style={styles.bold}>Primary Role</Text>
-          <Text style={styles.subheading}>
-           switch between your{" "}
-            <Text style={styles.boldtext}>Recruiter</Text> and{" "}
-            <Text style={styles.boldtext}>Job Seeker</Text> accounts at any time
-          </Text>
-        </View>
-
-        {/* Buttons */}
-        <View style={styles.buttons}>
-          <TouchableOpacity
-            style={[styles.circleButton, { backgroundColor: "#39A881" }]}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate("Signup")}
-          >
+      <LinearGradient colors={["#444444", "#222222"]} style={styles.containers}>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Images */}
+          <View style={styles.imageContainer}>
             <Image
-              source={require("../../assets/images/Group-vector.png")}
-              style={styles.icon}
+              source={require("../../assets/images/Group2.png")}
+              style={styles.baseImage}
               resizeMode="contain"
             />
-            <Text style={[styles.circleText, { color: "#fff" }]}>
-              I'm a Job Seeker{" "}
-              <Text style={[styles.descText]}>looking for a job or task</Text>
+            <Image
+              source={require("../../assets/images/Team work.png")}
+              style={styles.overlayImage}
+              resizeMode="contain"
+            />
+          </View>
+
+          {/* Text Section */}
+          <View style={styles.section}>
+            <Text style={styles.heading}>Select Your</Text>
+            <Text style={styles.bold}>Primary Role</Text>
+            <Text style={styles.subheading}>
+            switch between your{" "}
+              <Text style={styles.boldtext}>Recruiter</Text> and{"\n"}
+              <Text style={styles.boldtext}>Job Seeker</Text> accounts at any time
             </Text>
-          </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={[styles.circleButton, { backgroundColor: "#fff" }]}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate("Signup")}
-          >
-            <Image
-              source={require("../../assets/images/Group-icon.png")}
-              style={styles.icon}
-              resizeMode="contain"
-            />
-            <Text style={[styles.circleText, { color: "#111" }]}>
-              I'm a Recruiter{"\n"}
-              <Text style={[styles.descText, { color: "#111" }]}>
-                need a service provider
+          {/* Buttons */}
+          <View style={styles.buttons}>
+            <TouchableOpacity
+              style={[styles.circleButton, { backgroundColor: "#39A881" }]}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate("Signup")}
+            >
+              <Image
+                source={require("../../assets/images/Group-vector.png")}
+                style={styles.icon}
+                resizeMode="contain"
+              />
+              <Text style={[styles.circleText, { color: "#fff" }]}>
+                I'm a Job Seeker{" "}
+                <Text style={[styles.descText]}>looking for{"\n"}a job or task</Text>
               </Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.circleButton, { backgroundColor: "#fff" }]}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate("Signup")}
+            >
+              <Image
+                source={require("../../assets/images/Group-icon.png")}
+                style={styles.icon}
+                resizeMode="contain"
+              />
+              <Text style={[styles.circleText, { color: "#111" }]}>
+                I'm a Recruiter{"\n"}
+                <Text style={[styles.descText, { color: "#111" }]}>
+                  need a service provider
+                </Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </LinearGradient>
     </SafeAreaView>
   );
 };
@@ -98,7 +100,9 @@ export default FourthScreen;
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    
+  },
+  containers: {
+    flex: 1,
   },
 
   scroll: {
@@ -106,7 +110,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingBottom: 50,
-    backgroundColor: "#222222",
   },
 
   imageContainer: {
@@ -136,10 +139,10 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    fontSize: scale(36),
+    fontSize: scale(38),
     fontFamily: "Montserrat_400Regular",
     color: "#ffffff",
-    lineHeight: scale(40),
+    lineHeight: scale(28),
   },
 
   bold: {

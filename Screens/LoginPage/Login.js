@@ -43,7 +43,7 @@ const getResponsiveValues = () => {
     inputHeight: isSmall ? 42 : isTablet ? 55 : 48,
     inputRadius: isSmall ? 6 : isTablet ? 12 : 8,
     logoSize: isSmall ? 50 : isTablet ? 100 : 50,
-    eyeIconSize: isSmall ? 16 : isTablet ? 26 : 20,
+    eyeIconSize: isSmall ? 15 : isTablet ? 22 : 20,
     checkIconSize: isSmall ? 12 : isTablet ? 20 : 14,
     socialIconSize: isSmall ? 18 : isTablet ? 28 : 22,
   };
@@ -204,8 +204,8 @@ const Login = ({ navigation }) => {
               >
                 <Ionicons
                   name={showPassword ? "eye-outline" : "eye-off-outline"}
-                  size={eyeIconSize}
-                  color="#888"
+                  size={15}
+                  color="#a6a6a6"
                 />
               </TouchableOpacity>
             </View>
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   rememberText: {
     color: "#fff",
     marginLeft: 5,
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Montserrat_400Regular",
   },
   forgotText: {
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     width: "100%",
   },
-  line: { flex: 1, height: 1, backgroundColor: "#888" },
+  line: { flex: 1, height: 1, backgroundColor: "#ffffff33" },
   orText: {
     color: "#fff",
     marginHorizontal: 10,
@@ -422,9 +422,8 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginTop: 7,
     textAlign: "center",
-  
     fontSize: 14,
-    fontFamily: "Montserrat_500Medium",
+    fontFamily: "Montserrat_400Regular",
   },
   linkText: {
     color: "#C96B59",

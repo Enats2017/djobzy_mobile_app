@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
 
   arrowBtn: {
     position: "absolute",
-    bottom: 13,
+    bottom: 15,
     alignSelf: "center",
     width: 56,
     height: 56,

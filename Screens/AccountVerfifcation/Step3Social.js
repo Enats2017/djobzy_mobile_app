@@ -71,6 +71,9 @@ const Step3Social = ({ onNext }) => {
       <TouchableOpacity style={styles.nextBtn} onPress={handleSubmit} loading={loading}>
         <Text style={styles.nextText}>Next</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={handleSubmit}>
+        <Text style={styles.dontHaveBtn}>I don’t have social media accounts</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -133,7 +136,7 @@ const styles = StyleSheet.create({
   },
 
   nextBtn: {
-    backgroundColor: "#FDBF2D",
+    backgroundColor: "#F4C366",
     paddingVertical: 10,
     borderRadius: 10,
     marginTop: 20,
@@ -144,5 +147,12 @@ const styles = StyleSheet.create({
     color: "#000000",
     fontFamily: "Montserrat_700Bold",
     fontSize: 20
+  },
+  dontHaveBtn: {
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
+    color: "#fff",
+    textAlign: "center",
+    marginVertical: 10
   }
 });

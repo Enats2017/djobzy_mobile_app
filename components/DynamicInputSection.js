@@ -21,7 +21,7 @@ export default function DynamicInputSection({
           style={styles.innerInput}
           placeholder="Write here"
           placeholderTextColor="#bfbfbf"
-          value={values[0].value}
+          value={values[0]?.value}
           onChangeText={(t) => updateItem(type, values[0].id, t)}
         />
         <TouchableOpacity onPress={() => addItem(type)}>

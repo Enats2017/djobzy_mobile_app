@@ -120,9 +120,7 @@ const VerificationPage = () => {
                               styles.circle,
                               isCompleted
                                 ? styles.completedCircle
-                                : isActive
-                                  ? styles.activeCircle
-                                  : styles.inactiveCircle,
+                                : styles.inactiveCircle,
                             ]}
                           >
                             {isCompleted && (

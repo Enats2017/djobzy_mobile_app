@@ -59,7 +59,7 @@ import PostJobDetails from "./Screens/ContractPage/PostJobDetails";
 import ReceiveApplication from "./Screens/ContractPage/ReceiveApplication";
 import EmployerSentOffer from "./Screens/ContractPage/EmployerSentOffer";
 import ActiveContract from "./Screens/ContractPage/ActiveContract";
-import ProfileEditPage from "./Screens/ProfileMenuPAge/ProfileEditPage";
+import ProfileEditPage from "./Screens/EditProfilePage/ProfileEditPage";
 import ProfileBoostPage from "./Screens/ProfileMenuPAge/ProfileBoostPage";
 import GeneralSetting from "./Screens/ProfileMenuPAge/GeneralSetting";
 import IdentityVerification from "./Screens/GeneralSetting/IdentityVerification";

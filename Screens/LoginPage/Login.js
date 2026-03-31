@@ -116,7 +116,7 @@ const Login = ({ navigation }) => {
       }
       await AsyncStorage.setItem("token", data.token);
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
-      toastSuccess("Login successful");
+      toastSuccess("Login successfull");
       const { verification_count, admin } = data.user;
       if (verification_count < 2) {
         navigation.reset({

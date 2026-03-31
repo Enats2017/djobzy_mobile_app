@@ -3,12 +3,13 @@ import { View, StyleSheet, TextInput, Text } from "react-native";
 import PhoneNumberInput from "./PhoneNumberInput";
 
 const ContactInfo = ({
-
   postalCodeValue,
   onChangePostalCode,
   locationValue,
   label,
   onChangeLocation,
+  postalError,
+  locationError,
   postalPlaceholder = "Enter Postal Code",
   locationPlaceholder = "Enter Location",
   containerStyle = {},
@@ -18,8 +19,7 @@ const ContactInfo = ({
   showLocation = true,
 }) => {
   return (
-    <View style={[styles. infosection, containerStyle]}>
-
+    <View style={[styles.infosection, containerStyle]}>
       {showPostal && (
         <View style={styles.field}>
           <Text style={styles.label}>Postal Code</Text>
@@ -30,6 +30,9 @@ const ContactInfo = ({
             value={postalCodeValue}
             onChangeText={onChangePostalCode}
           />
+          {postalError ? (
+            <Text style={styles.errorText}>{postalError}</Text>
+          ) : null}
         </View>
       )}
 
@@ -43,6 +46,9 @@ const ContactInfo = ({
             value={locationValue}
             onChangeText={onChangeLocation}
           />
+          {locationError ? (
+            <Text style={styles.errorText}>{locationError}</Text>
+          ) : null}
         </View>
       )}
     </View>
@@ -67,6 +73,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     height: 42,
     paddingHorizontal: 10,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 4,
+    fontFamily: "Montserrat_400Regular",
   },
 });
 

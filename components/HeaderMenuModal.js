@@ -98,6 +98,7 @@ const HeaderMenuModal = ({ visible, onClose }) => {
 
   const toggleSwitch = async (newValue) => {
     setIsEmployer(newValue);
+    onClose();
     await handleSwitchAccount();
   };
 
@@ -271,6 +272,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 15,
+    zIndex: 10,
+    elevation: 10,
   },
 
   switchContainer: {

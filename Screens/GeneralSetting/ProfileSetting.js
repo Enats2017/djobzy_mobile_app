@@ -20,6 +20,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import GradientButton from "../../components/GradientButton";
 import EmployerFooter from "../../components/EmployerFooter";
 import Footer from "../../components/Footer";
+import { Linking } from "react-native";
 
 export default function ProfileSetting() {
   const route = useRoute();
@@ -89,14 +90,10 @@ export default function ProfileSetting() {
         await AsyncStorage.removeItem("user");
         await AsyncStorage.setItem("user", JSON.stringify(data.user));
         const saved = await AsyncStorage.getItem("user");
-      const parsed = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        console.log("💾 Saved in AsyncStorage:", parsed);
+        console.log("💾 Saved admin:", parsed?.admin);
 
-
-      console.log("💾 Saved in AsyncStorage:", parsed);
-      console.log("💾 Saved admin:", parsed?.admin);
-
-
-        // 2️⃣ Update this screen instantly
         setAdminType(data.user.admin);
       }
     } catch (error) {
@@ -180,41 +177,29 @@ export default function ProfileSetting() {
             </Text>
             {adminType === 0 ? (
               <>
-                <GradientButton title="Employee" disabled />
-                <TouchableOpacity
-                  style={styles.secondaryBtn}
+                <GradientButton title="Employee"
                   onPress={changeUserType}
                   disabled={switchLoading}
-                >
-                  {switchLoading ? (
-                    <View style={styles.loaderWrapper}>
-                      <ActivityIndicator color="#fff" size="small" />
-                    </View>
-                  ) : (
-                    <Text style={styles.secondaryBtnText}>
-                      Change to Employer
-                    </Text>
-                  )}
-                </TouchableOpacity>
+                  loading={switchLoading}
+                />
+                <View style={styles.secondaryBtn}>
+                  <Text style={styles.secondaryBtnText}>
+                    Change to Employer
+                  </Text>
+                </View>
               </>
             ) : (
               <>
-                <GradientButton title="Employer" disabled />
-                <TouchableOpacity
-                  style={styles.secondaryBtn}
+                <GradientButton title="Employer"
                   onPress={changeUserType}
                   disabled={switchLoading}
-                >
-                  {switchLoading ? (
-                    <View style={styles.loaderWrapper}>
-                      <ActivityIndicator color="#fff" size="small" />
-                    </View>
-                  ) : (
-                    <Text style={styles.secondaryBtnText}>
-                      Change to Employee
-                    </Text>
-                  )}
-                </TouchableOpacity>
+                  loading={switchLoading}
+                />
+                <View style={styles.secondaryBtn}>
+                  <Text style={styles.secondaryBtnText}>
+                    Change to Employee
+                  </Text>
+                </View>
               </>
             )}
           </View>
@@ -235,9 +220,17 @@ export default function ProfileSetting() {
               </TouchableOpacity>
             </View>
             <Text style={styles.terms}>
-              You agree to our Terms & Conditions and Cookie Policy. You may
-              receive SMS notifications from us or Google and can opt-out at any
-              time.
+              You agree to our{" "}
+              <Text
+                style={styles.linkText}
+                onPress={() =>
+                  Linking.openURL("https://www.djobzy.com/terms-of-use")
+                }
+              >
+                Terms & Conditions and Cookie Policy
+              </Text>
+              . You may receive SMS notifications from us or Google and can
+              opt-out at any time.
             </Text>
           </View>
         </ScrollView>
@@ -266,14 +259,15 @@ const styles = StyleSheet.create({
   heading: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Montserrat_600SemiBold",
     width: "85%",
   },
   desc: {
-    color: "#ccc",
-    fontSize: 13,
+    color: "#c3c3c3",
+    fontSize: 14,
     marginTop: 4,
     lineHeight: 18,
+    fontFamily: "Montserrat_400Regular",
   },
 
   /* Categories Pills */
@@ -313,18 +307,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   secondaryBtn: {
-    borderWidth: 1,
-    borderColor: "#fff",
-    paddingVertical: 14,
-    borderRadius: 10,
-    marginTop: 12,
+    marginTop: 10,
     marginBottom: 15,
     alignItems: "center",
   },
   secondaryBtnText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 15,
+    color: "#ffffff",
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 16,
   },
   googlesection: {
     backgroundColor: "#ffffff1a",
@@ -343,16 +333,19 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     marginLeft: 10,
+    fontFamily: "Montserrat_500Medium",
+  },
+  linkText: {
+    color: "#FFFFFF",
+    textDecorationLine: "underline",
+    fontFamily: "Montserrat_400Regular",
   },
   terms: {
-    color: "#888",
-    fontSize: 12,
-    marginTop: 10,
-    lineHeight: 17,
+    color: "#FFFFFF",
+    fontFamily: "Montserrat_400Regular",
+    marginTop: 5,
   },
   loaderWrapper: {
-    // REQUIRED (Android)
-    // REQUIRED (Android)
     justifyContent: "center",
     alignItems: "center",
   },

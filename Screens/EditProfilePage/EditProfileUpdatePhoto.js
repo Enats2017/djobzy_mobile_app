@@ -7,12 +7,12 @@ import {
     StyleSheet
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { toastError, toastSuccess } from "../../utils/toast";
+import { toastError } from "../../utils/toast";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
 import AntDesign from "@expo/vector-icons/AntDesign";
 
-const UpdateProfilePhoto = ({ photoUri, setPhotoUri }) => {
+const EditProfileUpdatePhoto = ({ photoUri, setPhotoUri }) => {
     const requestPermissions = async () => {
         const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
         const galleryPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -54,7 +54,7 @@ const UpdateProfilePhoto = ({ photoUri, setPhotoUri }) => {
             const uri = result.assets[0].uri;
             const isValid = await validateImageSize(uri);
             if (!isValid) return;
-            updatePhoto(uri);
+            setPhotoUri(uri);
         }
     };
 
@@ -73,7 +73,7 @@ const UpdateProfilePhoto = ({ photoUri, setPhotoUri }) => {
             const uri = result.assets[0].uri;
             const isValid = await validateImageSize(uri);
             if (!isValid) return;
-            updatePhoto(uri);
+            setPhotoUri(uri);
         }
     };
 
@@ -88,21 +88,17 @@ const UpdateProfilePhoto = ({ photoUri, setPhotoUri }) => {
         );
     };
 
-    const removePhoto = () => {
-        updatePhoto(null);
-    };
-
     return (
         <View style={styles.photoSection}>
             {photoUri && (
                 <View style={styles.photoContainer}>
                     <Image source={{ uri: photoUri }} style={styles.photo} />
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         style={styles.removePhoto}
                         onPress={removePhoto}
                     >
                         <Ionicons name="close" size={12} color="#d66e58" />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
             )}
             <View style={styles.photouplaod}>
@@ -182,4 +178,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default UpdateProfilePhoto;
+export default EditProfileUpdatePhoto;

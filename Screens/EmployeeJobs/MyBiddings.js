@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
   biddingContainer: {
     width: "100%",
     flex: 1,
+    paddingBottom: 10,
   },
   toggleWrapper: {
     flexDirection: "row",

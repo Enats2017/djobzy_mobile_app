@@ -19,6 +19,7 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import Loading from "../../components/Loading";
+import NoTransactions from "../Wallet/NoTransactions";
 
 const ReferralWallet = () => {
   const navigation = useNavigation();
@@ -268,9 +269,7 @@ const ReferralWallet = () => {
                       </View>
                     ))
                   ) : (
-                    <Text style={{ textAlign: "center", marginTop: 20 }}>
-                      No pending referrals found
-                    </Text>
+                    <NoTransactions emoji='⏳' title="No pending referrals found" />
                   )}
                   <View style={styles.rateContainer}>
                     <Ionicons
@@ -387,9 +386,7 @@ const ReferralWallet = () => {
                       </View>
                     ))
                   ) : (
-                    <Text style={{ textAlign: "center", marginTop: 20 }}>
-                      No Completed referrals found
-                    </Text>
+                    <NoTransactions emoji="✅" title="No Completed referrals found" />
                   )}
                 </>
               )}
@@ -559,8 +556,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_700Bold",
   },
   big: {
-    paddingTop: 25,
-    paddingBottom: 15,
+    paddingVertical: 10,
   },
   bigtext: {
     fontFamily: "Montserrat_700Bold",

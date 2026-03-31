@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ export default function CreditCardWithdraw({
   const [cardNumber, setCardNumber] = useState("");
   const [expMonth, setExpMonth] = useState("");
   const [expYear, setExpYear] = useState("");
+  const yearRef = useRef(null);
 
   const [isCountryDropdownVisible, setIsCountryDropdownVisible] =
     useState(false);
@@ -63,11 +64,15 @@ export default function CreditCardWithdraw({
     }
 
     // YYYY must be exactly 4 digits
-    if (expYear.length !== 4 || isNaN(expYear)) {
-      Alert.alert(
-        "Invalid Year",
-        "Year must be written in 4 digits (e.g., 2001, 2024)."
-      );
+    // if (expYear.length !== 4 || isNaN(expYear)) {
+    //   Alert.alert(
+    //     "Invalid Year",
+    //     "Year must be written in 4 digits (e.g., 2001, 2024)."
+    //   );
+    //   return;
+    // }
+    if (expYear.length !== 2 || isNaN(expYear)) {
+      Alert.alert("Invalid Year", "Yeaar must be 2 digits (e.g., 24, 26).");
       return;
     }
 
@@ -88,7 +93,7 @@ export default function CreditCardWithdraw({
         Fill out your credit/debit card information
       </Text>
 
-      <Text style={styles.cardLabel}>Full Name</Text>
+      <Text style={styles.cardLabel}>Full Name<Text style={styles.star}>*</Text></Text>
       <TextInput
         placeholder="Enter your Name"
         placeholderTextColor="#888"
@@ -97,7 +102,7 @@ export default function CreditCardWithdraw({
         onChangeText={setFullName}
       />
 
-      <Text style={styles.cardLabel}>Card Issuing Country</Text>
+      <Text style={styles.cardLabel}>Card Issuing Country<Text style={styles.star}>*</Text></Text>
 
       <View>
         <TouchableOpacity
@@ -144,7 +149,7 @@ export default function CreditCardWithdraw({
         )}
       </View>
 
-      <Text style={styles.cardLabel}>Card Number</Text>
+      <Text style={styles.cardLabel}>Card Number<Text style={styles.star}>*</Text></Text>
 
       <View style={styles.cardNumberWrapper}>
         {initialData && (
@@ -169,7 +174,7 @@ export default function CreditCardWithdraw({
         />
       </View>
 
-      <Text style={styles.cardLabel}>Expiry Date</Text>
+      <Text style={styles.cardLabel}>Expiry Date<Text style={styles.star}>*</Text></Text>
       <View style={styles.expiryRow}>
         <TextInput
           placeholder="MM"
@@ -178,14 +183,23 @@ export default function CreditCardWithdraw({
           maxLength={2}
           keyboardType="numeric"
           value={expMonth}
-          onChangeText={setExpMonth}
+          onChangeText={(text) => {
+            if (text.length <= 2) {
+              setExpMonth(text);
+
+              if (text.length === 2) {
+                yearRef.current?.focus();
+              }
+            }
+          }}
         />
 
         <TextInput
-          placeholder="YYYY"
+          ref={yearRef}
+          placeholder="YY"
           placeholderTextColor="#888"
           style={styles.expiryInput}
-          maxLength={4}
+          maxLength={2}
           keyboardType="numeric"
           value={expYear}
           onChangeText={setExpYear}
@@ -333,5 +347,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-  }
+  },
+  star: {
+    color: "#ff0000",
+  },
 });

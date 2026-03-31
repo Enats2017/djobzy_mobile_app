@@ -24,6 +24,10 @@ export const useEditJobGlobalStore = create((set) => ({
   isEdit: false,
   editingId: null,
   activeTab: 0,
+  isRemoteJob: 0,
+
+  setIsRemoteJob: (value) =>
+    set({ isRemoteJob: value ? 1 : 0 }),
 
   setField: (field, value) => set({ [field]: value }),
   
@@ -66,5 +70,6 @@ export const useEditJobGlobalStore = create((set) => ({
       processingFee: "",
       isEdit: false,
       editingId: null,
+      isRemoteJob: 0,
     }),
 }));

@@ -7,10 +7,11 @@ const QuestionMark = ({
   title = "My Offer",
   tooltipMessage = "Default message Default message Default message",
   iconName = "question-circle",
-  iconSize = 15,
+  iconSize = 14,
   iconColor = "#c3c3c3",
   containerStyle,
   textStyle,
+  textFamily = "Montserrat_600SemiBold",
 }) => {
   return (
     <View
@@ -21,7 +22,7 @@ const QuestionMark = ({
         gap: 6,
       }}
     >
-      <Text style={[styles.offerText, textStyle]}>{title}</Text>
+      <Text style={[styles.offerText, { fontFamily: textFamily }, textStyle]}>{title}</Text>
       <Tooltip text={tooltipMessage}>
         <FontAwesome
           name={iconName}
@@ -39,7 +40,6 @@ const styles = StyleSheet.create({
   offerText: {
     color: "#ffffff",
     fontSize: 16,
-    fontFamily: "Montserrat_600SemiBold",
   },
 });
 

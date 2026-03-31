@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import GradientButton from "../../components/GradientButton";
 import BorderButton from "../../components/BorderButton";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const ChangeMyOffer = () => {
   const navigation = useNavigation();
@@ -30,11 +31,12 @@ const ChangeMyOffer = () => {
   const [myFinalTotalPrice, setMyFinalTotalPrice] = useState("");
   const [introLetter, setIntroLetter] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [revokeLoading, setRevokeLoading] = useState(false);
   const [expectedTime, setExpectedTime] = useState(0);
 
   const handleSubmitOffer = async () => {
     if (!myTotalPrice || !myHourlyRate || !introLetter) {
-      alert("Please fill in all fields before submitting.");
+      toastError("Please fill in all fields before submitting.");
       return;
     }
     setSubmitting(true);
@@ -45,17 +47,17 @@ const ChangeMyOffer = () => {
         return;
       }
       const payload = {
-      id: award?.prp_id,
-      bid: myTotalPrice,
-      desc: introLetter,
-      hourly_rate: myHourlyRate,
-      total_hour: expectedTime,
-    };
-    
+        id: award?.prp_id,
+        bid: myTotalPrice,
+        desc: introLetter,
+        hourly_rate: myHourlyRate,
+        total_hour: expectedTime,
+      };
+
       const response = await fetch(`${API_URL}/save-change-apply`, {
         method: "POST",
         headers: {
-           Accept :"application/json",
+          Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -66,17 +68,68 @@ const ChangeMyOffer = () => {
         setMyTotalPrice("");
         setMyHourlyRate("");
         setIntroLetter("");
-        Alert.alert("Success", "Application submitted");
+        toastSuccess("Application submitted");
         navigation.navigate("Dashboard");
       } else {
-        alert(result.message || "Failed to submit proposal");
+        toastError(result.message || "Failed to submit proposal");
       }
     } catch (err) {
-      alert("Something went wrong. Please try again.");
+      toastError("Something went wrong. Please try again.");
       console.log(err);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleRevokeApplication = () => {
+    Alert.alert(
+      "Confirm",
+      "Are you sure you want to revoke your application?",
+      [
+        {
+          text: "No",
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: async () => {
+            setRevokeLoading(true);
+
+            try {
+              const token = await AsyncStorage.getItem("token");
+              const payload = {
+                id: award?.prp_id,
+              };
+              const response = await fetch(
+                `${API_URL}/revoke-job-application`,
+                {
+                  method: "POST",
+                  headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify(payload),
+                }
+              );
+              const result = await response.json();
+              if (result.status === 200) {
+                toastSuccess("Application revoked successfully.");
+                navigation.pop(2);
+              } else {
+                toastError(result.message || "Failed to revoke application");
+              }
+            } catch (err) {
+              toastError("Something went wrong. Please try again.");
+              console.log(err);
+            } finally {
+              setRevokeLoading(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const handleHourlyChange = (value) => {
@@ -88,10 +141,7 @@ const ChangeMyOffer = () => {
       return;
     }
     if (hourly > total) {
-      Alert.alert(
-        "Invalid Input",
-        "Hourly rate cannot be more than total price."
-      );
+      toastError("Hourly rate cannot be more than total price.");
       setExpectedTime(0);
       return;
     }
@@ -123,12 +173,13 @@ const ChangeMyOffer = () => {
       setMyFinalTotalPrice(finalPayment.toFixed(2));
     }
   };
+  const formatPrice = (val) => (Number(val || 0) / 1.15).toFixed(2);
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           <PageNameHeaderBar navigation={navigation} title="Change My Offer" />
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:80}}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
             <View style={styles.titleheader}>
               <Text style={styles.title}>{award.subject}</Text>
             </View>
@@ -139,7 +190,7 @@ const ChangeMyOffer = () => {
                 <View style={styles.valueBox}>
                   <Text style={styles.currency}>CAD</Text>
                   <View style={styles.divider} />
-                  <Text style={styles.value}>{award.fixed_minimum}</Text>
+                  <Text style={styles.value}>{formatPrice(award.fixed_minimum)}</Text>
                 </View>
               </View>
               <View style={styles.box}>
@@ -147,7 +198,7 @@ const ChangeMyOffer = () => {
                 <View style={styles.valueBox}>
                   <Text style={styles.currency}>CAD</Text>
                   <View style={styles.divider} />
-                  <Text style={styles.value}>{award.hour_minimum}</Text>
+                  <Text style={styles.value}>{formatPrice(award.hour_minimum)}</Text>
                 </View>
               </View>
             </View>
@@ -214,7 +265,7 @@ const ChangeMyOffer = () => {
                 <View style={styles.perviousBox}>
                   <Text style={styles.currency}>CAD</Text>
                   <View style={styles.divider} />
-                  <Text style={styles.perviousvalue}>{award.bid_price}</Text>
+                  <Text style={styles.perviousvalue}>{formatPrice(award.bid_price)}</Text>
                 </View>
               </View>
               <View style={styles.box}>
@@ -223,14 +274,14 @@ const ChangeMyOffer = () => {
                   <Text style={styles.currency}>CAD</Text>
                   <View style={styles.divider} />
                   <Text style={styles.perviousvalue}>
-                    {award.prop_hourly_rate}/hr
+                    {Number(award.prop_hourly_rate).toFixed(2)}/hr
                   </Text>
                 </View>
-                
+
               </View>
-              
+
             </View>
-             <Text style={styles.note}>
+            <Text style={styles.note}>
               <Text style={styles.bold}>{award.expected_hour} Hours </Text>
               is expected for the job to be done.
             </Text>
@@ -265,7 +316,7 @@ const ChangeMyOffer = () => {
           </ScrollView>
           <View style={styles.footerbtn}>
             <GradientButton title="send" onPress={handleSubmitOffer} disabled={submitting} loading={submitting} />
-            <BorderButton title="Revoke My Bid" />
+            <BorderButton title="Revoke My Bid" onPress={handleRevokeApplication} disabled={revokeLoading ? true : false} />
           </View>
         </View>
         <Footer />
@@ -278,6 +329,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 15,
+    backgroundColor: "#222222"
   },
   titleheader: {
     paddingBottom: 10,
@@ -345,7 +397,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingVertical: 14,
     paddingHorizontal: 10,
-   
+
   },
   currency: {
     color: "#D38979",

@@ -265,10 +265,14 @@ const EmployeeAccount = () => {
                     <View style={styles.userNameSection}>
                       <Text style={styles.name}>{user?.full_name}</Text>
                     </View>
-                    <View style={styles.iconbox}>
-                      <Octicons name="clock-fill" size={12} color="#c3c3c3c3" />
-                      <Text style={styles.infoText}>GMT+05:30</Text>
-                    </View>
+                    {
+                      profile?.timezone && (
+                        <View style={styles.iconbox}>
+                          <Octicons name="clock-fill" size={12} color="#c3c3c3c3" />
+                          <Text style={styles.infoText}>{profile?.timezone?.user_timezone}</Text>
+                        </View>
+                      )
+                    }
                     <View style={styles.iconbox}>
                       <MaterialIcons
                         name="verified"
@@ -282,7 +286,7 @@ const EmployeeAccount = () => {
                     <View style={styles.iconbox}>
                       <Entypo name="location-pin" size={14} color="#c3c3c3c3" />
                       <Text style={styles.infoText}>
-                        {user?.address}kandi borivali maharasta bumbai alli
+                        {user?.address}
                       </Text>
                     </View>
                   </View>
@@ -414,7 +418,7 @@ const EmployeeAccount = () => {
               </View>
             </View> */}
             <View style={styles.infoBox}>
-              <QuestionMark title="Pomate Services" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_provided_services} />
+              <QuestionMark title="Promote Services" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_provided_services} />
             </View>
 
             <TouchableOpacity
@@ -426,7 +430,7 @@ const EmployeeAccount = () => {
             </TouchableOpacity>
             <ScrollView
               horizontal={true}
-              contentContainerStyle={styles.promatewrapper}
+              contentContainerStyle={styles.promotewrapper}
               showsHorizontalScrollIndicator={false}
             >
               {promote?.map((item, index) => {
@@ -1070,7 +1074,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  promatewrapper: {
+  promotewrapper: {
     flexDirection: "row",
     alignItems: "center",
     paddingTop: 8,
@@ -1131,20 +1135,20 @@ const styles = StyleSheet.create({
   },
 
   price: {
-    color: "#25dd4dff",
+    color: "#34A853",
     fontSize: 16,
     fontFamily: "Montserrat_600SemiBold",
     marginTop: 6,
   },
 
   perHour: {
-    color: "#30D354",
+    color: "#34A853",
     fontSize: 12,
     fontFamily: "Montserrat_400Regular",
   },
 
   btn: {
-    backgroundColor: "#CC6C52",
+    backgroundColor: "#d17b68",
     marginTop: 15,
     paddingVertical: 8,
     paddingHorizontal: 28,

@@ -36,6 +36,7 @@ const TimePeriod = ({ timeError, setTimeError }) => {
   return (
     <View style={styles.duration}>
       {/* ===== TABS ===== */}
+      <View><Text style={styles.mainText}>Select the Duration of Contract</Text></View>
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tab, selectedTerm === "short" && styles.activeTab]}
@@ -69,7 +70,7 @@ const TimePeriod = ({ timeError, setTimeError }) => {
               selectedTerm === "employee" && styles.activeTabTitle,
             ]}
           >
-            Employees
+            Long-Term
           </Text>
           <Text
             style={[
@@ -247,7 +248,7 @@ const TimePeriod = ({ timeError, setTimeError }) => {
                 editable={selectedOption === "customEmp" ? true : false}
                 keyboardType="numeric"
                 placeholder="15"
-               
+                placeholderTextColor="#c3c3c3c3"
               />
             </View>
           </View>
@@ -329,6 +330,13 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontFamily: "Montserrat_500Medium",
+  },
+  mainText: {
+    color: "#fff",
+    fontSize: 24,
+    fontFamily: "Montserrat_600SemiBold",
+    textAlign: "center",
+    paddingTop: 10,
   },
   radio: {
     width: 18,

@@ -53,11 +53,12 @@ const CreateJob = () => {
     isEditingFromReview,
     reviewReturnTab,
     clearEditingFromReview,
+    isRemoteJob
   } = useCreateJobGlobalStore();
 
   const route = useRoute();
   const gid = route.params?.gid;
-  console.log("111111", gid);
+  // console.log("111111", gid);
   const [titleError, setTitleError] = useState(false);
   const [descriptionError, setDescriptionError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
@@ -135,6 +136,9 @@ const CreateJob = () => {
       formData.append("fixedFrom", state.totalPrice);
       formData.append("hourlyFrom", state.hourlyRate);
       formData.append("expected", state.expectedTime || "0");
+      if (state.isRemoteJob === 1) {
+        formData.append("isRemoteJob", "1");
+      }
       formData.append(
         "subservices",
         JSON.stringify(
@@ -252,7 +256,7 @@ const CreateJob = () => {
         break;
 
       case 2:
-        if (!address.trim()) {
+        if (!address.trim() && isRemoteJob === 0) {
           setAddressError(true);
           return;
         }
@@ -536,7 +540,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "600",
-    fontStyle: "DegularDisplay_600SemiBold", // ensure this font is available in your project
+    fontStyle: "Montserrat_600SemiBold",
     color: "#ffffff",
   },
   container: {

@@ -25,9 +25,13 @@ export const useCreateJobGlobalStore = create((set) => ({
   isEdit: false,
   editingId: null,
   activeTab: 0,
+  isRemoteJob: 0,
 
   isEditingFromReview: false,
   reviewReturnTab: null,
+
+  setIsRemoteJob: (value) =>
+    set({ isRemoteJob: value ? 1 : 0 }),
 
   setEditingFromReview: (tabIndex) =>
     set({
@@ -86,5 +90,6 @@ export const useCreateJobGlobalStore = create((set) => ({
       editingId: null,
       isEditingFromReview: false,
       reviewReturnTab: null,
+      isRemoteJob: 0,
     }),
 }));

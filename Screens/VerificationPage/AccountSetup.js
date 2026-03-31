@@ -28,6 +28,7 @@ const AccountSetup = ({
   setFullName,
   setUsername,
   email,
+  setEmail,
   emailVerified,
   onNext,
   userDetails,
@@ -229,9 +230,7 @@ const AccountSetup = ({
               />
             )}
           </View>
-          <View style={styles.label}>
-            <QuestionMark title="Phone Number" />
-          </View>
+          <Text style={styles.label}>Phone Number</Text>
           <PhoneNumberInput
             value={phoneNumber}
             countryISO={mobileCountryISO}

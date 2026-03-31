@@ -113,7 +113,6 @@ const VerificationPage = () => {
                         <TouchableOpacity
                           activeOpacity={0.7}
                           style={styles.circleTouch}
-                          onPress={() => setActiveTab(index)}
                         >
                           <View
                             style={[
@@ -126,7 +125,7 @@ const VerificationPage = () => {
                             {isCompleted && (
                               <MaterialIcons
                                 name="done"
-                                size={14}
+                                size={12}
                                 color="#fff"
                               />
                             )}
@@ -180,6 +179,7 @@ const VerificationPage = () => {
                   username={username}
                   setUsername={setUsername}
                   email={email}
+                  setEmail={setEmail}
                   emailVerified={emailVerified}
                   userDetails={userDetails}
                   onNext={() => setActiveTab(1)}

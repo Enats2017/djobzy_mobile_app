@@ -3,7 +3,7 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -20,6 +20,8 @@ import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import GradientButton from "../../components/GradientButton";
+import SuccessPopup from "../../components/SuccessPopup";
+import { toastError } from "../../utils/toast";
 
 const JobApplyPage = () => {
   const navigation = useNavigation();
@@ -32,6 +34,8 @@ const JobApplyPage = () => {
   const [introLetter, setIntroLetter] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [expectedTime, setExpectedTime] = useState(0);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const timeoutRef = useRef(null);
 
   const handleSubmitOffer = async () => {
     if (!myTotalPrice || !myHourlyRate || !introLetter) {
@@ -67,8 +71,11 @@ const JobApplyPage = () => {
         setMyTotalPrice("");
         setMyHourlyRate("");
         setIntroLetter("");
-        Alert.alert("Success", "Application submitted");
-        navigation.goBack();
+        setShowSuccessPopup(true);
+        timeoutRef.current = setTimeout(() => {
+          setShowSuccessPopup(false);
+          navigation.goBack();
+        }, 3000);
       } else {
         alert(result.message || "Failed to submit proposal");
         console.log(result.message);
@@ -81,6 +88,22 @@ const JobApplyPage = () => {
     }
   };
 
+  const handlePopupOk = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setShowSuccessPopup(false);
+    navigation.goBack();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleHourlyChange = (value) => {
     setMyHourlyRate(value);
     const total = parseInt(myTotalPrice);
@@ -90,10 +113,7 @@ const JobApplyPage = () => {
       return;
     }
     if (hourly > total) {
-      Alert.alert(
-        "Invalid Input",
-        "Hourly rate cannot be more than total price.",
-      );
+      toastError("Hourly rate cannot be more than total price.");
       setExpectedTime(0);
       return;
     }
@@ -265,6 +285,13 @@ const JobApplyPage = () => {
           </KeyboardAvoidingView>
         </View>
         <Footer />
+
+        <SuccessPopup
+          visible={showSuccessPopup}
+          title="Application Submitted"
+          message="Ready for the next step."
+          onClose={handlePopupOk}
+        />
       </SafeAreaView>
     </>
   );

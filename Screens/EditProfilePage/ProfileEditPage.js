@@ -1,45 +1,66 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   ScrollView,
   View,
   StyleSheet,
-  Image,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  Alert,
   Platform,
+  Image,
+  TouchableOpacity,
+  Text,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import Octicons from "@expo/vector-icons/Octicons";
+import {
+  Ionicons,
+  Feather,
+  FontAwesome,
+  FontAwesome6,
+  MaterialIcons,
+  AntDesign,
+} from "@expo/vector-icons";
+import Entypo from "@expo/vector-icons/Entypo";
+import LineDivider from "../../components/LineDivider";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
-import { FontAwesome, Ionicons, Feather, Entypo } from "@expo/vector-icons";
 import GradientButton from "../../components/GradientButton";
 import Footer from "../../components/Footer";
 import * as DocumentPicker from "expo-document-picker";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import DynamicInputSection from "../../components/DynamicInputSection";
-import { toastError, toastSuccess } from "../../utils/toast";
-import * as FileSystem from "expo-file-system/legacy";
-import * as ImagePicker from "expo-image-picker";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import UpdateProfilePhoto from "./UpdateProfilePhoto";
+import UpdateProfilePhoto from "./EditProfileUpdatePhoto";
 import Loading from "../../components/Loading";
+import { useNotifications } from "../../context/MessageNotificationContext";
+import EditProfileBasicInfo from "./EditProfileBasicInfo";
+import EditProfileCategory from "./EditProfileCategories";
+import EditProfilePromotedServices from "./EditProfilePromotedServices";
+import EditProfileAttachments from "./EditProfileAttachments";
+import EditProfileDob from "./EditProfileDob";
+import EditProfileResumeLink from "./EditProfileResumeLink";
+import EditProfileNumberofJobs from "./EditProfileNumberofJobs";
+import EditProfileMoneyNumber from "./EditProfileMoneyNumber";
+import EditProfileLanguages from "./EditProfileLanguages";
+import EditProfileEducation from "./EditProfileEducation";
+import EditProfileAssets from "./EditProfileAssets";
+import EditProfileVehicles from "./EditProfileVehicles";
+import EditProfileCertificates from "./EditProfileCertificates";
+import EditProfileSocialMedia from "./EditProfileSocialMedia";
+import { LinearGradient } from "expo-linear-gradient";
+import EditProfileSeeAllInformation from "./EditProfileSeeAllInformation";
+import EditProfileExperience from "./EditProfileExperience";
 
 const ProfileEditPage = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
-  const [socialMedia, setSocialMedia] = useState([{ id: 1, value: "" }]);
-  const [category, setCategory] = useState([{ id: 1, value: "" }]);
-  const [services, setServices] = useState([{ id: 1, value: "" }]);
-  const [language, setLanguage] = useState([{ id: 1, value: "" }]);
-  const [education, setEducation] = useState([{ id: 1, value: "" }]);
-  const [assets, setAssets] = useState([{ id: 1, value: "" }]);
-  const [software, setSoftware] = useState([{ id: 1, value: "" }]);
-  const [vehicle, setVehicle] = useState([{ id: 1, value: "" }]);
-  const [certificates, setCertificates] = useState([{ id: 1, value: "" }]);
+  const [socialMedia, setSocialMedia] = useState([]);
+  const [category, setCategory] = useState([]);
+  const [promote, setPromote] = useState([]);
+  const [services, setServices] = useState([]);
+  const [language, setLanguage] = useState([]);
+  const [education, setEducation] = useState([]);
+  const [assets, setAssets] = useState([]);
+  const [software, setSoftware] = useState([]);
+  const [vehicle, setVehicle] = useState([]);
+  const [certificates, setCertificates] = useState([]);
   const [resume, setResume] = useState("");
   const [profileTitle, setProfileTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -49,174 +70,61 @@ const ProfileEditPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
   const [photoUri, setPhotoUri] = useState(null);
+  const [profile, setProfile] = useState({});
+  const { admin } = useNotifications();
+  const userType = admin === 2 ? 'employer' : 'employee';
+  const hasFetched = useRef(false);
 
-  const fetchProfileForEdit = async () => {
+  useEffect(() => {
+    hasFetched.current = false;
+  }, [userType]);
+
+  const fetchProfileForEdit = useCallback(async () => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(`${API_URL}/employee-profile`, {
+      const response = await fetch(`${API_URL}/edit-profile/${userType}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
+          "Content-Type": "application/json",
         },
       });
 
       const data = await response.json();
       const user = data.editprofile || {};
-      console.log(user);
-
 
       // BASIC FIELDS
-      setProfileTitle(user.profile_title_employee || "");
-      setDescription(user.about || "");
+      if (userType === "employer") {
+        setProfileTitle(user.profile_title_employer || "");
+        setDescription(user.employer_about || "");
+      } else {
+        setProfileTitle(user.profile_title_employee || "");
+        setDescription(user.about || "");
+      }
       setDob(user.dob || "");
       setResume(user.resume_link || "");
       setJobs(user.num_jobs ? String(user.num_jobs) : "");
       setMoneySpent(user.money_spent ? String(user.money_spent) : "");
       setPhotoUri(user.photo || null);
-
-      // CATEGORY
-      setCategory(
-        (data.subcategory || []).map((item) => ({
-          id: item?.subid,
-          value: item?.subname,
-        }))
-      );
-
-      // SOCIAL MEDIA
-
-
-      // SERVICES
-      setServices(
-        (data.promote || []).map((item) => ({
-          id: item.sid,
-          value: item.subject,
-        }))
-      );
-
-      // // LANGUAGE
-      // setLanguage(
-      //   (user.languages || []).map((item, index) => ({
-      //     id: index + 1,
-      //     value: item.language || item,
-      //   }))
-      // );
-
-      // // EDUCATION
-      // setEducation(
-      //   (user.education || []).map((item, index) => ({
-      //     id: index + 1,
-      //     value: item,
-      //   }))
-      // );
-
-      // // ASSETS
-      // setAssets(
-      //   (user.assets || []).map((item, index) => ({
-      //     id: index + 1,
-      //     value: item,
-      //   }))
-      // );
-
-      // // SOFTWARE
-      // setSoftware(
-      //   (user.software || []).map((item, index) => ({
-      //     id: index + 1,
-      //     value: item,
-      //   }))
-      // );
-
-      // // VEHICLE
-      // setVehicle(
-      //   (user.vehicle || []).map((item, index) => ({
-      //     id: index + 1,
-      //     value: item,
-      //   }))
-      // );
-
-      // // CERTIFICATES
-      // setCertificates(
-      //   (user.certificates || []).map((item, index) => ({
-      //     id: index + 1,
-      //     value: item,
-      //   }))
-      // );
+      setProfile(data);
+      setCategory(data.subcategory);
+      setPromote(data.promote);
     } catch (error) {
       console.log("Edit profile fetch error =>", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [userType]);
 
-  useEffect(() => {
-    fetchProfileForEdit();
-  }, []);
-
-
-  const addItem = (type) => {
-    const newItem = { id: Date.now(), value: "" };
-    if (type === "category") setCategory([...category, newItem]);
-    if (type === "social") setSocialMedia([...socialMedia, newItem]);
-    if (type === "services") setServices([...services, newItem]);
-    if (type === "language") setLanguage([...language, newItem]);
-    if (type === "education") setEducation([...education, newItem]);
-    if (type === "assets") setAssets([...assets, newItem]);
-    if (type === "software") setSoftware([...software, newItem]);
-    if (type === "vehicle") setVehicle([...vehicle, newItem]);
-    if (type === "certificates") setCertificates([...certificates, newItem]);
-  };
-
-  const removeItem = (type, id) => {
-    if (type === "category") setCategory(category.filter((r) => r.id !== id));
-    if (type === "social") setSocialMedia(socialMedia.filter((r) => r.id !== id));
-    if (type === "services") setServices(services.filter((r) => r.id !== id));
-    if (type === "language") setLanguage(language.filter((r) => r.id !== id));
-    if (type === "education") setEducation(education.filter((r) => r.id !== id));
-    if (type === "assets") setAssets(assets.filter((r) => r.id !== id));
-    if (type === "software") setSoftware(software.filter((r) => r.id !== id));
-    if (type === "vehicle") setVehicle(vehicle.filter((r) => r.id !== id));
-    if (type === "certificates") setCertificates(certificates.filter((r) => r.id !== id));
-  };
-
-  const updateItem = (type, id, text) => {
-    if (type === "category") setCategory(category.map((r) => (r.id === id ? { ...r, value: text } : r)));
-    if (type === "social") setSocialMedia(socialMedia.map((r) => (r.id === id ? { ...r, value: text } : r)));
-    if (type === "services") setServices(services.map((r) => (r.id === id ? { ...r, value: text } : r)));
-    if (type === "language") setLanguage(language.map((r) => r.id === id ? { ...r, value: text } : r));
-    if (type === "education") setEducation(education.map((r) => r.id === id ? { ...r, value: text } : r));
-    if (type === "assets") setAssets(assets.map((r) => r.id === id ? { ...r, value: text } : r));
-    if (type === "software") setSoftware(software.map((r) => r.id === id ? { ...r, value: text } : r));
-    if (type === "vehicle") setVehicle(vehicle.map((r) => r.id === id ? { ...r, value: text } : r));
-    if (type === "certificates") setCertificates(certificates.map((r) => r.id === id ? { ...r, value: text } : r));
-  };
-
-  const openPicker = () => {
-    setShowPicker(true);
-  };
-  const onChangeDate = (event, selectedDate) => {
-    // close picker when cancel or select on android
-    if (Platform.OS === "android") setShowPicker(false);
-
-    if (selectedDate) {
-      const d = `${selectedDate.getFullYear()}-${String(
-        selectedDate.getMonth() + 1
-      ).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
-
-      setDob(d); // set YYYY-MM-DD format
-    }
-  };
-  const pickFile = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ["image/*", "application/pdf"],
-    });
-    if (result.canceled) return;
-    const file = result.assets[0];
-    setSelectedFile({
-      uri: file.uri,
-      name: file.name,
-      type: file.mimeType || "application/octet-stream",
-    });
-  };
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFetched.current) {
+        fetchProfileForEdit();
+        hasFetched.current = true;
+      }
+    }, [fetchProfileForEdit])
+  );
 
   return (
     <>
@@ -227,169 +135,145 @@ const ProfileEditPage = () => {
             loading ? (
               <Loading />
             ) : (
-              <ScrollView
-                contentContainerStyle={{ paddingBottom: 100 }}
-                showsVerticalScrollIndicator={false}
-              >
-                <View style={styles.section}>
-                  <UpdateProfilePhoto photoUri={photoUri} setPhotoUri={setPhotoUri} />
-                  <Text style={styles.label}>Profile Title</Text>
-                  <TextInput
-                    style={styles.inputBox}
-                    placeholder="I am UI/UX designer having 10+ years of experience"
-                    placeholderTextColor="#bfbfbf"
-                    multiline
-                    textAlignVertical="top"
-                    value={profileTitle}
-                    onChangeText={setProfileTitle}
-                  />
+              <>
+                <ScrollView
+                  contentContainerStyle={{ paddingBottom: 50 }}
+                  showsVerticalScrollIndicator={false}
+                >
+                  <View style={styles.section}>
+                    <View style={styles.profileCard}>
+                      <View style={styles.profileinfo}>
+                        <View style={styles.profileRow}>
+                          <Image
+                            source={{ uri: photoUri }}
+                            style={styles.avatar}
+                          />
+                          <View style={styles.profileInfoRow}>
+                            <View style={styles.userNameSection}>
+                              <Text style={styles.name}>{profile?.editprofile?.full_name}</Text>
+                            </View>
+                            <View style={styles.iconbox}>
+                              <MaterialIcons
+                                name="verified"
+                                size={14}
+                                color="#c3c3c3c3"
+                              />
+                              <Text style={styles.infoText}>
+                                Verification Level: {profile?.editprofile?.verification_count}/7
+                              </Text>
+                            </View>
+                            {
+                              profile?.timezone && (
+                                <View style={styles.iconbox}>
+                                  <Octicons name="clock-fill" size={12} color="#c3c3c3c3" />
+                                  <Text style={styles.infoText}>{profile?.timezone?.user_timezone}</Text>
+                                </View>
+                              )
+                            }
+                            <View style={styles.iconbox}>
+                              <Entypo name="location-pin" size={14} color="#c3c3c3c3" />
+                              <Text style={styles.infoText}>
+                                {profile?.editprofile?.address}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
+                      <LineDivider />
+                      <View style={styles.iconRow}>
+                        <TouchableOpacity
+                          style={styles.iconBtn}
+                        >
+                          <Ionicons name="copy" size={20} color="#ffffff" />
+                          <Text style={styles.iconText}>Copy</Text>
+                        </TouchableOpacity>
 
-                  <TextInput
-                    style={[styles.desBox, { marginTop: 20 }]}
-                    placeholder="I have very good experience in Website and Mobile Design..."
-                    placeholderTextColor="#bfbfbf"
-                    multiline
-                    value={description}
-                    onChangeText={setDescription}
-                  />
+                        <TouchableOpacity style={styles.iconBtn}>
+                          <FontAwesome
+                            name="share-square-o"
+                            size={20}
+                            color="#ffffff"
+                          />
+                          <Text style={styles.iconText}>Share</Text>
+                        </TouchableOpacity>
 
-                  <DynamicInputSection
-                    label="Employing in Categories"
-                    values={category}
-                    type="category"
-                    updateItem={updateItem}
-                    addItem={addItem}
-                    removeItem={removeItem}
-                    styles={styles}
-                  />
+                        <TouchableOpacity
+                          style={styles.iconBtn}
+                        // onPress={() => setDownloadModal(true)}
+                        >
+                          <MaterialIcons name="download" size={20} color="#ffffff" />
+                          <Text style={styles.iconText}>Download</Text>
+                        </TouchableOpacity>
 
-                  <DynamicInputSection
-                    label="Social Media"
-                    values={socialMedia}
-                    type="social"
-                    updateItem={updateItem}
-                    addItem={addItem}
-                    removeItem={removeItem}
-                    styles={styles}
-                  />
+                        <TouchableOpacity
+                          style={styles.iconBtn}
+                          onPress={() =>
+                            navigation.navigate("ProfileBoostPage", {
+                              categories: category,
+                            })
+                          }
+                        >
+                          <Ionicons name="rocket" size={20} color="#ffffff" />
+                          <Text style={styles.iconText}>Boost</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <ScrollView
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                      >
+                        <View style={styles.statsRow}>
+                          <View style={styles.statBox}>
+                            <Text style={styles.statValue}>{profile?.count}</Text>
+                            <Text style={styles.statLabel}>Number of Jobs</Text>
+                          </View>
+                          <View style={styles.statBox}>
+                            <Text style={styles.statValue}>{profile?.earned}</Text>
+                            <Text style={styles.statLabel}>Money Earned</Text>
+                          </View>
+                          <View style={styles.statBox}>
+                            <Text style={styles.statValue}>
+                              {" "}
+                              {profile?.likes?.length}
+                            </Text>
+                            <Text style={styles.statLabel}>My Followers</Text>
+                          </View>
+                        </View>
+                      </ScrollView>
 
-                  <DynamicInputSection
-                    label="My Promoted Services"
-                    values={services}
-                    type="services"
-                    updateItem={updateItem}
-                    addItem={addItem}
-                    removeItem={removeItem}
-                    styles={styles}
-                  />
-
-                  <View>
-                    <Text style={styles.label}>Attachments</Text>
-                    <TouchableOpacity style={styles.attachBox} onPress={pickFile}>
-                      <Text style={{ color: "#bfbfbf" }}>Attach File</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.label}>Date of Birth</Text>
-                  <TouchableOpacity onPress={openPicker} activeOpacity={0.8}>
-                    <View pointerEvents="none">
-                      <TextInput
-                        style={styles.inputBox}
-                        placeholder="Date of Birth"
-                        placeholderTextColor="#bfbfbf"
-                        value={dob}
-                        editable={false} // prevent keyboard opening
-                      />
+                      {/* === SEE ALL INFORMATION SECTION === */}
+                      <EditProfileSeeAllInformation navigation={navigation} />
                     </View>
-                  </TouchableOpacity>
-                  {showPicker && (
-                    <DateTimePicker
-                      value={dob ? new Date(dob) : new Date()}
-                      mode="date"
-                      display="calendar"
-                      onChange={onChangeDate}
+
+                    <EditProfileBasicInfo
+                      userType={userType}
+                      profileTitle={profileTitle}
+                      setProfileTitle={setProfileTitle}
+                      description={description}
+                      setDescription={setDescription}
                     />
-                  )}
-                  <Text style={styles.label}>Resume Link</Text>
-                  <TextInput
-                    style={styles.inputBox}
-                    placeholder="Resume Link"
-                    placeholderTextColor="#bfbfbf"
-                    multiline
-                    textAlignVertical="top"
-                    value={resume}
-                    onChangeText={setResume}
-                  />
-                  <Text style={styles.label}>Number Of Jobs</Text>
-                  <TextInput
-                    style={styles.inputBox}
-                    placeholder="02"
-                    placeholderTextColor="#bfbfbf"
-                    multiline
-                    textAlignVertical="top"
-                    value={jobs}
-                    onChangeText={setJobs}
-                  />
-                  <Text style={styles.label}>Money Spent</Text>
-                  <TextInput
-                    style={styles.inputBox}
-                    placeholder="44455"
-                    placeholderTextColor="#bfbfbf"
-                    multiline
-                    textAlignVertical="top"
-                    value={moneySpent}
-                    onChangeText={setMoneySpent}
-                  />
 
-                  <DynamicInputSection
-                    label="Languages"
-                    values={language}
-                    type="language"
-                    updateItem={updateItem}
-                    addItem={addItem}
-                    removeItem={removeItem}
-                    styles={styles}
-                  />
+                    <EditProfileCategory
+                      category={category}
+                    />
 
-                  <DynamicInputSection
-                    label="Education"
-                    values={education}
-                    type="education"
-                    updateItem={updateItem}
-                    addItem={addItem}
-                    removeItem={removeItem}
-                    styles={styles}
-                  />
-                  <DynamicInputSection
-                    label="Assets"
-                    values={assets}
-                    type="assets"
-                    updateItem={updateItem}
-                    addItem={addItem}
-                    removeItem={removeItem}
-                    styles={styles}
-                  />
-                  <DynamicInputSection
-                    label="Vehicle"
-                    values={vehicle}
-                    type="vehicle"
-                    updateItem={updateItem}
-                    addItem={addItem}
-                    removeItem={removeItem}
-                    styles={styles}
-                  />
-
-                  <DynamicInputSection
-                    label="Certificates"
-                    values={certificates}
-                    type="certificates"
-                    updateItem={updateItem}
-                    addItem={addItem}
-                    removeItem={removeItem}
-                    styles={styles}
-                  />
+                    <EditProfilePromotedServices
+                      promote={promote}
+                      navigation={navigation}
+                    />
+                    <EditProfileAttachments
+                      // pickFile={pickFile}
+                      navigation={navigation}
+                    />
+                    <EditProfileExperience
+                      // pickFile={pickFile}
+                      navigation={navigation}
+                    />
+                  </View>
+                </ScrollView>
+                <View style={{paddingBottom:90}}>
+                  <GradientButton title="Apply Changes" />
                 </View>
-                <GradientButton />
-              </ScrollView>
+              </>
             )
           }
         </View>
@@ -402,136 +286,105 @@ const ProfileEditPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#222222",
     paddingHorizontal: 15,
+    backgroundColor: "#222222"
   },
-  label: {
+  profileCard: {
+    backgroundColor: "#ffffff1a",
+    borderRadius: 15,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+  },
+  profileinfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    justifyContent: "space-between",
+  },
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+  },
+  profileInfoRow: {
+    flex: 1,
+    gap: 2,
+  },
+
+  avatar: {
+    width: 84,
+    height: 84,
+    borderRadius: 60,
+    borderWidth: 1.5,
+    borderColor: "#c3c3c3",
+  },
+  userNameSection: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "flex-start",
+  },
+  name: {
     color: "#fff",
+    fontSize: 18,
+    fontFamily: "Montserrat_500Medium",
+    marginBottom: 7,
+  },
+  iconbox: {
+    flexDirection: "row",
+    gap: 6,
+    alignItems: "baseline",
+    flexWrap: "wrap",
+  },
+  infoText: {
+    color: "#c3c3c3c3",
+    fontSize: 16,
+    width: "78%",
+    fontFamily: "Montserrat_400Regular",
+  },
+  iconRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+  },
+  iconBtn: {
+    alignItems: "center",
+  },
+  iconText: {
+    color: "#fff",
+    fontSize: 14,
+    fontFamily: "Montserrat_500Medium",
+    marginTop: 5,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 18,
+  },
+  sectionLabel: {
+    color: "#ffffff",
     fontSize: 16,
     marginBottom: 6,
     fontFamily: "Montserrat_700Bold",
   },
-  inputBox: {
-    backgroundColor: "#ffffff1a",
+  statBox: {
+    backgroundColor: "#46A282",
+    paddingVertical: 16,
+    paddingHorizontal: 25,
     borderRadius: 10,
+    alignItems: "center",
+  },
+  statValue: {
     color: "#fff",
-    fontStyle: "italic",
-    padding: 13,
-    marginBottom: 12,
+    fontSize: 22,
+    fontFamily: "Montserrat_700Bold",
+  },
+  statLabel: {
+    color: "#fff",
     fontSize: 14,
     fontFamily: "Montserrat_500Medium",
-  },
-  desBox: {
-    backgroundColor: "#ffffff1a",
-    borderRadius: 10,
-    color: "#c3c3c3",
-    padding: 10,
-    fontSize: 14,
-    fontStyle: "italic",
-    height: 158,
-    fontFamily: "Montserrat_500Medium",
-    textAlignVertical: "top",
-    marginBottom: 15,
-  },
-  plusInput: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffffff1a",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 3,
-    marginBottom: 10,
-  },
-  innerInput: {
-    flex: 1,
-    color: "#fff",
-    fontStyle: "italic",
-    fontSize: 14,
-    fontFamily: "Montserrat_500Medium",
-  },
-  childRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffffff1a",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    marginBottom: 10,
-  },
-  attachBox: {
-    borderStyle: "dashed",
-    borderWidth: 1,
-    borderColor: "#c3c3c3",
-    borderRadius: 10,
-    padding: 14,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  photoSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 15,
-    flex: 1,
-    marginBottom: 15,
-    justifyContent: "space-around",
-  },
-  heading: {
-    color: "#d66e58",
-    fontSize: 28,
-    marginBottom: 5,
-    fontFamily: "Montserrat_600SemiBold",
-  },
-  photoContainer: {
-    position: "relative",
-  },
-  photo: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-    borderColor: "#ffffff1a",
-    borderWidth: 1
-  },
-  placeholderPhoto: {
-    width: 90,
-    height: 95,
-    borderRadius: 10,
-    backgroundColor: "#333",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  removePhoto: {
-    position: "absolute",
-    top: 5,
-    right: 3,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    width: 15,
-    height: 15,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  removeText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  photouplaod: {
-    backgroundColor: "#FFFFFF0D",
-    padding: 25,
-    flex: 1,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "#FFFFFF33",
-  },
-  uploadPhotoButton: {
-    alignItems: "center",
-    width: "100%",
-  },
-  uploadText: {
-    color: "#fff",
-    fontFamily: "Montserrat_600SemiBold",
-    fontSize: 16,
+    marginTop: 2,
   },
 });
 

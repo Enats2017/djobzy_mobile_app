@@ -1,5 +1,5 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from "@react-navigation/native";
 import {
   Alert,
@@ -26,13 +26,14 @@ const ReviewPage = ({ setActiveTab }) => {
     address,
     fileData,
     setEditingFromReview,
+    isRemoteJob
   } = useCreateJobGlobalStore();
   const navigation = useNavigation();
 
   return (
     <View>
       <ScrollView
-        style={{ marginBottom: 170 }}
+        style={{ marginBottom: 50 }}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.section}>
@@ -295,7 +296,16 @@ const ReviewPage = ({ setActiveTab }) => {
 
         <View style={styles.section}>
           <View style={styles.headerRow}>
-            <Text style={styles.sectionTitle}>Address</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Text style={styles.sectionTitle}>Address</Text>
+              {isRemoteJob === 1 && (
+                <View style={styles.remoteBadge}>
+                  <Ionicons name="earth-outline" size={14} color="black" />
+                  <Text style={styles.remoteText}>Remote</Text>
+                </View>
+              )}
+            </View>
+
             <TouchableOpacity
               onPress={() => {
                 setEditingFromReview(6); // review tab index
@@ -309,7 +319,14 @@ const ReviewPage = ({ setActiveTab }) => {
               />
             </TouchableOpacity>
           </View>
-          <Text style={styles.sectionText}>{address}</Text>
+
+          {
+            isRemoteJob === 1 && !address ? (
+              <Text style={styles.sectionText}>This job has no physical address.</Text>
+            ) : (
+              <Text style={styles.sectionText}>{address}</Text>
+            )
+          }
         </View>
 
         <View
@@ -433,6 +450,21 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: "#ffffff",
+  },
+  remoteBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFD54F", // yellow
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    gap: 4,
+  },
+
+  remoteText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#000",
   },
 });
 

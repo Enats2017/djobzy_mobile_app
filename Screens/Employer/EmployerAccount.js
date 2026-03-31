@@ -153,14 +153,14 @@ const EmployerAccount = () => {
                           {user?.full_name}
                         </Text>
                       </View>
-                      <View style={styles.iconbox}>
-                        <Octicons
-                          name="clock-fill"
-                          size={12}
-                          color="#c3c3c3c3"
-                        />
-                        <Text style={styles.infoText}>GMT+05:30</Text>
-                      </View>
+                      {
+                        profile?.timezone && (
+                          <View style={styles.iconbox}>
+                            <Octicons name="clock-fill" size={12} color="#c3c3c3c3" />
+                            <Text style={styles.infoText}>{profile?.timezone?.user_timezone}</Text>
+                          </View>
+                        )
+                      }
                       <View style={styles.iconbox}>
                         <MaterialIcons
                           name="verified"

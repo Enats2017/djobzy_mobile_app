@@ -17,6 +17,7 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Footer from "../../components/Footer";
 import EmployerFooter from "../../components/EmployerFooter";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const AccountSetting = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -60,11 +61,10 @@ const AccountSetting = () => {
         setUsername(user?.name || "");
         setActiveTab(1);
       } else {
-        Alert.alert("Error", data.message);
+        toastError(data.message || 'password is required');
       }
     } catch (error) {
-      console.log("Password confirm error:", error);
-      Alert.alert("Error", "Something went wrong");
+      toastError("Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -91,14 +91,51 @@ const AccountSetting = () => {
       const data = await res.json();
       console.log("Send Email OTP:", data);
       if (data.status === 200) {
-        Alert.alert("Success", "OTP sent to your email");
+        toastSuccess("OTP sent to your email");
         setCodeEnabled(true);
       } else {
-        Alert.alert("Error", data.message);
+        toastError(data.message);
       }
     } catch (error) {
       console.log("Send email OTP error:", error);
-      Alert.alert("Error", "Something went wrong");
+      toastError("Something went wrong");
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      if (!email || !name || !username) {
+        toastError("Please fill all fields");
+        return;
+      }
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/settings-step1`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: email,
+          full_name: name,
+          username: username,
+        }),
+      });
+
+      const data = await res.json();
+      console.log("SAVE RESPONSE:", data);
+      if (data.status === 200) {
+        toastSuccess("Changes saved successfully");
+      } else {
+        toastError("Failed to save changes");
+      }
+    } catch (error) {
+      console.log("SAVE ERROR:", error);
+      toastError("Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -215,12 +252,13 @@ const AccountSetting = () => {
           <View style={styles.button}>
             <GradientButton
               loading={loading}
+              disabled={loading}
               title={activeTab === 0 ? "Continue" : "Save Changes"}
               onPress={() => {
                 if (activeTab === 0) {
                   handleConfirmPassword();
                 } else {
-                  console.log("Save API call here");
+                  handleSaveChanges();
                 }
               }}
             />

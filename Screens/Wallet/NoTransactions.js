@@ -51,7 +51,6 @@ const styles = StyleSheet.create({
         color: "#ffffff",
         fontSize: 16,
         fontFamily: "Montserrat_600SemiBold",
-        marginBottom: 6,
     },
     emptyStateSubtitle: {
         color: "#c3c3c3",

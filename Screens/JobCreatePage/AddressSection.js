@@ -3,6 +3,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { Ionicons } from "@expo/vector-icons";
 // import MapView from "react-native-maps";
 import {
   ScrollView,
@@ -24,14 +25,14 @@ const AddressSection = ({ addressError, setAddressError }) => {
   const [loadingLang, setLoadingLang] = useState(false);
   const [activeLevelId, setActiveLevelId] = useState(null);
 
+
   const LEVEL_OPTIONS = [
     { label: "Basic", value: "1" },
     { label: "Medium", value: "2" },
     { label: "Advanced", value: "3" },
   ];
 
-  const { requirements, languages, address, setField } =
-    useCreateJobGlobalStore();
+  const { requirements, languages, address, setField, isRemoteJob } = useCreateJobGlobalStore();
 
   const fetchLanguages = async (text, selectedLangs = []) => {
     if (!text || text.length < 1) {
@@ -102,176 +103,175 @@ const AddressSection = ({ addressError, setAddressError }) => {
   };
 
   return (
-     <TouchableWithoutFeedback
-    onPress={() => {
-      setActiveLangId(null);
-      setActiveLevelId(null);
-      setLanguageSuggestions([]);
-      Keyboard.dismiss();
-    }}
-  >
-    <View style={{ flex: 1 }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Requirements Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Requirements (Optional)</Text>
-          {requirements.map((req, index) => (
-            <View key={req.id} style={styles.requirementBox}>
-              <View style={styles.numberCircle}>
-                <Text style={styles.numberText}>{index + 1}.</Text>
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Write your requirement here"
-                value={req.value}
-                onChangeText={(text) => updateRequirement(req.id, text)}
-              />
-              <TouchableOpacity onPress={() => removeRequirement(req.id)}>
-                <FontAwesome5 name="trash" size={15} color="#666666" />
-              </TouchableOpacity>
-            </View>
-          ))}
-          <TouchableOpacity style={styles.addBtn} onPress={addRequirement}>
-            <Text style={styles.addBtnText}>
-              <Entypo name="circle-with-plus" size={18} color="black" /> Add
-              Requirement
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Divider */}
-        <View style={styles.divider} />
-
-        {/* Language Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Language (Optional)</Text>
-
-          {languages.map((lang) => (
-            <View key={lang.id} style={{ marginBottom: 2, zIndex: 1000 }}>
-              {/* Row */}
-              <View style={styles.languageRow}>
-                {/* Language Input */}
-                <TextInput
-                  style={styles.languageInput}
-                  placeholder="Add Language"
-                  value={lang.lang}
-                  onFocus={() => {
-                    setActiveLangId(lang.id);
-                    setActiveLevelId(null);
-                  }}
-                  onChangeText={(text) => {
-                    updateLanguage(lang.id, "lang", text);
-                    fetchLanguages(
-                      text,
-                      languages.map((l) => l.lang).filter(Boolean),
-                    );
-                  }}
-                />
-
-                {/* Level Dropdown */}
-                <TouchableOpacity
-                  style={styles.languageInput}
-                  onPress={() => {
-                    setActiveLevelId(lang.id);
-                    setActiveLangId(null);
-                    setLanguageSuggestions([]);
-                  }}
-                >
-                  <Text>{lang.text || "Select Level"}</Text>
-                </TouchableOpacity>
-
-                {/* Remove */}
-                <TouchableOpacity
-                  style={styles.levelInput}
-                  onPress={() => removeLanguage(lang.id)}
-                >
-                  <FontAwesome name="minus-circle" size={18} color="#666" />
-                </TouchableOpacity>
-              </View>
-
-              {/* ============================= */}
-              {/* Language Suggestions */}
-              {/* ============================= */}
-              {activeLangId === lang.id && languageSuggestions.length > 0 && (
-                <View style={styles.dropdown}>
-                  {languageSuggestions.map((item) => (
-                    <TouchableOpacity
-                      key={item.value}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        updateLanguage(lang.id, "lang", item.value);
-                        setActiveLangId(null);
-                        setLanguageSuggestions([]);
-                      }}
-                    >
-                      <Text>{item.label}</Text>
-                    </TouchableOpacity>
-                  ))}
+    <TouchableWithoutFeedback
+      onPress={() => {
+        setActiveLangId(null);
+        setActiveLevelId(null);
+        setLanguageSuggestions([]);
+        Keyboard.dismiss();
+      }}
+    >
+      <View style={{ flex: 1 }}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Requirements Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Requirements (Optional)</Text>
+            {requirements.map((req, index) => (
+              <View key={req.id} style={styles.requirementBox}>
+                <View style={styles.numberCircle}>
+                  <Text style={styles.numberText}>{index + 1}.</Text>
                 </View>
-              )}
+                <TextInput
+                  style={styles.input}
+                  placeholder="Write your requirement here"
+                  value={req.value}
+                  onChangeText={(text) => updateRequirement(req.id, text)}
+                />
+                <TouchableOpacity onPress={() => removeRequirement(req.id)}>
+                  <FontAwesome5 name="trash" size={15} color="#666666" />
+                </TouchableOpacity>
+              </View>
+            ))}
+            <TouchableOpacity style={styles.addBtn} onPress={addRequirement}>
+              <Text style={styles.addBtnText}>
+                <Entypo name="circle-with-plus" size={18} color="black" /> Add
+                Requirement
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-              {/* ============================= */}
-              {/* Level Dropdown */}
-              {/* ============================= */}
-              {activeLevelId === lang.id && (
-                <View style={styles.dropdown}>
-                  {LEVEL_OPTIONS.map((item) => (
-                    <TouchableOpacity
-                      key={item.value}
-                      style={styles.dropdownItem}
-                       
+          {/* Divider */}
+          <View style={styles.divider} />
 
-                      onPress={() => {
-                        setField(
-                          "languages",
-                          languages.map((l) =>
-                            l.id === lang.id
-                              ? {
+          {/* Language Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Language (Optional)</Text>
+
+            {languages.map((lang) => (
+              <View key={lang.id} style={{ marginBottom: 2, zIndex: 1000 }}>
+                {/* Row */}
+                <View style={styles.languageRow}>
+                  {/* Language Input */}
+                  <TextInput
+                    style={styles.languageInput}
+                    placeholder="Add Language"
+                    value={lang.lang}
+                    onFocus={() => {
+                      setActiveLangId(lang.id);
+                      setActiveLevelId(null);
+                    }}
+                    onChangeText={(text) => {
+                      updateLanguage(lang.id, "lang", text);
+                      fetchLanguages(
+                        text,
+                        languages.map((l) => l.lang).filter(Boolean),
+                      );
+                    }}
+                  />
+
+                  {/* Level Dropdown */}
+                  <TouchableOpacity
+                    style={styles.languageInput}
+                    onPress={() => {
+                      setActiveLevelId(lang.id);
+                      setActiveLangId(null);
+                      setLanguageSuggestions([]);
+                    }}
+                  >
+                    <Text>{lang.text || "Select Level"}</Text>
+                  </TouchableOpacity>
+
+                  {/* Remove */}
+                  <TouchableOpacity
+                    style={styles.levelInput}
+                    onPress={() => removeLanguage(lang.id)}
+                  >
+                    <FontAwesome name="minus-circle" size={18} color="#666" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* ============================= */}
+                {/* Language Suggestions */}
+                {/* ============================= */}
+                {activeLangId === lang.id && languageSuggestions.length > 0 && (
+                  <View style={styles.dropdown}>
+                    {languageSuggestions.map((item) => (
+                      <TouchableOpacity
+                        key={item.value}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          updateLanguage(lang.id, "lang", item.value);
+                          setActiveLangId(null);
+                          setLanguageSuggestions([]);
+                        }}
+                      >
+                        <Text>{item.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+                {/* ============================= */}
+                {/* Level Dropdown */}
+                {/* ============================= */}
+                {activeLevelId === lang.id && (
+                  <View style={styles.dropdown}>
+                    {LEVEL_OPTIONS.map((item) => (
+                      <TouchableOpacity
+                        key={item.value}
+                        style={styles.dropdownItem}
+
+
+                        onPress={() => {
+                          setField(
+                            "languages",
+                            languages.map((l) =>
+                              l.id === lang.id
+                                ? {
                                   ...l,
                                   level: item.value,
                                   text: item.label,
                                 }
-                              : l,
-                          ),
-                        );
+                                : l,
+                            ),
+                          );
 
-                        setActiveLevelId(null);
-                      }}
-                    >
-                      <Text>{item.label}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-          ))}
+                          setActiveLevelId(null);
+                        }}
+                      >
+                        <Text>{item.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ))}
 
-          {/* Add Language Button */}
-          <TouchableOpacity style={styles.addBtn} onPress={addLanguage}>
-            <Text style={styles.addBtnText}>Add Language</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Address Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Address of the Job</Text>
-          <View style={styles.addressInput}>
-          <TextInput
-            style={styles.input}
-            placeholder="Write the Address"
-            value={address}
-            onChangeText={(text) => {
-              setField("address", text);
-              if (text.trim()) setAddressError(false);
-            }}
-            
-          />
-
+            {/* Add Language Button */}
+            <TouchableOpacity style={styles.addBtn} onPress={addLanguage}>
+              <Text style={styles.addBtnText}>Add Language</Text>
+            </TouchableOpacity>
           </View>
-          {addressError && (
-            <Text style={styles.errorText}>*Please Enter Your Address</Text>
-          )}
-          {/* <View style={styles.mapscetion}>
+
+          {/* Address Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Address of the Job</Text>
+            <View style={styles.addressInput}>
+              <TextInput
+                style={styles.input}
+                placeholder="Write the Address"
+                value={address}
+                onChangeText={(text) => {
+                  setField("address", text);
+                  if (text.trim()) setAddressError(false);
+                }}
+
+              />
+            </View>
+            {addressError && (
+              <Text style={styles.errorText}>*Please Enter Your Address</Text>
+            )}
+            {/* <View style={styles.mapscetion}>
               <MapView
                 style={styles.map}
                 initialRegion={{
@@ -282,9 +282,37 @@ const AddressSection = ({ addressError, setAddressError }) => {
                 }}
               />
             </View> */}
-        </View>
-      </ScrollView>
-    </View>
+          </View>
+          <View style={styles.row}>
+            <TouchableOpacity
+              style={styles.rememberMe}
+              onPress={() => {
+                const newValue = isRemoteJob === 1 ? 0 : 1;
+
+                setField("isRemoteJob", newValue);
+
+                console.log("Remote Job:", newValue === 1 ? "YES" : "NO");
+              }}
+            >
+              <View
+                style={[
+                  styles.checkbox,
+                  isRemoteJob === 1 && styles.checkboxChecked,
+                ]}
+              >
+                {isRemoteJob === 1 && (
+                  <Ionicons name="checkmark" size={14} color="#000" />
+                )}
+              </View>
+
+              <Text style={styles.rememberText}>
+                Mark the job as a{" "}
+                <Text style={styles.clickText}>Remote</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </View>
     </TouchableWithoutFeedback>
   );
 };
@@ -312,7 +340,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontFamily: "Montserrat_600SemiBold",
-    fontWeight: "600",
     color: "#faf8f8ff",
     marginBottom: 6,
   },
@@ -421,7 +448,6 @@ const styles = StyleSheet.create({
 
   dropdown: {
     backgroundColor: "#fff",
-
     borderRadius: 6,
     marginTop: 3,
     marginBottom: 10,
@@ -431,8 +457,47 @@ const styles = StyleSheet.create({
 
   dropdownItem: {
     padding: 10,
-
     borderBottomColor: "#eee",
+  },
+  row: {
+    flexDirection: "column",
+    flexWrap: "wrap",
+    marginTop: 10,
+  },
+  rememberMe: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+  },
+  rememberText: {
+    color: "#fff",
+    marginLeft: 10,
+    flexShrink: 1,
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkboxChecked: {
+    backgroundColor: "#fff",
+    borderColor: "#fff",
+  },
+  click: {
+    alignContent: "center",
+  },
+  clickText: {
+    color: "#C96B59",
+    fontFamily: "Montserrat_500Medium",
+    fontSize: 18,
+    lineHeight: 22,
   },
 });
 

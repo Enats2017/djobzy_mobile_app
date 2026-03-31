@@ -1,12 +1,90 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React from "react";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+} from "react-native";
+import { Entypo, Ionicons } from "@expo/vector-icons";
 
-const EditProfileCertificates = () => {
+const EditProfileCertificates = ({
+    certificates,
+    updateItem,
+    addItem,
+    removeItem,
+}) => {
     return (
-        <View>
-            <Text>Edit Profile - Certificates</Text>
+        <View styles={styles.section}>
+            <Text style={styles.label}>Certificates</Text>
+
+            {/* First input row */}
+            <View style={styles.plusInput}>
+                <TextInput
+                    style={styles.innerInput}
+                    placeholder="Write here"
+                    placeholderTextColor="#bfbfbf"
+                    value={certificates[0]?.value}
+                    onChangeText={(t) =>
+                        updateItem("certificates", certificates[0].id, t)
+                    }
+                />
+                <TouchableOpacity onPress={() => addItem("certificates")}>
+                    <Entypo name="circle-with-plus" size={18} color="#ffffff" />
+                </TouchableOpacity>
+            </View>
+
+            {/* Remaining rows */}
+            {certificates.slice(1).map((item) => (
+                <View key={item.id} style={styles.childRow}>
+                    <TextInput
+                        style={styles.innerInput}
+                        placeholder="Write here"
+                        placeholderTextColor="#bfbfbf"
+                        value={item.value}
+                        onChangeText={(t) => updateItem("certificates", item.id, t)}
+                    />
+                    <TouchableOpacity onPress={() => removeItem("certificates", item.id)}>
+                        <Ionicons name="trash" size={20} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+            ))}
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    label: {
+        color: "#fff",
+        fontSize: 16,
+        marginBottom: 6,
+        fontFamily: "Montserrat_700Bold",
+    },
+    plusInput: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#ffffff1a",
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 3,
+        marginBottom: 10,
+    },
+    innerInput: {
+        flex: 1,
+        color: "#fff",
+        fontStyle: "italic",
+        fontSize: 14,
+        fontFamily: "Montserrat_500Medium",
+    },
+    childRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#ffffff1a",
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+        marginBottom: 10,
+    },
+});
 
 export default EditProfileCertificates;

@@ -46,7 +46,12 @@ const JobCreate = ({ admin, userId }) => {
         </Text>
         {admin === 2 && (
           <Text style={styles.instructionText}>
-            In order to get things done,create your first job post
+            In order to get things done,create{"\n"}your first job post
+          </Text>
+        )}
+        {admin === 0 && (
+          <Text style={styles.instructionText}>
+            Promote your service for free and {"\n"}perfect jobs will find you
           </Text>
         )}
       </View>
@@ -119,7 +124,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_500Medium",
     color: "#FFFFFF",
     marginTop: 10,
-    marginBottom: 14,
+    marginBottom: 30,
   },
   startText: {
     fontSize: 28,
@@ -135,13 +140,15 @@ const styles = StyleSheet.create({
   instructionText: {
     flex: 1,
     paddingHorizontal: 5,
-    fontSize: 18,
+    fontSize: 14,
+    lineHeight: 24,
     color: "#FFFFFF",
     textAlign: "center",
+    fontFamily: "Montserrat_600SemiBold"
   },
   jobbtn: {
     gap: 10,
-    marginTop: 20,
+    marginTop: 30,
   },
   createBtn: {
     backgroundColor: "#f1eeedff",

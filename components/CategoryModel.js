@@ -8,9 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Image,
-  Alert,
-  ActivityIndicator,
-  TouchableWithoutFeedback,
+  Pressable
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, Entypo } from "@expo/vector-icons";
@@ -117,8 +115,8 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={[styles.modalOverlay]}>
-        <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
+      <Pressable style={[styles.modalOverlay]} onPress={onClose}>
+        <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
           <View style={styles.Choosecontainer}>
             <View style={styles.searchContainer}>
               <Ionicons
@@ -224,7 +222,11 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
               ))}
             </ScrollView>
 
-            <View style={styles.categoryBtn}>
+            <View
+              style={[
+              styles.categoryBtn,
+              { paddingBottom: insets.bottom + 16 },
+            ]}>
               <GradientButton
                 loading={loading}
                 title="Save"
@@ -233,7 +235,7 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
             </View>
           </View>
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 };

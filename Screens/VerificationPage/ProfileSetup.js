@@ -200,7 +200,7 @@ const ProfileSetup = ({ onNext }) => {
         <View style={styles.titleheading}>
           <Text style={styles.label}>Profile Picture</Text>
           <Text style={styles.subLabel}>
-            Try to final a picture that shows clear and visible image of you or
+            Try to find a picture that shows clear and visible image of you or
             your company logo
           </Text>
         </View>
@@ -251,7 +251,7 @@ const ProfileSetup = ({ onNext }) => {
           <TextInput
             style={styles.aiinput}
             multiline
-            placeholder="Tell me about your self"
+            placeholder="Tell me about your self.."
             value={description}
             placeholderTextColor="#c3c3c3c3"
             onChangeText={setDescription}
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   charCount: {
-    color: "#aaa",
+    color: "#fff",
     fontSize: 12,
     fontFamily: "Montserrat_400Regular",
     textAlign: "right",

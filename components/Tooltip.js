@@ -113,12 +113,11 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   icon: {
-    width: 22,
-    height: 22,
+    width: 20,
+    height: 20,
     borderRadius: 11,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
   },
   iconText: {
     fontWeight: "bold",

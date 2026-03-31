@@ -43,19 +43,28 @@ const ProfileSetup = ({ onNext }) => {
     return true;
   };
 
-  const validateImageSize = async (uri) => {
-    try {
-      const fileInfo = await FileSystem.getInfoAsync(uri);
-      const maxSize = 3 * 1024 * 1024; // 3M
-      if (fileInfo.size > maxSize) {
-        toastError("Image must be smaller than 3MB");
+  const validateImageSize = async (asset) => {
+    let size = asset.fileSize;
+    if (!size && asset.uri) {
+      try {
+        const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+        size = fileInfo.size;
+      } catch (error) {
+        console.log("Image size check error:", error);
+        toastError("Unable to read the file, please try another file");
         return false;
       }
-      return true;
-    } catch (error) {
-      console.log("Image size check error:", error);
+    }
+    const maxSize = 3 * 1024 * 1024;
+    if (!size) {
+      toastError("Unable to read the file, please try another file");
       return false;
     }
+    if (size >= maxSize) {
+      toastError("Image must be smaller than 3MB");
+      return false;
+    }
+    return true;
   };
 
   const openCamera = async () => {
@@ -66,14 +75,14 @@ const ProfileSetup = ({ onNext }) => {
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 1,
     });
 
     if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      const isValid = await validateImageSize(uri);
+      const asset = result.assets[0];
+      const isValid = await validateImageSize(asset);
       if (!isValid) return;
-      setPhotoUri(uri);
+      setPhotoUri(asset.uri);
     }
   };
 
@@ -85,14 +94,14 @@ const ProfileSetup = ({ onNext }) => {
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 1,
     });
 
     if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      const isValid = await validateImageSize(uri);
+      const asset = result.assets[0];
+      const isValid = await validateImageSize(asset);
       if (!isValid) return;
-      setPhotoUri(uri);
+      setPhotoUri(asset.uri);
     }
   };
 

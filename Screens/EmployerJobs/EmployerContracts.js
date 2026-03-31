@@ -80,9 +80,9 @@ const styles = StyleSheet.create({
    
   },
   menuItem: {
-    paddingVertical: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ffffff33",
+    paddingVertical: 20,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#ffffff",
   },
   menuText: {
     fontSize: 16,

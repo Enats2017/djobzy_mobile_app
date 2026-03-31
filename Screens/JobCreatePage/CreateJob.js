@@ -386,7 +386,9 @@ const CreateJob = () => {
                   "Budget",
                   "Review & Publish",
                 ].map((label, index, array) => {
-                  const isActive = index < activeTab;
+                  // const isActive = index < activeTab;
+                  // const isCompleted = index < activeTab;
+                  const isActive = index === activeTab;
                   const isCompleted = index < activeTab;
 
                   return (
@@ -427,7 +429,6 @@ const CreateJob = () => {
                           style={[
                             styles.line,
                             isCompleted && styles.activeLine,
-                            isActive && { backgroundColor: "#F9B233" },
                           ]}
                         />
                       )}

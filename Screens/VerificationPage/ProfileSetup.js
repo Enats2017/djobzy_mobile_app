@@ -113,7 +113,15 @@ const ProfileSetup = ({ onNext }) => {
     });
 
     if (!result.canceled && result.assets?.length > 0) {
-      setResumeFile(result.assets[0]);
+      const file = result.assets[0];
+      const fileInfo = await FileSystem.getInfoAsync(file.uri);
+      const size = fileInfo.size;
+      const maxSize = 5 * 1024 * 1024;
+      if (size > maxSize) {
+        toastError("Resume must be smaller than 5MB");
+        return;
+      }
+      setResumeFile(file);
     }
   };
 

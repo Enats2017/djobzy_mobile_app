@@ -157,29 +157,33 @@ const HeaderMenuModal = ({ visible, onClose }) => {
                 IconComponent={Entypo}
                 icon="circle-with-plus"
                 title="Promote Services"
+                blackBg={true}
                 onPress={() => {
                   const store = useServiceGlobalStore.getState();
                   store.reset();
                   store.resetUniqueId();
-                  go("PromoteService", { userId: user?.id })}
+                  go("PromoteService", { userId: user?.id })
+                }
                 }
               />
             ) : (
               <MenuItem
                 icon="add-circle-outline"
                 title="Create a Job"
+                blackBg={true}
                 onPress={() => go("CreateJob", { userId: user?.id })}
               />
             )}
             <MenuItem
               icon="grid-outline"
               title="Dashboard"
+              blackBg={true}
               onPress={() =>
                 user?.admin == 0 ? go("Dashboard") : go("EmployerDashboard")
               }
             />
             <MenuItem
-              icon="person-outline"
+              icon="person"
               title="My account"
               onPress={() =>
                 user?.admin == 0
@@ -188,22 +192,25 @@ const HeaderMenuModal = ({ visible, onClose }) => {
               }
             />
             <MenuItem
-              icon="star-outline"
+              IconComponent={MaterialIcons}
+              icon="reviews"
               title="Reviews"
               onPress={() => go("ProfileReviewPage")}
             />
             <MenuItem
-              icon="checkmark-done-outline"
+              IconComponent={MaterialIcons}
+              icon="verified"
               title="Verification"
               onPress={() => go("EmployeeVerification")}
             />
             <MenuItem
-              icon="wallet-outline"
+              icon="wallet"
               title="Wallet"
               onPress={() => go("Wallet")}
             />
             <MenuItem
-              icon="gift-outline"
+              IconComponent={Entypo}
+              icon="share"
               title="Referral wallet"
               onPress={() => go("ReferralWallet")}
             />
@@ -247,10 +254,10 @@ const HeaderMenuModal = ({ visible, onClose }) => {
   );
 };
 
-const MenuItem = ({ icon, title, IconComponent = Ionicons, onPress }) => (
+const MenuItem = ({ icon, title, IconComponent = Ionicons, onPress, blackBg }) => (
   <TouchableOpacity style={styles.item} onPress={onPress}>
-    <View style={styles.iconbox}>
-      <IconComponent name={icon} size={22} color="#000" />
+    <View style={[styles.iconbox, blackBg && { backgroundColor: "#000000" }]}>
+      <IconComponent name={icon} size={20} color={blackBg ? "#fff" : "#000"} />
     </View>
     <Text style={styles.menuText}>{title}</Text>
     <Ionicons name="chevron-forward" size={18} />
@@ -260,20 +267,20 @@ const MenuItem = ({ icon, title, IconComponent = Ionicons, onPress }) => (
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.05)",
+    backgroundColor: "#8686861A",
   },
 
   container: {
     position: "absolute",
     right: 10,
-    top: 55,
-    width: 310,
-    height: 550,
+    top: 70,
+    width: 300,
+    height: 500,
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 15,
-    zIndex: 10,
-    elevation: 10,
+    zIndex: 9999,
+    elevation: 50,
   },
 
   switchContainer: {
@@ -284,7 +291,7 @@ const styles = StyleSheet.create({
   },
 
   switchLabel: {
-    color: "#000",
+    color: "#000000",
     fontSize: 16,
     fontFamily: "Montserrat_500Medium",
   },

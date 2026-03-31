@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -24,7 +24,9 @@ const AddressSection = ({ addressError, setAddressError }) => {
   const [activeLangId, setActiveLangId] = useState(null);
   const [loadingLang, setLoadingLang] = useState(false);
   const [activeLevelId, setActiveLevelId] = useState(null);
-
+  const [selectedLangId, setSelectedLangId] = useState(null);
+  const debounceRef = useRef(null);
+  const placeholderColor = "#666666";
 
   const LEVEL_OPTIONS = [
     { label: "Basic", value: "1" },
@@ -41,7 +43,6 @@ const AddressSection = ({ addressError, setAddressError }) => {
     }
     try {
       setLoadingLang(true);
-
       const res = await fetch(`${API_URL}/language`, {
         method: "POST",
         headers: {
@@ -112,7 +113,12 @@ const AddressSection = ({ addressError, setAddressError }) => {
       }}
     >
       <View style={{ flex: 1 }}>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={true}
+          scrollEnabled={false}
+        >
           {/* Requirements Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Requirements (Optional)</Text>
@@ -160,26 +166,46 @@ const AddressSection = ({ addressError, setAddressError }) => {
                       setActiveLangId(lang.id);
                       setActiveLevelId(null);
                     }}
+                    // onChangeText={(text) => {
+                    //   updateLanguage(lang.id, "lang", text);
+                    //   fetchLanguages(
+                    //     text,
+                    //     languages.map((l) => l.lang).filter(Boolean),
+                    //   );
+                    // }}
                     onChangeText={(text) => {
                       updateLanguage(lang.id, "lang", text);
-                      fetchLanguages(
-                        text,
-                        languages.map((l) => l.lang).filter(Boolean),
-                      );
+                      if (debounceRef.current) {
+                        clearTimeout(debounceRef.current);
+                      }
+                      if (text.trim().length > 0) {
+                        debounceRef.current = setTimeout(() => {
+                          setActiveLangId(lang.id);
+                          fetchLanguages(
+                            text,
+                            languages.map((l) => l.lang).filter(Boolean),
+                          );
+                        }, 300);
+                      } else {
+                        setActiveLangId(null);
+                        setLanguageSuggestions([]);
+                      }
                     }}
                   />
 
                   {/* Level Dropdown */}
-                  <TouchableOpacity
-                    style={styles.languageInput}
-                    onPress={() => {
-                      setActiveLevelId(lang.id);
-                      setActiveLangId(null);
-                      setLanguageSuggestions([]);
-                    }}
-                  >
-                    <Text>{lang.text || "Select Level"}</Text>
-                  </TouchableOpacity>
+                  {(selectedLangId === lang.id || lang.level) && (
+                    <TouchableOpacity
+                      style={styles.languageInput}
+                      onPress={() => {
+                        setActiveLevelId(lang.id);
+                        setActiveLangId(null);
+                        setLanguageSuggestions([]);
+                      }}
+                    >
+                      <Text style={styles.languageInputlevel}>{lang.text || "Select Level"}</Text>
+                    </TouchableOpacity>
+                  )}
 
                   {/* Remove */}
                   <TouchableOpacity
@@ -190,38 +216,38 @@ const AddressSection = ({ addressError, setAddressError }) => {
                   </TouchableOpacity>
                 </View>
 
-                {/* ============================= */}
                 {/* Language Suggestions */}
-                {/* ============================= */}
                 {activeLangId === lang.id && languageSuggestions.length > 0 && (
                   <View style={styles.dropdown}>
-                    {languageSuggestions.map((item) => (
-                      <TouchableOpacity
-                        key={item.value}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          updateLanguage(lang.id, "lang", item.value);
-                          setActiveLangId(null);
-                          setLanguageSuggestions([]);
-                        }}
-                      >
-                        <Text>{item.label}</Text>
-                      </TouchableOpacity>
-                    ))}
+                    <ScrollView
+                      nestedScrollEnabled={true}
+                      showsVerticalScrollIndicator={true}
+                    >
+                      {languageSuggestions.map((item) => (
+                        <TouchableOpacity
+                          key={item.value}
+                          style={styles.dropdownItem}
+                          onPress={() => {
+                            updateLanguage(lang.id, "lang", item.value);
+                            setSelectedLangId(lang.id);
+                            setActiveLangId(null);
+                            setLanguageSuggestions([]);
+                          }}
+                        >
+                          <Text>{item.label}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
                   </View>
                 )}
 
-                {/* ============================= */}
                 {/* Level Dropdown */}
-                {/* ============================= */}
                 {activeLevelId === lang.id && (
                   <View style={styles.dropdown}>
                     {LEVEL_OPTIONS.map((item) => (
                       <TouchableOpacity
                         key={item.value}
                         style={styles.dropdownItem}
-
-
                         onPress={() => {
                           setField(
                             "languages",
@@ -259,17 +285,17 @@ const AddressSection = ({ addressError, setAddressError }) => {
             <View style={styles.addressInput}>
               <TextInput
                 style={styles.input}
-                placeholder="Write the Address"
+                placeholder="Enter Job Location / Address"
+                placeholderTextColor={placeholderColor}
                 value={address}
                 onChangeText={(text) => {
                   setField("address", text);
                   if (text.trim()) setAddressError(false);
                 }}
-
               />
             </View>
             {addressError && (
-              <Text style={styles.errorText}>*Please Enter Your Address</Text>
+              <Text style={styles.errorText}>*Please Enter Job Location / Address</Text>
             )}
             {/* <View style={styles.mapscetion}>
               <MapView
@@ -288,10 +314,7 @@ const AddressSection = ({ addressError, setAddressError }) => {
               style={styles.rememberMe}
               onPress={() => {
                 const newValue = isRemoteJob === 1 ? 0 : 1;
-
                 setField("isRemoteJob", newValue);
-
-                console.log("Remote Job:", newValue === 1 ? "YES" : "NO");
               }}
             >
               <View
@@ -408,6 +431,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#fff",
   },
+  languageInputlevel: {
+    fontSize: 15,
+    marginRight: 5,
+    fontFamily: "Montserrat_500Medium",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+  },
   levelInput: {
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -415,7 +445,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-
     marginBottom: 10,
   },
   suggestionBox: {

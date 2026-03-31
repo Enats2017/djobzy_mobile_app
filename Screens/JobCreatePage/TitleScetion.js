@@ -331,6 +331,7 @@ const styles = StyleSheet.create({
     color: "#ebbe56",
     fontFamily: "Montserrat_500Medium",
     fontSize: 12,
+    lineHeight: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#ebbe56",
   },

@@ -73,6 +73,7 @@ const ProfileEditPage = () => {
   const [profile, setProfile] = useState({});
   const { admin } = useNotifications();
   const userType = admin === 2 ? 'employer' : 'employee';
+  console.log(userType)
   const hasFetched = useRef(false);
 
   useEffect(() => {

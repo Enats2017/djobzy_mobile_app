@@ -24,9 +24,8 @@ const TitleScetion = ({
   descriptionError,
   setDescriptionError,
 }) => {
-  const { title, description, setField, setActiveTab } =
-    useCreateJobGlobalStore();
-
+  const placeholderColor = '#666666';
+  const { title, description, setField, setActiveTab } = useCreateJobGlobalStore();
   const [titleModal, setTitleModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -193,10 +192,11 @@ const TitleScetion = ({
 
         {/* DESCRIPTION */}
         <Text style={styles.label}>Description</Text>
-        <View style={styles.passwordContainer}>
+        {/* <View style={styles.passwordContainer}> */}
           <TextInput
             style={[
               styles.input,
+              styles.textArea,
               descriptionError && { borderColor: "#ff0000" },
             ]}
             value={description}
@@ -204,9 +204,11 @@ const TitleScetion = ({
               setField("description", text);
               if (text.trim()) setDescriptionError(false);
             }}
-            placeholder="What Should be Done?"
+            placeholder="Give details"
+            placeholderTextColor={placeholderColor}
+            multiline
           />
-        </View>
+        {/* </View> */}
 
         {descriptionError && (
           <Text style={styles.errorText}>*Please enter a job description</Text>
@@ -359,6 +361,16 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
     fontSize: 14,
     color: "#000",
+    backgroundColor: "#ffffff",
+    borderRadius: 6,
+  },
+  textArea: {
+    height: 140,
+    textAlignVertical: "top",
+    paddingTop: 10,
+    paddingLeft: 10,
+    paddingHorizontal: 5,
+    flexDirection: "row",
   },
   belowtext: {
     color: "#ffffff",

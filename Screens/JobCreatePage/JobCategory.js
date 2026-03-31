@@ -149,7 +149,9 @@ const JobCategory = ({
                 )}
               </View>
 
-              <Text style={styles.mainText}>{service.name}</Text>
+              <View style={{ flex: 1, marginHorizontal: 10 }}>
+                <Text style={styles.mainText}>{service.name}</Text>
+              </View>
               <Ionicons
                 name={
                   expandedServices[service.id] ? "chevron-up" : "chevron-down"

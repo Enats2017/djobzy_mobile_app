@@ -18,6 +18,7 @@ const SetPrice = ({
   setHourlyError,
 }) => {
   const navigation = useNavigation();
+  const placeHolderColor = "#666666";
   const { hourlyRate, totalPrice, expectedTime, processingFee, setField } =
     useCreateJobGlobalStore();
 
@@ -83,6 +84,7 @@ const SetPrice = ({
             value={totalPrice}
             onChangeText={handleTotalPriceChange}
             placeholder="0"
+            placeholderTextColor={placeHolderColor}
             keyboardType="numeric"
           />
         </View>
@@ -116,6 +118,7 @@ const SetPrice = ({
           <TextInput
             style={styles.input}
             placeholder="0 / hr"
+            placeholderTextColor={placeHolderColor}
             keyboardType="numeric"
             value={hourlyRate}
             onChangeText={handleHourlyChange}

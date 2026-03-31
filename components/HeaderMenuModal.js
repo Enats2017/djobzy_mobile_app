@@ -78,6 +78,7 @@ const HeaderMenuModal = ({ visible, onClose }) => {
       const data = await response.json();
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
 
+      onClose();
       if (data?.account_type == 0) {
         navigation.reset({
           index: 0,
@@ -98,7 +99,6 @@ const HeaderMenuModal = ({ visible, onClose }) => {
 
   const toggleSwitch = async (newValue) => {
     setIsEmployer(newValue);
-    onClose();
     await handleSwitchAccount();
   };
 

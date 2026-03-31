@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {
     View,
     Text,
@@ -7,17 +7,29 @@ import {
     StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AddSocialMediaModal from "./modals/AddSocialMediaModal";
 
 const EditProfileSocialMedia = () => {
+    const [socialMediaModal, setSocialMediaModal] = useState(false);
+
+    const handleSave = () => {
+        setSocialMediaModal(false);
+    }
     return (
         <View style={styles.section}>
             <Text style={styles.label}>Social Media</Text>
-            <TouchableOpacity style={styles.addBtn}>
+            <TouchableOpacity style={styles.addBtn} onPress={() => setSocialMediaModal(true)}>
                 <Text style={styles.socialText}>Add Your Social Media Accounts</Text>
                 <View style={styles.circleBtn}>
                     <Ionicons name="add" size={25} color="#000" />
                 </View>
             </TouchableOpacity>
+
+            <AddSocialMediaModal
+                visible={socialMediaModal}
+                onClose={() => setSocialMediaModal(false)}
+                onSave={handleSave}
+            />
         </View>
     );
 };

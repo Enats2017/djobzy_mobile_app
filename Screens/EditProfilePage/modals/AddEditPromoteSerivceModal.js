@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 
-const EditPromoteServiceModal = ({ visible, onClose, onChooseCategories, initialData }) => {
+const AddEditPromoteSerivceModal = ({ visible, onClose, onChooseCategories, initialData }) => {
     const [jobTitle, setJobTitle] = useState(initialData?.jobTitle || 'UI/UX Designer');
     const [description, setDescription] = useState(initialData?.description || '');
     const [isBookable, setIsBookable] = useState(initialData?.isBookable ?? true);
@@ -321,4 +321,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default EditPromoteServiceModal;
+export default AddEditPromoteSerivceModal;

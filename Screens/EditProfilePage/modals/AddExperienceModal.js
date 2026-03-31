@@ -6,9 +6,14 @@ import {
     TextInput,
     TouchableOpacity,
     StyleSheet,
+    Pressable
 } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import GradientButton from "../../../components/GradientButton";
 
 const AddExperienceModal = ({ visible, onClose, onSave }) => {
+    const insets = useSafeAreaInsets();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
 
@@ -25,17 +30,20 @@ const AddExperienceModal = ({ visible, onClose, onSave }) => {
     return (
         <Modal
             visible={visible}
-            transparent
+            transparent={true}
             animationType="fade"
-            onRequestClose={handleClose}
+            onRequestClose={onClose}
         >
-            <View style={styles.overlay}>
-                <View style={styles.container}>
+            <Pressable style={[styles.modalOverlay]} onPress={onClose}>
+                <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
                     {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>Add Experience</Text>
-                        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                            <Text style={styles.closeIcon}>✕</Text>
+                        <TouchableOpacity
+                            style={styles.closeIcon}
+                            onPress={onClose}
+                        >
+                            <Ionicons name="close" size={22} color="#000" />
                         </TouchableOpacity>
                     </View>
 
@@ -62,96 +70,72 @@ const AddExperienceModal = ({ visible, onClose, onSave }) => {
                     />
 
                     {/* Save Button */}
-                    <TouchableOpacity
-                        style={styles.saveButton}
+                    <GradientButton
                         onPress={handleSave}
                         activeOpacity={0.85}
-                    >
-                        <Text style={styles.saveText}>Save</Text>
-                    </TouchableOpacity>
+                        title="Save"
+                    />
                 </View>
-            </View>
+            </Pressable>
         </Modal>
     );
 };
 
 const styles = StyleSheet.create({
-    overlay: {
+    modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.55)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 24,
+        backgroundColor: "rgba(0,0,0,0.45)",
+        justifyContent: "flex-end",
     },
-    container: {
-        width: '100%',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 6,
+    modalContainer: {
+        backgroundColor: "#fff",
+        width: "100%",
+        maxHeight: "66%",
+        paddingHorizontal: 15,
+        paddingTop: 10,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
     },
     header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 18,
+        marginBottom: 15,
     },
     title: {
+        flex: 1,
         fontSize: 18,
-        fontWeight: '600',
-        color: '#1A1A1A',
-    },
-    closeButton: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: '#F0F0F0',
-        justifyContent: 'center',
-        alignItems: 'center',
+        fontFamily: "Montserrat_600SemiBold",
+        color: '#303030',
     },
     closeIcon: {
-        fontSize: 13,
-        color: '#555',
-        lineHeight: 16,
+        flexShrink: 0,
     },
     input: {
-        borderWidth: 1.5,
-        borderColor: '#E0E0E0',
+        borderWidth: 1,
+        borderColor: '#00000033',
         borderRadius: 10,
         paddingHorizontal: 14,
-        paddingVertical: 13,
-        fontSize: 15,
-        color: '#1A1A1A',
-        backgroundColor: '#FAFAFA',
-        marginBottom: 12,
+        paddingVertical: 14,
+        backgroundColor: '#fff',
+        fontSize: 16,
+        color: '#000000',
+        fontFamily: "Montserrat_500Medium",
+        lineHeight: 24,
+        marginBottom: 10,
     },
     textArea: {
-        borderWidth: 1.5,
-        borderColor: '#E0E0E0',
+        borderWidth: 1,
+        borderColor: '#00000033',
         borderRadius: 10,
         paddingHorizontal: 14,
-        paddingVertical: 13,
-        fontSize: 15,
-        color: '#1A1A1A',
-        backgroundColor: '#FAFAFA',
+        paddingVertical: 14,
+        fontSize: 16,
+        lineHeight: 24,
+        backgroundColor: '#fff',
+        color: '#000000',
         height: 160,
         marginBottom: 20,
-    },
-    saveButton: {
-        backgroundColor: '#C0614A',
-        borderRadius: 10,
-        paddingVertical: 15,
-        alignItems: 'center',
-    },
-    saveText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
-        letterSpacing: 0.3,
+        fontFamily: "Montserrat_500Medium",
     },
 });
 

@@ -1,18 +1,23 @@
+import { useState } from "react";
 import {
     View,
     Image,
     Text,
     TouchableOpacity,
     Alert,
-    StyleSheet
+    StyleSheet,
+    ActivityIndicator
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { toastError } from "../../utils/toast";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
-import AntDesign from "@expo/vector-icons/AntDesign";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../api/ApiUrl";
+import axios from "axios";
 
 const EditProfileUpdatePhoto = ({ photoUri, setPhotoUri }) => {
+    const [loading, setLoading] = useState(false);
     const requestPermissions = async () => {
         const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
         const galleryPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -24,20 +29,30 @@ const EditProfileUpdatePhoto = ({ photoUri, setPhotoUri }) => {
         return true;
     };
 
-    const validateImageSize = async (uri) => {
-        try {
-            const fileInfo = await FileSystem.getInfoAsync(uri);
-            const maxSize = 3 * 1024 * 1024; // 3M
-            if (fileInfo.size > maxSize) {
-                toastError("Image must be smaller than 3MB");
+    const validateImageSize = async (asset) => {
+        let size = asset.fileSize;
+        if (!size && asset.uri) {
+            try {
+                const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+                size = fileInfo.size;
+            } catch (error) {
+                console.log("Image size check error:", error);
+                toastError("Unable to read the file, please try another file");
                 return false;
             }
-            return true;
-        } catch (error) {
-            console.log("Image size check error:", error);
+        }
+        const maxSize = 3 * 1024 * 1024;
+        if (!size) {
+            toastError("Unable to read the file, please try another file");
             return false;
         }
+        if (size >= maxSize) {
+            toastError("Image must be smaller than 3MB");
+            return false;
+        }
+        return true;
     };
+
 
     const openCamera = async () => {
         const hasPermission = await requestPermissions();
@@ -47,14 +62,14 @@ const EditProfileUpdatePhoto = ({ photoUri, setPhotoUri }) => {
             mediaTypes: ["images"],
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 0.8,
+            quality: 1,
         });
 
         if (!result.canceled) {
-            const uri = result.assets[0].uri;
-            const isValid = await validateImageSize(uri);
+            const asset = result.assets[0];
+            const isValid = await validateImageSize(asset);
             if (!isValid) return;
-            setPhotoUri(uri);
+            await handleSubmit(asset.uri);
         }
     };
 
@@ -66,14 +81,14 @@ const EditProfileUpdatePhoto = ({ photoUri, setPhotoUri }) => {
             mediaTypes: ["images"],
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 0.8,
+            quality: 1,
         });
 
         if (!result.canceled) {
-            const uri = result.assets[0].uri;
-            const isValid = await validateImageSize(uri);
+            const asset = result.assets[0];
+            const isValid = await validateImageSize(asset);
             if (!isValid) return;
-            setPhotoUri(uri);
+            await handleSubmit(asset.uri);
         }
     };
 
@@ -88,93 +103,113 @@ const EditProfileUpdatePhoto = ({ photoUri, setPhotoUri }) => {
         );
     };
 
+    const handleSubmit = async (uri) => {
+        try {
+            setLoading(true);
+            const token = await AsyncStorage.getItem("token");
+            const formData = new FormData();
+            if (uri) {
+                const base64Image = await FileSystem.readAsStringAsync(uri, {
+                    encoding: FileSystem.EncodingType.Base64,
+                });
+                const imageData = `data:image/jpeg;base64,${base64Image}`;
+                formData.append("image", imageData);
+            }
+            const response = await axios.post(
+                `${API_URL}/save-profile-picture`,
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            if (response.data.status === 200) {
+                setPhotoUri(uri);
+            } else {
+                toastError(response.data.message || "Failed to save data");
+                console.log(response.data.message);
+            }
+        } catch (error) {
+            console.error(
+                "Profile setup error:",
+                error.response?.data || error.message
+            );
+            toastError("Error saving profile data");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <View style={styles.photoSection}>
-            {photoUri && (
-                <View style={styles.photoContainer}>
-                    <Image source={{ uri: photoUri }} style={styles.photo} />
-                    {/* <TouchableOpacity
-                        style={styles.removePhoto}
-                        onPress={removePhoto}
-                    >
-                        <Ionicons name="close" size={12} color="#d66e58" />
-                    </TouchableOpacity> */}
-                </View>
-            )}
-            <View style={styles.photouplaod}>
-                <TouchableOpacity
-                    style={styles.uploadPhotoButton}
-                    onPress={pickImage}
-                >
-                    <AntDesign name="camera" size={24} color="#fff" />
-                    <Text style={styles.uploadText}>{photoUri ? "Update Photo" : "Upload Photo"}</Text>
-                </TouchableOpacity>
-            </View>
+        <View style={styles.avatarContainer}>
+            {
+                loading ? (
+                    <View style={styles.avatarLoading}>
+                        <ActivityIndicator color="#fff" size={25} />
+                    </View>
+                ) : (
+                    <Image
+                        source={{ uri: photoUri }}
+                        style={styles.avatar}
+                    />
+                )
+            }
+            <TouchableOpacity style={styles.editBadge} onPress={pickImage}>
+                <Feather name="edit" size={11} color="#666" />
+                <Text style={styles.editBadgeText}>Edit</Text>
+            </TouchableOpacity>
         </View>
     )
 }
 
 
 const styles = StyleSheet.create({
-    photoSection: {
+    avatarContainer: {
+        position: "relative",
+        width: 84,
+        height: 84,
+        marginBottom: 16, // extra space for the badge overflow
+    },
+    avatar: {
+        borderWidth: 1,
+        borderRadius: 60,
+        borderColor: "#d0d0d0",
+        width: "100%",
+        height: "100%",
+    },
+    avatarLoading: {
+        borderWidth: 1,
+        borderRadius: 60,
+        borderColor: "#d0d0d0",
+        width: "100%",
+        height: "100%",
+        justifyContent: "center",
+        alignContent: "center",
+        flex: 1,
+    },
+    editBadge: {
+        position: "absolute",
+        bottom: -12,
+        left: "50%",
+        transform: [{ translateX: -28 }],
         flexDirection: "row",
         alignItems: "center",
-        gap: 15,
-        flex: 1,
-        marginBottom: 15,
-        justifyContent: "space-around",
-    },
-    photoContainer: {
-        position: "relative",
-    },
-    photo: {
-        width: 100,
-        height: 100,
-        borderRadius: 8,
-        borderColor: "#ffffff1a",
-        borderWidth: 1
-    },
-    placeholderPhoto: {
-        width: 90,
-        height: 95,
-        borderRadius: 10,
-        backgroundColor: "#333",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    removePhoto: {
-        position: "absolute",
-        top: 5,
-        right: 3,
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        width: 15,
-        height: 15,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    removeText: {
-        color: "#fff",
-        fontSize: 20,
-        fontWeight: "bold",
-    },
-    photouplaod: {
-        backgroundColor: "#FFFFFF0D",
-        padding: 25,
-        flex: 1,
-        borderRadius: 10,
+        gap: 4,
+        backgroundColor: "#f2f2f2",
         borderWidth: 1,
-        borderStyle: "dashed",
-        borderColor: "#FFFFFF33",
+        borderColor: "#d0d0d0",
+        borderRadius: 999,
+        paddingVertical: 3,
+        paddingHorizontal: 10,
     },
-    uploadPhotoButton: {
-        alignItems: "center",
-        width: "100%",
-    },
-    uploadText: {
-        color: "#fff",
-        fontFamily: "Montserrat_600SemiBold",
-        fontSize: 16,
+    editBadgeText: {
+        fontSize: 12,
+        fontFamily: "Montserrat_500Medium",
+        color: "#666666",
+        lineHeight: 16
     },
 });
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {
     View,
     Text,
@@ -13,8 +13,16 @@ import QuestionMark from "../../components/QuestionMark";
 import { tooltipMessage } from "../../components/TooltipMessage";
 import GradientButton from "../../components/GradientButton";
 import { API_ICON } from "../../api/ApiUrl";
+import AddEditPromoteSerivceModal from "./modals/AddEditPromoteSerivceModal";
 
 const EditProfilePromotedServices = ({ promote, navigation }) => {
+    const [modalVisible, setModalVisible] = useState(false);
+
+    const openModal = () => setModalVisible(true);
+    const handleSave = (data) => {
+        console.log("promote service saved:", data);
+        setModalVisible(false);
+    };
     return (
         <View style={styles.section}>
             <View style={styles.label}>
@@ -87,7 +95,7 @@ const EditProfilePromotedServices = ({ promote, navigation }) => {
                                 />
                                 <View style={styles.bottomBtns}>
                                     {/* Edit Button */}
-                                    <TouchableOpacity style={styles.circleButton}>
+                                    <TouchableOpacity style={styles.circleButton} onPress={openModal}>
                                         <Feather name="edit-3" size={22} color="#000" />
                                     </TouchableOpacity>
 
@@ -101,6 +109,12 @@ const EditProfilePromotedServices = ({ promote, navigation }) => {
                     );
                 })}
             </ScrollView>
+
+            <AddEditPromoteSerivceModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                onSave={handleSave}
+            />
         </View>
     );
 };

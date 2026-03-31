@@ -1,22 +1,37 @@
-import React from "react";
+import React, {useState} from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import QuestionMark from "../../components/QuestionMark";
 import { tooltipMessage } from "../../components/TooltipMessage";
 import { AntDesign } from "@expo/vector-icons";
+import AddExperienceModal from "./modals/AddExperienceModal";
 
-const EditProfileExperience = ({  }) => {
+const EditProfileExperience = ({ navigation }) => {
+    const [experienceModalVisible, setExperienceModalVisible] = useState(false);
+
+    const openExperienceModal = () => setExperienceModalVisible(true);
+    const handleSaveExperience = (data) => {
+        console.log("Experience saved:", data);
+        setExperienceModalVisible(false);
+    };
+
     return (
         <View style={styles.section}>
             <View style={styles.label}>
                 <QuestionMark title="Experience" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_provided_services} />
             </View>
 
-            <TouchableOpacity style={styles.plusbtn}>
+            <TouchableOpacity style={styles.plusbtn} onPress={openExperienceModal}>
                 <AntDesign name="plus" size={16} color="#030303" />
                 <Text style={styles.plustext}>
                     Add Experience
                 </Text>
             </TouchableOpacity>
+
+            <AddExperienceModal
+                visible={experienceModalVisible}
+                onClose={() => setExperienceModalVisible(false)}
+                onSave={handleSaveExperience}
+            />
         </View>
     );
 };

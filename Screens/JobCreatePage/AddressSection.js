@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 12,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     marginBottom: 10,
     backgroundColor: "#ffffff",
@@ -384,8 +384,8 @@ const styles = StyleSheet.create({
   },
 
   numberCircle: {
-    width: 28,
-    height: 28,
+    width: 20,
+    height: 20,
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
@@ -400,6 +400,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Montserrat_500Medium",
     color: "#333",
+    paddingRight: 20,
   },
 
   addBtn: {

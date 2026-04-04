@@ -99,6 +99,7 @@ import PaymentFailed from "./components/PaymentFailed";
 import { createNavigationContainerRef } from "@react-navigation/native";
 import { StackActions } from "@react-navigation/native";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { registerForPushNotifications, notificationListener, foregroundListener, } from "./expoNotification";
 
 const Stack = createStackNavigator();
 export const navigationRef = createNavigationContainerRef();
@@ -117,6 +118,18 @@ const App = () => {
       setAppIsReady(true);
     }
   }, [fontsLoaded]);
+
+  useEffect(() => {
+    registerForPushNotifications();
+
+    const responseSub = notificationListener();
+    const foregroundSub = foregroundListener();
+
+    return () => {
+      responseSub.remove();
+      foregroundSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     const handleDeepLink = (event) => {

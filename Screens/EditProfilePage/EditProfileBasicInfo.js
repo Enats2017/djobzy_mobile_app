@@ -3,15 +3,13 @@ import { View, Text, TextInput, StyleSheet } from "react-native";
 import EditProfileSocialMedia from "./EditProfileSocialMedia";
 import QuestionMark from "../../components/QuestionMark";
 import { tooltipMessage } from "../../components/TooltipMessage";
+import { useEditProfileStore } from "./useEditProfileStore";
 
-const EditProfileBasicInfo = ({
-    userType,
-    profileTitle,
-    setProfileTitle,
-    description,
-    setDescription,
-}) => {
+const EditProfileBasicInfo = ({ userType }) => {
     const isEmployer = userType === "employer";
+    const profileTitle = useEditProfileStore((state) => state.form.profileTitle);
+    const description = useEditProfileStore((state) => state.form.description);
+    const setField = useEditProfileStore((state) => state.setField);
 
     return (
         <View style={styles.section}>
@@ -29,7 +27,7 @@ const EditProfileBasicInfo = ({
                 multiline
                 textAlignVertical="top"
                 value={profileTitle}
-                onChangeText={setProfileTitle}
+                onChangeText={(text) => setField("profileTitle", text)}
             />
 
             {/* Social Media Card */}
@@ -50,7 +48,7 @@ const EditProfileBasicInfo = ({
                 placeholderTextColor="#bfbfbf"
                 multiline
                 value={description}
-                onChangeText={setDescription}
+                onChangeText={(text) => setField("description", text)}
             />
         </View>
     );

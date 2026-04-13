@@ -17,14 +17,16 @@ import {
 
 import EditProfileUpdatePhoto from "./EditProfileUpdatePhoto";
 import LineDivider from "../../components/LineDivider";
+import { useEditProfileStore } from "./useEditProfileStore";
 
-const EditProfileInfoHeader = ({
-    profile,
-    photoUri,
-    setPhotoUri,
-    navigation,
-    category,
-}) => {
+const EditProfileInfoHeader = ({ navigation }) => {
+    const profile = useEditProfileStore((state) => state.profile);
+    const photoUri = useEditProfileStore((state) => state.photoUri);
+    const category = useEditProfileStore((state) => state.category);
+    const setPhotoUri = useEditProfileStore((state) => state.setPhotoUri);
+    const userAdmin = useEditProfileStore((state) => state.form.userAdmin);
+    const statBoxBgColor = userAdmin === 2 ? "#C97863" : "#46A282";
+
     return (
         <>
             <View style={styles.profileinfo}>
@@ -87,35 +89,39 @@ const EditProfileInfoHeader = ({
                     <Text style={styles.iconText}>Download</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.iconBtn}
-                    onPress={() =>
-                        navigation.navigate("ProfileBoostPage", {
-                            categories: category,
-                        })
-                    }
-                >
-                    <Ionicons name="rocket" size={20} color="#ffffff" />
-                    <Text style={styles.iconText}>Boost</Text>
-                </TouchableOpacity>
+                {userAdmin === 0 && (
+                    <TouchableOpacity
+                        style={styles.iconBtn}
+                        onPress={() =>
+                            navigation.navigate("ProfileBoostPage", {
+                                categories: category,
+                            })
+                        }
+                    >
+                        <Ionicons name="rocket" size={20} color="#ffffff" />
+                        <Text style={styles.iconText}>Boost</Text>
+                    </TouchableOpacity>
+                )}
             </View>
 
             {/* Stats */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={styles.statsRow}>
-                    <View style={styles.statBox}>
+                    <View style={[styles.statBox, { backgroundColor: statBoxBgColor }]}>
                         <Text style={styles.statValue}>{profile?.count}</Text>
                         <Text style={styles.statLabel}>Number of Jobs</Text>
                     </View>
 
-                    <View style={styles.statBox}>
+                    <View style={[styles.statBox, { backgroundColor: statBoxBgColor }]}>
                         <Text style={styles.statValue}>{profile?.earned}</Text>
-                        <Text style={styles.statLabel}>Money Earned</Text>
+                        <Text style={styles.statLabel}>
+                            {userAdmin === 2 ? "Money spent" : "Money Earned"}
+                        </Text>
                     </View>
 
-                    <View style={styles.statBox}>
+                    <View style={[styles.statBox, { backgroundColor: statBoxBgColor }]}>
                         <Text style={styles.statValue}>
-                            {profile?.likes?.length}
+                            {profile?.followedUsers?.length}
                         </Text>
                         <Text style={styles.statLabel}>My Followers</Text>
                     </View>
@@ -124,8 +130,6 @@ const EditProfileInfoHeader = ({
         </>
     );
 };
-
-
 
 const styles = StyleSheet.create({
     profileinfo: {
@@ -195,7 +199,6 @@ const styles = StyleSheet.create({
         fontFamily: "Montserrat_700Bold",
     },
     statBox: {
-        backgroundColor: "#46A282",
         paddingVertical: 16,
         paddingHorizontal: 25,
         borderRadius: 10,

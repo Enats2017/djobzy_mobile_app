@@ -1,34 +1,55 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import ContactInfo from "../../components/ContactInfo";
 //import GoogleMap from "../../components/GoogleMap";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import Footer from "../../components/Footer";
 import { ScrollView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import GradientButton from "../../components/GradientButton";
 import PhoneNumberInput from "../../components/PhoneNumberInput";
-import { getCountryCallingCode } from "libphonenumber-js";
+import { getCountryCallingCode, isValidPhoneNumber } from "libphonenumber-js";
+import { toastError, toastSuccess } from "../../utils/toast";
+import TimezoneSelector from "./TimezoneSelector";
 
 const UserContactInfo = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { details, user } = route.params || [];
+  const { user, timezone } = route.params || {};
   const [phoneNumber, setPhoneNumber] = useState(user.mobile_number || "");
-  const [postal, setPostal] = useState("");
-  const [location, setLocation] = useState("");
   const [mobileCountryId, setMobileCountryId] = useState(
     user.mobile_country_id || "",
   );
   const [mobileCountryISO, setMobileCountryISO] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [canVerify, setCanVerify] = useState(false);
+  const [postal, setPostal] = useState("");
+  const [location, setLocation] = useState(user.address || "");
+  const [selectedTimezone, setSelectedTimezone] = useState(user.timezone || "");
   const [loading, setLoading] = useState(false);
 
   console.log("PHONE:", phoneNumber);
   console.log("COUNTRY CODE:", mobileCountryId);
   console.log("COUNTRY ISO:", mobileCountryISO);
+  // console.log("USERSSSSSSSSSSSSS:", user);
+
+  useEffect(() => {
+    if (!user) return;
+    const transformedPhone = user.mobile_number || "";
+    const transformedCountryId = user.phonecode || "";
+    const transformedISO = user.iso2 || "";
+    const transformedLocation = user.address || "";
+    const transformedTimezone = user.timezone || "";
+    setPhoneNumber(transformedPhone);
+    setMobileCountryId(transformedCountryId);
+    setMobileCountryISO(transformedISO);
+    setLocation(transformedLocation);
+    setSelectedTimezone(transformedTimezone);
+
+  }, [user]);
 
   const isoToFlag = (iso) =>
     iso
@@ -50,30 +71,38 @@ const UserContactInfo = () => {
   const defaultCallingCode = isoToCallingCode(countryISO);
   const defaultFlag = isoToFlag(countryISO) || "🇨🇦";
 
-  console.log(postal);
-
   const submitContactInfo = async () => {
-    if (!phone || !location || !countryCode) {
-      alert("Phone, country and location are required");
+    if (!phoneNumber || !location) {
+      toastError("Phone, and location are required");
       return;
     }
 
     console.log("hii");
+    const fullNumber = `+${mobileCountryId}${phoneNumber}`;
+    const updatedFullNumber = `${mobileCountryId}${phoneNumber}`;
+    console.log(selectedTimezone);
+
+    const isPhoneValid = isValidPhoneNumber(fullNumber, mobileCountryISO || user?.iso2);
+    if (!isPhoneValid) {
+      toastError("Please enter a valid phone number.");
+      return;
+    }
+
+    if (!selectedTimezone) {
+      toastError("Please select a timezone.");
+      return;
+    }
 
     const formData = new FormData();
-    formData.append("phone_number", phone); // no +
-    console.log("hii222", phone);
-    formData.append("mobile_country_id", countryCode);
-    console.log("hii222333", user?.mobile_country_id);
+    formData.append("phone_number", updatedFullNumber); // no +
+    formData.append("mobile_country_id", mobileCountryId);
     formData.append("postal_code", postal);
-    console.log("hii222333", postal);
     formData.append("searchInput", location);
-    console.log("hii222333444", location);
-    // formData.append("timezone", timezone);
-    // console.log("hii2223334433333", timezone);
+    formData.append("country_iso2", mobileCountryISO);
+    formData.append("timezone", selectedTimezone);
     console.log("SENDING DATA:", {
-      phone,
-      countryCode,
+      phoneNumber,
+      mobileCountryId,
       postal,
       location,
     });
@@ -93,13 +122,13 @@ const UserContactInfo = () => {
       const result = await res.json();
 
       if (result.status == 200) {
-        alert("Contact info saved successfully");
+        toastSuccess("Contact info saved successfully");
       } else {
-        alert(result.message || "Something went wrong");
+        toastError(result.message || "Something went wrong");
       }
     } catch (error) {
       console.error("API Error:", error);
-      alert("Network error");
+      toastError("Network error");
     } finally {
       setLoading(false);
     }
@@ -116,11 +145,13 @@ const UserContactInfo = () => {
           >
             <PhoneNumberInput
               value={phoneNumber}
+              countryISO={mobileCountryISO}
+              countryCode={mobileCountryId}
               onChange={({ phone, countryCode, countryISO }) => {
                 setPhoneNumber(phone);
                 setMobileCountryId(countryCode);
                 setMobileCountryISO(countryISO);
-                setPhoneError(false);
+                setPhoneError("");
                 const full = `+${countryCode}${phone}`;
                 const valid = isValidPhoneNumber(full, countryISO);
                 setCanVerify(valid);
@@ -129,12 +160,20 @@ const UserContactInfo = () => {
               defaultCallingCode={defaultCallingCode}
               defaultCountryISO={defaultCountryISO}
             />
+            {phoneError ? (
+              <Text style={{ color: "red", marginTop: 4 }}>{phoneError}</Text>
+            ) : null}
 
             <ContactInfo
               postalCodeValue={postal}
               onChangePostalCode={setPostal}
               locationValue={location}
               onChangeLocation={setLocation}
+            />
+            <TimezoneSelector
+              timezones={timezone || []}
+              selectedTimezone={selectedTimezone}
+              setSelectedTimezone={setSelectedTimezone}
             />
             {/* <GoogleMap
               region={{
@@ -147,6 +186,7 @@ const UserContactInfo = () => {
             <View style={{ paddingBottom: 10 }}>
               <GradientButton
                 loading={loading}
+                disabled={loading}
                 title="Send"
                 onPress={submitContactInfo}
               />

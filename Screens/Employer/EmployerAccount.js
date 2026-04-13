@@ -36,17 +36,20 @@ import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
 import CategoryModel from "../../components/CategoryModel";
 import QuestionMark from "../../components/QuestionMark";
+import EditProfileSeeAllInformation from "../EditProfilePage/EditProfileSeeAllInformation";
 
 const EmployerAccount = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { name } = route.params || [];
-  const employeeLink = `${API_ICON}/employee-profile/${name}`;
-  const employerLink = `${API_ICON}/employer-profile/${name}`;
+  // const employeeLink = `${API_ICON}/employee-profile/${name}`;
+  // const employerLink = `${API_ICON}/employer-profile/${name}`;
+  const [employeeLink, setEmployeeLink] = useState("");
+  const [employerLink, setEmployerLink] = useState("");
   const [copyModel, setCopyModel] = useState(false);
-  const [copyText, setCopyText] = useState(employeeLink);
+  const [copyText, setCopyText] = useState("");
   const [downloadModal, setDownloadModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("employee");
+  const [activeTab, setActiveTab] = useState("employer");
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [subcategory, setSubcategory] = useState([]);
@@ -58,9 +61,9 @@ const EmployerAccount = () => {
 
   const insets = useSafeAreaInsets();
 
-  const handleCopy = async () => {
+  const handleCopy = async (text) => {
     try {
-      await Clipboard.setStringAsync(link);
+      await Clipboard.setStringAsync(text);
       if (Platform.OS === "android") {
         ToastAndroid.show("Copied to clipboard!", ToastAndroid.SHORT);
       } else {
@@ -97,12 +100,15 @@ const EmployerAccount = () => {
         },
       });
       const data = await response.json();
+      setEmployeeLink(data.employee_link);
+      setEmployerLink(data.employer_link);
+      setCopyText(data.employer_link);
       setUser(data.editprofile);
       setJob(data.myJobPosts);
       setProfile(data);
       setSubcategory(data.subcategory);
       setCurrent(data.creview);
-      console.log(data.price);
+      // console.log(data.price);
     } catch (err) {
       setError(err.message);
       console.log(err);
@@ -236,23 +242,16 @@ const EmployerAccount = () => {
                     </View>
                     <View style={styles.statBox}>
                       <Text style={styles.statValue}>
-                        {profile?.likes?.length}
+                        {profile?.followedUsers?.length}
                       </Text>
                       <Text style={styles.statLabel}>My Followers</Text>
                     </View>
                   </View>
                 </ScrollView>
+
+                <EditProfileSeeAllInformation navigation={navigation} isEdit={false} />
               </View>
               <View style={styles.infoBox}>
-                {/* <View style={styles.iconbox}>
-                  <Text style={styles.infoTitle}>Profile Title</Text>
-                  <FontAwesome
-                    name="question-circle"
-                    size={16}
-                    color="#ffffff"
-                    style={{ marginLeft: 5 }}
-                  />
-                </View> */}
                 <QuestionMark title="Profile Title" iconColor="#fff"  tooltipMessage="Update your personal details here."/>
                 <Text style={styles.infoText2}>
                   {user.profile_title_employer}
@@ -348,16 +347,6 @@ const EmployerAccount = () => {
                   </View>
                 </View>
               ))}
-
-              {/* <View style={styles.iconbox}>
-                <Text style={styles.infoTitle}>Employee Category</Text>
-                <FontAwesome
-                  name="question-circle"
-                  size={16}
-                  color="#ffffff"
-                  style={{ marginLeft: 5 }}
-                />
-              </View> */}
 
               <View style={styles.dotssection}>
                 <Text style={styles.infoTitle}>Attachments</Text>
@@ -503,8 +492,7 @@ const EmployerAccount = () => {
                       {copyText}
                     </Text>
                   </View>
-                  <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
-                    <Text style={styles.copyText}>Copy Link</Text>
+                  <TouchableOpacity style={styles.copyBtn} onPress={() => handleCopy(employeeLink)}>
                     <Ionicons
                       name="copy-outline"
                       size={18}
@@ -524,8 +512,7 @@ const EmployerAccount = () => {
                       {copyText}
                     </Text>
                   </View>
-                  <TouchableOpacity style={styles.copyBtn} onPress={handleCopy}>
-                    <Text style={styles.copyText}>Copy Link</Text>
+                  <TouchableOpacity style={styles.copyBtn} onPress={() => handleCopy(employerLink)}>
                     <Ionicons
                       name="copy-outline"
                       size={18}

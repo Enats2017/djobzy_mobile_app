@@ -11,17 +11,41 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GradientButton from "../../../components/GradientButton";
+import { useEditProfileStore } from "../useEditProfileStore";
 
 const AddExperienceModal = ({ visible, onClose, onSave }) => {
     const insets = useSafeAreaInsets();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [errors, setErrors] = useState({});
+    const experiences = useEditProfileStore((state) => state.form.experiences);
+    const setField = useEditProfileStore((state) => state.setField);
 
     const handleSave = () => {
-        onSave({ title: title.trim(), description: description.trim() });
-    };
+        let newErrors = {};
+        if (!title.trim()) {
+            newErrors.title = 'Experience title is required';
+        }
+        if (!description.trim()) {
+            newErrors.description = 'Description is required';
+        }
+        setErrors(newErrors);
+        if (Object.keys(newErrors).length > 0) return;
 
-    const handleClose = () => {
+        const newExperience = {
+            title: title.trim(),
+            description: description.trim(),
+        };
+
+        const exists = experiences.some((e) => e.title.toLowerCase() === newExperience.title.toLowerCase());
+
+        if (exists) {
+            onClose();
+            return;
+        }
+        const updateExperience = [...experiences, newExperience];
+        setField("experiences", updateExperience);
+        console.log(updateExperience);
         setTitle('');
         setDescription('');
         onClose();
@@ -34,7 +58,7 @@ const AddExperienceModal = ({ visible, onClose, onSave }) => {
             animationType="fade"
             onRequestClose={onClose}
         >
-            <Pressable style={[styles.modalOverlay]} onPress={onClose}>
+            <View style={[styles.modalOverlay]} onPress={onClose}>
                 <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
                     {/* Header */}
                     <View style={styles.header}>
@@ -47,27 +71,34 @@ const AddExperienceModal = ({ visible, onClose, onSave }) => {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Title Input */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Title"
-                        placeholderTextColor="#AAAAAA"
-                        value={title}
-                        onChangeText={setTitle}
-                        returnKeyType="next"
-                    />
+                    <View style={styles.eductionSection}>
+                        <View style={styles.nameRow}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Title"
+                                placeholderTextColor="#AAAAAA"
+                                value={title}
+                                onChangeText={setTitle}
+                                returnKeyType="next"
+                            />
+                            {errors.title && <Text style={styles.errorText}>{errors.title}</Text>}
+                        </View>
 
-                    {/* Description Input */}
-                    <TextInput
-                        style={styles.textArea}
-                        placeholder="Description"
-                        placeholderTextColor="#AAAAAA"
-                        value={description}
-                        onChangeText={setDescription}
-                        multiline
-                        textAlignVertical="top"
-                        returnKeyType="done"
-                    />
+                        {/* Description Input */}
+                        <View style={styles.nameRow}>
+                            <TextInput
+                                style={styles.textArea}
+                                placeholder="Description"
+                                placeholderTextColor="#AAAAAA"
+                                value={description}
+                                onChangeText={setDescription}
+                                multiline
+                                textAlignVertical="top"
+                                returnKeyType="done"
+                            />
+                            {errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
+                        </View>
+                    </View>
 
                     {/* Save Button */}
                     <GradientButton
@@ -76,7 +107,7 @@ const AddExperienceModal = ({ visible, onClose, onSave }) => {
                         title="Save"
                     />
                 </View>
-            </Pressable>
+            </View>
         </Modal>
     );
 };
@@ -110,6 +141,11 @@ const styles = StyleSheet.create({
     closeIcon: {
         flexShrink: 0,
     },
+    eductionSection: {
+        flexDirection: "column",
+        gap: 10,
+        marginBottom: 20,
+    },
     input: {
         borderWidth: 1,
         borderColor: '#00000033',
@@ -121,7 +157,6 @@ const styles = StyleSheet.create({
         color: '#000000',
         fontFamily: "Montserrat_500Medium",
         lineHeight: 24,
-        marginBottom: 10,
     },
     textArea: {
         borderWidth: 1,
@@ -134,8 +169,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         color: '#000000',
         height: 160,
-        marginBottom: 20,
         fontFamily: "Montserrat_500Medium",
+    },
+    errorText: {
+        color: '#ff0000',
+        fontSize: 12,
+        marginLeft: 4,
+        fontFamily: "Montserrat_400Regular",
     },
 });
 

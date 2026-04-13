@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import {
     View,
     Text,
@@ -6,28 +6,99 @@ import {
     TouchableOpacity,
     StyleSheet,
     ScrollView,
-    Image
+    Image,
+    ActivityIndicator
 } from "react-native";
 import { Feather, MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
 import QuestionMark from "../../components/QuestionMark";
 import { tooltipMessage } from "../../components/TooltipMessage";
 import GradientButton from "../../components/GradientButton";
-import { API_ICON } from "../../api/ApiUrl";
+import { API_ICON, API_URL } from "../../api/ApiUrl";
 import AddEditPromoteSerivceModal from "./modals/AddEditPromoteSerivceModal";
+import { useEditProfileStore } from "./useEditProfileStore";
+import DeletePromoteServiceModal from "./modals/DeletePromoteServiceModal";
+import { useServiceGlobalStore } from "../PromoteServicesPage/ServiceGlobalStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { toastError } from "../../utils/toast";
 
-const EditProfilePromotedServices = ({ promote, navigation }) => {
+const EditProfilePromotedServices = ({ navigation }) => {
+    const promote = useEditProfileStore((state) => state.form.promote);
     const [modalVisible, setModalVisible] = useState(false);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [deletePromoteService, setDeletePromoteService] = useState(null);
+    const [loadingId, setLoadingId] = useState(null);
+    const [service, setService] = useState(false);
 
-    const openModal = () => setModalVisible(true);
     const handleSave = (data) => {
         console.log("promote service saved:", data);
         setModalVisible(false);
     };
+    const handleOpenDelete = (item) => {
+        console.log('promote deleting for modal sub: ', item);
+        setDeletePromoteService(item);
+        setDeleteModalVisible(true);
+    };
+
+    const onClose = () => {
+        setDeletePromoteService(null);
+        setDeleteModalVisible(false);
+    };
+
+    const handleEdit = async (id, type) => {
+        try {
+            setLoadingId(id);
+            const token = await AsyncStorage.getItem("token");
+            const formData = new FormData();
+            formData.append("id", id);
+            formData.append("type", type);
+            const response = await fetch(`${API_URL}/fetchDetails`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                },
+                body: formData,
+            });
+            const data = await response.json();
+            if (data.status === 200) {
+                const serviceData = data.result;
+                console.log(serviceData);
+                const store = useServiceGlobalStore.getState();
+                store.reset();
+                store.setUniqueId(serviceData?.unique_id);
+                store.setField("title", serviceData.title || "");
+                store.setField("description", serviceData.description || "");
+                store.setField("hourlyRate", String(serviceData.hour_minimum || ""));
+                store.setField("totalPrice", String(serviceData.price || ""));
+                store.setExpectedTime(
+                    (serviceData.selected_time === "no-calendar"
+                        ? 1
+                        : serviceData.selected_time) || 0
+                );
+                store.clearCategories();
+                serviceData.subservice_id?.forEach((id, index) => {
+                    store.addCategory({
+                        subId: Number(id),
+                        name: serviceData.subcategories?.[index],
+                    });
+                });
+                navigation.navigate("PromoteService");
+            } else {
+                toastError(result.message || "Unable to fetch details");
+            }
+        } catch (err) {
+            console.log("fetchDetails error: ", err);
+            toastError("Network error while fetching details");
+        } finally {
+            setLoadingId(null);
+        }
+    };
+
     return (
         <View style={styles.section}>
             <View style={styles.label}>
                 <QuestionMark title="Promote your services" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_provided_services} />
-            </View>
+            </View> 
 
             <TouchableOpacity
                 style={styles.plusbtn}
@@ -95,12 +166,20 @@ const EditProfilePromotedServices = ({ promote, navigation }) => {
                                 />
                                 <View style={styles.bottomBtns}>
                                     {/* Edit Button */}
-                                    <TouchableOpacity style={styles.circleButton} onPress={openModal}>
-                                        <Feather name="edit-3" size={22} color="#000" />
+                                    <TouchableOpacity
+                                        style={styles.circleButton}
+                                        onPress={() => handleEdit(item.sid, 2)}
+                                        disabled={loadingId === item.sid}
+                                    >
+                                        {loadingId === item.sid ? (
+                                            <ActivityIndicator size="small" color="#000" />
+                                        ) : (
+                                            <Feather name="edit-3" size={22} color="#000" />
+                                        )}
                                     </TouchableOpacity>
 
                                     {/* Delete Button */}
-                                    <TouchableOpacity style={styles.circleButton}>
+                                    <TouchableOpacity style={styles.circleButton} onPress={() => handleOpenDelete(item)}>
                                         <MaterialIcons name="delete" size={27} color="#d91212" />
                                     </TouchableOpacity>
                                 </View>
@@ -114,6 +193,11 @@ const EditProfilePromotedServices = ({ promote, navigation }) => {
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 onSave={handleSave}
+            />
+            <DeletePromoteServiceModal
+                visible={deleteModalVisible}
+                deletePromoteService={deletePromoteService}
+                onClose={onClose}
             />
         </View>
     );
@@ -225,7 +309,7 @@ const styles = StyleSheet.create({
 
     btnText: {
         color: "#fff",
-        fontSize:204,
+        fontSize: 204,
         fontWeight: "600",
     },
     bottomBtns: {

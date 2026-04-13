@@ -231,7 +231,7 @@ export default function JobResult({ showData }) {
             }
           }}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 50 }}
+          contentContainerStyle={{ paddingBottom: 70 }}
           ItemSeparatorComponent={() => <LineDivider />}
         />
       )}

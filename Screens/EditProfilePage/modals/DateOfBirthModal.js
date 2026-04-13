@@ -12,14 +12,17 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GradientButton from "../../../components/GradientButton";
+import { useEditProfileStore } from "../useEditProfileStore";
 
-const DateOfBirthModal = ({ visible, onClose, onSave, initialDate }) => {
+const DateOfBirthModal = ({ visible, onClose, initialDate }) => {
     const insets = useSafeAreaInsets();
+    const dob = useEditProfileStore((state) => state.form.dob);
+    const setField = useEditProfileStore((state) => state.setField);
     const [date, setDate] = useState(initialDate ? new Date(initialDate) : null);
     const [showPicker, setShowPicker] = useState(false);
 
     const formatDate = (d) => {
-        if (!d) return 'DD/MM/YYYY'; // 👈 placeholder
+        if (!d) return 'DD/MM/YYYY';
 
         const dd = String(d.getDate()).padStart(2, '0');
         const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -30,6 +33,26 @@ const DateOfBirthModal = ({ visible, onClose, onSave, initialDate }) => {
     const handleDateChange = (_event, selectedDate) => {
         setShowPicker(Platform.OS === 'ios');
         if (selectedDate) setDate(selectedDate);
+    };
+
+    const handleSave = () => {
+        if (!date) return;
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        const formatted = `${yyyy}-${mm}-${dd}`;
+
+        // Calculate age (same logic as your PHP Carbon diff)
+        const today = new Date();
+        let age = today.getFullYear() - date.getFullYear();
+        const monthDiff = today.getMonth() - date.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+            age--;
+        }
+
+        setField("dob", formatted);
+        setField("years", age);
+        onClose();
     };
 
     return (
@@ -78,7 +101,7 @@ const DateOfBirthModal = ({ visible, onClose, onSave, initialDate }) => {
 
                     {/* Save Button */}
                     <GradientButton
-                        onPress={() => onSave(date)}
+                        onPress={handleSave}
                         activeOpacity={0.85}
                         title='Save'
                     />

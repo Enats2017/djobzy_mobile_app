@@ -3,10 +3,30 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, } from "react-nati
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import QuestionMark from "../../components/QuestionMark";
 import { tooltipMessage } from "../../components/TooltipMessage";
+import { useEditProfileStore } from "./useEditProfileStore";
+import DeleteCategoryModal from "./modals/DeleteCategoryModal";
+import AddCategoryModal from "./modals/AddCategoryModal";
 
-const EditProfileCategory = ({ category }) => {
+const EditProfileCategory = ({ navigation }) => {
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+
+    const [deleteCategory, setDeleteCategory] = useState(null);
+    const category = useEditProfileStore((state) => state.form.category);
     const [showAllCategories, setShowAllCategories] = useState(false);
     const displayedCategories = showAllCategories ? category : category?.slice(0, 5);
+    // console.log('category  from db : ', category);
+
+    const handleOpenDelete = (item) => {
+        // console.log('services deleting for modal sub: ' , item);
+        setDeleteCategory(item);
+        setDeleteModalVisible(true);
+    };
+
+    const onClose = () => {
+        setDeleteCategory(null);
+        setDeleteModalVisible(false);
+    };
 
     return (
         <View style={styles.section}>
@@ -18,7 +38,7 @@ const EditProfileCategory = ({ category }) => {
             <View style={styles.pillsWrapper}>
                 <TouchableOpacity
                     style={styles.addBtn}
-                // onPress={() => setModalVisible(true)}
+                    onPress={() => setModalVisible(true)}
                 >
                     <Ionicons name="add" size={18} color="#000" />
                     <Text style={styles.addText}>Add Category</Text>
@@ -29,9 +49,7 @@ const EditProfileCategory = ({ category }) => {
                         <Text style={styles.categoryText}>{item.subname}</Text>
 
                         <TouchableOpacity
-                            onPress={() =>
-                                handleOpenDelete(item.service_id, item.subname)
-                            }
+                            onPress={() => handleOpenDelete(item)}
                         >
                             <Ionicons
                                 name="close"
@@ -60,6 +78,22 @@ const EditProfileCategory = ({ category }) => {
                     </TouchableOpacity>
                 )}
             </View>
+
+
+            <AddCategoryModal
+                visible={modalVisible}
+                type={1}
+                pageType={0}
+                onClose={() => {
+                    setModalVisible(false);
+                }}
+            />
+
+            <DeleteCategoryModal
+                visible={deleteModalVisible}
+                deleteCategory={deleteCategory}
+                onClose={onClose}
+            />
         </View>
     );
 };

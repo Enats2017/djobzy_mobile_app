@@ -18,6 +18,7 @@ import {
 import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { toastError } from "../../utils/toast";
 
 const AddressSection = ({ addressError, setAddressError }) => {
   const [languageSuggestions, setLanguageSuggestions] = useState([]);
@@ -31,7 +32,7 @@ const AddressSection = ({ addressError, setAddressError }) => {
   const LEVEL_OPTIONS = [
     { label: "Basic", value: "1" },
     { label: "Medium", value: "2" },
-    { label: "Advanced", value: "3" },
+    { label: "Fluent", value: "3" },
   ];
 
   const { requirements, languages, address, setField, isRemoteJob } = useCreateJobGlobalStore();
@@ -65,7 +66,16 @@ const AddressSection = ({ addressError, setAddressError }) => {
   };
 
   const addRequirement = () => {
-    setField("requirements", [...requirements, { id: Date.now(), value: "" }]);
+    const last = requirements[requirements.length - 1];
+
+    if (last && last.value.trim() === "") {
+      toastError("Please fill the current requirement first");
+      return;
+    }
+    setField("requirements", [
+      ...requirements,
+      { id: Date.now(), value: "" }
+    ]);
   };
 
   const removeRequirement = (id) => {
@@ -83,6 +93,12 @@ const AddressSection = ({ addressError, setAddressError }) => {
   };
 
   const addLanguage = () => {
+    const last = languages[languages.length - 1];
+
+    if (last && (!last.lang || last.lang.trim() === "")) {
+      toastError("Please fill the current language first");
+      return;
+    }
     setField("languages", [
       ...languages,
       { id: Date.now(), lang: "", level: "", text: "" },
@@ -166,13 +182,6 @@ const AddressSection = ({ addressError, setAddressError }) => {
                       setActiveLangId(lang.id);
                       setActiveLevelId(null);
                     }}
-                    // onChangeText={(text) => {
-                    //   updateLanguage(lang.id, "lang", text);
-                    //   fetchLanguages(
-                    //     text,
-                    //     languages.map((l) => l.lang).filter(Boolean),
-                    //   );
-                    // }}
                     onChangeText={(text) => {
                       updateLanguage(lang.id, "lang", text);
                       if (debounceRef.current) {
@@ -397,7 +406,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: "Montserrat_500Medium",
     color: "#333",
     paddingRight: 20,

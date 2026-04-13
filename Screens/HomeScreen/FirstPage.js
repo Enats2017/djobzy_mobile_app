@@ -48,14 +48,12 @@ export default function FirstPage({ onNext }) {
           </Text>
         </View>
         <View style={styles.buttonWrapper}>
-          <TouchableOpacity style={styles.button} onPress={onNext}>
-            <Text style={styles.buttonText}>Next</Text>
-            <Ionicons
-              name="arrow-forward"
-              size={fontScale(18)}
-              color="#fff"
-            />
-          </TouchableOpacity>
+          <View style={styles.bottomSection}>
+            <View style={styles.dotsContainer}>
+              <View style={[styles.dot, styles.activeDot]} />
+              <View style={styles.dot} />
+            </View>
+          </View>
         </View>
       </LinearGradient>
     </SafeAreaView>
@@ -118,7 +116,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     marginTop: scale(12),
   },
-  
+
   /* BUTTON */
   buttonWrapper: {
     flex: 2,
@@ -136,5 +134,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 5
+  },
+  dotsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ffffff80",
+    marginHorizontal: 4,
+  },
+
+  activeDot: {
+    width: 28,
+    backgroundColor: "#fff",
   },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import QuestionMark from "../../components/QuestionMark";
 import { tooltipMessage } from "../../components/TooltipMessage";
@@ -12,13 +12,44 @@ import AddAssetsModal from "./modals/AddAssetsModal";
 import AddVehicleModal from "./modals/AddVehicleModal";
 import AddLicensesModal from "./modals/AddLicensesModal";
 import AddCertificatesModal from "./modals/AddCertificatesModal";
+import { useEditProfileStore } from "./useEditProfileStore";
+import HideShowConfirmModal from "./modals/HideShowConfirmModal";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../api/ApiUrl";
+import { toastError, toastSuccess } from "../../utils/toast";
+import HideShowMoneyModal from "./modals/HideShowMoneyModal";
+import LanguageData from "./data/LanguageData";
+import AssetData from "./data/AssetData";
+import VehicleData from "./data/VehicleData";
+import EducationData from "./data/EducationData";
+import LicenseData from "./data/LicenseData";
+import CertificateData from "./data/CertificateData";
+import { useNotifications } from "../../context/MessageNotificationContext";
 
-export default function EditProfileSeeAllInformation ({ navigation }) {
+export default function EditProfileSeeAllInformation({ navigation, isEdit = true }) {
+    const { admin } = useNotifications();
     const [seeAllOpen, setSeeAllOpen] = useState(false);
+    const [hideShowModal, setHideShowModal] = useState(false);
+    const [hideShowLoading, setHideShowLoading] = useState(false);
+    const [hideShowMoneyModal, setHideShowMoneyModal] = useState(false);
+    const [hideShowMoneyLoading, setHideShowMoneyLoading] = useState(false);
+    const profile = useEditProfileStore((state) => state.profile);
+    const years = useEditProfileStore((state) => state.form.years);
+    const ageShowStatus = useEditProfileStore((state) => state.form.ageShowStatus);
+    const moneyShowStatus = useEditProfileStore((state) => state.form.moneyShowStatus);
+    const languages = useEditProfileStore((state) => state.form.languages);
+    const education = useEditProfileStore((state) => state.form.education);
+    const assets = useEditProfileStore((state) => state.form.assets);
+    const vehicles = useEditProfileStore((state) => state.form.vehicles);
+    const licenses = useEditProfileStore((state) => state.form.licenses);
+    const certificates = useEditProfileStore((state) => state.form.certificates);
+    const setField = useEditProfileStore((state) => state.setField);
+    const bgColor = admin === 2 ? "#C97863" : "#46A282";
 
+    // console.log(ageShowStatus);
+    // console.log('admin ', admin);
     // Modal visibility states
     const [dobModalVisible, setDobModalVisible] = useState(false);
-    const [ageVisible, setAgeVisible] = useState(true);
     const [moneyVisible, setMoneyVisible] = useState(true);
     const [languageModalVisible, setLanguageModalVisible] = useState(false);
     const [educationModalVisible, setEducationModalVisible] = useState(false);
@@ -29,8 +60,6 @@ export default function EditProfileSeeAllInformation ({ navigation }) {
 
     // Handlers
     const handleAgeAdd = () => setDobModalVisible(true);
-    const handleAgeVisibility = () => setAgeVisible(prev => !prev);
-    const handleMoneyVisibility = () => setMoneyVisible(prev => !prev);
     const openLanguageModal = () => setLanguageModalVisible(true);
     const openEducationModal = () => setEducationModalVisible(true);
     const openAssetsModal = () => setAssetsModalVisible(true);
@@ -38,40 +67,78 @@ export default function EditProfileSeeAllInformation ({ navigation }) {
     const openLicensesModal = () => setLicensesModalVisible(true);
     const openCertificatesModal = () => setCertificatesModalVisible(true);
 
-    // Save handlers — replace console.log with your API calls
-    const handleSaveDob = (date) => {
-        console.log("DOB saved:", date);
-        setDobModalVisible(false);
+    const handleConfirm = async () => {
+        setHideShowLoading(true);
+        console.log('clicked');
+        try {
+            const token = await AsyncStorage.getItem("token");
+            const usertype = admin === 0 ? "employee" : "employer";
+
+            const formData = new FormData();
+            formData.append("type", 1);
+            formData.append("usertype", usertype);
+
+            const response = await fetch(`${API_URL}/change-age-money-status`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                },
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (result.status === 200) {
+                // toggle locally, no need to refetch
+                setField("ageShowStatus", ageShowStatus === 1 ? 0 : 1);
+                setHideShowModal(false);
+                toastSuccess(ageShowStatus === 0 ? "Age shown successfully" : "Age hidden successfully");
+            } else {
+                toastError("Something went wrong");
+            }
+        } catch (e) {
+            toastError("Network error");
+        } finally {
+            setHideShowLoading(false);
+        }
     };
 
-    const handleSaveLanguage = (language, level) => {
-        console.log("Language saved:", language, level);
-        setLanguageModalVisible(false);
-    };
+    const handleMoneyStatusConfirm = async () => {
+        setHideShowMoneyLoading(true);
+        console.log('clicked');
+        try {
+            const token = await AsyncStorage.getItem("token");
+            const usertype = admin === 0 ? "employee" : "employer";
 
-    const handleSaveEducation = (data) => {
-        console.log("Education saved:", data);
-        setEducationModalVisible(false);
-    };
+            const formData = new FormData();
+            formData.append("type", 0);
+            formData.append("usertype", usertype);
 
-    const handleSaveAssets = (data) => {
-        console.log("Asset saved:", data);
-        setAssetsModalVisible(false);
-    };
+            const response = await fetch(`${API_URL}/change-age-money-status`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                },
+                body: formData,
+            });
 
-    const handleSaveVehicle = (data) => {
-        console.log("Vehicle saved:", data);
-        setVehicleModalVisible(false);
-    };
+            const result = await response.json();
 
-    const handleSaveLicenses = (data) => {
-        console.log("License saved:", data);
-        setLicensesModalVisible(false);
-    };
-
-    const handleSaveCertificates = (data) => {
-        console.log("Certificate saved:", data);
-        setCertificatesModalVisible(false);
+            if (result.status === 200) {
+                // toggle locally, no need to refetch
+                setField("moneyShowStatus", moneyShowStatus === 1 ? 0 : 1);
+                setHideShowMoneyModal(false);
+                toastSuccess(moneyShowStatus === 0 ? "Money shown successfully" : "Money hidden successfully");
+            } else {
+                toastError("Something went wrong");
+            }
+        } catch (e) {
+            toastError("Network error");
+        } finally {
+            setHideShowMoneyLoading(false);
+        }
     };
 
     return (
@@ -92,8 +159,8 @@ export default function EditProfileSeeAllInformation ({ navigation }) {
             {seeAllOpen && (
                 <View style={styles.body}>
                     {/* Age */}
-                    <View style={styles.row}>
-                        <View style={styles.leftSection}>
+                    <View style={[styles.row, { backgroundColor: bgColor }]}>
+                        <View style={styles.leftinfo}>
                             <MaterialIcons
                                 name="cake"
                                 size={22}
@@ -103,49 +170,68 @@ export default function EditProfileSeeAllInformation ({ navigation }) {
                             <Text style={styles.label}>Age</Text>
                         </View>
                         <View style={styles.rightSection}>
-                            <TouchableOpacity
-                                style={styles.circleBtn}
-                                onPress={handleAgeAdd}
-                            >
-                                <Ionicons name="add" size={25} color="#000" />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.circleBtn}
-                                onPress={handleAgeVisibility}
-                            >
-                                <Ionicons
-                                    name={ageVisible ? "eye-off-outline" : "eye-outline"}
-                                    size={22}
-                                    color="#000"
-                                />
-                            </TouchableOpacity>
+                            <Text style={styles.value}>{years}</Text>
+                            {isEdit && (
+                                <>
+                                    {
+                                        years != 0 ? (
+                                            <TouchableOpacity
+                                                style={styles.circleBtn}
+                                                onPress={handleAgeAdd}
+                                            >
+                                                <MaterialIcons name="edit" size={20} color="#000" />
+                                            </TouchableOpacity>
+                                        ) : (
+                                            <TouchableOpacity
+                                                style={styles.circleBtn}
+                                                onPress={handleAgeAdd}
+                                            >
+                                                <Ionicons name="add" size={25} color="#000" />
+                                            </TouchableOpacity>
+                                        )
+                                    }
+
+                                    <TouchableOpacity
+                                        style={styles.circleBtn}
+                                        onPress={() => setHideShowModal(true)}
+                                    >
+                                        <Ionicons
+                                            name={ageShowStatus ? "eye-off-outline" : "eye-outline"}
+                                            size={22}
+                                            color="#000"
+                                        />
+                                    </TouchableOpacity>
+                                </>
+                            )}
                         </View>
                     </View>
 
                     {/* Money Earned */}
-                    <View style={styles.row}>
-                        <View style={styles.leftSection}>
+                    <View style={[styles.row, { backgroundColor: bgColor }]}>
+                        <View style={styles.leftinfo}>
                             <Text style={styles.cadLabel}>CAD</Text>
-                            <Text style={styles.label}>Money Earned</Text>
+                            <Text style={styles.label}>{admin === 2 ? "Money spent" : "Money Earned"}</Text>
                         </View>
                         <View style={styles.rightSection}>
-                            <Text style={styles.value}>200K</Text>
-                            <TouchableOpacity
-                                style={styles.circleBtn}
-                                onPress={handleMoneyVisibility}
-                            >
-                                <Ionicons
-                                    name={moneyVisible ? "eye-off-outline" : "eye-outline"}
-                                    size={22}
-                                    color="#000"
-                                />
-                            </TouchableOpacity>
+                            <Text style={styles.value}>{profile?.earned}</Text>
+                            {isEdit && (
+                                <TouchableOpacity
+                                    style={styles.circleBtn}
+                                    onPress={() => setHideShowMoneyModal(true)}
+                                >
+                                    <Ionicons
+                                        name={moneyShowStatus ? "eye-off-outline" : "eye-outline"}
+                                        size={22}
+                                        color="#000"
+                                    />
+                                </TouchableOpacity>
+                            )}
                         </View>
                     </View>
 
                     {/* Number of Jobs */}
-                    <TouchableOpacity style={styles.row} activeOpacity={0.85}>
-                        <View style={styles.leftSection}>
+                    <View style={[styles.row, { backgroundColor: bgColor }]} activeOpacity={0.85}>
+                        <View style={styles.leftinfo}>
                             <Ionicons
                                 name="briefcase-outline"
                                 size={22}
@@ -154,51 +240,74 @@ export default function EditProfileSeeAllInformation ({ navigation }) {
                             />
                             <Text style={styles.label}>Number of Jobs</Text>
                         </View>
-                        <Text style={styles.value}>2</Text>
-                    </TouchableOpacity>
+                        <Text style={styles.value}>{profile?.count}</Text>
+                    </View>
 
                     {/* Languages */}
-                    <View style={styles.row}>
+                    <View style={[styles.sectionContainer, { backgroundColor: bgColor }]}>
                         <View style={styles.leftSection}>
-                            <Ionicons
-                                name="language-outline"
-                                size={22}
-                                color="#fff"
-                                style={styles.leftIcon}
-                            />
-                            <Text style={styles.label}>Languages</Text>
+                            <View style={styles.leftinfo}>
+                                <Ionicons
+                                    name="language-outline"
+                                    size={22}
+                                    color="#fff"
+                                    style={styles.leftIcon}
+                                />
+                                <Text style={styles.label}>Languages</Text>
+                            </View>
+                            {isEdit && (
+                                <TouchableOpacity style={styles.circleBtn} onPress={openLanguageModal}>
+                                    <Ionicons name="add" size={25} color="#000" />
+                                </TouchableOpacity>
+                            )}
                         </View>
-                        <TouchableOpacity style={styles.circleBtn} onPress={openLanguageModal}>
-                            <Ionicons name="add" size={25} color="#000" />
-                        </TouchableOpacity>
+                        {
+                            languages.length > 0 && (
+                                <View style={styles.rightSection}>
+                                    <LanguageData isEdit={isEdit} />
+                                </View>
+                            )
+                        }
                     </View>
 
                     {/* Education */}
-                    <View style={styles.row}>
+                    <View style={[styles.sectionContainer, { backgroundColor: bgColor }]}>
                         <View style={styles.leftSection}>
-                            <Ionicons
-                                name="book-outline"
-                                size={22}
-                                color="#fff"
-                                style={styles.leftIcon}
-                            />
-                            <Text style={styles.label}>Education</Text>
+                            <View style={styles.leftinfo}>
+                                <Ionicons
+                                    name="book-outline"
+                                    size={22}
+                                    color="#fff"
+                                    style={styles.leftIcon}
+                                />
+                                <Text style={styles.label}>Education</Text>
+                            </View>
+                            {isEdit && (
+                                <TouchableOpacity style={styles.circleBtn} onPress={openEducationModal}>
+                                    <Ionicons name="add" size={25} color="#000" />
+                                </TouchableOpacity>
+                            )}
                         </View>
-                        <TouchableOpacity style={styles.circleBtn} onPress={openEducationModal}>
-                            <Ionicons name="add" size={25} color="#000" />
-                        </TouchableOpacity>
+                        {
+                            education.length > 0 && (
+                                <View style={styles.rightSection}>
+                                    <EducationData isEdit={isEdit} />
+                                </View>
+                            )
+                        }
                     </View>
 
                     {/* Assets and software programs */}
-                    <View style={styles.row}>
+                    <View style={[styles.sectionContainer, { backgroundColor: bgColor }]}>
                         <View style={styles.leftSection}>
-                            <Ionicons
-                                name="construct-outline"
-                                size={22}
-                                color="#fff"
-                                style={styles.leftIcon}
-                            />
-                            <View style={styles.label}>
+                            <View style={styles.leftinfo}>
+                                <Ionicons
+                                    name="construct-outline"
+                                    size={22}
+                                    color="#fff"
+                                    style={styles.leftIcon}
+                                />
+
                                 <QuestionMark
                                     title="Assets and software programs"
                                     iconColor="#fff"
@@ -206,22 +315,37 @@ export default function EditProfileSeeAllInformation ({ navigation }) {
                                     tooltipMessage={tooltipMessage.tooltip_asset}
                                 />
                             </View>
+
+                            {isEdit && (
+                                <TouchableOpacity
+                                    style={styles.circleBtn}
+                                    onPress={openAssetsModal}
+                                >
+                                    <Ionicons name="add" size={25} color="#000" />
+                                </TouchableOpacity>
+                            )}
                         </View>
-                        <TouchableOpacity style={styles.circleBtn} onPress={openAssetsModal}>
-                            <Ionicons name="add" size={25} color="#000" />
-                        </TouchableOpacity>
+
+                        {
+                            assets.length > 0 && (
+                                <View style={styles.rightSection}>
+                                    <AssetData isEdit={isEdit} />
+                                </View>
+                            )
+                        }
                     </View>
 
                     {/* Vehicle */}
-                    <View style={styles.row}>
+                    <View style={[styles.sectionContainer, { backgroundColor: bgColor }]}>
                         <View style={styles.leftSection}>
-                            <Ionicons
-                                name="car-outline"
-                                size={22}
-                                color="#fff"
-                                style={styles.leftIcon}
-                            />
-                            <View style={styles.label}>
+                            <View style={styles.leftinfo}>
+                                <Ionicons
+                                    name="car-outline"
+                                    size={22}
+                                    color="#fff"
+                                    style={styles.leftIcon}
+                                />
+
                                 <QuestionMark
                                     title="Vehicle"
                                     iconColor="#fff"
@@ -229,22 +353,32 @@ export default function EditProfileSeeAllInformation ({ navigation }) {
                                     tooltipMessage={tooltipMessage.tooltip_Vehicle}
                                 />
                             </View>
+                            {isEdit && (
+                                <TouchableOpacity style={styles.circleBtn} onPress={openVehicleModal}>
+                                    <Ionicons name="add" size={25} color="#000" />
+                                </TouchableOpacity>
+                            )}
                         </View>
-                        <TouchableOpacity style={styles.circleBtn} onPress={openVehicleModal}>
-                            <Ionicons name="add" size={25} color="#000" />
-                        </TouchableOpacity>
+                        {
+                            vehicles.length > 0 && (
+                                <View style={styles.rightSection}>
+                                    <VehicleData isEdit={isEdit} />
+                                </View>
+                            )
+                        }
                     </View>
 
                     {/* Licenses */}
-                    <View style={styles.row}>
+                    <View style={[styles.sectionContainer, { backgroundColor: bgColor }]}>
                         <View style={styles.leftSection}>
-                            <Ionicons
-                                name="card-outline"
-                                size={22}
-                                color="#fff"
-                                style={styles.leftIcon}
-                            />
-                            <View style={styles.label}>
+                            <View style={styles.leftinfo}>
+                                <Ionicons
+                                    name="card-outline"
+                                    size={22}
+                                    color="#fff"
+                                    style={styles.leftIcon}
+                                />
+
                                 <QuestionMark
                                     title="Licenses"
                                     iconColor="#fff"
@@ -252,22 +386,37 @@ export default function EditProfileSeeAllInformation ({ navigation }) {
                                     tooltipMessage={tooltipMessage.tooltip_licenses}
                                 />
                             </View>
+
+                            {isEdit && (
+                                <TouchableOpacity
+                                    style={styles.circleBtn}
+                                    onPress={openLicensesModal}
+                                >
+                                    <Ionicons name="add" size={25} color="#000" />
+                                </TouchableOpacity>
+                            )}
                         </View>
-                        <TouchableOpacity style={styles.circleBtn} onPress={openLicensesModal}>
-                            <Ionicons name="add" size={25} color="#000" />
-                        </TouchableOpacity>
+
+                        {
+                            licenses.length > 0 && (
+                                <View style={styles.rightSection}>
+                                    <LicenseData isEdit={isEdit} />
+                                </View>
+                            )
+                        }
                     </View>
 
                     {/* Certificates */}
-                    <View style={styles.row}>
+                    <View style={[styles.sectionContainer, { backgroundColor: bgColor }]}>
                         <View style={styles.leftSection}>
-                            <Ionicons
-                                name="ribbon-outline"
-                                size={22}
-                                color="#fff"
-                                style={styles.leftIcon}
-                            />
-                            <View style={styles.label}>
+                            <View style={styles.leftinfo}>
+                                <Ionicons
+                                    name="ribbon-outline"
+                                    size={22}
+                                    color="#fff"
+                                    style={styles.leftIcon}
+                                />
+
                                 <QuestionMark
                                     title="Certificates"
                                     iconColor="#fff"
@@ -275,10 +424,24 @@ export default function EditProfileSeeAllInformation ({ navigation }) {
                                     tooltipMessage={tooltipMessage.tooltip_certificate}
                                 />
                             </View>
+
+                            {isEdit && (
+                                <TouchableOpacity
+                                    style={styles.circleBtn}
+                                    onPress={openCertificatesModal}
+                                >
+                                    <Ionicons name="add" size={25} color="#000" />
+                                </TouchableOpacity>
+                            )}
                         </View>
-                        <TouchableOpacity style={styles.circleBtn} onPress={openCertificatesModal}>
-                            <Ionicons name="add" size={25} color="#000" />
-                        </TouchableOpacity>
+
+                        {
+                            certificates.length > 0 && (
+                                <View style={styles.rightSection}>
+                                    <CertificateData isEdit={isEdit} />
+                                </View>
+                            )
+                        }
                     </View>
                 </View>
             )}
@@ -287,43 +450,52 @@ export default function EditProfileSeeAllInformation ({ navigation }) {
             <DateOfBirthModal
                 visible={dobModalVisible}
                 onClose={() => setDobModalVisible(false)}
-                onSave={handleSaveDob}
+                initialDate={profile?.editprofile?.dob}
             />
 
             <AddLanguageModal
                 visible={languageModalVisible}
                 onClose={() => setLanguageModalVisible(false)}
-                onSave={handleSaveLanguage}
             />
 
             <AddEducationModal
                 visible={educationModalVisible}
                 onClose={() => setEducationModalVisible(false)}
-                onSave={handleSaveEducation}
             />
 
             <AddAssetsModal
                 visible={assetsModalVisible}
                 onClose={() => setAssetsModalVisible(false)}
-                onSave={handleSaveAssets}
             />
 
             <AddVehicleModal
                 visible={vehicleModalVisible}
                 onClose={() => setVehicleModalVisible(false)}
-                onSave={handleSaveVehicle}
             />
 
             <AddLicensesModal
                 visible={licensesModalVisible}
                 onClose={() => setLicensesModalVisible(false)}
-                onSave={handleSaveLicenses}
             />
 
             <AddCertificatesModal
                 visible={certificatesModalVisible}
                 onClose={() => setCertificatesModalVisible(false)}
-                onSave={handleSaveCertificates}
+            />
+
+            <HideShowConfirmModal
+                visible={hideShowModal}
+                onClose={() => setHideShowModal(false)}
+                type={ageShowStatus === 1 ? "hide" : "show"}
+                onConfirm={handleConfirm}
+                loading={hideShowLoading}
+            />
+            <HideShowMoneyModal
+                visible={hideShowMoneyModal}
+                onClose={() => setHideShowMoneyModal(false)}
+                type={moneyShowStatus === 1 ? "hide" : "show"}
+                onConfirm={handleMoneyStatusConfirm}
+                loading={hideShowMoneyLoading}
             />
         </View>
     );
@@ -361,7 +533,26 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         gap: 8
     },
+    sectionContainer: {
+        backgroundColor: "#43A37A",
+        borderRadius: 8,
+        padding: 14,
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 8
+    },
     leftSection: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 8,
+        flex: 1,
+    },
+    rightSection: {
+        flex: 1,
+        width: "100%",
+    },
+    leftinfo: {
         flex: 1,
         flexDirection: "row",
         alignItems: "center",

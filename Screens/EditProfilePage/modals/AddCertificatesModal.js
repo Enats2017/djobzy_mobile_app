@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Modal,
     View,
@@ -15,68 +15,144 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GradientButton from "../../../components/GradientButton";
+import { useEditProfileStore } from "../useEditProfileStore";
+import { toastError } from '../../../utils/toast';
 
-const AddCertificatesModal = ({ visible, onClose, onSave }) => {
+const AddCertificatesModal = ({ visible, onClose, editingItem = null }) => {
     const insets = useSafeAreaInsets();
-    const [instituteName, setInstituteName] = useState('');
-    const [specialization, setSpecialization] = useState('');
+    const [certifcateName, setCertifcateName] = useState('');
+    const [description, setDescription] = useState('');
     const [startYear, setStartYear] = useState(null);
     const [endYear, setEndYear] = useState(null);
-    const [activePicker, setActivePicker] = useState(null); // 'start' | 'end' | null
-    const [diplomaFile, setDiplomaFile] = useState(null);
+    const [activePicker, setActivePicker] = useState(null);
+    const [licenseFile, setLicenseFile] = useState(null);
+    const [errors, setErrors] = useState({});
+    const certificates = useEditProfileStore((state) => state.form.certificates);
+    const setField = useEditProfileStore((state) => state.setField);
+
+    useEffect(() => {
+        if (editingItem) {
+            setCertifcateName(editingItem.name || '');
+            setDescription(editingItem.description || '');
+            setStartYear(
+                editingItem.start_date ? new Date(editingItem.start_date) : null
+            );
+            setEndYear(
+                editingItem.end_date ? new Date(editingItem.end_date) : null
+            );
+        }
+    }, [editingItem]);
 
     const formatYear = (d) => {
         if (!d) return '';
-        return String(d.getFullYear());
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
+    const formatDate = (d) => {
+        if (!d) return
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        return `${yyyy}-${mm}-${dd}`;
     };
 
     const handleDateChange = (_event, selectedDate) => {
         if (Platform.OS === 'android') setActivePicker(null);
         if (!selectedDate) return;
-
-        if (activePicker === 'start') setStartYear(selectedDate);
-        else if (activePicker === 'end') setEndYear(selectedDate);
-
+        if (activePicker === 'start') {
+            setStartYear(selectedDate);
+            setErrors((prev) => ({ ...prev, startYear: null }));
+        } else if (activePicker === 'end') {
+            setEndYear(selectedDate);
+            setErrors((prev) => ({ ...prev, endYear: null }));
+        }
         if (Platform.OS === 'ios') setActivePicker(null);
     };
 
     const handleBrowseFile = async () => {
         try {
             const result = await DocumentPicker.getDocumentAsync({
-                type: ['application/pdf', 'image/*'],
+                type: ['image/*'],
                 copyToCacheDirectory: true,
             });
-
             if (!result.canceled && result.assets && result.assets.length > 0) {
                 const asset = result.assets[0];
-                setDiplomaFile({ name: asset.name, uri: asset.uri });
+                setLicenseFile({ name: asset.name, uri: asset.uri });
             }
         } catch {
             Alert.alert('Error', 'Could not open file picker.');
         }
     };
 
+    const getKey = (item) => item.tempId || item.id;
     const handleSave = () => {
-        if (!instituteName.trim()) {
-            Alert.alert('Validation', 'Please enter institute name.');
-            return;
+        let newErrors = {};
+        if (!certifcateName.trim()) {
+            newErrors.certifcateName = 'License name is required';
         }
-        onSave({
-            instituteName: instituteName.trim(),
-            startYear: startYear ? startYear.getFullYear() : null,
-            endYear: endYear ? endYear.getFullYear() : null,
-            specialization: specialization.trim(),
-            diplomaFile,
-        });
-    };
+        if (!description.trim()) {
+            newErrors.description = 'Description is required';
+        }
+        if (!startYear) {
+            newErrors.startYear = 'Start year is required';
+        }
+        if (!endYear) {
+            newErrors.endYear = 'End year is required';
+        }
+        setErrors(newErrors);
+        if (Object.keys(newErrors).length > 0) return;
 
-    const handleClose = () => {
-        setInstituteName('');
-        setSpecialization('');
+        const newCertificate = {
+            tempId: Date.now().toString(),
+            name: certifcateName.trim(),
+            description: description.trim(),
+            start_date: startYear ? formatDate(startYear) : null,
+            end_date: endYear ? formatDate(endYear) : null,
+            type: 4,
+        };
+
+        let updatedCertificate = [];
+        if (editingItem) {
+            // EDIT MODE
+            updatedCertificate = certificates.map((edu) =>
+                getKey(edu) === getKey(editingItem)
+                    ? { ...edu, ...newCertificate }
+                    : edu
+            );
+        } else {
+            const exists = certificates.some(
+                (e) =>
+                    e.name?.toLowerCase().trim() ===
+                    newCertificate.name?.toLowerCase().trim() &&
+                    String(e.start_date) === String(newCertificate.start_date)
+            );
+
+            if (exists) {
+                onClose();
+                toastError("Certificate already added.");
+                return;
+            }
+            updatedCertificate = [
+                ...certificates,
+                {
+                    ...newCertificate,
+                    tempId: Date.now().toString(),
+                },
+            ];
+        }
+
+        setField("certificates", updatedCertificate);
+        console.log(updatedCertificate);
+        setCertifcateName('');
+        setDescription('');
         setStartYear(null);
         setEndYear(null);
-        setDiplomaFile(null);
+        setLicenseFile(null);
         setActivePicker(null);
+        setErrors({});
         onClose();
     };
 
@@ -89,7 +165,6 @@ const AddCertificatesModal = ({ visible, onClose, onSave }) => {
         >
             <Pressable style={[styles.modalOverlay]} onPress={onClose}>
                 <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
-                    {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>Add Certificate</Text>
                         <TouchableOpacity
@@ -100,82 +175,96 @@ const AddCertificatesModal = ({ visible, onClose, onSave }) => {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Institute Name */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Institute Name"
-                        placeholderTextColor="#7a7a7a"
-                        value={instituteName}
-                        onChangeText={setInstituteName}
-                        returnKeyType="next"
-                    />
+                    <View style={styles.eductionSection}>
+                        <View style={styles.nameRow}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Name"
+                                placeholderTextColor="#7a7a7a"
+                                value={certifcateName}
+                                onChangeText={(text) => {
+                                    setCertifcateName(text);
+                                    setErrors((prev) => ({ ...prev, certifcateName: null }));
+                                }}
+                                returnKeyType="next"
+                            />
+                            {errors.certifcateName && (
+                                <Text style={styles.errorText}>{errors.certifcateName}</Text>
+                            )}
+                        </View>
 
-                    {/* Year Row */}
-                    <View style={styles.yearRow}>
-                        {/* Start Year */}
-                        <TouchableOpacity
-                            style={styles.yearInput}
-                            onPress={() => setActivePicker('start')}
-                            activeOpacity={0.8}
-                        >
-                            <Text style={[styles.yearText, !startYear && styles.placeholderText]}>
-                                {startYear ? formatYear(startYear) : 'Start Year'}
-                            </Text>
-                            <Feather name="calendar" size={24} color="#000" />
+                        <View style={styles.yearRow}>
+                            <TouchableOpacity
+                                style={styles.yearInput}
+                                onPress={() => setActivePicker('start')}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={[styles.yearText, !startYear && styles.placeholderText]}>
+                                    {startYear ? formatYear(startYear) : 'Start Year'}
+                                </Text>
+                                <Feather name="calendar" size={24} color="#000" />
+                            </TouchableOpacity>
 
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.yearInput}
+                                onPress={() => setActivePicker('end')}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={[styles.yearText, !endYear && styles.placeholderText]}>
+                                    {endYear ? formatYear(endYear) : 'End Year'}
+                                </Text>
+                                <Feather name="calendar" size={24} color="#000" />
+                            </TouchableOpacity>
+                        </View>
+                        {errors.startYear && (
+                            <Text style={styles.errorText}>{errors.startYear}</Text>
+                        )}
+                        {errors.endYear && (
+                            <Text style={styles.errorText}>{errors.endYear}</Text>
+                        )}
 
-                        {/* End Year */}
-                        <TouchableOpacity
-                            style={styles.yearInput}
-                            onPress={() => setActivePicker('end')}
-                            activeOpacity={0.8}
-                        >
-                            <Text style={[styles.yearText, !endYear && styles.placeholderText]}>
-                                {endYear ? formatYear(endYear) : 'End Year'}
-                            </Text>
-                            <Feather name="calendar" size={24} color="#000" />
+                        {activePicker !== null && (
+                            <DateTimePicker
+                                value={
+                                    activePicker === 'start'
+                                        ? startYear || new Date()
+                                        : endYear || new Date()
+                                }
+                                mode="date" // ❗ RN limitation
+                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                onChange={handleDateChange}
+                            />
+                        )}
 
-                        </TouchableOpacity>
+                        <View style={styles.specRow}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Description"
+                                placeholderTextColor="#7a7a7a"
+                                value={description}
+                                onChangeText={(text) => {
+                                    setDescription(text);
+                                    setErrors((prev) => ({ ...prev, description: null }));
+                                }}
+                                returnKeyType="done"
+                            />
+                            {errors.description && (
+                                <Text style={styles.errorText}>{errors.description}</Text>
+                            )}
+                        </View>
                     </View>
 
-                    {/* Native Year Picker */}
-                    {activePicker !== null && (
-                        <DateTimePicker
-                            value={
-                                activePicker === 'start'
-                                    ? startYear || new Date()
-                                    : endYear || new Date()
-                            }
-                            mode="date"
-                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                            onChange={handleDateChange}
-                        />
-                    )}
-
-                    {/* Specialization */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Specalization"
-                        placeholderTextColor="#7a7a7a"
-                        value={specialization}
-                        onChangeText={setSpecialization}
-                        returnKeyType="done"
-                    />
-
-                    {/* Diploma Section */}
-                    <Text style={styles.diplomaLabel}>Add Certifcate (Optional)</Text>
+                    <Text style={styles.diplomaLabel}>Add License (Optional)</Text>
                     <TouchableOpacity
                         style={styles.browseButton}
                         onPress={handleBrowseFile}
                         activeOpacity={0.8}
                     >
                         <Text style={styles.browseButtonText}>
-                            {diplomaFile ? diplomaFile.name : 'Add File'}
+                            {licenseFile ? licenseFile.name : 'Add File'}
                         </Text>
                     </TouchableOpacity>
 
-                    {/* Save Button */}
                     <GradientButton
                         onPress={handleSave}
                         activeOpacity={0.85}
@@ -216,6 +305,11 @@ const styles = StyleSheet.create({
     closeIcon: {
         flexShrink: 0,
     },
+    eductionSection: {
+        flexDirection: "column",
+        gap: 10,
+        marginBottom: 10
+    },
     input: {
         borderWidth: 1,
         borderColor: '#00000033',
@@ -227,12 +321,10 @@ const styles = StyleSheet.create({
         color: '#000000',
         fontFamily: "Montserrat_500Medium",
         lineHeight: 24,
-        marginBottom: 10,
     },
     yearRow: {
         flexDirection: 'row',
         gap: 10,
-        marginBottom: 10,
     },
     yearInput: {
         flex: 1,
@@ -287,6 +379,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         letterSpacing: 0.3,
+    },
+    errorText: {
+        color: '#ff0000',
+        fontSize: 12,
+        marginLeft: 4,
+        fontFamily: "Montserrat_400Regular",
     },
 });
 

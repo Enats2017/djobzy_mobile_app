@@ -41,6 +41,7 @@ import { toastError, toastSuccess } from "../../utils/toast";
 import { Linking } from "react-native";
 import SocialButton from "../../components/SocialButton";
 import { tooltipMessage } from "../../components/TooltipMessage";
+import EditProfileSeeAllInformation from "../EditProfilePage/EditProfileSeeAllInformation";
 
 const EmployeeAccount = () => {
   const [copyModel, setCopyModel] = useState(false);
@@ -61,8 +62,10 @@ const EmployeeAccount = () => {
   const [socialMediaLoading, setSocialMediaLoading] = useState(false);
   const [links, setLinks] = useState({});
   const [socialLinks, setSocialLinks] = useState([]);
-  const employeeLink = `${API_ICON}/employee/${user?.name}`;
-  const employerLink = `${API_ICON}/employer/${user?.name}`;
+  const [employeeLink, setEmployeeLink] = useState("");
+  const [employerLink, setEmployerLink] = useState("");
+  // const employeeLink = `${API_ICON}/employee/${user?.name}`;
+  // const employerLink = `${API_ICON}/employer/${user?.name}`;
 
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -70,6 +73,7 @@ const EmployeeAccount = () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
+      console.log(token);
       const response = await fetch(`${API_URL}/employee-profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -77,6 +81,8 @@ const EmployeeAccount = () => {
         },
       });
       const data = await response.json();
+      setEmployeeLink(data.employee_link);
+      setEmployerLink(data.employer_link);
       setUser(data.editprofile);
       setJob(data.subcategory);
       setPromote(data.promote);
@@ -355,7 +361,7 @@ const EmployeeAccount = () => {
                   <View style={styles.statBox}>
                     <Text style={styles.statValue}>
                       {" "}
-                      {profile?.likes?.length}
+                      {profile?.followedUsers?.length}
                     </Text>
                     <Text style={styles.statLabel}>My Followers</Text>
                   </View>
@@ -377,6 +383,8 @@ const EmployeeAccount = () => {
                   );
                 })}
               </View>
+
+              <EditProfileSeeAllInformation navigation={navigation} isEdit={false} />
             </View>
             <View>
               <TouchableOpacity
@@ -500,7 +508,7 @@ const EmployeeAccount = () => {
                 <Text style={styles.addText}>Add Category</Text>
               </TouchableOpacity>
 
-              {displayedCategories.map((item) => (
+              {displayedCategories?.map((item) => (
                 <View key={item.subid} style={styles.categoryPill}>
                   <Text style={styles.categoryText}>{item.subname}</Text>
 
@@ -518,7 +526,7 @@ const EmployeeAccount = () => {
                   </TouchableOpacity>
                 </View>
               ))}
-              {job.length > 5 && (
+              {job?.length > 5 && (
                 <TouchableOpacity
                   onPress={() => setShowAllCategories((prev) => !prev)}
                   style={styles.showMoreBtn}

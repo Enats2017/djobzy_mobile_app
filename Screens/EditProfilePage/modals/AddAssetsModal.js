@@ -11,14 +11,38 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GradientButton from "../../../components/GradientButton";
-import AddVehicleModal from './AddVehicleModal';
+import { useEditProfileStore } from "../useEditProfileStore";
+import { toastError } from '../../../utils/toast';
 
-const AddAssetsModal = ({ visible, onClose, onSave }) => {
+const AddAssetsModal = ({ visible, onClose }) => {
     const [assetName, setAssetName] = useState('');
     const insets = useSafeAreaInsets();
+    const assets = useEditProfileStore((state) => state.form.assets);
+    const setField = useEditProfileStore((state) => state.setField);
+
     const handleSave = () => {
-        onSave({ assetName: assetName.trim() });
+        if (!assetName.trim()) return;
+        const newAsset = {
+            
+            name: assetName.trim(),
+        };
+        const exists = assets.some(
+            (a) =>
+                a.name?.toLowerCase().trim() ===
+                newAsset.name?.toLowerCase().trim()
+        );
+
+        if (exists) {
+            onClose();
+            toastError("Asset already added.");
+            setAssetName('');
+            return;
+        }
+        const updatedAssets = [...assets, newAsset];
+        setField("assets", updatedAssets);
+        console.log(updatedAssets);
         setAssetName('');
+        onClose();
     };
 
     return (
@@ -28,9 +52,9 @@ const AddAssetsModal = ({ visible, onClose, onSave }) => {
             animationType="fade"
             onRequestClose={onClose}
         >
-            <Pressable style={[styles.modalOverlay]} onPress={onClose}>
+            <View style={[styles.modalOverlay]} onPress={onClose}>
+                <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
                 <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
-                    {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>Add Assets and software programs</Text>
                         <TouchableOpacity
@@ -41,7 +65,6 @@ const AddAssetsModal = ({ visible, onClose, onSave }) => {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Institute Name */}
                     <TextInput
                         style={styles.input}
                         placeholder="Name"
@@ -51,14 +74,13 @@ const AddAssetsModal = ({ visible, onClose, onSave }) => {
                         returnKeyType="next"
                     />
 
-                    {/* Save Button */}
                     <GradientButton
                         onPress={handleSave}
                         activeOpacity={0.85}
                         title="Save"
                     />
                 </View>
-            </Pressable>
+            </View>
         </Modal>
     );
 };

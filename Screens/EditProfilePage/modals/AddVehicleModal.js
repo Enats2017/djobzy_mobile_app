@@ -11,13 +11,37 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GradientButton from "../../../components/GradientButton";
+import { useEditProfileStore } from "../useEditProfileStore";
+import { toastError } from '../../../utils/toast';
 
-const AddVehicleModal = ({ visible, onClose, onSave }) => {
+const AddVehicleModal = ({ visible, onClose }) => {
     const [assetName, setAssetName] = useState('');
     const insets = useSafeAreaInsets();
+    const vehicles = useEditProfileStore((state) => state.form.vehicles);
+    const setField = useEditProfileStore((state) => state.setField);
+
     const handleSave = () => {
-        onSave({ assetName: assetName.trim() });
+        if (!assetName.trim()) return;
+        const newVehicle = {
+            name: assetName.trim(),
+        };
+        const exists = vehicles.some(
+            (a) =>
+                a.name?.toLowerCase().trim() ===
+                newVehicle.name?.toLowerCase().trim()
+        );
+
+        if (exists) {
+            onClose();
+            toastError("Vehicle already added.");
+            setAssetName('');
+            return;
+        }
+        const updatedVehicles = [...vehicles, newVehicle];
+        setField("vehicles", updatedVehicles);
+        console.log(updatedVehicles);
         setAssetName('');
+        onClose();
     };
 
     return (
@@ -27,9 +51,9 @@ const AddVehicleModal = ({ visible, onClose, onSave }) => {
             animationType="fade"
             onRequestClose={onClose}
         >
-            <Pressable style={[styles.modalOverlay]} onPress={onClose}>
+            <View style={[styles.modalOverlay]} onPress={onClose}>
+                <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
                 <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
-                    {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>Add Vehicle</Text>
                         <TouchableOpacity
@@ -40,7 +64,6 @@ const AddVehicleModal = ({ visible, onClose, onSave }) => {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Institute Name */}
                     <TextInput
                         style={styles.input}
                         placeholder="Name"
@@ -50,14 +73,13 @@ const AddVehicleModal = ({ visible, onClose, onSave }) => {
                         returnKeyType="next"
                     />
 
-                    {/* Save Button */}
                     <GradientButton
                         onPress={handleSave}
                         activeOpacity={0.85}
                         title="Save"
                     />
                 </View>
-            </Pressable>
+            </View>
         </Modal>
     );
 };

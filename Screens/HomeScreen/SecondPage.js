@@ -42,18 +42,12 @@ const SecondPage = ({ onNext }) => {
 
         {/* Button */}
         <View style={styles.buttonWrapper}>
-          <TouchableOpacity
-            style={styles.button}
-            activeOpacity={0.85}
-            onPress={onNext}
-          >
-            <Text style={styles.buttonText}>Next</Text>
-            <Ionicons
-              name="arrow-forward"
-              size={fontScale(18)}
-              color="#fff"
-            />
-          </TouchableOpacity>
+          <View style={styles.bottomSection}>
+            <View style={styles.dotsContainer}>
+              <View style={styles.dot} />
+              <View style={[styles.dot, styles.activeDot]} />
+            </View>
+          </View>
         </View>
       </LinearGradient>
     </SafeAreaView>
@@ -127,6 +121,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 5
+  },
+  dotsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ffffff80",
+    marginHorizontal: 4,
+  },
+
+  activeDot: {
+    width: 28,
+    backgroundColor: "#fff",
   },
 });
 

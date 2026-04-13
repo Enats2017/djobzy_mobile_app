@@ -70,6 +70,28 @@ const CreateJob = () => {
   const totalSteps = 7;
   const navigation = useNavigation();
   const stepsScrollRef = useRef(null);
+  const cleanedRequirements = [
+    ...new Set(
+      requirements
+        .map((r) => r.value?.trim())
+        .filter((v) => v)
+    )
+  ];
+
+  const cleanedLanguages = [
+    ...new Map(
+      languages
+        .filter((l) => l.lang && l.lang.trim() && l.level)
+        .map((l) => [
+          l.lang.trim().toLowerCase(),
+          {
+            language: l.lang.trim(),
+            level: l.level,
+            text: l.text,
+          },
+        ])
+    ).values()
+  ];
 
   const handleBack = () => {
     setPriceError(false);
@@ -152,20 +174,12 @@ const CreateJob = () => {
 
       formData.append(
         "requirements",
-        JSON.stringify(state.requirements.map((r) => r.value)),
+        JSON.stringify(cleanedRequirements)
       );
 
       formData.append(
         "languages",
-        JSON.stringify(
-          state.languages
-            .filter((l) => l.lang)
-            .map((l) => ({
-              language: l.lang.trim(),
-              level: l.level,
-              text: l.text,
-            })),
-        ),
+        JSON.stringify(cleanedLanguages)
       );
 
       if (state.address) formData.append("address", state.address);
@@ -259,6 +273,12 @@ const CreateJob = () => {
         if (!address.trim() && isRemoteJob === 0) {
           setAddressError(true);
           return;
+        }
+        for (let l of languages) {
+          if (l.lang?.trim() && (!l.level || l.level === "")) {
+            toastError(`Please select a proficiency level for ${l.lang}`);
+            return;
+          }
         }
         if (isEditingFromReview) {
           setActiveTab(reviewReturnTab);

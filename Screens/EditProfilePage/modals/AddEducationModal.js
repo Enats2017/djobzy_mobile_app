@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Modal,
     View,
@@ -15,15 +15,33 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GradientButton from "../../../components/GradientButton";
+import { useEditProfileStore } from "../useEditProfileStore";
+import { toastError } from '../../../utils/toast';
 
-const AddEducationModal = ({ visible, onClose, onSave }) => {
+const AddEducationModal = ({ visible, onClose, editingItem = null }) => {
     const insets = useSafeAreaInsets();
     const [instituteName, setInstituteName] = useState('');
     const [specialization, setSpecialization] = useState('');
     const [startYear, setStartYear] = useState(null);
     const [endYear, setEndYear] = useState(null);
-    const [activePicker, setActivePicker] = useState(null); // 'start' | 'end' | null
+    const [activePicker, setActivePicker] = useState(null);
     const [diplomaFile, setDiplomaFile] = useState(null);
+    const [errors, setErrors] = useState({});
+    const education = useEditProfileStore((state) => state.form.education);
+    const setField = useEditProfileStore((state) => state.setField);
+
+    useEffect(() => {
+        if (editingItem) {
+            setInstituteName(editingItem.institute_name || '');
+            setSpecialization(editingItem.specalization || '');
+            setStartYear(
+                editingItem.start_date ? new Date(editingItem.start_date, 0) : null
+            );
+            setEndYear(
+                editingItem.end_date ? new Date(editingItem.end_date, 0) : null
+            );
+        }
+    }, [editingItem]);
 
     const formatYear = (d) => {
         if (!d) return '';
@@ -34,8 +52,13 @@ const AddEducationModal = ({ visible, onClose, onSave }) => {
         if (Platform.OS === 'android') setActivePicker(null);
         if (!selectedDate) return;
 
-        if (activePicker === 'start') setStartYear(selectedDate);
-        else if (activePicker === 'end') setEndYear(selectedDate);
+        if (activePicker === 'start') {
+            setStartYear(selectedDate);
+            setErrors((prev) => ({ ...prev, startYear: null }));
+        } else if (activePicker === 'end') {
+            setEndYear(selectedDate);
+            setErrors((prev) => ({ ...prev, endYear: null }));
+        }
 
         if (Platform.OS === 'ios') setActivePicker(null);
     };
@@ -52,31 +75,70 @@ const AddEducationModal = ({ visible, onClose, onSave }) => {
                 setDiplomaFile({ name: asset.name, uri: asset.uri });
             }
         } catch {
-            Alert.alert('Error', 'Could not open file picker.');
+            Alert.alert('Error', 'Could not open file.');
         }
     };
 
+    const getKey = (item) => item.tempId || item.id;
     const handleSave = () => {
-        if (!instituteName.trim()) {
-            Alert.alert('Validation', 'Please enter institute name.');
-            return;
-        }
-        onSave({
-            instituteName: instituteName.trim(),
-            startYear: startYear ? startYear.getFullYear() : null,
-            endYear: endYear ? endYear.getFullYear() : null,
-            specialization: specialization.trim(),
-            diplomaFile,
-        });
-    };
+        let newErrors = {};
+        if (!instituteName.trim()) newErrors.instituteName = 'Institute name is required';
+        if (!specialization.trim()) newErrors.specialization = 'Specialization is required';
+        if (!startYear) newErrors.startYear = 'Start year is required';
+        if (!endYear) newErrors.endYear = 'End year is required';
 
-    const handleClose = () => {
+        setErrors(newErrors);
+        if (Object.keys(newErrors).length > 0) return;
+
+        const newEducation = {
+            tempId: Date.now().toString(),
+            institute_name: instituteName.trim(),
+            specalization: specialization.trim(),
+            start_date: startYear?.getFullYear(),
+            end_date: endYear?.getFullYear(),
+        };
+
+        let updatedEducation = [];
+
+        if (editingItem) {
+            // EDIT MODE
+            updatedEducation = education.map((edu) =>
+                getKey(edu) === getKey(editingItem)
+                    ? { ...edu, ...newEducation }
+                    : edu
+            );
+        } else {
+            // ADD MODE
+            const exists = education.some(
+                (e) =>
+                    e.institute_name?.toLowerCase().trim() ===
+                    newEducation.institute_name?.toLowerCase().trim() &&
+                    String(e.start_date) === String(newEducation.start_date)
+            );
+
+            if (exists) {
+                onClose();
+                toastError("Education already added.");
+                return;
+            }
+
+            updatedEducation = [
+                ...education,
+                {
+                    ...newEducation,
+                    tempId: Date.now().toString(),
+                },
+            ];
+        }
+
+        setField("education", updatedEducation);
         setInstituteName('');
         setSpecialization('');
         setStartYear(null);
         setEndYear(null);
         setDiplomaFile(null);
         setActivePicker(null);
+        setErrors({});
         onClose();
     };
 
@@ -87,9 +149,9 @@ const AddEducationModal = ({ visible, onClose, onSave }) => {
             animationType="fade"
             onRequestClose={onClose}
         >
-            <Pressable style={[styles.modalOverlay]} onPress={onClose}>
+            <View style={[styles.modalOverlay]} onPress={onClose}>
+                <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
                 <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
-                    {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>Add Education</Text>
                         <TouchableOpacity
@@ -100,70 +162,85 @@ const AddEducationModal = ({ visible, onClose, onSave }) => {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Institute Name */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Institute Name"
-                        placeholderTextColor="#7a7a7a"
-                        value={instituteName}
-                        onChangeText={setInstituteName}
-                        returnKeyType="next"
-                    />
+                    <View style={styles.eductionSection}>
+                        <View style={styles.nameRow}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Institute Name"
+                                placeholderTextColor="#7a7a7a"
+                                value={instituteName}
+                                onChangeText={(text) => {
+                                    setInstituteName(text);
+                                    setErrors((prev) => ({ ...prev, instituteName: null }));
+                                }}
+                                returnKeyType="next"
+                            />
+                            {errors.instituteName && (
+                                <Text style={styles.errorText}>{errors.instituteName}</Text>
+                            )}
+                        </View>
 
-                    {/* Year Row */}
-                    <View style={styles.yearRow}>
-                        {/* Start Year */}
-                        <TouchableOpacity
-                            style={styles.yearInput}
-                            onPress={() => setActivePicker('start')}
-                            activeOpacity={0.8}
-                        >
-                            <Text style={[styles.yearText, !startYear && styles.placeholderText]}>
-                                {startYear ? formatYear(startYear) : 'Start Year'}
-                            </Text>
-                            <Feather name="calendar" size={24} color="#000" />
+                        <View style={styles.yearRow}>
+                            <TouchableOpacity
+                                style={styles.yearInput}
+                                onPress={() => setActivePicker('start')}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={[styles.yearText, !startYear && styles.placeholderText]}>
+                                    {startYear ? formatYear(startYear) : 'Start Year'}
+                                </Text>
+                                <Feather name="calendar" size={24} color="#000" />
+                            </TouchableOpacity>
 
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.yearInput}
+                                onPress={() => setActivePicker('end')}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={[styles.yearText, !endYear && styles.placeholderText]}>
+                                    {endYear ? formatYear(endYear) : 'End Year'}
+                                </Text>
+                                <Feather name="calendar" size={24} color="#000" />
+                            </TouchableOpacity>
+                        </View>
+                        {errors.startYear && (
+                            <Text style={styles.errorText}>{errors.startYear}</Text>
+                        )}
+                        {errors.endYear && (
+                            <Text style={styles.errorText}>{errors.endYear}</Text>
+                        )}
 
-                        {/* End Year */}
-                        <TouchableOpacity
-                            style={styles.yearInput}
-                            onPress={() => setActivePicker('end')}
-                            activeOpacity={0.8}
-                        >
-                            <Text style={[styles.yearText, !endYear && styles.placeholderText]}>
-                                {endYear ? formatYear(endYear) : 'End Year'}
-                            </Text>
-                            <Feather name="calendar" size={24} color="#000" />
+                        {activePicker !== null && (
+                            <DateTimePicker
+                                value={
+                                    activePicker === 'start'
+                                        ? startYear || new Date()
+                                        : endYear || new Date()
+                                }
+                                mode="date"
+                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                onChange={handleDateChange}
+                            />
+                        )}
 
-                        </TouchableOpacity>
+                        <View style={styles.specRow}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Specalization"
+                                placeholderTextColor="#7a7a7a"
+                                value={specialization}
+                                onChangeText={(text) => {
+                                    setSpecialization(text);
+                                    setErrors((prev) => ({ ...prev, specialization: null }));
+                                }}
+                                returnKeyType="done"
+                            />
+                            {errors.specialization && (
+                                <Text style={styles.errorText}>{errors.specialization}</Text>
+                            )}
+                        </View>
                     </View>
 
-                    {/* Native Year Picker */}
-                    {activePicker !== null && (
-                        <DateTimePicker
-                            value={
-                                activePicker === 'start'
-                                    ? startYear || new Date()
-                                    : endYear || new Date()
-                            }
-                            mode="date"
-                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                            onChange={handleDateChange}
-                        />
-                    )}
-
-                    {/* Specialization */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Specalization"
-                        placeholderTextColor="#7a7a7a"
-                        value={specialization}
-                        onChangeText={setSpecialization}
-                        returnKeyType="done"
-                    />
-
-                    {/* Diploma Section */}
                     <Text style={styles.diplomaLabel}>Add Diploma (Optional)</Text>
                     <TouchableOpacity
                         style={styles.browseButton}
@@ -175,14 +252,13 @@ const AddEducationModal = ({ visible, onClose, onSave }) => {
                         </Text>
                     </TouchableOpacity>
 
-                    {/* Save Button */}
                     <GradientButton
                         onPress={handleSave}
                         activeOpacity={0.85}
                         title="Save"
                     />
                 </View>
-            </Pressable>
+            </View>
         </Modal>
     );
 };
@@ -216,6 +292,11 @@ const styles = StyleSheet.create({
     closeIcon: {
         flexShrink: 0,
     },
+    eductionSection: {
+        flexDirection: "column",
+        gap: 10,
+        marginBottom: 10
+    },
     input: {
         borderWidth: 1,
         borderColor: '#00000033',
@@ -227,12 +308,10 @@ const styles = StyleSheet.create({
         color: '#000000',
         fontFamily: "Montserrat_500Medium",
         lineHeight: 24,
-        marginBottom: 10,
     },
     yearRow: {
         flexDirection: 'row',
         gap: 10,
-        marginBottom: 10,
     },
     yearInput: {
         flex: 1,
@@ -287,6 +366,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         letterSpacing: 0.3,
+    },
+    errorText: {
+        color: '#ff0000',
+        fontSize: 12,
+        marginLeft: 4,
+        fontFamily: "Montserrat_400Regular",
     },
 });
 

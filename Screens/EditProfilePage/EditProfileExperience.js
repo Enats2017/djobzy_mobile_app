@@ -1,12 +1,15 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import QuestionMark from "../../components/QuestionMark";
 import { tooltipMessage } from "../../components/TooltipMessage";
 import { AntDesign } from "@expo/vector-icons";
 import AddExperienceModal from "./modals/AddExperienceModal";
+import { useEditProfileStore } from "./useEditProfileStore";
+import ExperienceData from "./data/ExperienceData";
 
 const EditProfileExperience = ({ navigation }) => {
     const [experienceModalVisible, setExperienceModalVisible] = useState(false);
+    const experiences = useEditProfileStore((state) => state.form.experiences);
 
     const openExperienceModal = () => setExperienceModalVisible(true);
     const handleSaveExperience = (data) => {
@@ -15,24 +18,33 @@ const EditProfileExperience = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.section}>
-            <View style={styles.label}>
-                <QuestionMark title="Experience" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_provided_services} />
+        <>
+            <View style={styles.section}>
+                <View style={styles.label}>
+                    <QuestionMark title="Experience" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_provided_services} />
+                </View>
+
+                <TouchableOpacity style={styles.plusbtn} onPress={openExperienceModal}>
+                    <AntDesign name="plus" size={16} color="#030303" />
+                    <Text style={styles.plustext}>
+                        Add Experience
+                    </Text>
+                </TouchableOpacity>
+
+                <AddExperienceModal
+                    visible={experienceModalVisible}
+                    onClose={() => setExperienceModalVisible(false)}
+                    onSave={handleSaveExperience}
+                />
             </View>
-
-            <TouchableOpacity style={styles.plusbtn} onPress={openExperienceModal}>
-                <AntDesign name="plus" size={16} color="#030303" />
-                <Text style={styles.plustext}>
-                    Add Experience
-                </Text>
-            </TouchableOpacity>
-
-            <AddExperienceModal
-                visible={experienceModalVisible}
-                onClose={() => setExperienceModalVisible(false)}
-                onSave={handleSaveExperience}
-            />
-        </View>
+            {
+                experiences.length > 0 && (
+                    <View style={styles.dataSection}>
+                        <ExperienceData />
+                    </View>
+                )
+            }
+        </>
     );
 };
 

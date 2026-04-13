@@ -30,6 +30,13 @@ const ReviewPage = ({ setActiveTab }) => {
   } = useCreateJobGlobalStore();
   const navigation = useNavigation();
 
+  const validRequirements = requirements.filter(
+    (r) => r.value && r.value.trim() !== ""
+  );
+  const validLanguages = languages.filter(
+    (l) => l.lang && l.lang.trim() !== "",
+  );
+
   return (
     <View>
       <ScrollView
@@ -234,8 +241,8 @@ const ReviewPage = ({ setActiveTab }) => {
           </View>
 
           {/* BODY */}
-          {requirements.length > 1 ? (
-            requirements.map((r, index) => (
+          {validRequirements.length > 0 ? (
+            validRequirements.map((r, index) => (
               <View key={index} style={styles.bulletRow}>
                 <Text style={styles.bullet}>•</Text>
                 <Text style={styles.sectionText}>{r.value}</Text>
@@ -270,8 +277,8 @@ const ReviewPage = ({ setActiveTab }) => {
               />
             </TouchableOpacity>
           </View>
-          {languages.length > 1 ? (
-            languages.map((l, index) => (
+          {validLanguages.length > 0 ? (
+            validLanguages.map((l, index) => (
               <View key={index} style={styles.bulletRow}>
                 <Text style={styles.bullet}>•</Text>
 

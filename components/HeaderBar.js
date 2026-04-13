@@ -60,32 +60,36 @@ const HeaderBar = ({ showMenu = true, showSearch = true }) => {
           )}
         </TouchableOpacity> */}
 
-          <TouchableOpacity
-            style={styles.iconWrapper}
-            onPress={() => navigation.navigate("NotificationScreen")}
-          >
-            <MaterialCommunityIcons
-              name="bell-badge"
-              size={24}
-              color={
-                isActive("NotificationScreen") ? ACTIVE_COLOR : INACTIVE_COLOR
-              }
-            />
-            {notificationCount > 0 && (
-              <View style={styles.messageBadge}>
-                <Text style={styles.messageBadgeText}>
-                  {notificationCount > 99 ? "99+" : notificationCount}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          {showSearch && (
+            <TouchableOpacity
+              style={styles.iconWrapper}
+              onPress={() => navigation.navigate("NotificationScreen")}
+            >
+              <MaterialCommunityIcons
+                name="bell-badge"
+                size={24}
+                color={
+                  isActive("NotificationScreen") ? ACTIVE_COLOR : INACTIVE_COLOR
+                }
+              />
+              {notificationCount > 0 && (
+                <View style={styles.messageBadge}>
+                  <Text style={styles.messageBadgeText}>
+                    {notificationCount > 99 ? "99+" : notificationCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
 
-          <TouchableOpacity
-            style={styles.iconWrapper}
-            onPress={() => setMenuVisible(true)}
-          >
-            <Feather name="menu" size={20} color="#fff" />
-          </TouchableOpacity>
+          {showMenu && (
+            <TouchableOpacity
+              style={styles.iconWrapper}
+              onPress={() => setMenuVisible(true)}
+            >
+              <Feather name="menu" size={20} color="#fff" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       {showMenu && (

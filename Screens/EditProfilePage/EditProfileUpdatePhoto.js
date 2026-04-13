@@ -9,7 +9,7 @@ import {
     ActivityIndicator
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { toastError } from "../../utils/toast";
+import { toastError, toastSuccess } from "../../utils/toast";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -127,6 +127,7 @@ const EditProfileUpdatePhoto = ({ photoUri, setPhotoUri }) => {
             );
 
             if (response.data.status === 200) {
+                toastSuccess('Profile picture updated')
                 setPhotoUri(uri);
             } else {
                 toastError(response.data.message || "Failed to save data");

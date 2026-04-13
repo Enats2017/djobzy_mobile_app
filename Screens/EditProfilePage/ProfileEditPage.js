@@ -1,20 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import {
   ScrollView,
   View,
   StyleSheet,
-  Image,
-  TouchableOpacity,
-  Text,
 } from "react-native";
-import Octicons from "@expo/vector-icons/Octicons";
-import {
-  Ionicons,
-  FontAwesome,
-  MaterialIcons,
-} from "@expo/vector-icons";
-import Entypo from "@expo/vector-icons/Entypo";
-import LineDivider from "../../components/LineDivider";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
@@ -30,39 +19,19 @@ import EditProfilePromotedServices from "./EditProfilePromotedServices";
 import EditProfileAttachments from "./EditProfileAttachments";
 import EditProfileSeeAllInformation from "./EditProfileSeeAllInformation";
 import EditProfileExperience from "./EditProfileExperience";
-import EditProfileUpdatePhoto from "./EditProfileUpdatePhoto";
 import EditProfileInfoHeader from "./EditProfileInfoHeader";
+import { useEditProfileStore } from "./useEditProfileStore";
+import { toastSuccess } from "../../utils/toast";
 
 const ProfileEditPage = () => {
+  const setAllData = useEditProfileStore((state) => state.setAllData);
+  const storeData = useEditProfileStore((state) => state);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
-  const [socialMedia, setSocialMedia] = useState([]);
-  const [category, setCategory] = useState([]);
-  const [promote, setPromote] = useState([]);
-  const [services, setServices] = useState([]);
-  const [language, setLanguage] = useState([]);
-  const [education, setEducation] = useState([]);
-  const [assets, setAssets] = useState([]);
-  const [software, setSoftware] = useState([]);
-  const [vehicle, setVehicle] = useState([]);
-  const [certificates, setCertificates] = useState([]);
-  const [resume, setResume] = useState("");
-  const [profileTitle, setProfileTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dob, setDob] = useState("");
-  const [jobs, setJobs] = useState("");
-  const [moneySpent, setMoneySpent] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [showPicker, setShowPicker] = useState(false);
-  const [photoUri, setPhotoUri] = useState(null);
-  const [profile, setProfile] = useState({});
+  const [submitLoading, setSubmitLoading] = useState(false);
   const { admin } = useNotifications();
   const userType = admin === 2 ? 'employer' : 'employee';
-  const hasFetched = useRef(false);
-
-  useEffect(() => {
-    hasFetched.current = false;
-  }, [userType]);
+  // console.log('adaf adf a fadf ', userType);
 
   const fetchProfileForEdit = useCallback(async () => {
     try {
@@ -79,22 +48,36 @@ const ProfileEditPage = () => {
       const data = await response.json();
       const user = data.editprofile || {};
 
-      // BASIC FIELDS
-      if (userType === "employer") {
-        setProfileTitle(user.profile_title_employer || "");
-        setDescription(user.employer_about || "");
-      } else {
-        setProfileTitle(user.profile_title_employee || "");
-        setDescription(user.about || "");
-      }
-      setDob(user.dob || "");
-      setResume(user.resume_link || "");
-      setJobs(user.num_jobs ? String(user.num_jobs) : "");
-      setMoneySpent(user.money_spent ? String(user.money_spent) : "");
-      setPhotoUri(user.photo || null);
-      setProfile(data);
-      setCategory(data.subcategory);
-      setPromote(data.promote);
+      setAllData({
+        userAdmin: user.admin || 0,
+        profileTitle:
+          userType === "employer"
+            ? user.profile_title_employer || ""
+            : user.profile_title_employee || "",
+        description:
+          userType === "employer"
+            ? user.employer_about || ""
+            : user.about || "",
+        photoUri: user.photo || null,
+        category: data.subcategory || [],
+        promote: data.promote || [],
+        languages: data.language || [],
+        education: data.education || [],
+        vehicles: data.vehicle || [],
+        assets: data.assets || [],
+        licenses: data.licence || [],
+        certificates: data.certificate || [],
+        experiences: data.experiences || [],
+        dob: user.dob || "",
+        years: data.years || 0,
+        ageShowStatus: user.age_show_status || 0,
+        moneyShowStatus:
+          userType === "employer"
+            ? user.money_spent_show_status || 0
+            : user.money_earned_show_status || 0,
+      });
+      useEditProfileStore.setState({ profile: data });
+      // console.log(user.admin);
     } catch (error) {
       console.log("Edit profile fetch error =>", error);
     } finally {
@@ -102,12 +85,55 @@ const ProfileEditPage = () => {
     }
   }, [userType]);
 
+  const handleApplyChanges = async () => {
+    try {
+      setSubmitLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const formData = new FormData();
+      Object.entries(storeData.form).forEach(([key, value]) => {
+        if (key === "category" || key === "promote" || key === "photoUri") return;
+        if ( value === null || value === undefined || value === "") return;
+        if (Array.isArray(value) || typeof value === "object") {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, value);
+        }
+      });
+
+      // 🔥 ADD THIS (no changes to your logic above)
+      if (storeData.deleted) {
+        formData.append("deleted", JSON.stringify(storeData.deleted));
+      }
+
+      // console.log(formData);
+      const response = await fetch(`${API_URL}/profile-update`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.status === 200) {
+        await fetchProfileForEdit();
+        toastSuccess('Profile updated successfully.');
+      } else {
+        console.log("API Error:", result);
+      }
+    } catch (error) {
+      console.log("Submit Error:", error);
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
-      if (!hasFetched.current) {
+      // if (!storeData.profile) {
         fetchProfileForEdit();
-        hasFetched.current = true;
-      }
+      // }
     }, [fetchProfileForEdit])
   );
 
@@ -128,44 +154,38 @@ const ProfileEditPage = () => {
                   <View style={styles.section}>
                     <View style={styles.profileCard}>
                       <EditProfileInfoHeader
-                        profile={profile}
-                        photoUri={photoUri}
-                        setPhotoUri={setPhotoUri}
                         navigation={navigation}
-                        category={category}
                       />
                       {/* === SEE ALL INFORMATION SECTION === */}
                       <EditProfileSeeAllInformation navigation={navigation} />
                     </View>
-
                     <EditProfileBasicInfo
                       userType={userType}
-                      profileTitle={profileTitle}
-                      setProfileTitle={setProfileTitle}
-                      description={description}
-                      setDescription={setDescription}
                     />
-
                     <EditProfileCategory
-                      category={category}
-                    />
-
-                    <EditProfilePromotedServices
-                      promote={promote}
                       navigation={navigation}
                     />
+                    {
+                      admin === 0 && (
+                        <EditProfilePromotedServices
+                          navigation={navigation}
+                        />
+                      )
+                    }
                     <EditProfileAttachments
-                      // pickFile={pickFile}
                       navigation={navigation}
                     />
-                    <EditProfileExperience
-                      // pickFile={pickFile}
-                      navigation={navigation}
-                    />
+                    {
+                      admin === 0 && (
+                        <EditProfileExperience
+                          navigation={navigation}
+                        />
+                      )
+                    }
                   </View>
                 </ScrollView>
                 <View style={{ paddingBottom: 90 }}>
-                  <GradientButton title="Apply Changes" />
+                  <GradientButton title="Apply Changes" onPress={handleApplyChanges} disabled={submitLoading} loading={submitLoading} />
                 </View>
               </>
             )

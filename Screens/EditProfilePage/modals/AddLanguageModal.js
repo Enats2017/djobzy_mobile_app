@@ -5,33 +5,58 @@ import {
     Text,
     TouchableOpacity,
     StyleSheet,
-    Platform,
     Pressable,
     FlatList,
 } from 'react-native';
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GradientButton from "../../../components/GradientButton";
-
-const LANGUAGES = [
-    'English', 'Hindi', 'Spanish', 'French', 'German',
-    'Arabic', 'Chinese', 'Japanese', 'Portuguese', 'Russian',
-    'Italian', 'Korean', 'Turkish', 'Dutch', 'Swedish',
-];
+import { API_URL } from '../../../api/ApiUrl';
+import { useEditProfileStore } from "../useEditProfileStore";
+import { toastError } from '../../../utils/toast';
 
 const LEVELS = [
-    'Beginner', 'Elementary', 'Intermediate',
-    'Upper Intermediate', 'Advanced', 'Native',
+    { label: "Basic", value: 1 },
+    { label: "Mid. Level", value: 2 },
+    { label: "Fluent", value: 3 },
+    { label: "Native and bilingual", value: 4 },
 ];
 
-const AddLanguageModal = ({ visible, onClose, onSave }) => {
+const AddLanguageModal = ({ visible, onClose }) => {
     const insets = useSafeAreaInsets();
-    const [selectedLanguage, setSelectedLanguage] = useState('');
+    const [selectedLanguage, setSelectedLanguage] = useState(null);
     const [selectedLevel, setSelectedLevel] = useState('');
-    const [openDropdown, setOpenDropdown] = useState(null); // 'language' | 'level' | null
+    const [openDropdown, setOpenDropdown] = useState(null);
+    const [languageOptions, setLanguageOptions] = useState([]);
+    const languages = useEditProfileStore((state) => state.form.languages);
+    const setField = useEditProfileStore((state) => state.setField);
+
+    const fetchLanguages = async () => {
+        try {
+            const res = await fetch(`${API_URL}/language`, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    keyword: "",
+                }),
+            });
+
+            const json = await res.json();
+            setLanguageOptions(json.data || []);
+        } catch (e) {
+            console.log("Language API error:", e);
+        }
+    };
 
     const toggleDropdown = (type) => {
-        setOpenDropdown(prev => (prev === type ? null : type));
+        const newType = openDropdown === type ? null : type;
+        setOpenDropdown(newType);
+        if (newType === 'language') {
+            fetchLanguages();
+        }
     };
 
     const handleLanguageSelect = (lang) => {
@@ -45,25 +70,50 @@ const AddLanguageModal = ({ visible, onClose, onSave }) => {
     };
 
     const handleSave = () => {
-        if (selectedLanguage && selectedLevel) {
-            onSave(selectedLanguage, selectedLevel);
+        if (!selectedLanguage || !selectedLevel) return;
+        const existingIndex = languages.findIndex(
+            (l) =>
+                l.language_name?.toLowerCase().trim() ===
+                selectedLanguage.value?.toLowerCase().trim()
+        );
+
+        let updatedLanguages;
+        if (existingIndex !== -1) {
+            // Update level instead of blocking
+            updatedLanguages = [...languages];
+            updatedLanguages[existingIndex].level = selectedLevel.value;
+        } else {
+            // Add new
+            updatedLanguages = [
+                ...languages,
+                {
+                    language_name: selectedLanguage.value,
+                    level: selectedLevel.value,
+                },
+            ];
         }
+
+        setField("languages", updatedLanguages);
+        console.log(updatedLanguages);
+        setSelectedLanguage(null);
+        setSelectedLevel("");
+        onClose();
     };
 
     const renderDropdown = (items, onSelect) => (
         <View style={styles.dropdownList}>
             <FlatList
                 data={items}
-                keyExtractor={(item) => item}
-                scrollEnabled
-                nestedScrollEnabled
+                keyExtractor={(item, index) => index.toString()}
                 style={{ maxHeight: 180 }}
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         style={styles.dropdownItem}
                         onPress={() => onSelect(item)}
                     >
-                        <Text style={styles.dropdownItemText}>{item}</Text>
+                        <Text style={styles.dropdownItemText}>
+                            {typeof item === "string" ? item : item.label}
+                        </Text>
                     </TouchableOpacity>
                 )}
             />
@@ -77,20 +127,15 @@ const AddLanguageModal = ({ visible, onClose, onSave }) => {
             animationType="fade"
             onRequestClose={onClose}
         >
-            <Pressable style={[styles.modalOverlay]} onPress={onClose}>
+            <View style={styles.modalOverlay} onPress={onClose}>
+                <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
                 <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
-                    {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>Add Language</Text>
-                        <TouchableOpacity
-                            style={styles.closeIcon}
-                            onPress={onClose}
-                        >
+                        <TouchableOpacity onPress={onClose}>
                             <Ionicons name="close" size={22} color="#000" />
                         </TouchableOpacity>
                     </View>
-
-                    {/* Language Dropdown */}
                     <View style={styles.dropdownWrapper}>
                         <TouchableOpacity
                             style={[
@@ -98,7 +143,6 @@ const AddLanguageModal = ({ visible, onClose, onSave }) => {
                                 openDropdown === 'language' && styles.dropdownTriggerActive,
                             ]}
                             onPress={() => toggleDropdown('language')}
-                            activeOpacity={0.8}
                         >
                             <Text
                                 style={[
@@ -106,19 +150,17 @@ const AddLanguageModal = ({ visible, onClose, onSave }) => {
                                     !selectedLanguage && styles.placeholderText,
                                 ]}
                             >
-                                {selectedLanguage || 'Select Language'}
+                                {selectedLanguage?.label || 'Select Language'}
                             </Text>
                             <Ionicons
-                                name={openDropdown ? "chevron-up" : "chevron-down"}
+                                name={openDropdown === 'language' ? "chevron-up" : "chevron-down"}
                                 size={18}
                                 color="#000"
                             />
                         </TouchableOpacity>
-                        {openDropdown === 'language' &&
-                            renderDropdown(LANGUAGES, handleLanguageSelect)}
+                        {openDropdown === 'language' && renderDropdown(languageOptions, handleLanguageSelect)}
                     </View>
 
-                    {/* Level Dropdown */}
                     <View style={[styles.dropdownWrapper, { marginTop: 12 }]}>
                         <TouchableOpacity
                             style={[
@@ -126,7 +168,6 @@ const AddLanguageModal = ({ visible, onClose, onSave }) => {
                                 openDropdown === 'level' && styles.dropdownTriggerActive,
                             ]}
                             onPress={() => toggleDropdown('level')}
-                            activeOpacity={0.8}
                         >
                             <Text
                                 style={[
@@ -134,27 +175,25 @@ const AddLanguageModal = ({ visible, onClose, onSave }) => {
                                     !selectedLevel && styles.placeholderText,
                                 ]}
                             >
-                                {selectedLevel || 'Select Level'}
+                                {selectedLevel?.label || 'Select Level'}
                             </Text>
                             <Ionicons
-                                name={openDropdown ? "chevron-up" : "chevron-down"}
+                                name={openDropdown === 'level' ? "chevron-up" : "chevron-down"}
                                 size={18}
                                 color="#000"
                             />
                         </TouchableOpacity>
-                        {openDropdown === 'level' &&
-                            renderDropdown(LEVELS, handleLevelSelect)}
+                        {openDropdown === 'level' && renderDropdown(LEVELS, handleLevelSelect)}
                     </View>
 
                     {/* Save Button */}
                     <GradientButton
                         onPress={handleSave}
-                        activeOpacity={0.85}
                         disabled={!selectedLanguage || !selectedLevel}
                         title="Save"
                     />
                 </View>
-            </Pressable>
+            </View>
         </Modal>
     );
 };
@@ -168,7 +207,7 @@ const styles = StyleSheet.create({
     modalContainer: {
         backgroundColor: "#fff",
         width: "100%",
-        maxHeight: "66%",
+        maxHeight: "70%",
         paddingHorizontal: 15,
         paddingTop: 10,
         borderTopLeftRadius: 20,
@@ -229,7 +268,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3,
         elevation: 2,
-        marginTop: 5
+        marginTop: 5,
     },
     dropdownItem: {
         paddingHorizontal: 12,

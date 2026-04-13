@@ -115,8 +115,9 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
       visible={visible}
       onRequestClose={onClose}
     >
-      <Pressable style={[styles.modalOverlay]} onPress={onClose}>
-        <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.modalOverlay]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
           <View style={styles.Choosecontainer}>
             <View style={styles.searchContainer}>
               <Ionicons
@@ -225,7 +226,7 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
             <View
               style={[
               styles.categoryBtn,
-              { paddingBottom: insets.bottom + 16 },
+              // { paddingBottom: insets.bottom },
             ]}>
               <GradientButton
                 loading={loading}
@@ -235,7 +236,7 @@ const CategoryModel = ({ visible, onClose, type, pageType }) => {
             </View>
           </View>
         </View>
-      </Pressable>
+      </View>
     </Modal>
   );
 };

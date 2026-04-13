@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
   offerText: {
     color: "#ffffff",
     fontSize: 16,
+    lineHeight: 24,
   },
 });
 

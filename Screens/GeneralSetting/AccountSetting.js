@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ActivityIndicator
 } from "react-native";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import GradientButton from "../../components/GradientButton";
@@ -18,21 +19,31 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Footer from "../../components/Footer";
 import EmployerFooter from "../../components/EmployerFooter";
 import { toastError, toastSuccess } from "../../utils/toast";
+import { useNotifications } from "../../context/MessageNotificationContext";
 
 const AccountSetting = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
-  const [code, setCode] = useState("");
   const [codeEnabled, setCodeEnabled] = useState(false);
   const [password, setPassword] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
-  const [loading, setLoading] = useState(false);
   const route = useRoute();
   const { user } = route.params || {};
-  const [admin, setAdmin] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
+  const [email, setEmail] = useState("");
+  const [originalEmail, setOriginalEmail] = useState("");
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+
+  const [code, setCode] = useState("");
+
+  const [isEmailChanged, setIsEmailChanged] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [optLoading, setOtpLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const { admin } = useNotifications();
 
   const handleConfirmPassword = async () => {
     try {
@@ -57,6 +68,7 @@ const AccountSetting = () => {
       console.log(data);
       if (data.status === 200) {
         setEmail(user?.email || "");
+        setOriginalEmail(user.email || "");
         setName(user?.full_name || "");
         setUsername(user?.name || "");
         setActiveTab(1);
@@ -72,10 +84,14 @@ const AccountSetting = () => {
 
   const handleSendEmailOtp = async () => {
     try {
+      if (!isEmailChanged) {
+        return toastError("Email is already verified");
+      }
       if (!email) {
-        Alert.alert("Error", "Please enter email");
+        toastError("Please enter email");
         return;
       }
+      setOtpLoading(true);
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/send-email-link`, {
         method: "POST",
@@ -91,6 +107,8 @@ const AccountSetting = () => {
       const data = await res.json();
       console.log("Send Email OTP:", data);
       if (data.status === 200) {
+        setOtpLoading(false);
+        setIsOtpSent(true);
         toastSuccess("OTP sent to your email");
         setCodeEnabled(true);
       } else {
@@ -99,15 +117,65 @@ const AccountSetting = () => {
     } catch (error) {
       console.log("Send email OTP error:", error);
       toastError("Something went wrong");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const isValidOtp = (otp) => {
+    return /^[A-Za-z0-9]{6}$/.test(otp);
+  };
+  const handleVerifyOtp = async () => {
+    if (!code) {
+      toastError("Please enter OTP");
+      return;
+    }
+    if (!isValidOtp(code)) {
+      toastError("OTP should be 6 digits");
+      return;
+    }
+    try {
+      setIsVerifying(true);
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/settings-email-verify`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email,
+          email_pin: code,
+        }),
+      });
+      const data = await res.json();
+      if (data.status === 200) {
+        setIsEmailVerified(true);
+        setIsOtpSent(false);
+        setCode("");
+        toastSuccess("Email verified successfully");
+      } else {
+        toastError(data.message || "Invalid OTP");
+      }
+    } catch (error) {
+      console.log("VERIFY ERROR:", error);
+      toastError("Something went wrong");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
   const handleSaveChanges = async () => {
+    if (!email || !name || !username) {
+      toastError("Please fill all fields");
+      return;
+    }
+    // email changed but not verified
+    if (isEmailChanged && !isEmailVerified) {
+      return toastError("Please verify your email first");
+    }
     try {
-      if (!email || !name || !username) {
-        toastError("Please fill all fields");
-        return;
-      }
       setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/settings-step1`, {
@@ -128,8 +196,12 @@ const AccountSetting = () => {
       console.log("SAVE RESPONSE:", data);
       if (data.status === 200) {
         toastSuccess("Changes saved successfully");
+        setOriginalEmail(email);
+        setIsEmailChanged(false);
+        setIsOtpSent(false);
+        setCode("");
       } else {
-        toastError("Failed to save changes");
+        toastError(data.message || "Failed to save changes");
       }
     } catch (error) {
       console.log("SAVE ERROR:", error);
@@ -139,16 +211,22 @@ const AccountSetting = () => {
     }
   };
 
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
+  const handleEmailChange = (value) => {
+    setEmail(value);
 
-    setAdmin(user?.admin);
+    if (value !== originalEmail) {
+      setIsEmailChanged(true);
+      setIsOtpSent(false);
+      setIsEmailVerified(false);
+      setCode("");
+    } else {
+      setIsEmailChanged(false);
+      setIsOtpSent(false);
+      setIsEmailVerified(true);
+      setCode("");
+    }
   };
-  useEffect(() => {
-    loadUser();
-  }, []);
+
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
@@ -200,29 +278,49 @@ const AccountSetting = () => {
               <View style={styles.emailContainer}>
                 <TextInput
                   style={styles.emailInput}
-                  placeholder="info.got@gmail.com"
+                  placeholder="Enter email"
                   placeholderTextColor="#999"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={handleEmailChange}
                 />
                 <TouchableOpacity
-                  style={styles.sendButton}
+                  style={[
+                    styles.sendButton,
+                    { opacity: isEmailChanged && !isEmailVerified ? 1 : 0.5 },
+                  ]}
                   onPress={handleSendEmailOtp}
+                  disabled={!isEmailChanged || isEmailVerified || optLoading}
                 >
-                  <Ionicons name="paper-plane" size={20} color="#fff" />
+                  {optLoading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Ionicons name="paper-plane" size={20} color="#fff" />
+                  )}
                 </TouchableOpacity>
               </View>
-              <TextInput
-                style={[
-                  styles.codeInput,
-                  { backgroundColor: codeEnabled ? "#fff" : "#6b6b6b" },
-                ]}
-                placeholder="Enter code"
-                placeholderTextColor="#c8c8c8"
-                value={code}
-                onChangeText={setCode}
-                editable={codeEnabled}
-              />
+
+              {isEmailChanged && !isEmailVerified && (
+                <TextInput
+                  style={[
+                    styles.codeInput,
+                    { backgroundColor: isOtpSent ? "#fff" : "#6b6b6b" },
+                  ]}
+                  placeholder="Enter 6 digit code"
+                  placeholderTextColor="#c8c8c8"
+                  value={code}
+                  onChangeText={setCode}
+                  editable={isOtpSent}
+                  maxLength={6}
+                />
+              )}
+              {/* ✅ Show verify button only when user starts typing */}
+              {isEmailChanged && !isEmailVerified && code.length > 0 && (
+                <BorderButton
+                  title={isVerifying ? "Verifying..." : "Verify"}
+                  onPress={handleVerifyOtp}
+                  disabled={isVerifying}
+                />
+              )}
               <View style={styles.namesection}>
                 <Text style={styles.label}>Full Name</Text>
                 <View style={styles.passwordsection}>
@@ -240,7 +338,7 @@ const AccountSetting = () => {
                 <View style={styles.passwordsection}>
                   <TextInput
                     style={styles.passwordInput}
-                    placeholder="info.got@gmail.coom"
+                    placeholder="name123"
                     placeholderTextColor="#999"
                     value={username}
                     onChangeText={setUsername}

@@ -12,6 +12,7 @@ import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import EmployerFooter from "../../components/EmployerFooter";
+import NoContract from "../../components/NoContract";
 
 const ActiveContract = () => {
   const [currentJobs, setCurrnetJobs] = useState([]);
@@ -48,116 +49,122 @@ const ActiveContract = () => {
           {loading ? (
             <Loading />
           ) : (
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 90 }}
-            >
-              {currentJobs.map((currentJob, index) => (
-                <View style={styles.outerContainer} key={index}>
-                  <View style={styles.cardContainer}>
-                    <View style={styles.userRow}>
-                      <Image
-                        source={{
-                          uri:
-                            currentJob.photo ||
-                            "https://randomuser.me/api/portraits/women/8.jpg",
-                        }}
-                        style={styles.avatar}
-                      />
+            <>
+              {currentJobs.length > 0 ? (
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingBottom: 90 }}
+                >
+                  {currentJobs.map((currentJob, index) => (
+                    <View style={styles.outerContainer} key={index}>
+                      <View style={styles.cardContainer}>
+                        <View style={styles.userRow}>
+                          <Image
+                            source={{
+                              uri:
+                                currentJob.photo ||
+                                "https://randomuser.me/api/portraits/women/8.jpg",
+                            }}
+                            style={styles.avatar}
+                          />
 
-                      <View style={styles.userInfo}>
-                        <View style={styles.nameRow}>
-                          <View style={styles.userNameSection}>
-                            <Text style={styles.userName}>
-                              {currentJob.full_name}
-                            </Text>
+                          <View style={styles.userInfo}>
+                            <View style={styles.nameRow}>
+                              <View style={styles.userNameSection}>
+                                <Text style={styles.userName}>
+                                  {currentJob.full_name}
+                                </Text>
 
-                            <View style={styles.starRow}>
-                              {[...Array(5)].map((_, i) => (
-                                <FontAwesome
-                                  key={i}
-                                  name="star"
-                                  style={styles.starIcon}
+                                <View style={styles.starRow}>
+                                  {[...Array(5)].map((_, i) => (
+                                    <FontAwesome
+                                      key={i}
+                                      name="star"
+                                      style={styles.starIcon}
+                                    />
+                                  ))}
+                                </View>
+                              </View>
+                              <View style={styles.paymentRow}>
+                                <MaterialIcons
+                                  name="verified"
+                                  size={16}
+                                  color="#c3c3c3"
                                 />
-                              ))}
+                                <Text style={styles.paymentVerified}>
+                                  Verification Level:{" "}
+                                  {currentJob.verification_count}
+                                  /7
+                                </Text>
+                              </View>
                             </View>
                           </View>
-                          <View style={styles.paymentRow}>
-                            <MaterialIcons
-                              name="verified"
-                              size={16}
-                              color="#c3c3c3"
-                            />
-                            <Text style={styles.paymentVerified}>
-                              Verification Level:{" "}
-                              {currentJob.verification_count}
-                              /7
-                            </Text>
-                          </View>
                         </View>
-                      </View>
-                    </View>
 
-                    <View style={styles.jobTitleSection}>
-                      <Text style={styles.jobTitle}>{currentJob.subject}</Text>
-                      <Text style={styles.postedDate}>
-                        Start Date : {currentJob.payment_date}
-                      </Text>
-                    </View>
-
-                    <View style={styles.jobInfoSection}>
-                      <Text style={styles.infoText}>
-                        Total Price:{" "}
-                        <Text style={styles.infoHighlight}>
-                          CAD {currentJob.bid_price}
-                        </Text>{" "}
-                        Hourly Rate:{" "}
-                        <Text style={styles.infoHighlight}>
-                          CAD {currentJob.prop_hourly_rate}
-                        </Text>
-                      </Text>
-                      <Text style={styles.infoText}>
-                        Expected Hours:{" "}
-                        <Text style={styles.infoHighlight}>
-                          {currentJob.prop_total_hour}
-                        </Text>
-                      </Text>
-
-                      {currentJob.preferred_location && (
-                        <View
-                          style={{ flexDirection: "row", flexWrap: "wrap" }}
-                        >
-                          <Text style={styles.infoText}>Location: </Text>
-                          <Text style={[styles.infoHighlight, { flex: 1 }]}>
-                            {currentJob.preferred_location}
+                        <View style={styles.jobTitleSection}>
+                          <Text style={styles.jobTitle}>{currentJob.subject}</Text>
+                          <Text style={styles.postedDate}>
+                            Start Date : {currentJob.payment_date}
                           </Text>
                         </View>
-                      )}
-                    </View>
 
-                    <View style={styles.jobDescriptionSection}>
-                      <Text style={styles.descTitle}>Job Description</Text>
-                      <Text style={styles.descText}>
-                        {truncateWords(currentJob.description, 20)}
-                      </Text>
-                    </View>
+                        <View style={styles.jobInfoSection}>
+                          <Text style={styles.infoText}>
+                            Total Price:{" "}
+                            <Text style={styles.infoHighlight}>
+                              CAD {currentJob.bid_price}
+                            </Text>{" "}
+                            Hourly Rate:{" "}
+                            <Text style={styles.infoHighlight}>
+                              CAD {currentJob.prop_hourly_rate}
+                            </Text>
+                          </Text>
+                          <Text style={styles.infoText}>
+                            Expected Hours:{" "}
+                            <Text style={styles.infoHighlight}>
+                              {currentJob.prop_total_hour}
+                            </Text>
+                          </Text>
 
-                    <View style={styles.buttonSection}>
-                      <GradientButton
-                        title="View"
-                        onPress={() =>
-                          navigation.navigate("ViewCurrentJobPost", {
-                            gid: currentJob.request_slug,
-                          })
-                        }
-                      />
-                    </View>
-                  </View>
+                          {currentJob.preferred_location && (
+                            <View
+                              style={{ flexDirection: "row", flexWrap: "wrap" }}
+                            >
+                              <Text style={styles.infoText}>Location: </Text>
+                              <Text style={[styles.infoHighlight, { flex: 1 }]}>
+                                {currentJob.preferred_location}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
 
-                  {/* {index !== currentJobs.length - 1 && <LineDivider />} */}
-                </View>
-              ))}
-            </ScrollView>
+                        <View style={styles.jobDescriptionSection}>
+                          <Text style={styles.descTitle}>Job Description</Text>
+                          <Text style={styles.descText}>
+                            {truncateWords(currentJob.description, 20)}
+                          </Text>
+                        </View>
+
+                        <View style={styles.buttonSection}>
+                          <GradientButton
+                            title="View"
+                            onPress={() =>
+                              navigation.navigate("ViewCurrentJobPost", {
+                                gid: currentJob.request_slug,
+                              })
+                            }
+                          />
+                        </View>
+                      </View>
+
+                      {/* {index !== currentJobs.length - 1 && <LineDivider />} */}
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : (
+                <NoContract />
+              )}
+            </>
           )}
         </View>
         <EmployerFooter />
@@ -198,24 +205,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-     flex: 1,
-   
+    flex: 1,
+
   },
   nameRow: {
     flexDirection: "column",
     gap: 5,
   },
   userNameSection: {
-    
+
     flexDirection: "row",
     alignItems: "center",
-    flexWrap:"wrap",
+    flexWrap: "wrap",
     gap: 3,
   },
   userName: {
     color: "#fff",
     fontSize: 16,
-     flexShrink: 1,
+    flexShrink: 1,
     fontFamily: "Montserrat_500Medium",
   },
   starRow: {

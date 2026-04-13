@@ -36,6 +36,7 @@ const GeneralSetting = () => {
   const [employee, setEmployee] = useState([]);
   const [employer, setEmployer] = useState([]);
   const [details, setDetails] = useState([]);
+  const [timezone, setTimezone] = useState([]);
   const [phone, setPhone] = useState([]);
   const [admin, setAdmin] = useState(0);
 
@@ -59,6 +60,7 @@ const GeneralSetting = () => {
       setField("employeeCategories", data.employee_services || []);
       setField("employerCategories", data.employer_services || []);
       setDetails(data.mobileCountryDetails);
+      setTimezone(data.timezones);
     } catch (error) {
       console.log("API Error:", error);
     } finally {
@@ -121,6 +123,7 @@ const GeneralSetting = () => {
                     navigation.navigate("UserContactInfo", {
                       details: details,
                       user: users,
+                      timezone: timezone,
                     })
                   }
                 />

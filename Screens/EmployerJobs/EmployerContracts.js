@@ -18,45 +18,45 @@ export default function EmployerContracts() {
   return (
     <SafeAreaView style={styles.contractcontainer}>
       <View style={styles.container}>
-      <View style={styles.headerWrapper}>
-        <PageNameHeaderBar navigation={navigation} title="Contracts" />
-      </View>
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigation.navigate("EmployerJobPost")}
+        <View style={styles.headerWrapper}>
+          <PageNameHeaderBar navigation={navigation} title="Contracts" />
+        </View>
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.menuText}>My Job Post</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("EmployerJobPost")}
+          >
+            <Text style={styles.menuText}>My Job Post</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={()=>navigation.navigate("ActiveContract")}>
-          <Text style={styles.menuText}>Active contracts</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("ActiveContract")}>
+            <Text style={styles.menuText}>Active contracts</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={()=>navigation.navigate("ReceiveApplication")}>
-          <Text style={styles.menuText}>Received Application</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("ReceiveApplication")}>
+            <Text style={styles.menuText}>Received Application</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={()=> navigation.navigate("EmployerSentOffer")}>
-          <Text style={styles.menuText}>Sent Offers</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("EmployerSentOffer")}>
+            <Text style={styles.menuText}>Sent Offers</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={()=> navigation.navigate("CompletedContract")}>
-          <Text style={styles.menuText}>Completed Contracts</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("CompletedContract")}>
+            <Text style={styles.menuText}>Completed Contracts</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigation.navigate("DeactivatedJobs")}
-        >
-          <Text style={styles.menuText}>Deactivated Jobs</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("DeactivatedJobs")}
+          >
+            <Text style={styles.menuText}>Deactivated Jobs</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
-      <EmployerFooter/>
+      <EmployerFooter />
     </SafeAreaView>
   );
 }
@@ -64,12 +64,11 @@ export default function EmployerContracts() {
 const styles = StyleSheet.create({
   contractcontainer: {
     flex: 1,
-  
   },
-  container:{
-    flex:1,
-      backgroundColor: "#222222",
-      paddingHorizontal:15
+  container: {
+    flex: 1,
+    backgroundColor: "#222222",
+    paddingHorizontal: 15
   },
 
   headerTitle: {
@@ -77,7 +76,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-   
   },
   menuItem: {
     paddingVertical: 20,

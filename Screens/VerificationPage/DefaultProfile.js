@@ -124,7 +124,7 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
       </Text>
 
       <Text style={[styles.heading, { marginTop: 18 }]}>Categories</Text>
-      <Text style={styles.sub}>Choose categories for Your Default Profile</Text>
+      <Text style={styles.sub}>Choose categories for your default profile</Text>
       <View style={styles.searchContainer}>
         <EvilIcons
           name="search"

@@ -15,6 +15,7 @@ import FilePreview from "../../components/FilePreview";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import { toastError, toastSuccess } from "../../utils/toast";
+import Map from "../../components/Map";
 
 const Step4Address = ({ onNext }) => {
   const [addressDocs, setAddressDocs] = useState([]);
@@ -130,6 +131,9 @@ const Step4Address = ({ onNext }) => {
             removeicon={styles.customRemoveIcon}
           />
         ))}
+      </View>
+      <View style={styles.mapsection}>
+        <Map latitude={-33.8688} longitude={151.2195} zoom={0.1} />
       </View>
       <GradientButton title="Uplaod document" onPress={pickResume} />
       <TouchableOpacity style={styles.nextBtn} onPress={submitContactInfo} >

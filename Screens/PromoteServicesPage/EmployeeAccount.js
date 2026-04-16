@@ -42,8 +42,10 @@ import { Linking } from "react-native";
 import SocialButton from "../../components/SocialButton";
 import { tooltipMessage } from "../../components/TooltipMessage";
 import EditProfileSeeAllInformation from "../EditProfilePage/EditProfileSeeAllInformation";
+import { useEditProfileStore } from "../EditProfilePage/useEditProfileStore";
 
 const EmployeeAccount = () => {
+  const setAllData = useEditProfileStore((state) => state.setAllData);
   const [copyModel, setCopyModel] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [job, setJob] = useState([]);
@@ -88,6 +90,27 @@ const EmployeeAccount = () => {
       setPromote(data.promote);
       setProfile(data);
       setSocialLinks(data.socialLinks);
+      const user = data.editprofile || {};
+      setAllData({
+        userAdmin: user.admin || 0,
+        profileTitle: user.admin === 2 ? user.profile_title_employer || "" : user.profile_title_employee || "",
+        description: user.admin === 2 ? user.employer_about || "" : user.about || "",
+        photoUri: user.photo || null,
+        category: data.subcategory || [],
+        promote: data.promote || [],
+        languages: data.language || [],
+        education: data.education || [],
+        vehicles: data.vehicle || [],
+        assets: data.assets || [],
+        licenses: data.licence || [],
+        certificates: data.certificate || [],
+        experiences: data.experiences || [],
+        dob: user.dob || "",
+        years: data.years || 0,
+        ageShowStatus: user.age_show_status || 0,
+        moneyShowStatus: user.admin === 0 ? user.money_spent_show_status || 0 : user.money_earned_show_status || 0,
+      });
+      useEditProfileStore.setState({ profile: data });
     } catch (err) {
       setError(err.message);
     } finally {

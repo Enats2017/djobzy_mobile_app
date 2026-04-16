@@ -84,7 +84,7 @@ const JobCategory = ({
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#173D7A" />
+        <ActivityIndicator size="large" color="#ffffff" />
       </View>
     );
   }

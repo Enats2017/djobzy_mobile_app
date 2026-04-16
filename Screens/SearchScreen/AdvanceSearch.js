@@ -17,6 +17,7 @@ import { scale, fontScale } from "../../utils/scale";
 import GradientButton from "../../components/GradientButton";
 import { API_URL } from "../../api/ApiUrl";
 import { useGlobalSearch } from "./useGlobalSearch";
+import Map from "../../components/Map";
 const AdvancedSearch = ({ onClose }) => {
   const [remote, setRemote] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 5000]);
@@ -223,10 +224,13 @@ const AdvancedSearch = ({ onClose }) => {
 
           <Text style={styles.checkboxText}>Remote Jobs</Text>
         </TouchableOpacity>
-        <View style={{ paddingBottom: 10 }}></View>
+
+        <View style={styles.mapsection}>
+          <Map latitude={0.1971297000002039} longitude={12.893055863678455} zoom={82.66811621603428} marker={false} />
+        </View>
         <View style={styles.address}>
-          <TextInput style={styles.input} placeholder="Address" />
-          <TextInput style={styles.input} placeholder="km" keyboardType="numeric" onChangeText={(v) => setRadius(Number(v) || 0)} />
+          <TextInput style={styles.input} placeholder="Address" placeholderTextColor="#666666" />
+          <TextInput style={styles.input} placeholder="km" keyboardType="numeric" placeholderTextColor="#666666" onChangeText={(v) => setRadius(Number(v) || 0)} />
           <GradientButton title="Apply" onPress={applyAdvancedSearch} />
         </View>
       </ScrollView>
@@ -256,6 +260,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_500Medium",
     borderRadius: 8,
     padding: 12,
+    color: "#000",
   },
   plusInput: {
     flexDirection: "row",
@@ -400,7 +405,7 @@ const styles = StyleSheet.create({
 
   currency: { fontSize: fontScale(14), color: "#666" },
   slideinput: { fontSize: 16, color: "#666" },
-
-
-
+  mapsection: {
+    marginVertical: 10
+  }
 });

@@ -38,7 +38,7 @@ const EmployeeProfileMenu = () => {
   const [accountType, setAccountType] = useState(null);
   const [user, setUser] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const { refreshUser } = useNotifications();
+  const { refreshUser, admin } = useNotifications();
 
   const fetchUser = async () => {
     try {
@@ -321,7 +321,7 @@ const EmployeeProfileMenu = () => {
           </>
         )}
       </View>
-      {user?.admin == 2 ? <EmployerFooter /> : <Footer />}
+      {admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 };

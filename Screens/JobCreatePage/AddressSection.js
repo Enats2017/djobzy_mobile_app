@@ -19,6 +19,7 @@ import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStor
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { toastError } from "../../utils/toast";
+import Map from "../../components/Map";
 
 const AddressSection = ({ addressError, setAddressError }) => {
   const [languageSuggestions, setLanguageSuggestions] = useState([]);
@@ -146,6 +147,7 @@ const AddressSection = ({ addressError, setAddressError }) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Write your requirement here"
+                  placeholderTextColor={placeholderColor}
                   value={req.value}
                   onChangeText={(text) => updateRequirement(req.id, text)}
                 />
@@ -177,6 +179,7 @@ const AddressSection = ({ addressError, setAddressError }) => {
                   <TextInput
                     style={styles.languageInput}
                     placeholder="Add Language"
+                    placeholderTextColor={placeholderColor}
                     value={lang.lang}
                     onFocus={() => {
                       setActiveLangId(lang.id);
@@ -306,17 +309,9 @@ const AddressSection = ({ addressError, setAddressError }) => {
             {addressError && (
               <Text style={styles.errorText}>*Please Enter Job Location / Address</Text>
             )}
-            {/* <View style={styles.mapscetion}>
-              <MapView
-                style={styles.map}
-                initialRegion={{
-                  latitude: 0,
-                  longitude: 0,
-                  latitudeDelta: 100,
-                  longitudeDelta: 100,
-                }}
-              />
-            </View> */}
+            <View style={styles.mapsection}>
+              <Map latitude={-33.8688} longitude={151.2195} zoom={0.1} />
+            </View>
           </View>
           <View style={styles.row}>
             <TouchableOpacity
@@ -350,17 +345,6 @@ const AddressSection = ({ addressError, setAddressError }) => {
 };
 
 const styles = StyleSheet.create({
-  mapscetion: {
-    height: 300,
-    borderColor: "#ffffff",
-    borderWidth: 1,
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  map: {
-    flex: 1,
-  },
-
   header: {
     fontSize: 20,
     fontWeight: "700",

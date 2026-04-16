@@ -179,6 +179,7 @@ const TitleScetion = ({
               if (text.trim()) setTitleError(false);
             }}
             placeholder="What Should be Done?"
+            placeholderTextColor={placeholderColor}
           />
         </View>
 

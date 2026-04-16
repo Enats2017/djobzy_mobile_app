@@ -14,6 +14,8 @@ import PhoneNumberInput from "../../components/PhoneNumberInput";
 import { getCountryCallingCode, isValidPhoneNumber } from "libphonenumber-js";
 import { toastError, toastSuccess } from "../../utils/toast";
 import TimezoneSelector from "./TimezoneSelector";
+import EmployerFooter from "../../components/EmployerFooter";
+import { useNotifications } from "../../context/MessageNotificationContext";
 
 const UserContactInfo = () => {
   const navigation = useNavigation();
@@ -26,10 +28,11 @@ const UserContactInfo = () => {
   const [mobileCountryISO, setMobileCountryISO] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [canVerify, setCanVerify] = useState(false);
-  const [postal, setPostal] = useState("");
+  const [postal, setPostal] = useState(user.postal_code ||"");
   const [location, setLocation] = useState(user.address || "");
   const [selectedTimezone, setSelectedTimezone] = useState(user.timezone || "");
   const [loading, setLoading] = useState(false);
+  const { admin } = useNotifications();
 
   console.log("PHONE:", phoneNumber);
   console.log("COUNTRY CODE:", mobileCountryId);
@@ -48,7 +51,6 @@ const UserContactInfo = () => {
     setMobileCountryISO(transformedISO);
     setLocation(transformedLocation);
     setSelectedTimezone(transformedTimezone);
-
   }, [user]);
 
   const isoToFlag = (iso) =>
@@ -76,8 +78,6 @@ const UserContactInfo = () => {
       toastError("Phone, and location are required");
       return;
     }
-
-    console.log("hii");
     const fullNumber = `+${mobileCountryId}${phoneNumber}`;
     const updatedFullNumber = `${mobileCountryId}${phoneNumber}`;
     console.log(selectedTimezone);
@@ -122,6 +122,7 @@ const UserContactInfo = () => {
       const result = await res.json();
 
       if (result.status == 200) {
+        await AsyncStorage.setItem("user", JSON.stringify(result.user));
         toastSuccess("Contact info saved successfully");
       } else {
         toastError(result.message || "Something went wrong");
@@ -169,20 +170,14 @@ const UserContactInfo = () => {
               onChangePostalCode={setPostal}
               locationValue={location}
               onChangeLocation={setLocation}
+              user={user}
             />
             <TimezoneSelector
               timezones={timezone || []}
               selectedTimezone={selectedTimezone}
               setSelectedTimezone={setSelectedTimezone}
             />
-            {/* <GoogleMap
-              region={{
-                latitude: 19.076,
-                longitude: 72.8777,
-                latitudeDelta: 0.05,
-                longitudeDelta: 0.05,
-              }}
-            /> */}
+
             <View style={{ paddingBottom: 10 }}>
               <GradientButton
                 loading={loading}
@@ -193,7 +188,7 @@ const UserContactInfo = () => {
             </View>
           </ScrollView>
         </View>
-        <Footer />
+        {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
     </>
   );

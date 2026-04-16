@@ -1,6 +1,7 @@
 import React from "react";
 import { View, StyleSheet, TextInput, Text } from "react-native";
 import PhoneNumberInput from "./PhoneNumberInput";
+import Map from "./Map";
 
 const ContactInfo = ({
   postalCodeValue,
@@ -17,7 +18,10 @@ const ContactInfo = ({
   showPhone = true,
   showPostal = true,
   showLocation = true,
+  user
 }) => {
+  const latitude = user?.latitude ? parseFloat(user.latitude) : null;
+  const longitude = user?.longitude ? parseFloat(user.longitude) : null;
   return (
     <View style={[styles.infosection, containerStyle]}>
       {showPostal && (
@@ -51,6 +55,10 @@ const ContactInfo = ({
           ) : null}
         </View>
       )}
+
+      <View style={styles.mapsection}>
+        <Map latitude={latitude || -33.8688} longitude={longitude || 151.2195} zoom={0.1} />
+      </View>
     </View>
   );
 };
@@ -80,6 +88,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontFamily: "Montserrat_400Regular",
   },
+  mapsection: {
+    marginTop: 10
+  }
 });
 
 export default ContactInfo;

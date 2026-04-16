@@ -25,6 +25,7 @@ import EducationData from "./data/EducationData";
 import LicenseData from "./data/LicenseData";
 import CertificateData from "./data/CertificateData";
 import { useNotifications } from "../../context/MessageNotificationContext";
+import Map from "../../components/Map";
 
 export default function EditProfileSeeAllInformation({ navigation, isEdit = true }) {
     const { admin } = useNotifications();
@@ -45,8 +46,14 @@ export default function EditProfileSeeAllInformation({ navigation, isEdit = true
     const certificates = useEditProfileStore((state) => state.form.certificates);
     const setField = useEditProfileStore((state) => state.setField);
     const bgColor = admin === 2 ? "#C97863" : "#46A282";
+    const address = profile?.editprofile || [];
+    const latitude = address?.latitude ? parseFloat(address.latitude) : null;
+    const longitude = address?.longitude ? parseFloat(address.longitude) : null;
+    const userAddress = address?.address || "";
 
-    // console.log(ageShowStatus);
+    // console.log('admin ', latitude);
+    // console.log('admin ', longitude);
+    // console.log('admin ', userAddress);
     // console.log('admin ', admin);
     // Modal visibility states
     const [dobModalVisible, setDobModalVisible] = useState(false);
@@ -158,6 +165,12 @@ export default function EditProfileSeeAllInformation({ navigation, isEdit = true
 
             {seeAllOpen && (
                 <View style={styles.body}>
+                    <Map
+                        latitude={latitude}
+                        longitude={longitude}
+                        address={userAddress}
+                        zoom={0.01}
+                    />
                     {/* Age */}
                     <View style={[styles.row, { backgroundColor: bgColor }]}>
                         <View style={styles.leftinfo}>

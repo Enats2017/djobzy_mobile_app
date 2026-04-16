@@ -28,6 +28,7 @@ const ProfileEditPage = () => {
   const storeData = useEditProfileStore((state) => state);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
+  const [socialLinks, setSocialLinks] = useState([]);
   const [submitLoading, setSubmitLoading] = useState(false);
   const { admin } = useNotifications();
   const userType = admin === 2 ? 'employer' : 'employee';
@@ -46,8 +47,8 @@ const ProfileEditPage = () => {
       });
 
       const data = await response.json();
+      setSocialLinks(data.socialLinks);
       const user = data.editprofile || {};
-
       setAllData({
         userAdmin: user.admin || 0,
         profileTitle:
@@ -155,8 +156,8 @@ const ProfileEditPage = () => {
                     <View style={styles.profileCard}>
                       <EditProfileInfoHeader
                         navigation={navigation}
+                        socialLinks={socialLinks}
                       />
-                      {/* === SEE ALL INFORMATION SECTION === */}
                       <EditProfileSeeAllInformation navigation={navigation} />
                     </View>
                     <EditProfileBasicInfo

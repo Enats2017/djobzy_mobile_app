@@ -37,8 +37,11 @@ import EmployerFooter from "../../components/EmployerFooter";
 import CategoryModel from "../../components/CategoryModel";
 import QuestionMark from "../../components/QuestionMark";
 import EditProfileSeeAllInformation from "../EditProfilePage/EditProfileSeeAllInformation";
+import { useEditProfileStore } from "../EditProfilePage/useEditProfileStore";
+import SocialMediaLinks from "../../components/SocialMediaLinks";
 
 const EmployerAccount = () => {
+  const setAllData = useEditProfileStore((state) => state.setAllData);
   const navigation = useNavigation();
   const route = useRoute();
   const { name } = route.params || [];
@@ -58,6 +61,7 @@ const EmployerAccount = () => {
   const [job, setJob] = useState([]);
   const [Current, setCurrent] = useState([]);
   const [profile, setProfile] = useState([]);
+  const [socialLinks, setSocialLinks] = useState([]);
 
   const insets = useSafeAreaInsets();
 
@@ -108,7 +112,28 @@ const EmployerAccount = () => {
       setProfile(data);
       setSubcategory(data.subcategory);
       setCurrent(data.creview);
-      // console.log(data.price);
+      setSocialLinks(data.socialLinks);
+      const user = data.editprofile || {};
+      setAllData({
+        userAdmin: user.admin || 0,
+        profileTitle: user.admin === 2 ? user.profile_title_employer || "" : user.profile_title_employee || "",
+        description: user.admin === 2 ? user.employer_about || "" : user.about || "",
+        photoUri: user.photo || null,
+        category: data.subcategory || [],
+        promote: data.promote || [],
+        languages: data.language || [],
+        education: data.education || [],
+        vehicles: data.vehicle || [],
+        assets: data.assets || [],
+        licenses: data.licence || [],
+        certificates: data.certificate || [],
+        experiences: data.experiences || [],
+        dob: user.dob || "",
+        years: data.years || 0,
+        ageShowStatus: user.age_show_status || 0,
+        moneyShowStatus: user.admin === 0 ? user.money_spent_show_status || 0 : user.money_earned_show_status || 0,
+      });
+      useEditProfileStore.setState({ profile: data });
     } catch (err) {
       setError(err.message);
       console.log(err);
@@ -249,6 +274,7 @@ const EmployerAccount = () => {
                   </View>
                 </ScrollView>
 
+                <SocialMediaLinks socialLinks={socialLinks} />
                 <EditProfileSeeAllInformation navigation={navigation} isEdit={false} />
               </View>
               <View style={styles.infoBox}>

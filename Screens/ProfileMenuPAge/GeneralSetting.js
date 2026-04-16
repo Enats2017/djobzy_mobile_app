@@ -26,6 +26,7 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import { useProfileStore } from "../../components/useProfileStore";
+import { useNotifications } from "../../context/MessageNotificationContext";
 
 const GeneralSetting = () => {
   const navigation = useNavigation();
@@ -38,14 +39,12 @@ const GeneralSetting = () => {
   const [details, setDetails] = useState([]);
   const [timezone, setTimezone] = useState([]);
   const [phone, setPhone] = useState([]);
-  const [admin, setAdmin] = useState(0);
+  const { admin } = useNotifications();
 
   const fetchSetting = async () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
-      console.log(token);
-      
       const response = await fetch(`${API_URL}/setting`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -55,8 +54,7 @@ const GeneralSetting = () => {
       const data = await response.json();
       setSetting(data);
       setUsers(data.userDetails);
-     
-      console.log("11111", data.userDetails);
+      // console.log("11111", data.userDetails);
       setField("employeeCategories", data.employee_services || []);
       setField("employerCategories", data.employer_services || []);
       setDetails(data.mobileCountryDetails);
@@ -67,35 +65,21 @@ const GeneralSetting = () => {
       setLoading(false);
     }
   };
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-      console.log("uerchnage", userStr);
-
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-
-    setAdmin(user?.admin);
-  };
   useEffect(() => {
-    loadUser();
     fetchSetting();
   }, []);
-
-  console.log(admin);
-  
 
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
-        {loading ? (
-          <Loading />
-        ) : (
-          <>
-            <View style={styles.container}>
-              <PageNameHeaderBar
-                title="General Settings"
-                navigation={navigation}
-              />
+          <View style={styles.container}>
+            <PageNameHeaderBar
+              title="General Settings"
+              navigation={navigation}
+            />
+            {loading ? (
+              <Loading />
+            ) : (
               <View style={styles.menuContainer}>
                 <MenuItem
                   type="material"
@@ -137,7 +121,8 @@ const GeneralSetting = () => {
                   type="ion"
                   icon="notifications-outline"
                   title="Notifications"
-                  onPress={() => navigation.navigate("UserNotification")}
+                  onPress={() => navigation.navigate("UserNotification", { user: users })
+                  }
                 />
                 <MenuItem
                   type="material"
@@ -160,11 +145,9 @@ const GeneralSetting = () => {
                   onPress={() => navigation.navigate("EmployeeVerification")}
                 />
               </View>
-            </View>
-
-            {users?.admin == 2 ? <EmployerFooter /> : <Footer />}
-          </>
-        )}
+            )}
+          </View>
+          {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
     </>
   );

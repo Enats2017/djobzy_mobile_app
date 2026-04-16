@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -11,15 +11,33 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import CustomSwitch from "../../components/CustomSwitch";
 import GradientButton from "../../components/GradientButton";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { toastError, toastSuccess } from "../../utils/toast";
+import { API_URL } from "../../api/ApiUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Footer from "../../components/Footer";
+import EmployerFooter from "../../components/EmployerFooter";
+import { useNotifications } from "../../context/MessageNotificationContext";
 
 const UserNotification = () => {
+  const route = useRoute();
+  const { user } = route.params || {};
   const [chatMessages, setChatMessages] = useState(false);
   const [notificationSound, setNotificationSound] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+  const { admin } = useNotifications();
+
+  useEffect(() => {
+    if (!user) return;
+    const message = user.inbox_message_notification === 1 ? true : false;
+    const sound = user.notification_sound === 1 ? true : false;
+    const emailSound = user.email_notification === 1 ? true : false;
+    setChatMessages(message);
+    setNotificationSound(sound);
+    setEmailNotifications(emailSound);
+  }, [user]);
 
   const handleSaveNotifications = async () => {
     try {
@@ -29,9 +47,9 @@ const UserNotification = () => {
       const res = await fetch(`${API_URL}/settings-notification`, {
         method: "POST",
         headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
           inbox_message: chatMessages ? 1 : 0,
@@ -44,12 +62,13 @@ const UserNotification = () => {
       console.log("Notification Response:", data);
 
       if (data.status === 200) {
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
         toastSuccess("Changes saved successfully");
       } else {
         toastError(data.message || "Failed to save the response");
       }
     } catch (error) {
-      toastError(error);
+      console.error("Error occurred:", error);
     } finally {
       setLoading(false);
     }
@@ -99,6 +118,7 @@ const UserNotification = () => {
             </View>
           </View>
         </View>
+        {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
     </>
   );

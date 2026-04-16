@@ -1,43 +1,37 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
-import MapView from "react-native-maps";
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
-const GoogleMap = ({
-  region = {
-    latitude: 0,
-    longitude: 0,
-    latitudeDelta: 100,
-    longitudeDelta: 100,
-  },
-  containerStyle = {},
-  mapStyle = {},
-  onPressMap,
-  onRegionChange,
-}) => {
+export default function GoogleMap({ address, region, marker = true }) {
   return (
-    <View style={[styles.mapsection, containerStyle]}>
+    <View style={styles.section}>
       <MapView
-        style={[styles.map, mapStyle]}
+        provider={PROVIDER_GOOGLE}
+        style={styles.map}
         initialRegion={region}
-        onPress={onPressMap}
-        onRegionChange={onRegionChange}
-      />
+        showsUserLocation={true}
+        showsMyLocationButton={true}
+        // onRegionChangeComplete={(r) => { console.log("Map moved to:", r);}}
+      >
+        {marker && (
+          <Marker
+            coordinate={{ latitude: region.latitude, longitude: region.longitude }}
+            title={address || "Location"}
+          />
+        )}
+      </MapView>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  mapsection: {
+  section: {
     height: 300,
-    borderColor: "#ffffff",
+    borderColor: "#222222",
     borderWidth: 1,
     borderRadius: 10,
     overflow: "hidden",
-    marginTop:10
+    width: "100%",
   },
-  map: {
-    flex: 1,
-  },
+  map: { width: '100%', height: 300 },
 });
-
-export default GoogleMap;

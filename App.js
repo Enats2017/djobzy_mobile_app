@@ -99,6 +99,8 @@ import PaymentFailed from "./components/PaymentFailed";
 import { createNavigationContainerRef } from "@react-navigation/native";
 import { StackActions } from "@react-navigation/native";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import DeleteAccountScreen from "./Screens/GeneralSetting/DeleteAccountScreen";
+import Map from "./components/Map";
 import { registerForPushNotifications, notificationListener, foregroundListener, } from "./expoNotification";
 
 const Stack = createStackNavigator();
@@ -304,6 +306,8 @@ const App = () => {
               <Stack.Screen name="VerifyRegisterEmail" component={VerifyRegisterEmail} />
               <Stack.Screen name="PaymentSuccess" component={PaymentSuccess} />
               <Stack.Screen name="PaymentFailed" component={PaymentFailed} />
+              <Stack.Screen name="DeleteAccountScreen" component={DeleteAccountScreen} />
+              <Stack.Screen name="Map" component={Map} />
             </Stack.Navigator>
           </NavigationContainer>
           <Toast config={toastConfig} />

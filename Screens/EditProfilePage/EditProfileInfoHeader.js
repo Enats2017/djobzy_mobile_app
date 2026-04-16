@@ -18,8 +18,9 @@ import {
 import EditProfileUpdatePhoto from "./EditProfileUpdatePhoto";
 import LineDivider from "../../components/LineDivider";
 import { useEditProfileStore } from "./useEditProfileStore";
+import SocialMediaLinks from "../../components/SocialMediaLinks";
 
-const EditProfileInfoHeader = ({ navigation }) => {
+const EditProfileInfoHeader = ({ navigation, socialLinks }) => {
     const profile = useEditProfileStore((state) => state.profile);
     const photoUri = useEditProfileStore((state) => state.photoUri);
     const category = useEditProfileStore((state) => state.category);
@@ -127,6 +128,8 @@ const EditProfileInfoHeader = ({ navigation }) => {
                     </View>
                 </View>
             </ScrollView>
+
+            <SocialMediaLinks socialLinks={socialLinks} />
         </>
     );
 };

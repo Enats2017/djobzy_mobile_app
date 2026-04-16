@@ -310,7 +310,7 @@ const AddressSection = ({ addressError, setAddressError }) => {
               <Text style={styles.errorText}>*Please Enter Job Location / Address</Text>
             )}
             <View style={styles.mapsection}>
-              <Map latitude={-33.8688} longitude={151.2195} zoom={0.1} />
+              <Map zoom={0.5} />
             </View>
           </View>
           <View style={styles.row}>

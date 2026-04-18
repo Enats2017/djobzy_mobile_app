@@ -116,7 +116,7 @@ const CategoryModel = ({ visible, onClose }) => {
       onRequestClose={onClose}
     >
       <View style={[styles.modalOverlay]}>
-        <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
+        <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
           {loading ? (
             <Loading />
           ) : (

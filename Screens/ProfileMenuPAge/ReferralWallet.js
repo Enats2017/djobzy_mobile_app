@@ -20,6 +20,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import Loading from "../../components/Loading";
 import NoTransactions from "../Wallet/NoTransactions";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const ReferralWallet = () => {
   const navigation = useNavigation();
@@ -150,295 +151,302 @@ const ReferralWallet = () => {
           {loading ? (
             <Loading />
           ) : (
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.tabContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.tab,
-                    activeTab === "referral" && styles.activeTab,
-                  ]}
-                  onPress={() => setActiveTab("referral")}
-                >
-                  <Text
-                    style={
-                      activeTab === "referral"
-                        ? styles.activeTabText
-                        : styles.tabText
-                    }
+            <KeyboardAwareScrollView
+              enableOnAndroid
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 50 }}
+              showsVerticalScrollIndicator={false}
+            >
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={styles.tabContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      activeTab === "referral" && styles.activeTab,
+                    ]}
+                    onPress={() => setActiveTab("referral")}
                   >
-                    Referral Wallet
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={
+                        activeTab === "referral"
+                          ? styles.activeTabText
+                          : styles.tabText
+                      }
+                    >
+                      Referral Wallet
+                    </Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[
-                    styles.tab,
-                    activeTab === "history" && styles.activeTab,
-                  ]}
-                  onPress={() => setActiveTab("history")}
-                >
-                  <Text
-                    style={
-                      activeTab === "history"
-                        ? styles.activeTabText
-                        : styles.tabText
-                    }
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      activeTab === "history" && styles.activeTab,
+                    ]}
+                    onPress={() => setActiveTab("history")}
                   >
-                    Referral History
-                  </Text>
-                </TouchableOpacity>
-              </View>
+                    <Text
+                      style={
+                        activeTab === "history"
+                          ? styles.activeTabText
+                          : styles.tabText
+                      }
+                    >
+                      Referral History
+                    </Text>
+                  </TouchableOpacity>
+                </View>
 
-              {activeTab == "referral" ? (
-                <>
-                  {pendingReferrals.length > 0 ? (
-                    pendingReferrals.map((item, index) => (
-                      <View key={index} style={styles.tableCard}>
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>
-                              Date for Income
-                            </Text>
-                          </View>
+                {activeTab == "referral" ? (
+                  <>
+                    {pendingReferrals.length > 0 ? (
+                      pendingReferrals.map((item, index) => (
+                        <View key={index} style={styles.tableCard}>
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableLeftCell}>
+                              <Text style={styles.tableLabel}>
+                                Date for Income
+                              </Text>
+                            </View>
 
-                          <View style={styles.dividerVert} />
+                            <View style={styles.dividerVert} />
 
-                          <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>
-                              {item?.created}
-                            </Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.dividerHoriz} />
-
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>User</Text>
-                          </View>
-                          <View style={styles.dividerVert} />
-                          <View style={styles.tableRightCell}>
-                            <View>
+                            <View style={styles.tableRightCell}>
                               <Text style={styles.tableValue}>
-                                {" "}
-                                {item?.get_referred_user?.full_name}
+                                {item?.created}
                               </Text>
                             </View>
                           </View>
+
+                          <View style={styles.dividerHoriz} />
+
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableLeftCell}>
+                              <Text style={styles.tableLabel}>User</Text>
+                            </View>
+                            <View style={styles.dividerVert} />
+                            <View style={styles.tableRightCell}>
+                              <View>
+                                <Text style={styles.tableValue}>
+                                  {" "}
+                                  {item?.get_referred_user?.full_name}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+
+                          <View style={styles.dividerHoriz} />
+
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableLeftCell}>
+                              <Text style={styles.tableLabel}>Contract ID</Text>
+                            </View>
+                            <View style={styles.dividerVert} />
+                            <View style={styles.tableRightCell}>
+                              <Text style={styles.tableValue}>{item?.gigid}</Text>
+                            </View>
+                          </View>
+
+                          <View style={styles.dividerHoriz} />
+
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableLeftCell}>
+                              <Text style={styles.tableLabel}>
+                                My Passive Income (3.0%)
+                              </Text>
+                            </View>
+                            <View style={styles.dividerVert} />
+                            <View style={styles.tableRightCell}>
+                              <Text style={styles.tableValue}>
+                                {item?.amount} CAD
+                              </Text>
+                            </View>
+                          </View>
+
+                          <View style={styles.dividerHoriz} />
+
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableLeftCell}>
+                              <Text style={styles.tableLabel}>ID</Text>
+                            </View>
+                            <View style={styles.dividerVert} />
+                            <View style={styles.tableRightCell}>
+                              <Text style={styles.tableValue}>{item?.id}</Text>
+                            </View>
+                          </View>
                         </View>
+                      ))
+                    ) : (
+                      <NoTransactions emoji='⏳' title="No pending referrals found" />
+                    )}
+                    <View style={styles.rateContainer}>
+                      <Ionicons
+                        name="help-circle"
+                        size={16}
+                        color="#ffffff"
+                        style={{ marginBottom: 3 }}
+                      />
+                      <Text style={styles.label}>
+                        You can collect the income once a month
+                      </Text>
+                    </View>
+                    <View>
+                      <TouchableOpacity
+                        disabled={!tableFilled || loading}
+                        onPress={collectPayments}
+                        style={[
+                          styles.button,
+                          {
+                            backgroundColor: tableFilled ? "#D17B68" : "#754A42",
+                          },
+                        ]}
+                      >
+                        {loading ? (
+                          <ActivityIndicator color="#fff" />
+                        ) : (
+                          <Text style={styles.buttonText}>
+                            Collect the Payments
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    {completedReferrals.length > 0 ? (
+                      completedReferrals.map((item, index) => (
+                        <View key={index} style={styles.tableCard}>
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableLeftCell}>
+                              <Text style={styles.tableLabel}>
+                                Date for Income
+                              </Text>
+                            </View>
 
-                        <View style={styles.dividerHoriz} />
+                            <View style={styles.dividerVert} />
 
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>Contract ID</Text>
+                            <View style={styles.tableRightCell}>
+                              <Text style={styles.tableValue}>
+                                {item?.created}
+                              </Text>
+                            </View>
                           </View>
-                          <View style={styles.dividerVert} />
-                          <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>{item?.gigid}</Text>
+
+                          <View style={styles.dividerHoriz} />
+
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableLeftCell}>
+                              <Text style={styles.tableLabel}>User</Text>
+                            </View>
+                            <View style={styles.dividerVert} />
+                            <View style={styles.tableRightCell}>
+                              <View>
+                                <Text style={styles.tableValue}>
+                                  {" "}
+                                  {item?.get_referred_user?.full_name}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+
+                          <View style={styles.dividerHoriz} />
+
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableLeftCell}>
+                              <Text style={styles.tableLabel}>Action</Text>
+                            </View>
+                            <View style={styles.dividerVert} />
+                            <View style={styles.tableRightCell}>
+                              <Text style={styles.tableValue}>
+                                {item?.get_gig?.subject ||
+                                  "Joined with your invitation"}
+                              </Text>
+                            </View>
+                          </View>
+
+                          <View style={styles.dividerHoriz} />
+
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableLeftCell}>
+                              <Text style={styles.tableLabel}>
+                                My Passive Income (3.0%)
+                              </Text>
+                            </View>
+                            <View style={styles.dividerVert} />
+                            <View style={styles.tableRightCell}>
+                              <Text style={styles.tableValue}>
+                                {item?.amount || 0} CAD
+                              </Text>
+                            </View>
+                          </View>
+
+                          <View style={styles.dividerHoriz} />
+
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableLeftCell}>
+                              <Text style={styles.tableLabel}>ID</Text>
+                            </View>
+                            <View style={styles.dividerVert} />
+                            <View style={styles.tableRightCell}>
+                              <Text style={styles.tableValue}>{item?.id}</Text>
+                            </View>
                           </View>
                         </View>
+                      ))
+                    ) : (
+                      <NoTransactions emoji="✅" title="No Completed referrals found" />
+                    )}
+                  </>
+                )}
 
-                        <View style={styles.dividerHoriz} />
-
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>
-                              My Passive Income (3.0%)
-                            </Text>
-                          </View>
-                          <View style={styles.dividerVert} />
-                          <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>
-                              {item?.amount} CAD
-                            </Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.dividerHoriz} />
-
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>ID</Text>
-                          </View>
-                          <View style={styles.dividerVert} />
-                          <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>{item?.id}</Text>
-                          </View>
-                        </View>
-                      </View>
-                    ))
-                  ) : (
-                    <NoTransactions emoji='⏳' title="No pending referrals found" />
-                  )}
-                  <View style={styles.rateContainer}>
-                    <Ionicons
-                      name="help-circle"
-                      size={16}
-                      color="#ffffff"
-                      style={{ marginBottom: 3 }}
+                <View style={styles.big}>
+                  <Text style={styles.bigtext}>
+                    Invite your friends and get bonuses
+                  </Text>
+                </View>
+                <View style={styles.linkcontainer}>
+                  <Text style={styles.title}>Invite with an email</Text>
+                  <View style={styles.inputWrapper}>
+                    <TextInput
+                      placeholder="Invite with an email"
+                      placeholderTextColor="#8F8F8F"
+                      style={styles.input}
+                      value={email}
+                      onChangeText={setEmail}
                     />
-                    <Text style={styles.label}>
-                      You can collect the income once a month
-                    </Text>
-                  </View>
-                  <View>
                     <TouchableOpacity
-                      disabled={!tableFilled || loading}
-                      onPress={collectPayments}
-                      style={[
-                        styles.button,
-                        {
-                          backgroundColor: tableFilled ? "#D17B68" : "#754A42",
-                        },
-                      ]}
+                      style={styles.iconButton}
+                      onPress={sendInvite}
+                      disabled={loading}
                     >
-                      {loading ? (
-                        <ActivityIndicator color="#fff" />
+                      {sendloading ? (
+                        <ActivityIndicator color="#fff" size="small" />
                       ) : (
-                        <Text style={styles.buttonText}>
-                          Collect the Payments
-                        </Text>
+                        <Feather name="send" size={22} color="#ffffff" />
                       )}
                     </TouchableOpacity>
                   </View>
-                </>
-              ) : (
-                <>
-                  {completedReferrals.length > 0 ? (
-                    completedReferrals.map((item, index) => (
-                      <View key={index} style={styles.tableCard}>
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>
-                              Date for Income
-                            </Text>
-                          </View>
+                  <Text style={styles.title}>Invite with an Link</Text>
+                  <View style={styles.inputWrapper}>
+                    <View style={styles.textWrap}>
+                      <Text
+                        style={styles.linkText}
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                      >
+                        {referralUrl}
+                      </Text>
+                    </View>
 
-                          <View style={styles.dividerVert} />
-
-                          <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>
-                              {item?.created}
-                            </Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.dividerHoriz} />
-
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>User</Text>
-                          </View>
-                          <View style={styles.dividerVert} />
-                          <View style={styles.tableRightCell}>
-                            <View>
-                              <Text style={styles.tableValue}>
-                                {" "}
-                                {item?.get_referred_user?.full_name}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-
-                        <View style={styles.dividerHoriz} />
-
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>Action</Text>
-                          </View>
-                          <View style={styles.dividerVert} />
-                          <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>
-                              {item?.get_gig?.subject ||
-                                "Joined with your invitation"}
-                            </Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.dividerHoriz} />
-
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>
-                              My Passive Income (3.0%)
-                            </Text>
-                          </View>
-                          <View style={styles.dividerVert} />
-                          <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>
-                              {item?.amount || 0} CAD
-                            </Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.dividerHoriz} />
-
-                        <View style={styles.tableRow}>
-                          <View style={styles.tableLeftCell}>
-                            <Text style={styles.tableLabel}>ID</Text>
-                          </View>
-                          <View style={styles.dividerVert} />
-                          <View style={styles.tableRightCell}>
-                            <Text style={styles.tableValue}>{item?.id}</Text>
-                          </View>
-                        </View>
-                      </View>
-                    ))
-                  ) : (
-                    <NoTransactions emoji="✅" title="No Completed referrals found" />
-                  )}
-                </>
-              )}
-
-              <View style={styles.big}>
-                <Text style={styles.bigtext}>
-                  Invite your friends and get bonuses
-                </Text>
-              </View>
-              <View style={styles.linkcontainer}>
-                <Text style={styles.title}>Invite with an email</Text>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    placeholder="Invite with an email"
-                    placeholderTextColor="#8F8F8F"
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                  />
-                  <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={sendInvite}
-                    disabled={loading}
-                  >
-                    {sendloading ? (
-                      <ActivityIndicator color="#fff" size="small" />
-                    ) : (
-                      <Feather name="send" size={22} color="#ffffff" />
-                    )}
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.title}>Invite with an Link</Text>
-                <View style={styles.inputWrapper}>
-                  <View style={styles.textWrap}>
-                    <Text
-                      style={styles.linkText}
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
+                    <TouchableOpacity
+                      style={styles.copyButton}
+                      onPress={copyReferralUrl}
                     >
-                      {referralUrl}
-                    </Text>
+                      <Ionicons name="copy" size={22} color="#fff" />
+                    </TouchableOpacity>
                   </View>
-
-                  <TouchableOpacity
-                    style={styles.copyButton}
-                    onPress={copyReferralUrl}
-                  >
-                    <Ionicons name="copy" size={22} color="#fff" />
-                  </TouchableOpacity>
                 </View>
-              </View>
-            </ScrollView>
+              </ScrollView>
+            </KeyboardAwareScrollView>
           )}
         </View>
         <Footer />
@@ -573,7 +581,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
     marginBottom: 15,
   },
-   textWrap: {
+  textWrap: {
     flex: 1,
   },
   input: {

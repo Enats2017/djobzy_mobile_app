@@ -167,7 +167,7 @@ const AddLicensesModal = ({ visible, onClose, editingItem = null }) => {
             onRequestClose={onClose}
         >
             <Pressable style={[styles.modalOverlay]} onPress={onClose}>
-                <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
+                <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
                     <View style={styles.header}>
                         <Text style={styles.title}>Add License</Text>
                         <TouchableOpacity

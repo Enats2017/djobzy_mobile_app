@@ -136,7 +136,7 @@ const AddCategoryModal = ({ visible, onClose, type, pageType }) => {
         >
             <View style={[styles.modalOverlay]}>
                 <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-                <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
+                <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
                     <View style={styles.Choosecontainer}>
                         <View style={styles.searchContainer}>
                             <Ionicons

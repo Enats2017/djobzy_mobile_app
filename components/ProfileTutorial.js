@@ -185,6 +185,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     paddingVertical: 38,
     paddingHorizontal: 16,
+    marginBottom: 16,
     alignItems: "center",
     elevation: 10,
   },

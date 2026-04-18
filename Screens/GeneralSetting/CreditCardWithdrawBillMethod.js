@@ -9,9 +9,11 @@ import {
 } from "react-native";
 import Entypo from "@expo/vector-icons/Entypo";
 import GradientButton from "../../components/GradientButton";
+import { toastError } from "../../utils/toast";
+import { Picker } from '@react-native-picker/picker';
 
 export default function CreditCardWithdraw({
-  button = "Request a Withdraw",
+  button = "Save",
   onSubmit,
   initialData = null
 }
@@ -50,16 +52,13 @@ export default function CreditCardWithdraw({
       !expMonth.trim() ||
       !expYear.trim()
     ) {
-      Alert.alert("Missing Information", "Please fill all the fields.");
+      toastError("Please fill all the fields.");
       return;
     }
 
     // MM must be exactly 2 digits
     if (expMonth.length !== 2 || isNaN(expMonth)) {
-      Alert.alert(
-        "Invalid Month",
-        "Month must be written in 2 digits (e.g., 01, 05, 12)."
-      );
+      toastError("Month must be written in 2 digits (e.g., 01, 05, 12).");
       return;
     }
 
@@ -71,8 +70,8 @@ export default function CreditCardWithdraw({
     //   );
     //   return;
     // }
-    if (expYear.length !== 2 || isNaN(expYear)) {
-      Alert.alert("Invalid Year", "Yeaar must be 2 digits (e.g., 24, 26).");
+    if (expYear.length !== 4 || isNaN(expYear)) {
+      toastError("Year must be 4 digits (e.g., 2024, 2026).");
       return;
     }
 
@@ -196,10 +195,10 @@ export default function CreditCardWithdraw({
 
         <TextInput
           ref={yearRef}
-          placeholder="YY"
+          placeholder="YYYY"
           placeholderTextColor="#888"
           style={styles.expiryInput}
-          maxLength={2}
+          maxLength={4}
           keyboardType="numeric"
           value={expYear}
           onChangeText={setExpYear}

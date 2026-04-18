@@ -12,9 +12,6 @@ import AddSocialMediaModal from "./modals/AddSocialMediaModal";
 const EditProfileSocialMedia = () => {
     const [socialMediaModal, setSocialMediaModal] = useState(false);
 
-    const handleSave = () => {
-        setSocialMediaModal(false);
-    }
     return (
         <View style={styles.section}>
             <Text style={styles.label}>Social Media</Text>
@@ -28,7 +25,6 @@ const EditProfileSocialMedia = () => {
             <AddSocialMediaModal
                 visible={socialMediaModal}
                 onClose={() => setSocialMediaModal(false)}
-                onSave={handleSave}
             />
         </View>
     );

@@ -29,17 +29,18 @@ import QuestionMark from "../../components/QuestionMark";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import { toastError, toastSuccess } from "../../utils/toast";
+import { useNotifications } from "../../context/MessageNotificationContext.js";
+import EmployerFooter from "../../components/EmployerFooter.js";
 
 const BillingMethods = () => {
     const [selected, setSelected] = useState("");
     const [remember, setRemember] = useState(false);
-    const [paypalId, setPaypalId] = useState("");
-    const [cardSaved, setCardSaved] = useState(false);
     const [savedMethod, setSavedMethod] = useState(null);
     const [editingCard, setEditingCard] = useState(null);
     const navigation = useNavigation();
     const route = useRoute();
     const { profileData } = route.params || {};
+    const { admin } = useNotifications();
 
     const fetchBillingMethod = async () => {
         try {
@@ -53,9 +54,7 @@ const BillingMethods = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-
             const data = await response.json();
-
             if (response.ok) {
                 console.log(data.data);
                 setSavedMethod(data.data);
@@ -277,7 +276,7 @@ const BillingMethods = () => {
                         </ScrollView>
                     </KeyboardAvoidingView>
                 </View>
-                <Footer />
+                {admin == 2 ? <EmployerFooter /> : <Footer />}
             </SafeAreaView>
         </>
     );

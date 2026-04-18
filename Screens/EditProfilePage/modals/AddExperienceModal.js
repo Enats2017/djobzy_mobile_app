@@ -59,7 +59,7 @@ const AddExperienceModal = ({ visible, onClose, onSave }) => {
             onRequestClose={onClose}
         >
             <View style={[styles.modalOverlay]} onPress={onClose}>
-                <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
+                <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
                     {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>Add Experience</Text>

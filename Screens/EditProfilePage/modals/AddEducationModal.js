@@ -151,7 +151,7 @@ const AddEducationModal = ({ visible, onClose, editingItem = null }) => {
         >
             <View style={[styles.modalOverlay]} onPress={onClose}>
                 <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-                <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
+                <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
                     <View style={styles.header}>
                         <Text style={styles.title}>Add Education</Text>
                         <TouchableOpacity

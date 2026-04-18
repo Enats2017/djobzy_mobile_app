@@ -195,6 +195,7 @@ const AccountSetting = () => {
       const data = await res.json();
       console.log("SAVE RESPONSE:", data);
       if (data.status === 200) {
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
         toastSuccess("Changes saved successfully");
         setOriginalEmail(email);
         setIsEmailChanged(false);
@@ -313,7 +314,7 @@ const AccountSetting = () => {
                   maxLength={6}
                 />
               )}
-              {/* ✅ Show verify button only when user starts typing */}
+              {/* Show verify button only when user starts typing */}
               {isEmailChanged && !isEmailVerified && code.length > 0 && (
                 <BorderButton
                   title={isVerifying ? "Verifying..." : "Verify"}
@@ -360,7 +361,14 @@ const AccountSetting = () => {
                 }
               }}
             />
-            {activeTab == 1 && <BorderButton title="Close your account" />}
+            {activeTab == 1 && 
+              <BorderButton 
+                title="Close your account"
+                onPress={() => navigation.navigate("DeleteAccountScreen", {
+                  email: email
+                })}
+              />
+            }
           </View>
         </View>
         {admin == 2 ? <EmployerFooter /> : <Footer />}

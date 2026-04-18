@@ -63,7 +63,7 @@ const DateOfBirthModal = ({ visible, onClose, initialDate }) => {
             onRequestClose={onClose}
         >
             <Pressable style={[styles.modalOverlay]} onPress={onClose}>
-                <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
+                <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
                     {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>Date Of Birth</Text>

@@ -21,7 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../../../api/ApiUrl';
 import { toastError, toastSuccess } from '../../../utils/toast';
 
-const AddSocialMediaModal = ({ visible, onClose, onSave }) => {
+const AddSocialMediaModal = ({ visible, onClose }) => {
     const insets = useSafeAreaInsets();
     const [socialMediaLoading, setSocialMediaLoading] = useState(false);
     const [links, setLinks] = useState({});
@@ -118,7 +118,7 @@ const AddSocialMediaModal = ({ visible, onClose, onSave }) => {
         >
             <View style={[styles.modalOverlay]} onPress={onClose}>
                 <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-                <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
+                <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
                     <View style={styles.header}>
                         <Text style={styles.title}>Add Social Links</Text>
                         <TouchableOpacity

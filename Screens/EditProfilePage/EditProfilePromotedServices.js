@@ -21,13 +21,12 @@ import { useServiceGlobalStore } from "../PromoteServicesPage/ServiceGlobalStore
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { toastError } from "../../utils/toast";
 
-const EditProfilePromotedServices = ({ navigation }) => {
+const EditProfilePromotedServices = ({ navigation, isEdit = true }) => {
     const promote = useEditProfileStore((state) => state.form.promote);
     const [modalVisible, setModalVisible] = useState(false);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [deletePromoteService, setDeletePromoteService] = useState(null);
     const [loadingId, setLoadingId] = useState(null);
-    const [service, setService] = useState(false);
 
     const handleSave = (data) => {
         console.log("promote service saved:", data);
@@ -97,8 +96,8 @@ const EditProfilePromotedServices = ({ navigation }) => {
     return (
         <View style={styles.section}>
             <View style={styles.label}>
-                <QuestionMark title="Promote your services" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_provided_services} />
-            </View> 
+                <QuestionMark title="My Promote services" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_provided_services} />
+            </View>
 
             <TouchableOpacity
                 style={styles.plusbtn}
@@ -115,8 +114,7 @@ const EditProfilePromotedServices = ({ navigation }) => {
                 showsHorizontalScrollIndicator={false}
             >
                 {promote?.map((item, index) => {
-                    const icon =
-                        item?.seeking_services?.[0]?.get_seek_services_api?.icon;
+                    const icon = item?.seeking_services?.[0]?.get_seek_services_api?.icon;
 
                     return (
                         <View key={index} style={styles.wrapper}>
@@ -136,7 +134,7 @@ const EditProfilePromotedServices = ({ navigation }) => {
                             </View>
 
                             {/* CARD */}
-                            <View style={styles.card}>
+                            <View style={[styles.card, { height: isEdit ? 225 : 185 }]}>
                                 {/* TOP CONTENT */}
                                 <View style={styles.cardContent}>
                                     <Text style={styles.title} numberOfLines={2}>
@@ -164,25 +162,27 @@ const EditProfilePromotedServices = ({ navigation }) => {
                                         })
                                     }
                                 />
-                                <View style={styles.bottomBtns}>
-                                    {/* Edit Button */}
-                                    <TouchableOpacity
-                                        style={styles.circleButton}
-                                        onPress={() => handleEdit(item.sid, 2)}
-                                        disabled={loadingId === item.sid}
-                                    >
-                                        {loadingId === item.sid ? (
-                                            <ActivityIndicator size="small" color="#000" />
-                                        ) : (
-                                            <Feather name="edit-3" size={22} color="#000" />
-                                        )}
-                                    </TouchableOpacity>
+                                {isEdit && (
+                                    <View style={styles.bottomBtns}>
+                                        {/* Edit Button */}
+                                        <TouchableOpacity
+                                            style={styles.circleButton}
+                                            onPress={() => handleEdit(item.sid, 2)}
+                                            disabled={loadingId === item.sid}
+                                        >
+                                            {loadingId === item.sid ? (
+                                                <ActivityIndicator size="small" color="#000" />
+                                            ) : (
+                                                <Feather name="edit-3" size={22} color="#000" />
+                                            )}
+                                        </TouchableOpacity>
 
-                                    {/* Delete Button */}
-                                    <TouchableOpacity style={styles.circleButton} onPress={() => handleOpenDelete(item)}>
-                                        <MaterialIcons name="delete" size={27} color="#d91212" />
-                                    </TouchableOpacity>
-                                </View>
+                                        {/* Delete Button */}
+                                        <TouchableOpacity style={styles.circleButton} onPress={() => handleOpenDelete(item)}>
+                                            <MaterialIcons name="delete" size={27} color="#d91212" />
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </View>
                         </View>
                     );

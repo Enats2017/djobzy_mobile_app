@@ -155,6 +155,7 @@ export default function PaymentSuccess() {
         "job-payment": "ActiveContract",
         "job-promote": "EmployerJobPost",
         "card-verification": "EmployeeVerification",
+        "extra-job-payment": "ActiveContract",
     };
 
     const navigateAfterPayment = () => {

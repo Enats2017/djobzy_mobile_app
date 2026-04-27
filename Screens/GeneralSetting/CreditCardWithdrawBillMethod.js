@@ -12,12 +12,7 @@ import GradientButton from "../../components/GradientButton";
 import { toastError } from "../../utils/toast";
 import { Picker } from '@react-native-picker/picker';
 
-export default function CreditCardWithdraw({
-  button = "Save",
-  onSubmit,
-  initialData = null
-}
-) {
+export default function CreditCardWithdraw({ button = "Save", onSubmit, initialData = null, loading }) {
   const [fullName, setFullName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expMonth, setExpMonth] = useState("");
@@ -62,14 +57,6 @@ export default function CreditCardWithdraw({
       return;
     }
 
-    // YYYY must be exactly 4 digits
-    // if (expYear.length !== 4 || isNaN(expYear)) {
-    //   Alert.alert(
-    //     "Invalid Year",
-    //     "Year must be written in 4 digits (e.g., 2001, 2024)."
-    //   );
-    //   return;
-    // }
     if (expYear.length !== 4 || isNaN(expYear)) {
       toastError("Year must be 4 digits (e.g., 2024, 2026).");
       return;
@@ -205,7 +192,7 @@ export default function CreditCardWithdraw({
         />
       </View>
 
-      <GradientButton title={button} onPress={handleSubmit} />
+      <GradientButton title={button} onPress={handleSubmit} disabled={loading} loading={loading} />
     </View>
   );
 }

@@ -166,6 +166,7 @@ export default function Wallet() {
                     <TextInput
                       style={styles.input}
                       placeholder="50.00"
+                      placeholderTextColor="#666666"
                       editable={true}
                       keyboardType="numeric"
                     />

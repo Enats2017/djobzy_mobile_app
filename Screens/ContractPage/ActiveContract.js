@@ -162,7 +162,11 @@ const ActiveContract = () => {
                   ))}
                 </ScrollView>
               ) : (
-                <NoContract />
+                <NoContract
+                  icon="document-text-outline"
+                  title="No active contracts"
+                  description="You don't have any active contract at the moment"
+                />
               )}
             </>
           )}

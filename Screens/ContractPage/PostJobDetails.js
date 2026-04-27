@@ -25,6 +25,9 @@ import ReviewPage from "../JobCreatePage/ReviewPage";
 import EmployerFooter from "../../components/EmployerFooter";
 import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import JobAddressBlock from "../Employer/JobAddressBlock";
+import RequirementDataList from "../Employer/RequirementDataList";
+import LanguageDataList from "../Employer/LanguagesDataList";
 
 const PostJobDetails = () => {
   const navigation = useNavigation();
@@ -35,7 +38,7 @@ const PostJobDetails = () => {
   const route = useRoute();
   const { jobId } = route.params || [];
   console.log(jobId);
-  
+
 
   const [postJob, setPostJob] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
@@ -311,44 +314,11 @@ const PostJobDetails = () => {
                     </Text>
                   </View>
                 </View>
-                {postJob?.requirement?.length > 1 && (
-                  <View style={styles.cardContainer}>
-                    <Text style={styles.cardHeading}>Requirements</Text>
-                    <View style={styles.requirementContainer}>
-                      {postJob?.requirement?.map((req, index) => (
-                        <View key={index} style={styles.requirementItem}>
-                          <View style={styles.circleNumber}>
-                            <Text style={styles.circleNumberText}>
-                              {index + 1}
-                            </Text>
-                          </View>
-                          <Text style={styles.requirementText}>
-                            {req.requirement}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                )}
-                {postJob?.language?.length > 1 && (
-                  <View style={styles.cardContainer}>
-                    <Text style={styles.cardHeading}>Language</Text>
-                    <View style={styles.requirementContainer}>
-                      {postJob?.language?.map((req, index) => (
-                        <View key={index} style={styles.requirementItem}>
-                          <View style={styles.circleNumber}>
-                            <Text style={styles.circleNumberText}>
-                              {index + 1}
-                            </Text>
-                          </View>
-                          <Text style={styles.requirementText}>
-                            {req.language_name} : {req.level_text}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                )}
+
+                <RequirementDataList data={postJob?.requirement} />
+                <LanguageDataList data={postJob?.language} />
+                <JobAddressBlock details={postJob?.details} />
+
                 <View style={styles.cardContainer} />
                 {postJob?.gigs?.length > 0 && (
                   <>
@@ -360,7 +330,7 @@ const PostJobDetails = () => {
                     </View>
                     <Text style={styles.biddingsSubText}>
                       {" "}
-                      6 Candidate is bidding for this job{" "}
+                      {postJob?.gigs?.length} Candidate is bidding for this job{" "}
                     </Text>
                     <View style={styles.biddingsGrid}>
                       {postJob?.gigs?.map((gig, index) => (
@@ -1105,12 +1075,10 @@ const styles = StyleSheet.create({
   requirementItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 4,
     marginRight: 8,
     paddingHorizontal: 12,
-    paddingVertical: 6,
-
-    borderRadius: 10,
+    paddingVertical: 4,
   },
   circleNumber: {
     width: 26,

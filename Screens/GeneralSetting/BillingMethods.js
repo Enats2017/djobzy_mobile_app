@@ -37,6 +37,7 @@ const BillingMethods = () => {
     const [remember, setRemember] = useState(false);
     const [savedMethod, setSavedMethod] = useState(null);
     const [editingCard, setEditingCard] = useState(null);
+    const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
     const route = useRoute();
     const { profileData } = route.params || {};
@@ -78,8 +79,8 @@ const BillingMethods = () => {
         expYear,
     }) => {
         try {
+            setLoading(true);
             const token = await AsyncStorage.getItem("token");
-
             const response = await fetch(`${API_URL}/save-billing-method`, {
                 method: "POST",
                 headers: {
@@ -125,6 +126,8 @@ const BillingMethods = () => {
             toastSuccess("Card saved successfully!");
         } catch (error) {
             toastError(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -228,6 +231,7 @@ const BillingMethods = () => {
                                         button="Save"
                                         onSubmit={handleCardSave}
                                         initialData={editingCard}
+                                        loading={loading}
                                     />
                                 )}
                                 {selected === "upi" && <Paypal button="Save" />}

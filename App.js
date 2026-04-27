@@ -101,6 +101,7 @@ import { StackActions } from "@react-navigation/native";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import DeleteAccountScreen from "./Screens/GeneralSetting/DeleteAccountScreen";
 import Map from "./components/Map";
+import MyBoostedJob from "./Screens/EmployerJobs/MyBoostedJob";
 import { registerForPushNotifications, notificationListener, foregroundListener, } from "./expoNotification";
 
 const Stack = createStackNavigator();
@@ -308,6 +309,7 @@ const App = () => {
               <Stack.Screen name="PaymentFailed" component={PaymentFailed} />
               <Stack.Screen name="DeleteAccountScreen" component={DeleteAccountScreen} />
               <Stack.Screen name="Map" component={Map} />
+              <Stack.Screen name="MyBoostedJob" component={MyBoostedJob} />
             </Stack.Navigator>
           </NavigationContainer>
           <Toast config={toastConfig} />

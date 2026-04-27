@@ -11,14 +11,15 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
-import BorderButton from "../../components/BorderButton";
-import { Ionicons } from "@expo/vector-icons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import NoReviews from "../../components/NoReviews";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Footer from "../../components/Footer";
 import Loading from "../../components/Loading";
+import LineDivider from "../../components/LineDivider";
+
+const SORT_ORDER_OPTIONS = ['Ascending', 'Descending'];
+const SORT_BY_OPTIONS = ['Date Added', 'Rating'];
 
 const ProfileReviewPage = () => {
   const navigation = useNavigation();
@@ -28,8 +29,11 @@ const ProfileReviewPage = () => {
   const [employeeRating, setEmployeeRating] = useState("0");
   const [employerRating, setEmployerRating] = useState("0");
   const [loading, setLoading] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [sortOrder, setSortOrder] = useState(null);
+  const [sortBy, setSortBy] = useState(null);
 
-   const renderStars = (rating) => {
+  const renderStars = (rating) => {
     if (!rating || rating <= 0) return "⭐";
     return "⭐".repeat(Math.round(rating));
   };
@@ -59,53 +63,91 @@ const ProfileReviewPage = () => {
     fetchReviews();
   }, []);
 
-  const ReviewCard = ({ item }) => {
-     const currentRating =
-    activeTab === "employee" ? employeeRating : employerRating;
+  const toggleDropdown = (name) => {
+    setActiveDropdown(prev => (prev === name ? null : name));
+  };
+
+  const handleSelect = (type, value) => {
+    if (type === 'order') {
+      setSortOrder(value);
+      handleSortOrder(value);   // pass value directly, don't rely on state
+    } else {
+      setSortBy(value);
+      handleSortBy(value);
+    }
+    setActiveDropdown(null);
+  };
+  const handleSortOrder = (order) => {
+    const source = activeTab === "employee" ? employeeReview : employerReview;
+    const setter = activeTab === "employee" ? setEmployeeReview : setEmployerReview;
+    const isAsc = order === "Ascending";
+    const sorted = [...source].sort((a, b) => {
+      const dateA = new Date(a.review_date);
+      const dateB = new Date(b.review_date);
+      // console.log("dateA:", dateA, "dateB:", dateB, "order:", order);
+      return isAsc ? dateA - dateB : dateB - dateA;
+    });
+
+    setter(sorted);
+  };
+
+  const handleSortBy = (type) => {
+    const source = activeTab === "employee" ? employeeReview : employerReview;
+    const setter = activeTab === "employee" ? setEmployeeReview : setEmployerReview;
+    const sorted = [...source];
+    if (type === 'Date Added') {
+      sorted.sort((a, b) => new Date(b.review_date) - new Date(a.review_date));
+    } else if (type === 'Rating') {
+      sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
+    setter(sorted);
+  };
+
+  const ReviewCard = ({ item, index, length }) => {
+    const currentRating = activeTab === "employee" ? employeeRating : employerRating;
+    const isLastItem = index === length - 1;
 
     return (
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <View style={styles.leftRow}>
-            <View style={styles.circle}>
-              <Image
-                source={{
-                  uri: "https://randomuser.me/api/portraits/women/8.jpg",
-                }}
-                style={styles.profile}
-              />
+      <>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <View style={styles.leftRow}>
+              <View style={styles.circle}>
+                <Image
+                  source={{
+                    uri: item.photo,
+                  }}
+                  style={styles.profile}
+                />
+              </View>
+              <View style={{ marginLeft: 10 }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={styles.name}>{item.full_name}</Text>
+                </View>
+                <View style={styles.starRow}>
+                  <Text style={styles.rating}>{renderStars(currentRating)}</Text>
+                </View>
+              </View>
             </View>
-            <View style={{ marginLeft: 10 }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={styles.name}>{item.full_name}</Text>
 
-                {item.is_verified === 1 && (
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={16}
-                    color="#3ECF8E"
-                    style={{ marginLeft: 5 }}
-                  />
-                )}
-              </View>
-              <View style={styles.starRow}>
-               <Text style={styles.rating}> {renderStars(currentRating)}</Text>
-              </View>
-            </View>
+            <Text style={styles.time}>{item.updated_review_date}</Text>
           </View>
-
-          <Text style={styles.time}>{item.review_date}</Text>
+          {item.subject && (
+            <Text style={styles.reviewSubject}>{item.subject}</Text>
+          )}
+          <Text style={styles.reviewText}>{item.comment}</Text>
         </View>
-        <Text style={styles.reviewText}>{item.comment}</Text>
-      </View>
+
+        {!isLastItem && <LineDivider />}
+      </>
     );
   };
 
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.conatiner}>
-          <View style={styles.hedaer}>
+        <View style={styles.container}>
+          <View style={styles.header}>
             <PageNameHeaderBar title="Reviews" navigation={navigation} />
             {
               !loading && (
@@ -120,7 +162,6 @@ const ProfileReviewPage = () => {
                 </View>
               )
             }
-            
           </View>
 
           <View style={styles.tabContainer}>
@@ -151,63 +192,113 @@ const ProfileReviewPage = () => {
             </TouchableOpacity>
           </View>
           <View style={styles.buttonbox}>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Sort Order</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Sort by</Text>
-            </TouchableOpacity>
+            {/* Sort Order Button */}
+            <View style={styles.dropdownWrapper}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => toggleDropdown('order')}
+              >
+                <Text style={styles.buttonText}>{sortOrder || 'Sort Order'}</Text>
+              </TouchableOpacity>
+
+              {activeDropdown === 'order' && (
+                <View style={styles.dropdownMenu}>
+                  {SORT_ORDER_OPTIONS.map((option, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.dropdownItem,
+                        index === SORT_ORDER_OPTIONS.length - 1 && { borderBottomWidth: 0 },
+                      ]}
+                      onPress={() => handleSelect('order', option)}
+                    >
+                      <Text style={styles.dropdownItemText}>{option}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            <View style={styles.dropdownWrapper}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => toggleDropdown('sort')}
+              >
+                <Text style={styles.buttonText}>{sortBy || 'Sort By'}</Text>
+              </TouchableOpacity>
+
+              {activeDropdown === 'sort' && (
+                <View style={styles.dropdownMenu}>
+                  {SORT_BY_OPTIONS.map((option, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.dropdownItem,
+                        index === SORT_BY_OPTIONS.length - 1 && { borderBottomWidth: 0 },
+                      ]}
+                      onPress={() => handleSelect('sort', option)}
+                    >
+                      <Text style={styles.dropdownItemText}>{option}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
           </View>
 
           {
             loading ? (
-              <Loading/>
+              <Loading />
             ) : (
               <>
-              {activeTab === "employee" ? (
-                employeeReview.length > 0 ? (
+                {activeTab === "employee" ? (
+                  employeeReview.length > 0 ? (
+                    <FlatList
+                      data={employeeReview}
+                      keyExtractor={(item) => item.rid.toString()}
+                      renderItem={({ item, index }) => (
+                        <ReviewCard item={item} index={index} length={employeeReview.length} />
+                      )}
+                      contentContainerStyle={{ paddingBottom: 100 }}
+                      showsVerticalScrollIndicator={false}
+                    />
+                  ) : (
+                    <View style={styles.nojobs}>
+                      <NoReviews />
+                    </View>
+                  )
+                ) : employerReview.length > 0 ? (
                   <FlatList
-                    data={employeeReview}
+                    data={employerReview}
                     keyExtractor={(item) => item.rid.toString()}
-                    renderItem={ReviewCard}
-                    contentContainerStyle={{ paddingBottom: 40 }}
+                    renderItem={({ item, index }) => (
+                      <ReviewCard item={item} index={index} length={employerReview.length} />
+                    )}
+                    contentContainerStyle={{ paddingBottom: 100 }}
+                    showsVerticalScrollIndicator={false}
                   />
                 ) : (
                   <View style={styles.nojobs}>
                     <NoReviews />
                   </View>
-                )
-              ) : employerReview.length > 0 ? (
-                <FlatList
-                  data={employerReview}
-                  keyExtractor={(item) => item.rid.toString()}
-                  renderItem={ReviewCard}
-                  contentContainerStyle={{ paddingBottom: 40 }}
-                />
-              ) : (
-                <View style={styles.nojobs}>
-                  <NoReviews />
-                </View>
-              )}
-              
+                )}
               </>
-              
             )
           }
-
         </View>
-        <Footer/>
+        <Footer />
       </SafeAreaView>
     </>
   );
 };
+
 const styles = StyleSheet.create({
-  conatiner: {
+  container: {
     flex: 1,
     backgroundColor: "#222222",
     paddingHorizontal: 15,
   },
-  hedaer: {
+  header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -218,14 +309,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconbox: {
-    backgroundColor: "#FFFF00",
-    paddingVertical: 10,
-    paddingHorizontal: 22,
-    borderRadius: 10,
+    backgroundColor: "#f4c366",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
   },
   ratetext: {
     fontFamily: "Montserrat_500Medium",
-    fontSize: 14,
+    fontSize: 15,
     color: "#ffffff",
   },
   icontext: {
@@ -238,7 +329,7 @@ const styles = StyleSheet.create({
     borderColor: "#c5c5c591",
     borderWidth: 1,
     borderRadius: 12,
-    marginTop: 18,
+    marginTop: 15,
   },
 
   tab: {
@@ -265,16 +356,20 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "#ffff",
     fontFamily: "Montserrat_600SemiBold",
-    fontSize: 16,
+    fontSize: 18,
   },
   buttonbox: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    paddingTop: 20,
+    paddingVertical: 15,
+  },
+  dropdownWrapper: {
+    flex: 1,
+    position: 'relative',
+    zIndex: 10,
   },
   button: {
-    flex: 1,
     paddingVertical: 10,
     borderRadius: 12,
     borderColor: "#ffffff",
@@ -286,19 +381,40 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#ffffff",
     fontSize: 16,
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat_500Medium",
   },
   nojobs: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  card: {
-    backgroundColor: "#2C2C2C",
-    borderRadius: 10,
-    padding: 15,
-    marginTop: 10,
+  dropdownMenu: {
+    position: 'absolute',
+    top: '100%',           // sits just below the button
+    left: 0,
+    right: 0,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    marginTop: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 5,          // Android shadow
+    zIndex: 999,
   },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EAEAEA",
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    color: '#1a1a1a',
+    fontFamily: "Montserrat_500Medium",
+  },
+  card: {},
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -311,39 +427,46 @@ const styles = StyleSheet.create({
   profile: {
     width: 45,
     height: 45,
-    borderRadius: 50,
+    borderRadius: 90,
   },
   name: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Montserrat_600SemiBold",
+  },
+  reviewSubject: {
+    fontSize: 14,
+    fontFamily: "Montserrat_600SemiBold",
+    color: '#F9FAFB',
+    marginTop: 10,
   },
   starRow: {
     flexDirection: "row",
-    marginTop: 2,
   },
   time: {
     color: "#bfbfbf",
     fontSize: 13,
+    fontFamily: "Montserrat_500Medium",
   },
   circle: {
-    width: 52.5,
-    height: 52.5,
+    width: 45,
+    height: 45,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 100,
+    borderRadius: 90,
     borderWidth: 1,
     borderColor: "#fff",
   },
   reviewText: {
     color: "#dcdcdc",
-    marginTop: 10,
+    marginTop: 5,
     fontSize: 14,
     lineHeight: 20,
+    fontFamily: "Montserrat_400Regular",
   },
   readMore: {
     color: "#e57373",
-    fontWeight: "500",
+    fontFamily: "Montserrat_500Medium",
   },
 });
 

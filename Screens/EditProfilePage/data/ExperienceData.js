@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEditProfileStore } from "../useEditProfileStore";
 
-const ExperienceData = () => {
+const ExperienceData = ({ isEdit = true }) => {
     const experiences = useEditProfileStore((state) => state.form.experiences);
     const setField = useEditProfileStore((state) => state.setField);
     const deleteItem = useEditProfileStore((s) => s.deleteItem);
@@ -21,15 +21,15 @@ const ExperienceData = () => {
                     <View style={styles.topRow}>
                         <Text style={styles.title}>{item.title}</Text>
 
-                        <TouchableOpacity
-                            style={styles.deleteBtn}
-                            onPress={() => handleDelete(item, index)}
-                        >
-                            <Ionicons name="trash-outline" size={22} color="#fff" />
-                        </TouchableOpacity>
+                        {isEdit && (
+                            <TouchableOpacity
+                                style={styles.deleteBtn}
+                                onPress={() => handleDelete(item, index)}
+                            >
+                                <Ionicons name="trash-outline" size={22} color="#fff" />
+                            </TouchableOpacity>
+                        )}
                     </View>
-
-                    {/* Description */}
                     <View style={styles.descContainer}>
                         <Text style={styles.description}>
                             {item.description}
@@ -52,10 +52,10 @@ const styles = StyleSheet.create({
 
     item: {
         padding: 10,
-        borderColor: "#fff",
+        borderColor: "#ffffff1a",
         borderWidth: 0.7,
         borderRadius: 5,
-        marginBottom: 16,
+        marginBottom: 10,
     },
 
     topRow: {

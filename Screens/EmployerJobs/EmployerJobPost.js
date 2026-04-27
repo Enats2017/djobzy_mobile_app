@@ -49,7 +49,10 @@ export default function EmployerJobPost() {
           </View>
           <View style={styles.headerRight}>
             {/* onPress={()=>navigation.navigate("ViewBoostJobs")} */}
-            <TouchableOpacity style={styles.viewBoostedJobsBtn} >
+            <TouchableOpacity
+              style={styles.viewBoostedJobsBtn}
+              onPress={() => navigation.navigate("MyBoostedJob")}
+            >
               <Text style={styles.viewBoostedJobsText}>View Boosted Jobs</Text>
             </TouchableOpacity>
           </View>
@@ -160,7 +163,7 @@ const styles = StyleSheet.create({
   },
 
   viewBoostedJobsBtn: {
-    backgroundColor: "#FDBF2D",
+    backgroundColor: "#f4c366",
     paddingVertical: 8,
     paddingHorizontal: 6,
     borderRadius: 5,

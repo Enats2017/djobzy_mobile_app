@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
 
   remoteText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: "Montserrat_600SemiBold",
     color: "#000",
   },
 });

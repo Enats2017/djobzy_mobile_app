@@ -12,33 +12,10 @@ import { useEditProfileStore } from "../useEditProfileStore";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const DeleteCategoryModal = ({ visible, onClose, deleteCategory }) => {
+const DeleteAttachmentModal = ({ visible, onClose, onConfirm }) => {
     const insets = useSafeAreaInsets();
     const [loading, setLoading] = useState(false);
-    // console.log('delete category    ', deleteCategory);
-
-    const handleDelete = async () => {
-        if (!deleteCategory) return;
-
-        const { category, deletedCategories = [] } = useEditProfileStore.getState().form;
-
-        const updatedCategories = category.filter(
-            (cat) => cat.id !== deleteCategory.id
-        );
-
-        const isPersisted = !!deleteCategory.id;
-        const updatedDeleted = isPersisted && !deletedCategories.includes(deleteCategory.id)
-            ? [...deletedCategories, deleteCategory.id]
-            : deletedCategories;
-
-        useEditProfileStore.getState().setAllData({
-            category: updatedCategories,
-            deletedCategories: updatedDeleted,
-        });
-
-        console.log(deletedCategories)
-        onClose();
-    };
+    // console.log('delete promote    ', deletePromoteService);
 
     return (
         <Modal
@@ -53,7 +30,6 @@ const DeleteCategoryModal = ({ visible, onClose, deleteCategory }) => {
                         style={styles.modalCloseIcon}
                         onPress={() => {
                             onClose();
-                            // setSelectedCategory(null);
                         }}
                     >
                         <Ionicons name="close" size={22} color="#000" />
@@ -63,10 +39,9 @@ const DeleteCategoryModal = ({ visible, onClose, deleteCategory }) => {
                         style={{ width: 70, height: 70, marginBottom: 10 }}
                         resizeMode="contain"
                     />
-                    <Text style={styles.deleteTitle}>Delete Category</Text>
+                    <Text style={styles.deleteTitle}>Delete attachment?</Text>
                     <Text style={styles.deleteMsg}>
-                        Do you want to delete the category:{" "}
-                        <Text style={{ fontWeight: "700" }}>{deleteCategory?.subname}</Text>?
+                        Are you sure you want to delete this attachment?
                     </Text>
                     <View style={styles.deleteBtns}>
                         <TouchableOpacity
@@ -79,9 +54,8 @@ const DeleteCategoryModal = ({ visible, onClose, deleteCategory }) => {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            //onPress={deleteCategoryApi}
                             style={styles.deleteBtn}
-                            onPress={handleDelete}
+                            onPress={onConfirm}
                             disabled={loading}
                         >
                             <Text style={styles.deletetext}>Yes, Delete</Text>
@@ -93,7 +67,7 @@ const DeleteCategoryModal = ({ visible, onClose, deleteCategory }) => {
     );
 };
 
-export default DeleteCategoryModal;
+export default DeleteAttachmentModal;
 
 const styles = StyleSheet.create({
     deleteOverlay: {
@@ -122,6 +96,9 @@ const styles = StyleSheet.create({
 
     deleteTitle: {
         fontSize: 22, fontFamily: "Montserrat_700Bold", marginBottom: 7,
+    },
+    deleteSubject: {
+        fontSize: 15, fontFamily: "Montserrat_700Bold",
     },
     deleteMsg: {
         fontSize: 15, marginBottom: 15, textAlign: "center", color: "#444", fontFamily: "Montserrat_500Medium",

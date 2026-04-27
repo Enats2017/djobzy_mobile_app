@@ -56,215 +56,219 @@ export default function CompletedJobPaymentPage() {
     fetchPayemnt();
   }, []);
 
-  if (loading) return <Loading />;
-
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <PageNameHeaderBar navigation={navigation} title="Payment Details" />
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 90 }}>
-          <View style={styles.topCard}>
-            <View style={styles.topRow}>
-              <View style={styles.topBox}>
-                <Text style={styles.topLabel}>Total Price</Text>
-                <Text style={styles.topValue}>
-                  {gigs.bid_price}
-                  <Text style={styles.unit}> CAD</Text>
-                </Text>
-              </View>
-              <View style={styles.vertDivider} />
-              <View style={styles.topBox}>
-                <Text style={styles.topLabel}>Hourly Rate</Text>
-                <Text style={styles.topValue}>
-                  {gigs.prop_hourly_rate}
-                  <Text style={styles.unit}> CAD</Text>
-                </Text>
-              </View>
-              <View style={styles.vertDivider} />
-              <View style={styles.topBox}>
-                <Text style={styles.topLabel}>Project Length</Text>
-                <Text style={styles.topValue}>
-                  {gigs.expected_hour}
-                  <Text style={styles.unit}> hours</Text>
-                </Text>
-              </View>
-            </View>
-            <View style={styles.dividerLine} />
-            <View style={styles.topMetaRow}>
-              <View style={styles.metaItemRowLeft}>
-                <Text style={styles.metaLabel}>Start Date:</Text>
-                <Text style={styles.metaValue}>{gigs.payment_date}</Text>
-              </View>
-              <View style={styles.metaItemRowRight}>
-                <Text style={styles.metaLabel}>Contract ID:</Text>
-                <Text style={styles.metaValue}>{gigs.gid}</Text>
-              </View>
-            </View>
-            <View style={styles.messagesRow}>
-              <View style={styles.newMsgBox}>
-                <Text style={styles.metaLabel}>New Messages</Text>
-                <Text style={styles.metaValue}>0</Text>
-              </View>
-              <TouchableOpacity style={styles.messagesBtn}>
-                <Text style={styles.messagesBtnText}>Messages</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.userCard}>
-            <Image
-              source={{
-                uri: user.photo,
-              }}
-              style={styles.avatar}
-            />
-            <View style={styles.userInfo}>
-              <View style={styles.nameStarsWrapper}>
-                <Text
-                  style={styles.userName}
-                  numberOfLines={2}
-                  ellipsizeMode="tail"
-                >
-                  {user.full_name}
-                </Text>
-                <View style={styles.starsInline}>
-                  {[...Array(5)].map((_, i) => (
-                    <FontAwesome
-                      key={i}
-                      name="star"
-                      size={13}
-                      color="#EBBE56"
-                      style={{ marginLeft: 2 }}
-                    />
-                  ))}
-                </View>
-              </View>
-
-              <View style={styles.verifLevelRow}>
-                <MaterialIcons
-                  name="verified"
-                  size={16}
-                  color="#c3c3c3"
-                  style={{ marginRight: 6 }}
-                />
-                <Text style={styles.verification}>
-                  Verification Level: {user.verification_count}/7
-                </Text>
-              </View>
-
-              <View style={styles.locationRow}>
-                <FontAwesome5
-                  name="map-marker-alt"
-                  size={13}
-                  color="#c3c3c3"
-                  style={{ marginRight: 2 }}
-                />
-                <Text style={styles.location}>{user.address}</Text>
-              </View>
-            </View>
-          </View>
-
-          <Text style={styles.payForTitle}>Payment For</Text>
-          <Text style={styles.payForJob}>{gigs.subject}</Text>
-          {data &&
-            data.orders.map((val, index) => (
-              <View style={styles.tableCard} key={index}>
-                <View style={styles.tableRow}>
-                  <View style={styles.tableLeftCell}>
-                    <Text style={styles.tableLabel}>Date</Text>
+        {
+          loading ? (
+            <Loading />
+          ) : (
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 90 }}>
+              <View style={styles.topCard}>
+                <View style={styles.topRow}>
+                  <View style={styles.topBox}>
+                    <Text style={styles.topLabel}>Total Price</Text>
+                    <Text style={styles.topValue}>
+                      {gigs.bid_price}
+                      <Text style={styles.unit}> CAD</Text>
+                    </Text>
                   </View>
-
-                  <View style={styles.dividerVert} />
-
-                  <View style={styles.tableRightCell}>
-                    <Text style={styles.tableValue}>{val.payment_date}</Text>
+                  <View style={styles.vertDivider} />
+                  <View style={styles.topBox}>
+                    <Text style={styles.topLabel}>Hourly Rate</Text>
+                    <Text style={styles.topValue}>
+                      {gigs.prop_hourly_rate}
+                      <Text style={styles.unit}> CAD</Text>
+                    </Text>
+                  </View>
+                  <View style={styles.vertDivider} />
+                  <View style={styles.topBox}>
+                    <Text style={styles.topLabel}>Project Length</Text>
+                    <Text style={styles.topValue}>
+                      {gigs.expected_hour}
+                      <Text style={styles.unit}> hours</Text>
+                    </Text>
                   </View>
                 </View>
-
-                <View style={styles.dividerHoriz} />
-
-                <View style={styles.tableRow}>
-                  <View style={styles.tableLeftCell}>
-                    <Text style={styles.tableLabel}>Payment Type</Text>
+                <View style={styles.dividerLine} />
+                <View style={styles.topMetaRow}>
+                  <View style={styles.metaItemRowLeft}>
+                    <Text style={styles.metaLabel}>Start Date:</Text>
+                    <Text style={styles.metaValue}>{gigs.payment_date}</Text>
                   </View>
-                  <View style={styles.dividerVert} />
-                  <View style={styles.tableRightCell}>
-                    <View>
-                      {
-                        data.authUser?.id == data.gigProp?.prop_user_id ? (
-                          <Text style={styles.tableValue}>Expenses</Text>
-                        ) : (
-                          <Text style={styles.tableValue}>Income</Text>
-                        )
-                      }
+                  <View style={styles.metaItemRowRight}>
+                    <Text style={styles.metaLabel}>Contract ID:</Text>
+                    <Text style={styles.metaValue}>{gigs.gid}</Text>
+                  </View>
+                </View>
+                <View style={styles.messagesRow}>
+                  <View style={styles.newMsgBox}>
+                    <Text style={styles.metaLabel}>New Messages</Text>
+                    <Text style={styles.metaValue}>0</Text>
+                  </View>
+                  <TouchableOpacity style={styles.messagesBtn}>
+                    <Text style={styles.messagesBtnText}>Messages</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <View style={styles.userCard}>
+                <Image
+                  source={{
+                    uri: user.photo,
+                  }}
+                  style={styles.avatar}
+                />
+                <View style={styles.userInfo}>
+                  <View style={styles.nameStarsWrapper}>
+                    <Text
+                      style={styles.userName}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      {user.full_name}
+                    </Text>
+                    <View style={styles.starsInline}>
+                      {[...Array(5)].map((_, i) => (
+                        <FontAwesome
+                          key={i}
+                          name="star"
+                          size={13}
+                          color="#EBBE56"
+                          style={{ marginLeft: 2 }}
+                        />
+                      ))}
                     </View>
                   </View>
-                </View>
 
-                <View style={styles.dividerHoriz} />
-
-                <View style={styles.tableRow}>
-                  <View style={styles.tableLeftCell}>
-                    <Text style={styles.tableLabel}>Payment Status</Text>
-                  </View>
-                  <View style={styles.dividerVert} />
-                  <View style={styles.tableRightCell}>
-                    {
-                      val.status && val.status == 1 ? (
-                        <Text style={styles.tableValue}>Completed</Text>
-                      ) : (
-                        <Text style={styles.tableValue}>Pending</Text>
-                      )
-                    }
-                  </View>
-                </View>
-
-                <View style={styles.dividerHoriz} />
-
-                <View style={styles.tableRow}>
-                  <View style={styles.tableLeftCell}>
-                    <Text style={styles.tableLabel}>Payment Method</Text>
-                  </View>
-                  <View style={styles.dividerVert} />
-                  <View style={styles.tableRightCell}>
-                    <Text style={styles.tableValue}>{val.ptype}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.dividerHoriz} />
-
-                <View style={styles.tableRow}>
-                  <View style={styles.tableLeftCell}>
-                    <Text style={styles.tableLabel}>Price</Text>
-                  </View>
-                  <View style={styles.dividerVert} />
-                  <View style={styles.tableRightCell}>
-                    <Text style={styles.tableValue}>
-                      CAD {val.amount}
+                  <View style={styles.verifLevelRow}>
+                    <MaterialIcons
+                      name="verified"
+                      size={16}
+                      color="#c3c3c3"
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={styles.verification}>
+                      Verification Level: {user.verification_count}/7
                     </Text>
                   </View>
-                </View>
 
-                <View style={styles.dividerHoriz} />
-
-                <View style={styles.tableRow}>
-                  <View style={styles.tableLeftCell}>
-                    <Text style={styles.tableLabel}>Reference ID</Text>
-                  </View>
-                  <View style={styles.dividerVert} />
-                  <View style={styles.tableRightCell}>
-                    <Text style={styles.tableValue}>
-                      {val.ref}
-                    </Text>
+                  <View style={styles.locationRow}>
+                    <FontAwesome5
+                      name="map-marker-alt"
+                      size={13}
+                      color="#c3c3c3"
+                      style={{ marginRight: 2 }}
+                    />
+                    <Text style={styles.location}>{user.address}</Text>
                   </View>
                 </View>
               </View>
-            ))
-          }
 
-          <View style={styles.footer}>
-            <GradientButton title="Withdraw Money" />
-          </View>
-        </ScrollView>
+              <Text style={styles.payForTitle}>Payment For</Text>
+              <Text style={styles.payForJob}>{gigs.subject}</Text>
+              {data &&
+                data.orders.map((val, index) => (
+                  <View style={styles.tableCard} key={index}>
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Date</Text>
+                      </View>
+
+                      <View style={styles.dividerVert} />
+
+                      <View style={styles.tableRightCell}>
+                        <Text style={styles.tableValue}>{val.payment_date}</Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.dividerHoriz} />
+
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Payment Type</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <View>
+                          {
+                            data.authUser?.id == data.gigProp?.prop_user_id ? (
+                              <Text style={styles.tableValue}>Expenses</Text>
+                            ) : (
+                              <Text style={styles.tableValue}>Income</Text>
+                            )
+                          }
+                        </View>
+                      </View>
+                    </View>
+
+                    <View style={styles.dividerHoriz} />
+
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Payment Status</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        {
+                          val.status && val.status == 1 ? (
+                            <Text style={styles.tableValue}>Completed</Text>
+                          ) : (
+                            <Text style={styles.tableValue}>Pending</Text>
+                          )
+                        }
+                      </View>
+                    </View>
+
+                    <View style={styles.dividerHoriz} />
+
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Payment Method</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <Text style={styles.tableValue}>{val.ptype}</Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.dividerHoriz} />
+
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Price</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <Text style={styles.tableValue}>
+                          CAD {val.amount}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.dividerHoriz} />
+
+                    <View style={styles.tableRow}>
+                      <View style={styles.tableLeftCell}>
+                        <Text style={styles.tableLabel}>Reference ID</Text>
+                      </View>
+                      <View style={styles.dividerVert} />
+                      <View style={styles.tableRightCell}>
+                        <Text style={styles.tableValue}>
+                          {val.ref}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ))
+              }
+
+              <View style={styles.footer}>
+                <GradientButton title="Withdraw Money" />
+              </View>
+            </ScrollView>
+          )
+        }
       </View>
       <Footer />
     </SafeAreaView>

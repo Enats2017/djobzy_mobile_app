@@ -39,61 +39,32 @@ import QuestionMark from "../../components/QuestionMark";
 import EditProfileSeeAllInformation from "../EditProfilePage/EditProfileSeeAllInformation";
 import { useEditProfileStore } from "../EditProfilePage/useEditProfileStore";
 import SocialMediaLinks from "../../components/SocialMediaLinks";
+import ProfileHeader from "../ProfileComponents/ProfileHeader";
+import Delete_Category from "../../components/Delete_Category";
+import JobPostList from "./JobPostList";
+import CurrentJobPostList from "./CurrentJobPostList";
+import EmptyState from "../../components/EmptyState";
+import ContractReviewCard from "../ProfileComponents/ContractReviewCard";
+import AttachmentSection from "../ProfileComponents/AttachmentSection";
 
 const EmployerAccount = () => {
   const setAllData = useEditProfileStore((state) => state.setAllData);
   const navigation = useNavigation();
-  const route = useRoute();
-  const { name } = route.params || [];
-  // const employeeLink = `${API_ICON}/employee-profile/${name}`;
-  // const employerLink = `${API_ICON}/employer-profile/${name}`;
   const [employeeLink, setEmployeeLink] = useState("");
   const [employerLink, setEmployerLink] = useState("");
-  const [copyModel, setCopyModel] = useState(false);
-  const [copyText, setCopyText] = useState("");
-  const [downloadModal, setDownloadModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("employer");
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [subcategory, setSubcategory] = useState([]);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [user, setUser] = useState([]);
   const [job, setJob] = useState([]);
-  const [Current, setCurrent] = useState([]);
-  const [profile, setProfile] = useState([]);
+  const [current, setCurrent] = useState([]);
+  const [completeReview, setCompleteReview] = useState([]);
   const [socialLinks, setSocialLinks] = useState([]);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [selectedName, setSelectedName] = useState("");
 
-  const insets = useSafeAreaInsets();
-
-  const handleCopy = async (text) => {
-    try {
-      await Clipboard.setStringAsync(text);
-      if (Platform.OS === "android") {
-        ToastAndroid.show("Copied to clipboard!", ToastAndroid.SHORT);
-      } else {
-        Alert.alert("Copied!", "Link copied to clipboard.");
-      }
-    } catch (error) {
-      console.log("Clipboard Error:", error);
-      alert("Copy failed");
-    }
-  };
-  const removeCategory = (id) => {
-    setSubcategory((prev) => prev.filter((c) => c.subid !== id));
-  };
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message: `Hey! Use my referral code:`,
-      });
-    } catch (error) {
-      if (Platform.OS === "android") {
-        ToastAndroid.show("Unable to share referral code.", ToastAndroid.SHORT);
-      } else {
-        Alert.alert("Error", "Unable to share referral code.");
-      }
-    }
-  };
   const fetchEmployer = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -106,13 +77,12 @@ const EmployerAccount = () => {
       const data = await response.json();
       setEmployeeLink(data.employee_link);
       setEmployerLink(data.employer_link);
-      setCopyText(data.employer_link);
       setUser(data.editprofile);
       setJob(data.myJobPosts);
-      setProfile(data);
       setSubcategory(data.subcategory);
       setCurrent(data.creview);
       setSocialLinks(data.socialLinks);
+      setCompleteReview(data.complete_review);
       const user = data.editprofile || {};
       setAllData({
         userAdmin: user.admin || 0,
@@ -128,6 +98,7 @@ const EmployerAccount = () => {
         licenses: data.licence || [],
         certificates: data.certificate || [],
         experiences: data.experiences || [],
+        attachments: data.user_attachments || [],
         dob: user.dob || "",
         years: data.years || 0,
         ageShowStatus: user.age_show_status || 0,
@@ -144,6 +115,49 @@ const EmployerAccount = () => {
   useEffect(() => {
     fetchEmployer();
   }, []);
+
+  const handleOpenDelete = (id, name) => {
+    setSelectedId(id);
+    setSelectedName(name);
+    setDeleteModalVisible(true);
+  };
+
+  const handleCloseDelete = () => {
+    setSelectedId(null);
+    setDeleteModalVisible(false);
+  };
+  const handleDeleted = (deletedId) => {
+    setSubcategory((prev) => prev.filter((item) => item.subid !== deletedId));
+    fetchEmployer();
+    handleCloseDelete();
+  };
+
+  const handleCopy = async (text) => {
+    try {
+      await Clipboard.setStringAsync(text);
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Copied to clipboard!", ToastAndroid.SHORT);
+      } else {
+        Alert.alert("Copied!", "Link copied to clipboard.");
+      }
+    } catch (error) {
+      console.log("Clipboard Error:", error);
+      alert("Copy failed");
+    }
+  };
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Hey! Use my referral code: ${employerLink}`,
+      });
+    } catch (error) {
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Unable to share referral code.", ToastAndroid.SHORT);
+      } else {
+        Alert.alert("Error", "Unable to share referral code.");
+      }
+    }
+  };
 
   const displayedCategories = showAllCategories
     ? subcategory
@@ -164,134 +178,24 @@ const EmployerAccount = () => {
               contentContainerStyle={{ paddingBottom: 100 }}
             >
               <View style={styles.profileCard}>
-                <View style={styles.profileinfo}>
-                  <View style={styles.profileRow}>
-                    <Image
-                      source={{
-                        uri:
-                          user.photo ||
-                          "https://randomuser.me/api/portraits/women/44.jpg",
-                      }}
-                      style={styles.avatar}
-                    />
-                    <View style={styles.profileInfoRow}>
-                      <View style={styles.userNameSection}>
-                        <Text
-                          style={styles.name}
-                          numberOfLines={2}
-                          ellipsizeMode="tail"
-                        >
-                          {user?.full_name}
-                        </Text>
-                      </View>
-                      {
-                        profile?.timezone && (
-                          <View style={styles.iconbox}>
-                            <Octicons name="clock-fill" size={12} color="#c3c3c3c3" />
-                            <Text style={styles.infoText}>{profile?.timezone?.user_timezone}</Text>
-                          </View>
-                        )
-                      }
-                      <View style={styles.iconbox}>
-                        <MaterialIcons
-                          name="verified"
-                          size={14}
-                          color="#c3c3c3c3"
-                        />
-                        <Text style={styles.infoText}>
-                          Verification Level: {user?.verification_count}/7
-                        </Text>
-                      </View>
-                      <View style={styles.iconbox}>
-                        <Entypo
-                          name="location-pin"
-                          size={14}
-                          color="#c3c3c3c3"
-                        />
-                        <Text style={styles.infoText}>{user.address}</Text>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-                <LineDivider />
-                <View style={styles.iconRow}>
-                  <TouchableOpacity
-                    style={styles.iconBtn}
-                    onPress={() => setCopyModel(true)}
-                  >
-                    <Ionicons name="copy" size={20} color="#ffffff" />
-                    <Text style={styles.iconText}>Copy</Text>
-                  </TouchableOpacity>
+                <ProfileHeader
+                  navigation={navigation}
+                  socialLinks={socialLinks}
+                  employeeLink={employeeLink}
+                  employerLink={employerLink}
+                  onCopy={handleCopy}
+                  onShare={handleShare}
+                  initialActive="employer"
+                />
 
-                  <TouchableOpacity
-                    style={styles.iconBtn}
-                    onPress={handleShare}
-                  >
-                    <FontAwesome
-                      name="share-square-o"
-                      size={20}
-                      color="#ffffff"
-                    />
-                    <Text style={styles.iconText}>Share</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.iconBtn}
-                    onPress={() => setDownloadModal(true)}
-                  >
-                    <MaterialIcons name="download" size={20} color="#ffffff" />
-                    <Text style={styles.iconText}>Download</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.iconBtn}
-                    onPress={() => navigation.navigate("ProfileEditPage")}
-                  >
-                    <Feather name="edit-3" size={20} color="#fff" />
-                    <Text style={styles.iconText}>Edit</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <ScrollView
-                  horizontal={true}
-                  showsHorizontalScrollIndicator={false}
-                >
-                  <View style={styles.statsRow}>
-                    <View style={styles.statBox}>
-                      <Text style={styles.statValue}>{profile?.count}</Text>
-                      <Text style={styles.statLabel}>Number of Jobs</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                      <Text style={styles.statValue}>{profile?.earned}</Text>
-                      <Text style={styles.statLabel}>Money Spent</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                      <Text style={styles.statValue}>
-                        {profile?.followedUsers?.length}
-                      </Text>
-                      <Text style={styles.statLabel}>My Followers</Text>
-                    </View>
-                  </View>
-                </ScrollView>
-
-                <SocialMediaLinks socialLinks={socialLinks} />
                 <EditProfileSeeAllInformation navigation={navigation} isEdit={false} />
               </View>
               <View style={styles.infoBox}>
-                <QuestionMark title="Profile Title" iconColor="#fff"  tooltipMessage="Update your personal details here."/>
+                <QuestionMark title="Profile Title" iconColor="#fff" tooltipMessage="Update your personal details here." />
                 <Text style={styles.infoText2}>
                   {user.profile_title_employer}
                 </Text>
 
-                {/* <View style={styles.iconbox}>
-                  <Text style={styles.infoTitle}>About Me</Text>
-                  <FontAwesome
-                    name="question-circle"
-                    size={16}
-                    color="#ffffff"
-                    style={{ marginLeft: 5 }}
-                  />
-                </View> */}
                 <QuestionMark title="About Me" iconColor="#fff" />
                 <Text style={styles.infoText2}>{user.employer_about}</Text>
               </View>
@@ -311,7 +215,10 @@ const EmployerAccount = () => {
                     <Text style={styles.categoryText}>{item.subname}</Text>
 
                     <TouchableOpacity
-                      onPress={() => removeCategory(item.subid)}
+                      // onPress={() => removeCategory(item.subid)}
+                      onPress={() =>
+                        handleOpenDelete(item.subid, item.subname)
+                      }
                     >
                       <Ionicons
                         name="close"
@@ -340,253 +247,44 @@ const EmployerAccount = () => {
                   </TouchableOpacity>
                 )}
               </View>
-              <Text style={styles.infoTitle}> MyJobPosts</Text>
-              {job?.data?.map((item, index) => (
-                <View key={index} style={styles.card}>
-                  <Text style={styles.heading}>{item.subject}</Text>
-                  <Text style={styles.desc}>{item.description}</Text>
-                  <Text style={styles.row}>
-                    <Text style={styles.label}>Total Price:</Text> CAD{" "}
-                    {item.fixed_minimum}
-                    {"   "}
-                    <Text style={styles.label}>Hourly Rate:</Text> CAD{" "}
-                    {item.hour_minimum}
-                  </Text>
-                  <Text style={styles.row}>
-                    <Text style={styles.label}>Project Length:</Text>{" "}
-                    {item.expected_hour}
-                  </Text>
-                  <LineDivider />
-                  <View style={styles.gridentbtn}>
-                    <Text style={styles.row}>Proposals: {item.proposal}</Text>
-                    <GradientButton
-                      title="View"
-                      paddingVertical={6}
-                      paddingHorizontal={22}
-                      marginTop={0}
-                      onPress={() =>
-                        navigation.navigate("PostJobDetails", {
-                          jobId: item.request_slug,
-                        })
-                      }
-                    />
-                  </View>
-                </View>
-              ))}
 
-              <View style={styles.dotssection}>
-                <Text style={styles.infoTitle}>Attachments</Text>
-                <Text style={styles.dots}>.........</Text>
-                <Text style={styles.infoTitle}>Current Contracts</Text>
-                {Current?.data?.length > 0 ? (
-                  Current.data.map((item, index) => (
-                    <View key={index} style={styles.card}>
-                      <Text style={styles.heading}>{item.subject}</Text>
-                      <Text style={styles.desc}>{item.description}</Text>
+              <AttachmentSection />
 
-                      <Text style={styles.row}>
-                        <Text style={styles.label}>Total Price:</Text> CAD{" "}
-                        {item.fixed_minimum}
-                        {"   "}
-                        <Text style={styles.label}>Hourly Rate:</Text> CAD{" "}
-                        {item.hour_minimum}
-                      </Text>
+              <JobPostList
+                jobData={job?.data}
+                navigation={navigation}
+              />
 
-                      <Text style={styles.row}>
-                        <Text style={styles.label}>Project Length:</Text>{" "}
-                        {item.expected_hour}
-                      </Text>
+              <CurrentJobPostList
+                currentJobData={current?.data}
+                navigation={navigation}
+                label="Current Contracts"
+                admin={2}
+              />
 
-                      <LineDivider />
+              <View style={styles.attachmentRow}>
+                <Text style={styles.label}>Contract History And Reviews</Text>
+                <ContractReviewCard reviews={completeReview?.data} />
+              </View>
 
-                      <View style={styles.gridentbtn}>
-                        <Text style={styles.row}>
-                          Proposals: {item.proposal}
-                        </Text>
-                        <GradientButton
-                          title="View"
-                          paddingVertical={6}
-                          paddingHorizontal={22}
-                          onPress={() =>
-                            navigation.navigate("ViewCurrentJobPost", {
-                              gid: item.request_slug,
-                            })
-                          }
-                        />
-                      </View>
-                    </View>
-                  ))
-                ) : (
-                  <Text style={styles.dots}>.........</Text>
-                )}
+              <View style={styles.postcard}>
+                <Text style={styles.postText}>What needs to be done?</Text>
+                <Text style={styles.subtitle}>
+                  It takes about 2 minutes to post a new job
+                </Text>
 
-                <Text style={styles.infoTitle}>Contract History And Reviews</Text>
-                <Text style={styles.dots}>.........</Text>
-                <Text style={styles.infoTitle}>Other Experience</Text>
-                <Text style={styles.dots}>.........</Text>
-
-                <View style={styles.postcard}>
-                  <Text style={styles.postText}>What needs to be done?</Text>
-                  <Text style={styles.subtitle}>
-                    It takes about 2 minutes to post a new job
-                  </Text>
-
-                  <GradientButton
-                    colors={["#000", "#000"]}
-                    onPress={()=>navigation.navigate("CreateJob")}
-                    title="Post a New Job"
-                    paddingHorizontal={26}
-                    textColor="#fff"
-                  />
-                </View>
+                <GradientButton
+                  colors={["#000", "#000"]}
+                  onPress={() => navigation.navigate("CreateJob")}
+                  title="Post a New Job"
+                  paddingHorizontal={26}
+                  textColor="#fff"
+                />
               </View>
             </ScrollView>
           )}
         </View>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={copyModel}
-          onRequestClose={() => setCopyModel(false)}
-        >
-          <View style={[styles.modalOverlay]}>
-            <View
-              style={[styles.modalContainer, { paddingBottom: insets.bottom }]}
-            >
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Copy Link</Text>
-                <TouchableOpacity onPress={() => setCopyModel(false)}>
-                  <Ionicons name="close" size={26} color="#303030" />
-                </TouchableOpacity>
-              </View>
 
-              <Text style={styles.modalSubTitle}>
-                Here you can copy a link to any of your profiles.
-              </Text>
-
-              <View style={styles.tabContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.tab,
-                    activeTab === "employee" && styles.activeTabEmployee,
-                  ]}
-                  onPress={() => {
-                    setActiveTab("employee");
-                    setCopyText(employeeLink);
-                  }}
-                >
-                  <Text
-                    style={
-                      activeTab === "employee"
-                        ? styles.activeTabTextEmployee
-                        : styles.tabText
-                    }
-                  >
-                    Employee’s Profile
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.tab,
-                    activeTab === "employer" && styles.activeTabEmployer,
-                  ]}
-                  onPress={() => {
-                    setActiveTab("employer");
-                    setCopyText(employerLink);
-                  }}
-                >
-                  <Text
-                    style={
-                      activeTab === "employer"
-                        ? styles.activeTabTextEmployer
-                        : styles.tabText
-                    }
-                  >
-                    Employer’s Profile
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              {activeTab === "employee" ? (
-                <View style={styles.inputRow}>
-                  <View style={styles.textWrap}>
-                    <Text
-                      style={styles.linkText}
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
-                    >
-                      {copyText}
-                    </Text>
-                  </View>
-                  <TouchableOpacity style={styles.copyBtn} onPress={() => handleCopy(employeeLink)}>
-                    <Ionicons
-                      name="copy-outline"
-                      size={18}
-                      color="#fff"
-                      style={{ marginLeft: 4 }}
-                    />
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View style={styles.inputRow}>
-                  <View style={styles.textWrap}>
-                    <Text
-                      style={styles.linkText}
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
-                    >
-                      {copyText}
-                    </Text>
-                  </View>
-                  <TouchableOpacity style={styles.copyBtn} onPress={() => handleCopy(employerLink)}>
-                    <Ionicons
-                      name="copy-outline"
-                      size={18}
-                      color="#fff"
-                      style={{ marginLeft: 4 }}
-                    />
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={downloadModal}
-          onRequestClose={() => setDownloadModal(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View
-              style={[styles.modalContainer, { paddingBottom: insets.bottom }]}
-            >
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Download PDF</Text>
-                <TouchableOpacity onPress={() => setDownloadModal(false)}>
-                  <Ionicons name="close" size={26} color="#303030" />
-                </TouchableOpacity>
-              </View>
-
-              <Text style={styles.modalSubTitle}>
-                Please download a live PDF-version of your Profile where you can
-                present your great work experience along with the reviews,
-                verifications and all the other unique aspects of your service.
-                You can use this PDF for an interview or as a certificate which
-                proves your qualification.
-              </Text>
-              <View style={styles.button}>
-                <GradientButton title="Download Colored Print" />
-                <BorderButton
-                  borderColor="#000"
-                  color="#000"
-                  fontSize={19}
-                  title="Download Black & White Print"
-                />
-              </View>
-            </View>
-          </View>
-        </Modal>
         <CategoryModel
           visible={modalVisible}
           type={1}
@@ -595,6 +293,13 @@ const EmployerAccount = () => {
             setModalVisible(false);
             fetchEmployer();
           }}
+        />
+        <Delete_Category
+          visible={deleteModalVisible}
+          id={selectedId}
+          onClose={handleCloseDelete}
+          onDeleted={handleDeleted}
+          name={selectedName}
         />
         <EmployerFooter />
       </SafeAreaView>
@@ -613,92 +318,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 15,
   },
-  profileinfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  profileRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    gap: 9,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderWidth: 1.5,
-    borderColor: "#c3c3c3",
-    borderRadius: 60,
-  },
-  userNameSection: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    gap: 2,
-  },
-  name: {
-    color: "#fff",
-    fontSize: 16,
-    flexShrink: 1,
-    fontFamily: "Montserrat_500Medium",
-    marginBottom: 5,
-  },
-  iconbox: {
-    flexDirection: "row",
-    gap: 6,
-    alignItems: "baseline",
-    paddingVertical: 2,
-    flexWrap: "wrap",
-  },
-  infoText: {
-    color: "#c3c3c3c3",
-    fontSize: 16,
-    width: "78%",
-    fontFamily: "Montserrat_400Regular",
-  },
-  iconRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-  },
-  iconBtn: {
-    alignItems: "center",
-  },
-  iconText: {
-    color: "#fff",
-    fontSize: 14,
-    fontFamily: "Montserrat_500Medium",
-    marginTop: 5,
-  },
-  statsRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 18,
-  },
-  sectionLabel: {
-    color: "#ffffff",
-    fontSize: 16,
-    marginBottom: 6,
-    fontFamily: "Montserrat_700Bold",
-  },
-  statBox: {
-    backgroundColor: "#C97863",
-    paddingVertical: 16,
-    paddingHorizontal: 25,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  statValue: {
-    color: "#fff",
-    fontSize: 22,
-    fontFamily: "Montserrat_700Bold",
-  },
-  statLabel: {
-    color: "#fff",
-    fontSize: 14,
-    fontFamily: "Montserrat_500Medium",
-    marginTop: 2,
-  },
+
   infoBox: {
     paddingTop: 12,
     padding: 6,
@@ -716,72 +336,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 15,
   },
-  card: {
-    borderWidth: 1,
-    borderColor: "#ffffff1a",
-    borderRadius: 7,
-    padding: 13,
-    marginTop: 12,
-    marginBottom: 12,
-  },
-  heading: {
-    fontFamily: "Montserrat_600SemiBold",
-    fontSize: 16,
-    color: "#fff",
-    marginBottom: 6,
-  },
-  desc: {
-    fontFamily: "Montserrat_400Regular",
-    fontSize: 13,
-    color: "#bfbfbf",
-    marginBottom: 10,
-    lineHeight: 18,
-  },
-  row: {
-    fontFamily: "Montserrat_400Regular",
-    fontSize: 14,
-    color: "#fff",
-    marginBottom: 6,
-  },
-  label: {
-    fontFamily: "Montserrat_500Medium",
-    color: "#fff",
-  },
-  gridentbtn: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    justifyContent: "space-between",
-  },
-  dots: {
-    color: "#ffffff",
-    fontFamily: "Montserrat_500Medium",
-    fontSize: 14,
-    marginBottom: 12,
-  },
-  pillsWrapper: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "flex-start",
-    gap: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-  },
-
-  addBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffff",
-    paddingVertical: 5,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    marginRight: 10,
-    marginBottom: 8,
-  },
-  addText: {
-    color: "#000",
-    marginLeft: 4,
-    fontSize: 14,
-  },
   categoryPill: {
     flexDirection: "row",
     alignItems: "center",
@@ -795,116 +349,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontFamily: "Montserrat_400Regular",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "flex-end",
-  },
-  modalContainer: {
-    backgroundColor: "#fff",
-    width: "100%",
-    paddingVertical: 25,
-    paddingHorizontal: 15,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  modalTitle: {
-    fontFamily: "Montserrat_600SemiBold",
-    fontSize: 18,
-    color: "#303030",
-  },
-  modalSubTitle: {
-    fontSize: 14,
-    color: "#303030",
-    marginBottom: 18,
-    fontFamily: "Montserrat_400Regular",
-  },
-  tabContainer: {
-    flexDirection: "row",
-    borderColor: "#c5c5c591",
-    borderWidth: 1,
-    borderRadius: 12,
-    marginBottom: 15,
-  },
-
-  tab: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 14,
-  },
-  tabText: {
-    color: "#c3c3c3",
-    fontSize: 16,
-    fontFamily: "Montserrat_500Medium",
-  },
-
-  activeTabEmployee: {
-    backgroundColor: "#46A282",
-    padding: 10,
-    outlineColor: "#46A282",
-    outlineWidth: 1,
-    borderRadius: 10,
-  },
-  activeTabEmployer: {
-    backgroundColor: "#FABB05",
-    padding: 10,
-    outlineColor: "#FABB05",
-    outlineWidth: 1,
-    borderRadius: 10,
-  },
-
-  activeTabTextEmployee: {
-    color: "#ffff",
-    fontFamily: "Montserrat_600SemiBold",
-    fontSize: 16,
-  },
-  activeTabTextEmployer: {
-    color: "#303030",
-    fontFamily: "Montserrat_600SemiBold",
-    fontSize: 16,
-  },
-  inputRow: {
-    backgroundColor: "#EFEFEF",
-    borderColor: "#000000",
-    borderWidth: 1,
-    borderRadius: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  textWrap: {
-    flex: 1,
-  },
-  linkText: {
-    paddingHorizontal: 5,
-    color: "#000",
-    fontSize: 15,
-    fontFamily: "Montserrat_500Medium",
-    paddingHorizontal: 10,
-  },
-  copyBtn: {
-    backgroundColor: "#CC6D5D",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    outlineColor: "#CC6D5D",
-    outlineWidth: 1.3,
-    alignItems: "center",
-  },
-  copyText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "500",
   },
   pillsWrapper: {
     flexDirection: "row",
@@ -947,37 +391,42 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   postcard: {
-    backgroundColor: "#FABB05", // exact yellow tone
+    backgroundColor: "#FABB05",
     borderRadius: 14,
     paddingVertical: 18,
-     marginTop:10,
+    marginTop: 10,
     alignItems: "center",
     justifyContent: "center",
   },
-
-
-
   subtitle: {
     fontSize: 14,
     color: "#000",
-    width:"70%",
-    fontFamily:"Montserrat_500Medium",
+    width: "70%",
+    fontFamily: "Montserrat_500Medium",
     opacity: 0.85,
     textAlign: "center",
   },
 
-  postText:{
-    fontFamily:"Montserrat_700Bold",
-    fontSize:18,
-    color:"#000",
-    marginBottom:8,
-  
-
+  postText: {
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 18,
+    color: "#000",
+    marginBottom: 8,
   },
-
-
-
-
+  attachmentRow: {
+    marginTop: 15,
+    flexDirection: 'column',
+  },
+  label: {
+    fontSize: 16,
+    fontFamily: "Montserrat_600SemiBold",
+    color: '#ffffff',
+    lineHeight: 24,
+  },
+  attachmentSection: {
+    marginTop: 10,
+    marginBottom: 0
+  },
 });
 
 export default EmployerAccount;

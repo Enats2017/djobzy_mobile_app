@@ -15,7 +15,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import EmployerFooter from "../../components/EmployerFooter";
@@ -23,27 +22,26 @@ import Footer from "../../components/Footer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
-
-
+import { useNotifications } from "../../context/MessageNotificationContext";
+import RequirementDataList from "../Employer/RequirementDataList";
+import LanguageDataList from "../Employer/LanguagesDataList";
+import JobAddressBlock from "../Employer/JobAddressBlock";
+import EmployerPaymentAcceptDeclineModal from "../EmployerJobs/EmployerPaymentAcceptDeclineModal";
+import AdditionalPaymentRequestBanner from "../EmployerJobs/AdditionalPaymentRequestBanner";
 
 const ViewCurrentJobPost = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const [loading, setLoading] = useState(true);
   const { gid } = route.params || [];
-
   const [job, setJob] = useState([]);
   const [category, setCategory] = useState([]);
-  const [admin, setAdmin] = useState(0);
-
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const { admin } = useNotifications();
 
   const fetchData = async () => {
     try {
-      console.log(gid);
-
       const token = await AsyncStorage.getItem("token");
-      console.log(token);
-
       const response = await fetch(
         `${API_URL}/user-current-job-details/${gid}`,
         {
@@ -55,8 +53,6 @@ const ViewCurrentJobPost = () => {
       );
       const data = await response.json();
       setJob(data);
-      console.log("1111jobdata", data);
-
       setCategory(data.category);
     } catch (error) {
       console.log("API Error:", error);
@@ -65,20 +61,20 @@ const ViewCurrentJobPost = () => {
     }
   };
 
-  console.log("1111", job.request_status);
-
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-
-    setAdmin(user?.admin);
-  };
-
   useEffect(() => {
-    loadUser();
     fetchData();
   }, []);
+
+  const shouldShowModal = admin === 2 && job?.details?.request_status !== 2 && job?.newRequest?.change_status === 0;
+  useEffect(() => {
+    let timer;
+    if (!loading && shouldShowModal) {
+      timer = setTimeout(() => {
+        setShowRequestModal(true);
+      }, 500);
+    }
+    return () => clearTimeout(timer);
+  }, [loading, shouldShowModal]);
 
   return (
     <>
@@ -184,7 +180,7 @@ const ViewCurrentJobPost = () => {
                           name="verified"
                           size={16}
                           color="#c3c3c3"
-                          style={{ marginRight: 6 }}
+                          style={{ marginRight: 3 }}
                         />
                         <Text style={styles.verification}>
                           Verification Level: {job.user?.verification_count}/7
@@ -195,10 +191,9 @@ const ViewCurrentJobPost = () => {
                         <View style={styles.locationRow}>
                           <FontAwesome5
                             name="map-marker-alt"
-                            size={13}
+                            size={16}
                             color="#c3c3c3"
-                            style={{ marginRight: 2 }}
-
+                            style={{ marginRight: 3 }}
                           />
                           <Text style={styles.verification}>{job.user?.address}</Text>
                         </View>
@@ -209,12 +204,14 @@ const ViewCurrentJobPost = () => {
                     </TouchableOpacity>
                   </View>
 
+                  {job?.authUser?.id === job?.details?.prop_user_id && job?.details?.request_status === 1 && job?.newRequest?.change_status === 0 && (
+                    <AdditionalPaymentRequestBanner onView={() => setShowRequestModal(true)} />
+                  )}
                   <View style={styles.section}>
                     <View style={styles.rowBetween}>
                       <Text style={styles.jobTitle}>{job.details?.subject}</Text>
                     </View>
                   </View>
-
                   <View
                     style={{ backgroundColor: "#ffffff33", height: 1, width: "100%" }}
                   />
@@ -237,6 +234,11 @@ const ViewCurrentJobPost = () => {
                       {job.details?.description}
                     </Text>
                   </View>
+
+                  <RequirementDataList data={job.requirements} />
+                  <LanguageDataList data={job.languages} />
+                  <JobAddressBlock details={job?.details} />
+
                 </ScrollView>
                 <View style={styles.btnRow}>
                   <TouchableOpacity style={styles.chatBtn}>
@@ -256,6 +258,15 @@ const ViewCurrentJobPost = () => {
               </>
             )
           }
+
+        <EmployerPaymentAcceptDeclineModal
+          visible={shouldShowModal && showRequestModal}
+          onClose={() => setShowRequestModal(false)}
+          onReopen={() => setShowRequestModal(true)}
+          onRefresh={fetchData}
+          gigProp={job?.gigProp}
+          newRequest={job?.newRequest}
+        />
         </View>
 
         {admin == 2 ? <EmployerFooter /> : <Footer />}
@@ -348,7 +359,6 @@ const styles = StyleSheet.create({
   },
   messagesRow: {
     flexDirection: "row",
-    marginTop: 10,
     alignItems: "center",
     borderWidth: 2,
     borderColor: "#FFFFFF33",
@@ -387,9 +397,9 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 100,
+    width: 80,
+    height: 80,
+    borderRadius: 160,
     borderWidth: 2,
     borderColor: "#c3c3c3",
     marginRight: 13,
@@ -411,7 +421,9 @@ const styles = StyleSheet.create({
     gap: 2,
     maxWidth: "100%",
   },
-
+  menuButton: {
+    marginBottom: "auto",
+  },
   starsInline: {
     flexDirection: "row",
     marginTop: 0,
@@ -420,7 +432,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginTop: 3,
-    marginBottom: 2,
   },
   verification: {
     color: "#c3c3c3",
@@ -430,7 +441,6 @@ const styles = StyleSheet.create({
   locationRow: {
     flexDirection: "row",
     alignItems: "baseline",
-    marginTop: 2,
     gap: 4,
   },
   location: {
@@ -441,7 +451,6 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingVertical: 11,
-    marginBottom: 8,
   },
   sectionTitle: {
     color: "#ffffff",

@@ -19,7 +19,7 @@ export default function MyJobPost() {
   const [loading, setLoading] = useState(true);
   const [postJob, setPostJob] = useState([]);
 
-  const fetchReviews = async () => {
+  const fetchJobPost = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/my-post-job`, {
@@ -37,10 +37,9 @@ export default function MyJobPost() {
     }
   };
   useEffect(() => {
-    fetchReviews();
+    fetchJobPost();
   }, []);
-  console.log( postJob.request_slug,);
-  
+
   if (loading) return <Loading />;
   return (
     <SafeAreaView style={styles.jobpostcontainer}>
@@ -49,8 +48,10 @@ export default function MyJobPost() {
           <PageNameHeaderBar navigation={navigation} title="My Job Posts" />
         </View>
         <View style={styles.headerRight}>
-          {/* onPress={()=>navigation.navigate("Details")} */}
-          <TouchableOpacity style={styles.viewBoostedJobsBtn} >
+          <TouchableOpacity
+            style={styles.viewBoostedJobsBtn}
+            onPress={() => navigation.navigate("MyBoostedJob")}
+          >
             <Text style={styles.viewBoostedJobsText}>View Boosted Jobs</Text>
           </TouchableOpacity>
         </View>
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   viewBoostedJobsBtn: {
-    backgroundColor: "#FDBF2D",
+    backgroundColor: "#f4c366",
     paddingVertical: 8,
     paddingHorizontal: 6,
     borderRadius: 5,

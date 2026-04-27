@@ -21,13 +21,14 @@ import * as Clipboard from "expo-clipboard";
 import Loading from "../../components/Loading";
 import NoTransactions from "../Wallet/NoTransactions";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const ReferralWallet = () => {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState("referral");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sendloading, setSendLoading] = useState(false);
+  const [sendLoading, setSendLoading] = useState(false);
   const [tableFilled, setTableFilled] = useState(false);
   const [pendingReferrals, setPendingReferrals] = useState([]);
   const [completedReferrals, setCompletedReferrals] = useState([]);
@@ -67,11 +68,10 @@ const ReferralWallet = () => {
 
   const sendInvite = async () => {
     if (!email) {
-      Alert.alert("Error", "Please enter email");
+      toastError("Please put a valid email");
       return;
     }
     try {
-      if (sendloading) return;
       setSendLoading(true);
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/invite-user-email`, {
@@ -81,19 +81,19 @@ const ReferralWallet = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          invite_with_email: email,
+          invite_with_email: email.trim(),
         }),
       });
       const data = await response.json();
       if (response.ok) {
-        Alert.alert("Success", data.message);
+        toastSuccess(data.message || "Invited Successfully");
         setEmail("");
       } else {
-        Alert.alert("Error", data.message || "Failed");
+        toastError(data.message || data.error || "Failed");
       }
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", "Something went wrong");
+      toastError("Something went wrong");
     } finally {
       setSendLoading(false);
     }
@@ -102,7 +102,6 @@ const ReferralWallet = () => {
   const collectPayments = async () => {
     try {
       if (loading) return;
-
       setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/referral-collect`, {
@@ -416,9 +415,10 @@ const ReferralWallet = () => {
                     <TouchableOpacity
                       style={styles.iconButton}
                       onPress={sendInvite}
-                      disabled={loading}
+                      disabled={sendLoading}
+                      loading={sendLoading}
                     >
-                      {sendloading ? (
+                      {sendLoading ? (
                         <ActivityIndicator color="#fff" size="small" />
                       ) : (
                         <Feather name="send" size={22} color="#ffffff" />

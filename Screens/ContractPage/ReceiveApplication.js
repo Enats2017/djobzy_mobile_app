@@ -188,7 +188,6 @@ const styles = StyleSheet.create({
     width: 55,
     height: 55,
     marginRight:7,
-
     overflow: "hidden",
     backgroundColor: "#222",
   },

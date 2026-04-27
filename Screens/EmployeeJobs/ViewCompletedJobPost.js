@@ -56,7 +56,7 @@ const ViewCompletedJobPost = () => {
     if (loading) return <Loading />;
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           <PageNameHeaderBar
             navigation={navigation}
@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
+    backgroundColor: "#222222"
   },
   loaderOverlay: {
     flex: 1,
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingVertical: 11,
-    marginBottom: 8,
+    // marginBottom: 8,
   },
   sectionTitle: {
     color: "#ffffff",

@@ -22,6 +22,8 @@ import Loading from "../../components/Loading";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import EmployerFooter from "../../components/EmployerFooter";
+import { useNotifications } from "../../context/MessageNotificationContext";
+import RequestAdditionalPaymentModal from "./RequestAdditionalPaymentModal";
 
 export default function CurrentJobPaymentPage() {
   const navigation = useNavigation();
@@ -30,8 +32,9 @@ export default function CurrentJobPaymentPage() {
   const [gigs, setGigs] = useState([]);
   const [user, setUser] = useState([]);
   const [data, setData] = useState([]);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const { gid } = route.params || [];
-  const [admin, setAdmin] = useState(0);
+  const { admin } = useNotifications();
 
   const fetchPayemnt = async () => {
     try {
@@ -46,9 +49,8 @@ export default function CurrentJobPaymentPage() {
       setGigs(data.gig);
       setUser(data.user);
       setData(data);
+      // console.log("API Success:", data);
 
-      // console.log("gig111", gigs);
-      // console.log("user111", user);
     } catch (error) {
       console.log("API Error:", error);
     } finally {
@@ -56,15 +58,7 @@ export default function CurrentJobPaymentPage() {
     }
   };
 
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-
-    setAdmin(user?.admin);
-  };
   useEffect(() => {
-    loadUser();
     fetchPayemnt();
   }, []);
 
@@ -84,7 +78,7 @@ export default function CurrentJobPaymentPage() {
                 <View style={styles.topBox}>
                   <Text style={styles.topLabel}>Total Price</Text>
                   <Text style={styles.topValue}>
-                    {gigs.bid_price}
+                    {gigs?.bid_price}
                     <Text style={styles.unit}> CAD</Text>
                   </Text>
                 </View>
@@ -92,7 +86,7 @@ export default function CurrentJobPaymentPage() {
                 <View style={styles.topBox}>
                   <Text style={styles.topLabel}>Hourly Rate</Text>
                   <Text style={styles.topValue}>
-                    {gigs.prop_hourly_rate}
+                    {gigs?.prop_hourly_rate}
                     <Text style={styles.unit}> CAD</Text>
                   </Text>
                 </View>
@@ -100,7 +94,7 @@ export default function CurrentJobPaymentPage() {
                 <View style={styles.topBox}>
                   <Text style={styles.topLabel}>Project Length</Text>
                   <Text style={styles.topValue}>
-                    {gigs.expected_hour}
+                    {gigs?.expected_hour}
                     <Text style={styles.unit}> hours</Text>
                   </Text>
                 </View>
@@ -109,11 +103,11 @@ export default function CurrentJobPaymentPage() {
               <View style={styles.topMetaRow}>
                 <View style={styles.metaItemRowLeft}>
                   <Text style={styles.metaLabel}>Start Date:</Text>
-                  <Text style={styles.metaValue}>{gigs.payment_date}</Text>
+                  <Text style={styles.metaValue}>{gigs?.payment_date}</Text>
                 </View>
                 <View style={styles.metaItemRowRight}>
                   <Text style={styles.metaLabel}>Contract ID:</Text>
-                  <Text style={styles.metaValue}>{gigs.contract_id}</Text>
+                  <Text style={styles.metaValue}>{gigs?.contract_id}</Text>
                 </View>
               </View>
               <View style={styles.messagesRow}>
@@ -268,7 +262,6 @@ export default function CurrentJobPaymentPage() {
                   </View>
                   {data.authUser?.admin !== 0 && (
                     <View style={styles.tableCard}>
-
                       <View style={styles.tableRow}>
                         <View style={styles.tableLeftCell}>
                           <Text style={styles.tableLabel}>Date</Text>
@@ -333,26 +326,42 @@ export default function CurrentJobPaymentPage() {
 
                     </View>
                   )}
-
-                  <View style={styles.tableCard}>
-                    <View style={styles.tableRow}>
-                      <View style={styles.tableLeftCell}>
-                        <Text style={styles.tableLabel}>All Payments</Text>
-                      </View>
-                      <View style={styles.dividerVert} />
-                      <View style={styles.tableRightCell}>
-                        <Text style={styles.tableValue}>CAD {data.total_payment}</Text>
-                      </View>
-                    </View>
-                  </View>
                 </React.Fragment>
               ))
             }
+            <View style={styles.tableCard}>
+              <View style={styles.tableRow}>
+                <View style={styles.tableLeftCell}>
+                  <Text style={styles.tableLabel}>All Payments</Text>
+                </View>
+                <View style={styles.dividerVert} />
+                <View style={styles.tableRightCell}>
+                  <Text style={styles.tableValue}>CAD {data.total_payment}</Text>
+                </View>
+              </View>
+            </View>
             <View style={styles.footer}>
-              <GradientButton title="Download PDF" />
+              {data?.authUser?.id != gigs?.req_user_id && (
+                <GradientButton title="Download PDF" />
+              )}
+              {data?.authUser?.id == gigs?.req_user_id && admin == 0 && gigs.request_status == 1 && (
+                  <GradientButton
+                    title="Request an additional payment"
+                    onPress={() => setShowPaymentModal(true)}
+                  />
+                )}
             </View>
           </ScrollView>
         )}
+        <RequestAdditionalPaymentModal
+          visible={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          data={data}
+          prpId={gigs.prp_id}
+          initialTotal={gigs?.bid_price}
+          initialHourly={gigs?.prop_hourly_rate}
+        />
+
       </View>
       {admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
@@ -444,7 +453,6 @@ const styles = StyleSheet.create({
   },
   messagesRow: {
     flexDirection: "row",
-    marginTop: 10,
     alignItems: "center",
     borderWidth: 2,
     borderColor: "#FFFFFF33",
@@ -482,9 +490,9 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 100,
+    width: 80,
+    height: 80,
+    borderRadius: 160,
     borderWidth: 2,
     borderColor: "#c3c3c3",
     marginRight: 13,

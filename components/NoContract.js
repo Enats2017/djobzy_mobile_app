@@ -2,12 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const NoContract = () => {
+const NoContract = ({ icon, title, description }) => {
     return (
         <View style={styles.container}>
-            <Ionicons name="document-text-outline" size={64} color="#C8C8D0" />
-            <Text style={styles.title}>No active contracts</Text>
-            <Text style={styles.subtitle}>You don't have any active contract at the moment</Text>
+            <Ionicons name={icon} size={64} color="#C8C8D0" />
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.subtitle}>{description}</Text>
         </View>
     );
 };

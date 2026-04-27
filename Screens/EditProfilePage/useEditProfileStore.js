@@ -12,6 +12,7 @@ const initialState = {
         licenses: [],
         certificates: [],
         experiences: [],
+        attachments: [],
     },
     form: {
         userAdmin: 0,
@@ -36,6 +37,7 @@ const initialState = {
         licenses: [],
         experiences: [],
         photoUri: null,
+        attachments: [],
     }
 };
 

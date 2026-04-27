@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
     TouchableOpacity,
     ScrollView,
     StyleSheet,
+    Image,
 } from "react-native";
 
 import {
@@ -13,32 +14,46 @@ import {
     Entypo,
     Ionicons,
     FontAwesome,
+    Feather
 } from "@expo/vector-icons";
 
-import EditProfileUpdatePhoto from "./EditProfileUpdatePhoto";
 import LineDivider from "../../components/LineDivider";
-import { useEditProfileStore } from "./useEditProfileStore";
+import { useEditProfileStore } from "../EditProfilePage/useEditProfileStore";
 import SocialMediaLinks from "../../components/SocialMediaLinks";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import CopyLinkModal from "./CopyLinkModal";
+import DownloadModal from "./DownloadModal";
 
-const EditProfileInfoHeader = ({ navigation, socialLinks }) => {
+const ProfileHeader = ({
+    navigation,
+    socialLinks,
+    employeeLink,
+    employerLink,
+    onCopy,
+    onShare,
+    initialActive = "employee",
+    job = []
+}) => {
     const profile = useEditProfileStore((state) => state.profile);
-    const photoUri = useEditProfileStore((state) => state.form.photoUri);
-    const category = useEditProfileStore((state) => state.form.category);
-    const setPhotoUri = useEditProfileStore((state) => state.setPhotoUri);
     const userAdmin = useEditProfileStore((state) => state.form.userAdmin);
     const statBoxBgColor = userAdmin === 2 ? "#C97863" : "#46A282";
+    const [copyModal, setCopyModal] = useState(false);
+    const [downloadModal, setDownloadModal] = useState(false);
+    const [activeTab, setActiveTab] = useState(initialActive);
+    const insets = useSafeAreaInsets();
 
     return (
         <>
             <View style={styles.profileinfo}>
                 <View style={styles.profileRow}>
-
-                    {/* Profile Photo */}
-                    <EditProfileUpdatePhoto
-                        photoUri={photoUri}
-                        setPhotoUri={setPhotoUri}
+                    <Image
+                        source={{
+                            uri:
+                                profile?.editprofile?.photo ||
+                                "https://randomuser.me/api/portraits/women/44.jpg",
+                        }}
+                        style={styles.avatar}
                     />
-
                     <View style={styles.profileInfoRow}>
                         <View style={styles.userNameSection}>
                             <Text style={styles.name}>
@@ -74,20 +89,35 @@ const EditProfileInfoHeader = ({ navigation, socialLinks }) => {
                     </View>
                 </View>
             </View>
+
             <LineDivider />
+
             {/* Action Buttons */}
             <View style={styles.iconRow}>
-                <TouchableOpacity style={styles.iconBtn}>
+                <TouchableOpacity
+                    style={styles.iconBtn}
+                    onPress={() => setCopyModal(true)}
+                >
                     <Ionicons name="copy" size={20} color="#ffffff" />
                     <Text style={styles.iconText}>Copy</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.iconBtn}>
-                    <FontAwesome name="share-square-o" size={20} color="#ffffff" />
+                <TouchableOpacity
+                    style={styles.iconBtn}
+                    onPress={onShare}
+                >
+                    <FontAwesome
+                        name="share-square-o"
+                        size={20}
+                        color="#ffffff"
+                    />
                     <Text style={styles.iconText}>Share</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.iconBtn}>
+                <TouchableOpacity
+                    style={styles.iconBtn}
+                    onPress={() => setDownloadModal(true)}
+                >
                     <MaterialIcons name="download" size={20} color="#ffffff" />
                     <Text style={styles.iconText}>Download</Text>
                 </TouchableOpacity>
@@ -97,7 +127,7 @@ const EditProfileInfoHeader = ({ navigation, socialLinks }) => {
                         style={styles.iconBtn}
                         onPress={() =>
                             navigation.navigate("ProfileBoostPage", {
-                                categories: category,
+                                categories: job,
                             })
                         }
                     >
@@ -105,6 +135,14 @@ const EditProfileInfoHeader = ({ navigation, socialLinks }) => {
                         <Text style={styles.iconText}>Boost</Text>
                     </TouchableOpacity>
                 )}
+
+                <TouchableOpacity
+                    style={styles.iconBtn}
+                    onPress={() => navigation.navigate("ProfileEditPage")}
+                >
+                    <Feather name="edit-3" size={20} color="#fff" />
+                    <Text style={styles.iconText}>Edit</Text>
+                </TouchableOpacity>
             </View>
 
             {/* Stats */}
@@ -132,6 +170,25 @@ const EditProfileInfoHeader = ({ navigation, socialLinks }) => {
             </ScrollView>
 
             <SocialMediaLinks socialLinks={socialLinks} />
+
+            <CopyLinkModal
+                visible={copyModal}
+                onClose={() => setCopyModal(false)}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                employeeLink={employeeLink}
+                employerLink={employerLink}
+                handleCopy={onCopy}
+                styles={styles}
+                insets={insets}
+            />
+
+            <DownloadModal
+                visible={downloadModal}
+                onClose={() => setDownloadModal(false)}
+                styles={styles}
+                insets={insets}
+            />
         </>
     );
 };
@@ -151,6 +208,13 @@ const styles = StyleSheet.create({
     profileInfoRow: {
         flex: 1,
         gap: 2,
+    },
+    avatar: {
+        width: 80,
+        height: 80,
+        borderWidth: 1.5,
+        borderColor: "#c3c3c3",
+        borderRadius: 60,
     },
 
     userNameSection: {
@@ -220,6 +284,111 @@ const styles = StyleSheet.create({
         fontFamily: "Montserrat_500Medium",
         marginTop: 2,
     },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.45)",
+        justifyContent: "flex-end",
+    },
+    modalContainer: {
+        backgroundColor: "#fff",
+        width: "100%",
+        paddingVertical: 25,
+        paddingHorizontal: 15,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+    },
+    modalHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 8,
+    },
+    modalTitle: {
+        fontFamily: "Montserrat_600SemiBold",
+        fontSize: 18,
+        color: "#303030",
+    },
+    modalSubTitle: {
+        fontSize: 14,
+        color: "#303030",
+        marginBottom: 18,
+        fontFamily: "Montserrat_400Regular",
+    },
+    tabContainer: {
+        flexDirection: "row",
+        borderColor: "#c5c5c591",
+        borderWidth: 1,
+        borderRadius: 12,
+        marginBottom: 15,
+    },
+
+    tab: {
+        flex: 1,
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingVertical: 14,
+    },
+    tabText: {
+        color: "#c3c3c3",
+        fontSize: 16,
+        fontFamily: "Montserrat_500Medium",
+    },
+
+    activeTabEmployee: {
+        backgroundColor: "#46A282",
+        padding: 10,
+        outlineColor: "#46A282",
+        outlineWidth: 1,
+        borderRadius: 10,
+    },
+    activeTabEmployer: {
+        backgroundColor: "#FABB05",
+        padding: 10,
+        outlineColor: "#FABB05",
+        outlineWidth: 1,
+        borderRadius: 10,
+    },
+
+    activeTabTextEmployee: {
+        color: "#ffff",
+        fontFamily: "Montserrat_600SemiBold",
+        fontSize: 16,
+    },
+    activeTabTextEmployer: {
+        color: "#303030",
+        fontFamily: "Montserrat_600SemiBold",
+        fontSize: 16,
+    },
+    inputRow: {
+        backgroundColor: "#EFEFEF",
+        borderColor: "#000000",
+        borderWidth: 1,
+        borderRadius: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    textWrap: {
+        flex: 1,
+    },
+    linkText: {
+        paddingHorizontal: 5,
+        color: "#000",
+        fontSize: 14,
+        fontFamily: "Montserrat_500Medium",
+        paddingHorizontal: 10,
+    },
+    copyBtn: {
+        backgroundColor: "#CC6D5D",
+        borderRadius: 10,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        outlineColor: "#CC6D5D",
+        outlineWidth: 1.3,
+        alignItems: "center",
+    },
 });
 
-export default EditProfileInfoHeader;
+export default ProfileHeader;

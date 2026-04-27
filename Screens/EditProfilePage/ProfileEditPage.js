@@ -21,7 +21,9 @@ import EditProfileSeeAllInformation from "./EditProfileSeeAllInformation";
 import EditProfileExperience from "./EditProfileExperience";
 import EditProfileInfoHeader from "./EditProfileInfoHeader";
 import { useEditProfileStore } from "./useEditProfileStore";
-import { toastSuccess } from "../../utils/toast";
+import { toastError, toastSuccess } from "../../utils/toast";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import EmployerFooter from "../../components/EmployerFooter";
 
 const ProfileEditPage = () => {
   const setAllData = useEditProfileStore((state) => state.setAllData);
@@ -69,6 +71,7 @@ const ProfileEditPage = () => {
         licenses: data.licence || [],
         certificates: data.certificate || [],
         experiences: data.experiences || [],
+        attachments: data.user_attachments || [],
         dob: user.dob || "",
         years: data.years || 0,
         ageShowStatus: user.age_show_status || 0,
@@ -93,7 +96,8 @@ const ProfileEditPage = () => {
       const formData = new FormData();
       Object.entries(storeData.form).forEach(([key, value]) => {
         if (key === "category" || key === "promote" || key === "photoUri") return;
-        if ( value === null || value === undefined || value === "") return;
+        if (key === "attachments") return;
+        if (value === null || value === undefined || value === "") return;
         if (Array.isArray(value) || typeof value === "object") {
           formData.append(key, JSON.stringify(value));
         } else {
@@ -101,7 +105,17 @@ const ProfileEditPage = () => {
         }
       });
 
-      // 🔥 ADD THIS (no changes to your logic above)
+      // handle attachments as real files
+      if (storeData.form.attachments?.length > 0) {
+        storeData.form.attachments.forEach((attachment) => {
+          formData.append("attachments[]", {
+            uri: attachment.uri,
+            name: attachment.name,
+            type: attachment.mimeType || "image/jpeg",
+          });
+        });
+      }
+
       if (storeData.deleted) {
         formData.append("deleted", JSON.stringify(storeData.deleted));
       }
@@ -116,12 +130,12 @@ const ProfileEditPage = () => {
       });
 
       const result = await response.json();
-
       if (result.status === 200) {
         await fetchProfileForEdit();
         toastSuccess('Profile updated successfully.');
       } else {
         console.log("API Error:", result);
+        toastError(result.message || "Something went wrong please try again")
       }
     } catch (error) {
       console.log("Submit Error:", error);
@@ -133,7 +147,7 @@ const ProfileEditPage = () => {
   useFocusEffect(
     useCallback(() => {
       // if (!storeData.profile) {
-        fetchProfileForEdit();
+      fetchProfileForEdit();
       // }
     }, [fetchProfileForEdit])
   );
@@ -143,14 +157,18 @@ const ProfileEditPage = () => {
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
           <PageNameHeaderBar title="Edit Profile" navigation={navigation} />
-          {
-            loading ? (
+          <>
+            {loading ? (
               <Loading />
             ) : (
-              <>
-                <ScrollView
-                  contentContainerStyle={{ paddingBottom: 50 }}
+              <View style={{ flex: 1 }}>
+
+                <KeyboardAwareScrollView
+                  enableOnAndroid
+                  keyboardShouldPersistTaps="handled"
                   showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                  extraScrollHeight={80}
                 >
                   <View style={styles.section}>
                     <View style={styles.profileCard}>
@@ -160,39 +178,30 @@ const ProfileEditPage = () => {
                       />
                       <EditProfileSeeAllInformation navigation={navigation} />
                     </View>
-                    <EditProfileBasicInfo
-                      userType={userType}
-                    />
-                    <EditProfileCategory
-                      navigation={navigation}
-                    />
-                    {
-                      admin === 0 && (
-                        <EditProfilePromotedServices
-                          navigation={navigation}
-                        />
-                      )
-                    }
-                    <EditProfileAttachments
-                      navigation={navigation}
-                    />
-                    {
-                      admin === 0 && (
-                        <EditProfileExperience
-                          navigation={navigation}
-                        />
-                      )
-                    }
+
+                    <EditProfileBasicInfo userType={userType} />
+                    <EditProfileCategory navigation={navigation} />
+
+                    {admin === 0 && (
+                      <EditProfilePromotedServices navigation={navigation} />
+                    )}
+
+                    <EditProfileAttachments navigation={navigation} />
+
+                    {admin === 0 && (
+                      <EditProfileExperience navigation={navigation} />
+                    )}
                   </View>
-                </ScrollView>
+                </KeyboardAwareScrollView>
+
                 <View style={{ paddingBottom: 90 }}>
                   <GradientButton title="Apply Changes" onPress={handleApplyChanges} disabled={submitLoading} loading={submitLoading} />
                 </View>
-              </>
-            )
-          }
+              </View>
+            )}
+          </>
         </View>
-        <Footer />
+        {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
     </>
   );

@@ -108,11 +108,13 @@ const ProfileEditPage = () => {
       // handle attachments as real files
       if (storeData.form.attachments?.length > 0) {
         storeData.form.attachments.forEach((attachment) => {
-          formData.append("attachments[]", {
-            uri: attachment.uri,
-            name: attachment.name,
-            type: attachment.mimeType || "image/jpeg",
-          });
+          if (attachment.uri && !attachment.attachment) {
+            formData.append("attachments[]", {
+              uri: attachment.uri,
+              name: attachment.name || `file_${Date.now()}.jpg`,
+              type: attachment.mimeType || "image/jpeg",
+            });
+          }
         });
       }
 
@@ -162,7 +164,6 @@ const ProfileEditPage = () => {
               <Loading />
             ) : (
               <View style={{ flex: 1 }}>
-
                 <KeyboardAwareScrollView
                   enableOnAndroid
                   keyboardShouldPersistTaps="handled"

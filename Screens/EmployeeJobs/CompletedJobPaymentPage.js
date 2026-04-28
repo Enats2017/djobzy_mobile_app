@@ -29,7 +29,8 @@ export default function CompletedJobPaymentPage() {
   const [gigs, setGigs] = useState([]);
   const [user, setUser] = useState([]);
   const [data, setData] = useState([]);
-  const { gid } = route.params || [];
+  const { gid } = route.params || {};
+
   const fetchPayemnt = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -70,7 +71,7 @@ export default function CompletedJobPaymentPage() {
                   <View style={styles.topBox}>
                     <Text style={styles.topLabel}>Total Price</Text>
                     <Text style={styles.topValue}>
-                      {gigs.bid_price}
+                      {gigs?.bid_price}
                       <Text style={styles.unit}> CAD</Text>
                     </Text>
                   </View>
@@ -78,7 +79,7 @@ export default function CompletedJobPaymentPage() {
                   <View style={styles.topBox}>
                     <Text style={styles.topLabel}>Hourly Rate</Text>
                     <Text style={styles.topValue}>
-                      {gigs.prop_hourly_rate}
+                      {gigs?.prop_hourly_rate}
                       <Text style={styles.unit}> CAD</Text>
                     </Text>
                   </View>
@@ -86,7 +87,7 @@ export default function CompletedJobPaymentPage() {
                   <View style={styles.topBox}>
                     <Text style={styles.topLabel}>Project Length</Text>
                     <Text style={styles.topValue}>
-                      {gigs.expected_hour}
+                      {gigs?.expected_hour}
                       <Text style={styles.unit}> hours</Text>
                     </Text>
                   </View>
@@ -95,11 +96,11 @@ export default function CompletedJobPaymentPage() {
                 <View style={styles.topMetaRow}>
                   <View style={styles.metaItemRowLeft}>
                     <Text style={styles.metaLabel}>Start Date:</Text>
-                    <Text style={styles.metaValue}>{gigs.payment_date}</Text>
+                    <Text style={styles.metaValue}>{gigs?.payment_date}</Text>
                   </View>
                   <View style={styles.metaItemRowRight}>
                     <Text style={styles.metaLabel}>Contract ID:</Text>
-                    <Text style={styles.metaValue}>{gigs.gid}</Text>
+                    <Text style={styles.metaValue}>{gigs?.gid}</Text>
                   </View>
                 </View>
                 <View style={styles.messagesRow}>
@@ -115,7 +116,7 @@ export default function CompletedJobPaymentPage() {
               <View style={styles.userCard}>
                 <Image
                   source={{
-                    uri: user.photo,
+                    uri: user?.photo,
                   }}
                   style={styles.avatar}
                 />
@@ -126,7 +127,7 @@ export default function CompletedJobPaymentPage() {
                       numberOfLines={2}
                       ellipsizeMode="tail"
                     >
-                      {user.full_name}
+                      {user?.full_name}
                     </Text>
                     <View style={styles.starsInline}>
                       {[...Array(5)].map((_, i) => (
@@ -149,26 +150,28 @@ export default function CompletedJobPaymentPage() {
                       style={{ marginRight: 6 }}
                     />
                     <Text style={styles.verification}>
-                      Verification Level: {user.verification_count}/7
+                      Verification Level: {user?.verification_count}/7
                     </Text>
                   </View>
 
-                  <View style={styles.locationRow}>
-                    <FontAwesome5
-                      name="map-marker-alt"
-                      size={13}
-                      color="#c3c3c3"
-                      style={{ marginRight: 2 }}
-                    />
-                    <Text style={styles.location}>{user.address}</Text>
-                  </View>
+                  {user?.address && (
+                    <View style={styles.locationRow}>
+                      <FontAwesome5
+                        name="map-marker-alt"
+                        size={13}
+                        color="#c3c3c3"
+                        style={{ marginRight: 2 }}
+                      />
+                      <Text style={styles.location}>{user?.address}</Text>
+                    </View>
+                  )}
                 </View>
               </View>
 
               <Text style={styles.payForTitle}>Payment For</Text>
-              <Text style={styles.payForJob}>{gigs.subject}</Text>
+              <Text style={styles.payForJob}>{gigs?.subject}</Text>
               {data &&
-                data.orders.map((val, index) => (
+                data?.orders?.map((val, index) => (
                   <View style={styles.tableCard} key={index}>
                     <View style={styles.tableRow}>
                       <View style={styles.tableLeftCell}>

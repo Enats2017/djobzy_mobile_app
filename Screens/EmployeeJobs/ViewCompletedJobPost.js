@@ -22,15 +22,13 @@ const ViewCompletedJobPost = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const [loading, setLoading] = useState(true);
-  const { gid } = route.params || [];
+  const { gid } = route.params || {};
   const [job, setJob] = useState([]);
   const [category, setCategory] = useState([]);
 
   const fetchData = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      console.log(token);
-
       const response = await fetch(`${API_URL}/closed-job-details/${gid}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -39,8 +37,6 @@ const ViewCompletedJobPost = () => {
       });
       const data = await response.json();
       setJob(data.gigs);
-      console.log(job);
-      
       setCategory(data.category);
     } catch (error) {
       console.log("API Error:", error);
@@ -51,8 +47,7 @@ const ViewCompletedJobPost = () => {
   useEffect(() => {
     fetchData();
   }, []);
-  console.log(job.gid);
-  
+
     if (loading) return <Loading />;
   return (
     <>
@@ -91,12 +86,14 @@ const ViewCompletedJobPost = () => {
                     <Entypo name="dots-three-vertical" size={20} color="#bbb" />
                   </TouchableOpacity>
                 </View>
-                <View style={styles.locationRow}>
-                  <Ionicons name="location-outline" size={16} color="#c3c3c3" />
-                  <Text style={styles.locationText}>
-                    {job.preferred_location}
-                  </Text>
-                </View>
+                {job?.address && (
+                  <View style={styles.locationRow}>
+                    <Ionicons name="location-outline" size={16} color="#c3c3c3" />
+                    <Text style={styles.locationText}>
+                      {job.address}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
             <View style={styles.section}>

@@ -24,7 +24,7 @@ const GradientButton = ({
           styles.button,
           { paddingHorizontal, marginTop, paddingVertical, borderRadius },
           styleOverride,
-          (disabled || loading)
+          (disabled || loading) && { opacity: 0.7 }
         ]}
 
       >

@@ -34,23 +34,24 @@ const AccountSetup = ({
   userDetails,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState(
-    userDetails.mobile_number || "",
-  );
-  const [mobileCountryId, setMobileCountryId] = useState(
-    userDetails.mobile_country_id || "",
-  );
+  const [phoneNumber, setPhoneNumber] = useState(userDetails.mobile_number || "");
+  const [mobileCountryId, setMobileCountryId] = useState(userDetails.mobile_country_id || "");
   const [mobileCountryISO, setMobileCountryISO] = useState("");
+  const [mobileVerified, setMobileVerified] = useState(userDetails?.mobile_verified || 0);
   const [usernameError, setUsernameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [canVerify, setCanVerify] = useState(false);
   const navigation = useNavigation();
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [optLoading, setOtpLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       if (userDetails) {
-        setMobileCountryISO((prev) => prev || userDetails.iso2);
-        setMobileCountryId((prev) => prev || userDetails.phonecode);
+        setMobileCountryISO(userDetails.iso2 || "");
+        setMobileCountryId(userDetails.phonecode || "");
+        setMobileVerified(userDetails.mobile_verified || 0);
       }
     }, [userDetails]),
   );
@@ -91,7 +92,7 @@ const AccountSetup = ({
     const fullNumber = `+${mobileCountryId}${phoneNumber}`;
     const updatedFullNumber = `${mobileCountryId}${phoneNumber}`;
 
-    const isPhoneValid = isValidPhoneNumber( fullNumber, mobileCountryISO || userDetails?.iso2);
+    const isPhoneValid = isValidPhoneNumber(fullNumber, mobileCountryISO || userDetails?.iso2);
     if (!isPhoneValid) {
       toastError("Please enter a valid phone number.");
       return;
@@ -166,123 +167,206 @@ const AccountSetup = ({
     }
   };
 
+  const handleSendOtp = async () => {
+    try {
+      setOtpLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const fullNumber = `${mobileCountryId}${phoneNumber}`;
+      console.log('full number for otp sent: ', fullNumber);
+      const response = await fetch(`${API_URL}/send-phone-code`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          phone_number: fullNumber,
+          selected_country_code: mobileCountryISO,
+        })
+      });
+      const data = await response.json();
+      if (data.status === 200) {
+        toastSuccess("Verification code sent");
+        setOtpSent(true);
+      } else {
+        if (data.result?.is_passed === 1) {
+          setOtpSent(false);
+          setMobileVerified(1);
+          toastSuccess("Phone verification isn’t available in your country. You can continue without verifying your number.");
+        } else {
+          toastError(data.message || "Failed to send code");
+        }
+      }
+    } catch (error) {
+      toastError("Failed to send verification code");
+      console.log(error);
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      setOtpLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const fullNumber = `+${mobileCountryId}${phoneNumber}`;
+      console.log('full number for otp verify: ', fullNumber);
+      const response = await fetch(`${API_URL}/verify-phone-code`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          phone: fullNumber,
+          phone_pin: otp,
+          country_iso2: mobileCountryISO,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.status === 200) {
+        toastSuccess("Phone verified successfully");
+        setMobileVerified(1);
+        setOtpSent(false);
+      } else {
+        toastError(data.message || "Invalid OTP");
+      }
+    } catch (error) {
+      toastError("OTP verification failed");
+      console.log(error);
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   return (
     <View style={styles.safe}>
       <View style={styles.header}>
         <Text style={styles.heading}>Account Setup</Text>
       </View>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-      >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 60 }}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.label}>Full Name / Company Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Type your name or company name"
-            value={fullName}
-            onChangeText={(text) => setFullName(text)}
-          />
-          <View style={styles.label}>
-            <QuestionMark title="Create a Username" />
-          </View>
-          <TextInput
-            style={styles.input}
-            placeholder="Type your username"
-            value={username}
-            onChangeText={(text) => {
-              setUsername(text);
-              setUsernameError("");
+      <Text style={styles.label}>Full Name / Company Name</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Type your name or company name"
+        value={fullName}
+        onChangeText={(text) => setFullName(text)}
+      />
+      <View style={styles.label}>
+        <QuestionMark title="Create a Username" />
+      </View>
+      <TextInput
+        style={styles.input}
+        placeholder="Type your username"
+        value={username}
+        onChangeText={(text) => {
+          setUsername(text);
+          setUsernameError("");
+        }}
+      />
+      {usernameError ? (
+        <View style={styles.erromsg}>
+          <MaterialIcons name="error-outline" size={18} color="#FF0000" />
+          <Text style={styles.errotext}>{usernameError}</Text>
+        </View>
+      ) : null}
+      <Text style={styles.label}>Email</Text>
+      <View style={{ position: "relative", width: "100%" }}>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your email"
+          value={email}
+          onChangeText={(text) => setEmail(text)}
+          keyboardType="email-address"
+          editable={!emailVerified}
+        />
+        {emailVerified === 1 && (
+          <Ionicons
+            name="checkmark-done-circle-sharp"
+            size={24}
+            color="green"
+            style={{
+              position: "absolute",
+              right: 12,
+              top: "50%",
+              transform: [{ translateY: -11 }],
             }}
           />
-          {usernameError ? (
-            <View style={styles.erromsg}>
-              <MaterialIcons name="error-outline" size={18} color="#FF0000" />
-              <Text style={styles.errotext}>{usernameError}</Text>
-            </View>
-          ) : null}
-          <Text style={styles.label}>Email</Text>
-          <View style={{ position: "relative", width: "100%" }}>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={(text) => setEmail(text)}
-              keyboardType="email-address"
-              editable={!emailVerified}
-            />
-            {emailVerified === 1 && (
-              <Ionicons
-                name="checkmark-done-circle-sharp"
-                size={24}
-                color="green"
-                style={{
-                  position: "absolute",
-                  right: 12,
-                  top: "50%",
-                  transform: [{ translateY: -11 }],
-                }}
-              />
-            )}
-          </View>
-          <Text style={styles.label}>Phone Number</Text>
-          <PhoneNumberInput
-            value={phoneNumber}
-            countryISO={mobileCountryISO}
-            countryCode={mobileCountryId}
-            onChange={({ phone, countryCode, countryISO }) => {
-              setPhoneNumber(phone);
-              setMobileCountryId(countryCode);
-              setMobileCountryISO(countryISO);
-              setPhoneError("");
-              const full = `+${countryCode}${phone}`;
-              const valid = isValidPhoneNumber(full, countryISO);
-              setCanVerify(valid);
-            }}
-            defaultFlag={defaultFlag}
-            defaultCallingCode={defaultCallingCode}
-            defaultCountryISO={countryISO}
+        )}
+      </View>
+      <Text style={styles.label}>Phone Number</Text>
+      <PhoneNumberInput
+        value={phoneNumber}
+        countryISO={mobileCountryISO}
+        countryCode={mobileCountryId}
+        onChange={({ phone, countryCode, countryISO }) => {
+          setPhoneNumber(phone);
+          setMobileCountryId(countryCode);
+          setMobileCountryISO(countryISO);
+          setPhoneError("");
+          const full = `+${countryCode}${phone}`;
+          const valid = isValidPhoneNumber(full, countryISO);
+          setCanVerify(valid);
+        }}
+        defaultFlag={defaultFlag}
+        defaultCallingCode={defaultCallingCode}
+        defaultCountryISO={countryISO}
+      />
+
+      <Text style={styles.phoneText}>
+        The phone number will not be used for any marketing purposes.
+      </Text>
+      {phoneError ? (
+        <Text style={{ color: "red", marginTop: 4 }}>{phoneError}</Text>
+      ) : null}
+
+      <View style={styles.otpContainer}>
+        {canVerify && otpSent && mobileVerified !== 1 && (
+          <TextInput
+            style={styles.otpInput}
+            placeholder="Enter OTP"
+            placeholderTextColor="#666666"
+            keyboardType="number-pad"
+            maxLength={5}
+            value={otp}
+            onChangeText={setOtp}
           />
+        )}
 
-          <Text style={styles.phoneText}>
-            The phone number will not be used for any marketing purposes.
-          </Text>
-          {phoneError ? (
-            <Text style={{ color: "red", marginTop: 4 }}>{phoneError}</Text>
-          ) : null}
-
+        {mobileVerified !== 1 && (
           <BorderButton
-            title="Verify"
-            marginTop={18}
-            disabled={!canVerify}
+            title={otpSent ? "Verify OTP" : "Send OTP"}
+            disabled={!canVerify || optLoading}
             onPress={() => {
               if (!canVerify) return;
-              //handleVerifyPhone(); // your verify API
+
+              if (!otpSent) {
+                handleSendOtp();
+              } else {
+                handleVerifyOtp();
+              }
             }}
           />
+        )}
+      </View>
 
-          {!emailVerified && (
-            <BorderButton
-              title="Verify your Email"
-              marginTop={10}
-              onPress={handleResend}
-            />
-          )}
+      {!emailVerified && (
+        <BorderButton
+          title="Verify your Email"
+          marginTop={10}
+          onPress={handleResend}
+        />
+      )}
 
-          <GradientButton
-            title="Next"
-            marginTop={25}
-            disabled={loading}
-            loading={loading}
-            onPress={handleAccountSetup}
-          />
-        </ScrollView>
-      </KeyboardAvoidingView>
+      <GradientButton
+        title="Next"
+        marginTop={25}
+        disabled={loading || mobileVerified !== 1}
+        loading={loading}
+        onPress={handleAccountSetup}
+      />
     </View>
   );
 };
@@ -367,6 +451,19 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     color: "#c3c3c3c3",
     marginTop: 7,
+  },
+  otpContainer: {
+    marginTop: 10,
+  },
+  otpInput: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    letterSpacing: 6,
+    color: "#000",
   },
 });
 

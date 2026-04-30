@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Image, FlatList } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useEditProfileStore } from "../useEditProfileStore";
 import { SkeletonBox } from "../../../components/SkeletonBox";
 import DeleteAttachmentModal from "../modals/DeleteAttachmentModal";
+import AttachmentImagePreviewModal from "./AttachmentImagePreviewModal";
 
 const AttachmentData = ({ isEdit = true }) => {
     const attachments = useEditProfileStore((state) => state.form.attachments);
@@ -12,6 +13,8 @@ const AttachmentData = ({ isEdit = true }) => {
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [selectedIndex, setSelectedIndex] = useState(null);
+    const [previewVisible, setPreviewVisible] = useState(false);
+    const [previewIndex, setPreviewIndex] = useState(0); 
     if (!attachments || attachments.length === 0) return null;
     // console.log("Before delete:", attachments);
 
@@ -49,10 +52,18 @@ const AttachmentData = ({ isEdit = true }) => {
                         </View>
                     </>
                 ) : (
-                    <Image
-                        source={{ uri: item.small_attachment || item.uri }}
-                        style={styles.thumb}
-                    />
+                    <TouchableOpacity
+                        activeOpacity={0.85}
+                        onPress={() => {
+                            setPreviewIndex(index);
+                            setPreviewVisible(true);
+                        }}
+                    >
+                        <Image
+                            source={{ uri: item.small_attachment || item.uri }}
+                            style={styles.thumb}
+                        />
+                    </TouchableOpacity>
                 )}
 
                 {isEdit && !item.loading && (
@@ -65,7 +76,7 @@ const AttachmentData = ({ isEdit = true }) => {
                             setDeleteModalVisible(true);
                         }}
                     >
-                        <Ionicons name="close" size={13} color="#030303" />
+                        <MaterialIcons name="delete" size={20} color="#d91212" />
                     </TouchableOpacity>
                 )}
             </View>
@@ -89,6 +100,12 @@ const AttachmentData = ({ isEdit = true }) => {
                 visible={deleteModalVisible}
                 onClose={onClose}
                 onConfirm={handleDelete}
+            />
+            <AttachmentImagePreviewModal
+                visible={previewVisible}
+                attachments={attachments}
+                initialIndex={previewIndex}
+                onClose={() => setPreviewVisible(false)}
             />
         </View>
     );
@@ -116,14 +133,12 @@ const styles = StyleSheet.create({
     },
     removeBtn: {
         position: "absolute",
-        top: 1,
-        right: 1,
-        width: 18,
-        height: 18,
-        borderRadius: 5,
+        top: 5,
+        right: 5,
+        width: 25,
+        height: 25,
+        borderRadius: 50,
         backgroundColor: "#fff",
-        borderWidth: 1,
-        borderColor: "#222",
         alignItems: "center",
         justifyContent: "center",
     },

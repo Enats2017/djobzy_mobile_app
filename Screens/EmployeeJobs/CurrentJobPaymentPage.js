@@ -24,11 +24,13 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import EmployerFooter from "../../components/EmployerFooter";
 import { useNotifications } from "../../context/MessageNotificationContext";
 import RequestAdditionalPaymentModal from "./RequestAdditionalPaymentModal";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 export default function CurrentJobPaymentPage() {
   const navigation = useNavigation();
   const route = useRoute();
   const [loading, setLoading] = useState(true);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
   const [gigs, setGigs] = useState([]);
   const [user, setUser] = useState([]);
   const [data, setData] = useState([]);
@@ -55,6 +57,34 @@ export default function CurrentJobPaymentPage() {
       console.log("API Error:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const downloadPdfInvoice = async () => {
+    try {
+      setInvoiceLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(`${API_URL}/send-invoice-email`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ job_id: gid }),
+      });
+      const data = await response.json();
+      console.log(data);
+      if (data.success) {
+        toastSuccess("Invoice sent! Check your registered email.");
+      } else {
+        toastError(data.message || "Could not send invoice. Please try again.");
+      }
+    } catch (error) {
+      console.log("API Error:", error);
+      toastError("A connection error occurred. Please try again.");
+    } finally {
+      setInvoiceLoading(false);
     }
   };
 
@@ -342,25 +372,27 @@ export default function CurrentJobPaymentPage() {
             </View>
             <View style={styles.footer}>
               {data?.authUser?.id != gigs?.req_user_id && (
-                <GradientButton title="Download PDF" />
+                <GradientButton title="Download PDF" onPress={downloadPdfInvoice} disabled={invoiceLoading} loading={invoiceLoading} />
               )}
               {data?.authUser?.id == gigs?.req_user_id && admin == 0 && gigs.request_status == 1 && (
-                  <GradientButton
-                    title="Request an additional payment"
-                    onPress={() => setShowPaymentModal(true)}
-                  />
-                )}
+                <GradientButton
+                  title="Request an additional payment"
+                  onPress={() => setShowPaymentModal(true)}
+                />
+              )}
             </View>
           </ScrollView>
         )}
-        <RequestAdditionalPaymentModal
-          visible={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          data={data}
-          prpId={gigs.prp_id}
-          initialTotal={gigs?.bid_price}
-          initialHourly={gigs?.prop_hourly_rate}
-        />
+        {data?.authUser?.id == gigs?.req_user_id && admin == 0 && gigs.request_status == 1 && (
+          <RequestAdditionalPaymentModal
+            visible={showPaymentModal}
+            onClose={() => setShowPaymentModal(false)}
+            data={data}
+            prpId={gigs.prp_id}
+            initialTotal={gigs?.bid_price}
+            initialHourly={gigs?.prop_hourly_rate}
+          />
+        )}
 
       </View>
       {admin == 2 ? <EmployerFooter /> : <Footer />}

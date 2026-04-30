@@ -61,7 +61,7 @@ const VerificationPage = () => {
       const user = res.data.userDetails || {};
       await AsyncStorage.removeItem("user");
       await AsyncStorage.setItem("user", JSON.stringify(res.data.userDetails));
-      console.log("user:", user);
+      // console.log("user:", user);
       setUserDetails(user);
 
       const verificationStep = user.verification_step;
@@ -94,129 +94,129 @@ const VerificationPage = () => {
   }, []);
 
   return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView behavior="padding" style={styles.container}>
-          <HeaderBar showSearch={false} showMenu={false} />
-          <ScrollView
-            contentContainerStyle={{ paddingBottom: 5 }}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.StepContainer}>
-              {["Account Setup", "Default Profile", "Profile Setup"].map(
-                (label, index, array) => {
-                  const isActive = index === activeTab;
-                  const isCompleted = index < activeTab;
-                  return (
-                    <View key={index} style={styles.stepItem}>
-                      <View style={styles.topRow}>
-                        <TouchableOpacity
-                          activeOpacity={0.7}
-                          style={styles.circleTouch}
-                        >
-                          <View
-                            style={[
-                              styles.circle,
-                              isCompleted
-                                ? styles.completedCircle
-                                : styles.inactiveCircle,
-                            ]}
-                          >
-                            {isCompleted && (
-                              <MaterialIcons
-                                name="done"
-                                size={12}
-                                color="#fff"
-                              />
-                            )}
-                          </View>
-                        </TouchableOpacity>
-
-                        {/* LABEL */}
-                        <Text
+    <SafeAreaView style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
+        <HeaderBar showSearch={false} showMenu={false} />
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 5 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.StepContainer}>
+            {["Account Setup", "Default Profile", "Profile Setup"].map(
+              (label, index, array) => {
+                const isActive = index === activeTab;
+                const isCompleted = index < activeTab;
+                return (
+                  <View key={index} style={styles.stepItem}>
+                    <View style={styles.topRow}>
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        style={styles.circleTouch}
+                      >
+                        <View
                           style={[
-                            styles.stepText,
-                            isActive
-                              ? styles.activeText
-                              : isCompleted
-                                ? styles.completedText
-                                : styles.inactiveText,
+                            styles.circle,
+                            isCompleted
+                              ? styles.completedCircle
+                              : styles.inactiveCircle,
                           ]}
                         >
-                          {label}
-                        </Text>
+                          {isCompleted && (
+                            <MaterialIcons
+                              name="done"
+                              size={12}
+                              color="#fff"
+                            />
+                          )}
+                        </View>
+                      </TouchableOpacity>
 
-                        {/* LINE */}
-                        {index < array.length - 1 && (
-                          <View
-                            style={[
-                              styles.line,
-                              isCompleted
-                                ? styles.completedLine
-                                : styles.inactiveLine,
-                            ]}
-                          />
-                        )}
-                      </View>
+                      {/* LABEL */}
+                      <Text
+                        style={[
+                          styles.stepText,
+                          isActive
+                            ? styles.activeText
+                            : isCompleted
+                              ? styles.completedText
+                              : styles.inactiveText,
+                        ]}
+                      >
+                        {label}
+                      </Text>
+
+                      {/* LINE */}
+                      {index < array.length - 1 && (
+                        <View
+                          style={[
+                            styles.line,
+                            isCompleted
+                              ? styles.completedLine
+                              : styles.inactiveLine,
+                          ]}
+                        />
+                      )}
                     </View>
-                  );
-                },
-              )}
-            </View>
-            <View style={{ display: activeTab === 0 ? "flex" : "none" }}>
-              {loading ? (
-                <View style={styles.loaderWrap}>
-                  <ActivityIndicator size="large" color="#fff" />
-                  <Text style={styles.loadingText}>
-                    Loading account details...
-                  </Text>
-                </View>
-              ) : (
-                <AccountSetup
-                  countries={countries}
-                  fullName={fullName}
-                  setFullName={setFullName}
-                  username={username}
-                  setUsername={setUsername}
-                  email={email}
-                  setEmail={setEmail}
-                  emailVerified={emailVerified}
-                  userDetails={userDetails}
-                  onNext={() => setActiveTab(1)}
-                />
-              )}
-            </View>
-
-            <View style={{ display: activeTab === 1 ? "flex" : "none" }}>
-              <DefaultProfile
-                services={services}
-                filtered={filtered}
-                onNext={() => setActiveTab(2)}
-              />
-            </View>
-            <View style={{ display: activeTab === 2 ? "flex" : "none" }}>
-              <ProfileSetup
-                userId={userId}
-                onNext={(adminValue) => {
-                  setAdmin(adminValue);
-                  setActiveTab(3);
-                }}
-              />
-            </View>
-            <View style={{ display: activeTab === 3 ? "flex" : "none" }}>
-              <JobCreate admin={admin} userId={userId} />
-            </View>
-            {activeTab > 0 && activeTab < 3 && (
-              <TouchableOpacity
-                style={styles.backBtn}
-                onPress={() => setActiveTab(activeTab - 1)}
-              >
-                <Text style={styles.backBtnText}>Back</Text>
-              </TouchableOpacity>
+                  </View>
+                );
+              },
             )}
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+          </View>
+          <View style={{ display: activeTab === 0 ? "flex" : "none" }}>
+            {loading ? (
+              <View style={styles.loaderWrap}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={styles.loadingText}>
+                  Loading account details...
+                </Text>
+              </View>
+            ) : (
+              <AccountSetup
+                countries={countries}
+                fullName={fullName}
+                setFullName={setFullName}
+                username={username}
+                setUsername={setUsername}
+                email={email}
+                setEmail={setEmail}
+                emailVerified={emailVerified}
+                userDetails={userDetails}
+                onNext={() => setActiveTab(1)}
+              />
+            )}
+          </View>
+
+          <View style={{ display: activeTab === 1 ? "flex" : "none" }}>
+            <DefaultProfile
+              services={services}
+              filtered={filtered}
+              onNext={() => setActiveTab(2)}
+            />
+          </View>
+          <View style={{ display: activeTab === 2 ? "flex" : "none" }}>
+            <ProfileSetup
+              userId={userId}
+              onNext={(adminValue) => {
+                setAdmin(adminValue);
+                setActiveTab(3);
+              }}
+            />
+          </View>
+          <View style={{ display: activeTab === 3 ? "flex" : "none" }}>
+            <JobCreate admin={admin} userId={userId} />
+          </View>
+          {activeTab > 0 && activeTab < 3 && (
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={() => setActiveTab(activeTab - 1)}
+            >
+              <Text style={styles.backBtnText}>Back</Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
@@ -227,10 +227,10 @@ const styles = StyleSheet.create({
     paddingTop: 70,
     backgroundColor: "#222222",
   },
- StepContainer: {
+  StepContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-     marginBottom:20,
+    marginBottom: 20,
     width: "100%",
   },
 
@@ -290,20 +290,20 @@ const styles = StyleSheet.create({
 
   completedText: {
     color: "#fff",
-    fontFamily:"Montserrat_400Regular",
-    fontSize:14,
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
   },
 
   activeText: {
     color: "#fff",
-    fontFamily:"Montserrat_400Regular",
-    fontSize:14,
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
   },
 
   inactiveText: {
     color: "#aaa",
-    fontFamily:"Montserrat_400Regular",
-    fontSize:14,
+    fontFamily: "Montserrat_400Regular",
+    fontSize: 14,
   },
 
   line: {

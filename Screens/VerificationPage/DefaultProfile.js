@@ -100,7 +100,10 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
           style={[styles.card, role == 0 && styles.cardActive]}
           onPress={() => setRole(0)}
         >
-          <View style={styles.cardIcon}>
+          <View style={[
+            styles.cardIcon,
+            { backgroundColor: role === 0 ? "#d98974" : "#444" },
+          ]}>
             <FontAwesome5 name="user" size={20} color="#fff" />
           </View>
           <Text style={styles.cardTitle}>Employee</Text>
@@ -110,7 +113,12 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
           style={[styles.card, role == 2 && styles.cardActive]}
           onPress={() => setRole(2)}
         >
-          <View style={[styles.cardIcon, { backgroundColor: "#444" }]}>
+          <View
+            style={[
+              styles.cardIcon,
+              { backgroundColor: role === 2 ? "#d98974" : "#444" },
+            ]}
+          >
             <Ionicons name="bag" size={20} color="#fff" />
           </View>
           <Text style={[styles.cardTitle, { color: "#ddd" }]}>Employer</Text>
@@ -186,12 +194,12 @@ const DefaultProfile = ({ services, filtered, onNext }) => {
           <Text style={{ color: "#777" }}>No services selected.</Text>
         )}
       </View>
-     <GradientButton 
-      title="Next" 
-      marginTop={20} 
-      disabled={loading} 
-      loading={loading} 
-      onPress={handleSubmit}
+      <GradientButton
+        title="Next"
+        marginTop={20}
+        disabled={loading}
+        loading={loading}
+        onPress={handleSubmit}
       />
     </>
   );
@@ -213,7 +221,7 @@ const styles = StyleSheet.create({
     color: "#CB7767",
     fontSize: 24,
     fontFamily: "Montserrat_600SemiBold",
-    marginBottom:4,
+    marginBottom: 4,
     marginTop: 7,
   },
   card: {
@@ -275,7 +283,7 @@ const styles = StyleSheet.create({
   searchInput: {
     color: "#ffffff",
     fontSize: 14,
-    width:"100%",
+    width: "100%",
     fontFamily: "Montserrat_400Regular",
     paddingVertical: 10,
   },

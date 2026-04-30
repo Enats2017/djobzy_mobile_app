@@ -192,14 +192,15 @@ const styles = StyleSheet.create({
   modalBackdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "flex-end",
+    // alignItems: "center",
   },
   modalContainer: {
     width: "100%",
     backgroundColor: "#fff",
     borderRadius: 16,
     overflow: "hidden",
+    maxHeight: "70%",
   },
   divider: {
     width: 1,

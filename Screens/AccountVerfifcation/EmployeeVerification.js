@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -8,13 +8,11 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import {
   Ionicons,
-  MaterialIcons,
   FontAwesome,
   Feather,
   FontAwesome6,
@@ -25,42 +23,22 @@ import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { API_URL } from "../../api/ApiUrl";
 import Footer from "../../components/Footer";
 import Loading from "../../components/Loading";
-import Identity from "../../components/IdentificationPage";
-import IDVerificationUploadScreen from "../GeneralSetting/IDVerificationUploadScreen";
-import ContactInfo from "../../components/ContactInfo";
-//import GoogleMap from "../../components/GoogleMap";
-import GradientButton from "../../components/GradientButton";
-import BorderButton from "../../components/BorderButton";
-import * as DocumentPicker from "expo-document-picker";
-import * as ImagePicker from "expo-image-picker";
-import FilePreview from "../../components/FilePreview";
-import {
-  toastSuccess,
-  toastError,
-  toastInfo,
-  toastWarning,
-} from "../../utils/toast";
 import Step3Social from "./Step3Social";
 import EmployerFooter from "../../components/EmployerFooter";
 import Step4Address from "./Step4Address";
 import Step5Identyfication from "./Step5Identyfication";
 import Step6Payment from "./Step6Payment";
 import Step7Interview from "./Step7Interview";
+import { useNotifications } from "../../context/MessageNotificationContext";
 
 const EmployeeVerification = () => {
-  const [selected, setSelected] = useState([]);
   const navigation = useNavigation();
   const [userDetails, setUserDetails] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(null);
-  const [email, setEmail] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [resumeFile, setResumeFile] = useState(null);
-  const [postal, setPostal] = useState("");
-  const [location, setLocation] = useState("");
-  const [admin, setAdmin] = useState(0);
+  const { admin } = useNotifications();
 
-  const fectchVerfication = async () => {
+  const fetchVerification = async () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
@@ -72,50 +50,40 @@ const EmployeeVerification = () => {
       });
       const data = await response.json();
       setUserDetails(data.userDetails);
-      const verificationCount = data.userDetails.verification_count;
-      setUserDetails(data.userDetails);
-    
     } catch (error) {
       console.log("API Error:", error);
     } finally {
       setLoading(false);
     }
   };
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-    console.log("11111", user);
-    setAdmin(user?.admin);
-  };
+
   useEffect(() => {
-    loadUser();
-    fectchVerfication();
+    fetchVerification();
   }, []);
 
-  const isVerified = (step) => {
-    return step <= userDetails?.verification_count;
+  const currentStep = (userDetails?.verification_count || 0) + 1;
+
+  const getStepState = (step) => {
+    if (step < currentStep) return "verified";
+    if (step === currentStep) return "active";
+    return "locked";
   };
 
-  const isActive = (step) => {
-    return step === userDetails?.verification_count + 1;
+  const isStepEnabled = (step) => step === currentStep;
+  const handleStepPress = (step) => {
+    if (!isStepEnabled(step)) return;
+    setActiveStep(step);
   };
-
-  const isDisabled = (step) => {
-    return step > userDetails?.verification_count + 1;
-  };
-
- const handleStepPress = (step) => {
-  setActiveStep(step); 
-};
 
   const goBack = () => {
     setActiveStep(null);
   };
+
   const goNext = async () => {
-  await fectchVerfication(); // re-fetch updated verification_count
-  setActiveStep(null); // go back to verification list
-};
+    await fetchVerification();
+    setActiveStep(null);
+  };
+
   const renderStepScreen = () => {
     switch (activeStep) {
       case 3:
@@ -123,32 +91,69 @@ const EmployeeVerification = () => {
       case 4:
         return <Step4Address onNext={goNext} />;
       case 5:
-        return <Step5Identyfication  onNext={goNext} />;
+        return <Step5Identyfication onNext={goNext} />;
       case 6:
         return <Step6Payment onNext={goNext} />;
       case 7:
-        return <Step7Interview onNext={goNext} interviewRequested={userDetails?.is_interview_requested} />;
-
+        return (
+          <Step7Interview
+            onNext={goNext}
+            interviewRequested={userDetails?.is_interview_requested}
+          />
+        );
       default:
         return null;
     }
   };
 
-  const getBoxStyle = (step) => {
-    if (isVerified(step)) return styles.verified;
-    if (isActive(step)) return styles.active;
-    return styles.unverified;
-  };
+  const StepCard = memo(({ step, label, icon, IconComponent }) => {
+    const state = getStepState(step);
+    return (
+      <TouchableOpacity
+        style={[
+          styles.box,
+          state === "verified"
+            ? styles.verified
+            : state === "active"
+            ? styles.active
+            : styles.unverified,
+        ]}
+        onPress={() => handleStepPress(step)}
+        disabled={!isStepEnabled(step)}
+        activeOpacity={isStepEnabled(step) ? 0.7 : 1}
+      >
+        <View style={styles.topRow}>
+          <Text
+            style={[
+              styles.label,
+              state === "locked" ? styles.disabledText : styles.activeText,
+            ]}
+          >
+            {label}
+          </Text>
 
-  const getTextStyle = (step) => {
-    if (isVerified(step) || isActive(step)) return styles.activeText;
-    return styles.disabledText;
-  };
+          <IconComponent
+            name={icon}
+            size={18}
+            color={state === "locked" ? "#c3c3c3" : "#fff"}
+          />
+        </View>
 
-  const getIconColor = (step) => {
-    if (isVerified(step) || isActive(step)) return "#fff";
-    return "#c3c3c3";
-  };
+        {state !== "verified" && (
+          <Text style={styles.time}>1-2 min</Text>
+        )}
+
+        <Text
+          style={[
+            styles.number,
+            state === "locked" ? styles.disabledText : styles.activeText,
+          ]}
+        >
+          {String(step).padStart(2, "0")}
+        </Text>
+      </TouchableOpacity>
+    );
+  });
 
   if (activeStep !== null) {
     return (
@@ -180,6 +185,7 @@ const EmployeeVerification = () => {
       </SafeAreaView>
     );
   }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -189,159 +195,41 @@ const EmployeeVerification = () => {
         ) : (
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: "95" }}
+            contentContainerStyle={{ paddingBottom: 95 }}
           >
             <Text style={styles.sectionTitle}>Your Verification Level</Text>
             <Text style={styles.description}>
               Higher verification levels increase your chances of landing jobs,
               improve trust, and enhance your Djobzy experience.
             </Text>
+
             <View style={styles.row}>
-              <TouchableOpacity
-                style={[styles.box, getBoxStyle(1)]}
-                onPress={() => handleStepPress(1)}
-                disabled={isDisabled(1)}
-              >
-                <View style={styles.topRow}>
-                  <Text style={[styles.label, getTextStyle(1)]}>Email</Text>
-                  <FontAwesome
-                    name="envelope"
-                    size={18}
-                    color={getIconColor(1)}
-                  />
-                </View>
-                {!isVerified(1) && (
-                  <Text style={styles.time}>1-2 min</Text>
-                )}
-                <Text style={[styles.number, getTextStyle(1)]}>01</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.box, getBoxStyle(2)]}
-                onPress={() => handleStepPress(2)}
-                disabled={isDisabled(2)}
-              >
-                <View style={styles.topRow}>
-                  <Text style={[styles.label, getTextStyle(2)]}>
-                    Phone Number
-                  </Text>
-                  <Feather name="phone" size={18} color={getIconColor(2)} />
-                </View>
-                {!isVerified(2) && (
-                  <Text style={styles.time}>1-2 min</Text>
-                )}
-                <Text style={[styles.number, getTextStyle(2)]}>02</Text>
-              </TouchableOpacity>
+              <StepCard step={1} label="Email" icon="envelope" IconComponent={FontAwesome} />
+              <StepCard step={2} label="Phone Number" icon="phone" IconComponent={Feather} />
             </View>
+
             <View style={styles.row}>
-              <TouchableOpacity
-                style={[styles.box, getBoxStyle(3)]}
-                onPress={() => handleStepPress(3)}
-              >
-                <View style={styles.topRow}>
-                  <Text style={[styles.label, getTextStyle(3)]}>
-                    Social Media Accounts
-                  </Text>
-                  <Ionicons
-                    name="person-sharp"
-                    size={18}
-                    color={getIconColor(3)}
-                  />
-                </View>
-                {!isVerified(3) && (
-                  <Text style={styles.time}>1-2 min</Text>
-                )}
-                <Text style={[styles.number, getTextStyle(3)]}>03</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.box, getBoxStyle(4)]}
-                onPress={() => handleStepPress(4)}
-                //disabled={isDisabled(4)}
-              >
-                <View style={styles.topRow}>
-                  <Text style={[styles.label, getTextStyle(4)]}>Address</Text>
-                  <FontAwesome6
-                    name="book-bookmark"
-                    size={18}
-                    color={getIconColor(4)}
-                  />
-                </View>
-                {!isVerified(4) && (
-                  <Text style={styles.time}>1-2 min</Text>
-                )}
-                <Text style={[styles.number, getTextStyle(4)]}>04</Text>
-              </TouchableOpacity>
+              <StepCard step={3} label="Social Media Accounts" icon="person-sharp" IconComponent={Ionicons} />
+              <StepCard step={4} label="Address" icon="book-bookmark" IconComponent={FontAwesome6} />
             </View>
+
             <View style={styles.row}>
-              <TouchableOpacity
-                style={[styles.box, getBoxStyle(5)]}
-                onPress={() => handleStepPress(5)}
-                //disabled={isDisabled(5)}
-              >
-                <View style={styles.topRow}>
-                  <Text style={[styles.label, getTextStyle(5)]}>
-                    ID Card & Certificates
-                  </Text>
-                  <FontAwesome6
-                    name="contact-card"
-                    size={18}
-                    color={getIconColor(5)}
-                  />
-                </View>
-                {!isVerified(5) && (
-                  <Text style={styles.time}>1-2 min</Text>
-                )}
-                <Text style={[styles.number, getTextStyle(5)]}>05</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.box, getBoxStyle(6)]}
-                onPress={() => handleStepPress(6)}
-               // disabled={isDisabled(6)}
-              >
-                <View style={styles.topRow}>
-                  <Text style={[styles.label, getTextStyle(6)]}>
-                    Credit / Debit Card
-                  </Text>
-                  <FontAwesome
-                    name="credit-card-alt"
-                    size={18}
-                    color={getIconColor(6)}
-                  />
-                </View>
-                {!isVerified(6) && (
-                  <Text style={styles.time}>1-2 min</Text>
-                )}
-                <Text style={[styles.number, getTextStyle(6)]}>06</Text>
-              </TouchableOpacity>
+              <StepCard step={5} label="ID Card & Certificates" icon="contact-card" IconComponent={FontAwesome6} />
+              <StepCard step={6} label="Credit / Debit Card" icon="credit-card-alt" IconComponent={FontAwesome} />
             </View>
+
             <View style={styles.row}>
-              <TouchableOpacity
-                style={[styles.box, getBoxStyle(7)]}
-                onPress={() => handleStepPress(7)}
-                //disabled={isDisabled(7)}
-              >
-                <View style={styles.topRow}>
-                  <Text style={[styles.label, getTextStyle(7)]}>
-                    Interview & Background Check
-                  </Text>
-                  <FontAwesome5
-                    name="users"
-                    size={18}
-                    color={getIconColor(7)}
-                  />
-                </View>
-                {!isVerified(7) && (
-                  <Text style={styles.time}>1-2 min</Text>
-                )}
-                <Text style={[styles.number, getTextStyle(7)]}>07</Text>
-              </TouchableOpacity>
+              <StepCard step={7} label="Interview & Background Check" icon="users" IconComponent={FontAwesome5} />
             </View>
           </ScrollView>
         )}
       </View>
+
       {admin == 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   safeArea: {

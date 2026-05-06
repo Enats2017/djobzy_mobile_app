@@ -1,12 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import ContactInfo from "../../components/ContactInfo";
-//import GoogleMap from "../../components/GoogleMap";
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import Footer from "../../components/Footer";
-import { ScrollView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import GradientButton from "../../components/GradientButton";
@@ -16,28 +14,23 @@ import { toastError, toastSuccess } from "../../utils/toast";
 import TimezoneSelector from "./TimezoneSelector";
 import EmployerFooter from "../../components/EmployerFooter";
 import { useNotifications } from "../../context/MessageNotificationContext";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const UserContactInfo = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const route = useRoute();
   const { user, timezone } = route.params || {};
   const [phoneNumber, setPhoneNumber] = useState(user.mobile_number || "");
-  const [mobileCountryId, setMobileCountryId] = useState(
-    user.mobile_country_id || "",
-  );
+  const [mobileCountryId, setMobileCountryId] = useState(user.mobile_country_id || "",);
   const [mobileCountryISO, setMobileCountryISO] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [canVerify, setCanVerify] = useState(false);
-  const [postal, setPostal] = useState(user.postal_code ||"");
+  const [postal, setPostal] = useState(user.postal_code || "");
   const [location, setLocation] = useState(user.address || "");
   const [selectedTimezone, setSelectedTimezone] = useState(user.timezone || "");
   const [loading, setLoading] = useState(false);
   const { admin } = useNotifications();
-
-  console.log("PHONE:", phoneNumber);
-  console.log("COUNTRY CODE:", mobileCountryId);
-  console.log("COUNTRY ISO:", mobileCountryISO);
-  // console.log("USERSSSSSSSSSSSSS:", user);
 
   useEffect(() => {
     if (!user) return;
@@ -64,7 +57,7 @@ const UserContactInfo = () => {
     try {
       return `+${getCountryCallingCode(iso)}`;
     } catch {
-      return "+1"; // fallback Canada
+      return "+1";
     }
   };
 
@@ -74,20 +67,22 @@ const UserContactInfo = () => {
   const defaultFlag = isoToFlag(countryISO) || "🇨🇦";
 
   const submitContactInfo = async () => {
-    if (!phoneNumber || !location) {
-      toastError("Phone, and location are required");
+    if (!phoneNumber) {
+      toastError("Phone Number is required");
+      return;
+    }
+    if (!location) {
+      toastError("Location is required");
       return;
     }
     const fullNumber = `+${mobileCountryId}${phoneNumber}`;
     const updatedFullNumber = `${mobileCountryId}${phoneNumber}`;
-    console.log(selectedTimezone);
 
     const isPhoneValid = isValidPhoneNumber(fullNumber, mobileCountryISO || user?.iso2);
     if (!isPhoneValid) {
       toastError("Please enter a valid phone number.");
       return;
     }
-
     if (!selectedTimezone) {
       toastError("Please select a timezone.");
       return;
@@ -100,12 +95,6 @@ const UserContactInfo = () => {
     formData.append("searchInput", location);
     formData.append("country_iso2", mobileCountryISO);
     formData.append("timezone", selectedTimezone);
-    console.log("SENDING DATA:", {
-      phoneNumber,
-      mobileCountryId,
-      postal,
-      location,
-    });
 
     try {
       setLoading(true);
@@ -136,13 +125,21 @@ const UserContactInfo = () => {
   };
 
   return (
-    <>
-      <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+      >
         <View style={styles.container}>
           <PageNameHeaderBar title="Contact Info" navigation={navigation} />
           <ScrollView
-            contentContainerStyle={{ paddingBottom: 100 }}
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + 40,
+              flexGrow: 1,
+            }}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             <PhoneNumberInput
               value={phoneNumber}
@@ -153,6 +150,7 @@ const UserContactInfo = () => {
                 setMobileCountryId(countryCode);
                 setMobileCountryISO(countryISO);
                 setPhoneError("");
+
                 const full = `+${countryCode}${phone}`;
                 const valid = isValidPhoneNumber(full, countryISO);
                 setCanVerify(valid);
@@ -161,8 +159,11 @@ const UserContactInfo = () => {
               defaultCallingCode={defaultCallingCode}
               defaultCountryISO={defaultCountryISO}
             />
+
             {phoneError ? (
-              <Text style={{ color: "red", marginTop: 4 }}>{phoneError}</Text>
+              <Text style={{ color: "red", marginTop: 4 }}>
+                {phoneError}
+              </Text>
             ) : null}
 
             <ContactInfo
@@ -172,6 +173,7 @@ const UserContactInfo = () => {
               onChangeLocation={setLocation}
               user={user}
             />
+
             <TimezoneSelector
               timezones={timezone || []}
               selectedTimezone={selectedTimezone}
@@ -188,9 +190,11 @@ const UserContactInfo = () => {
             </View>
           </ScrollView>
         </View>
+
+        {/* Footer stays OUTSIDE scroll but INSIDE safe area */}
         {admin == 2 ? <EmployerFooter /> : <Footer />}
-      </SafeAreaView>
-    </>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 const styles = StyleSheet.create({

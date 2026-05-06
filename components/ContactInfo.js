@@ -57,7 +57,7 @@ const ContactInfo = ({
       )}
 
       <View style={styles.mapsection}>
-        <Map latitude={latitude || -33.8688} longitude={longitude || 151.2195} zoom={0.1} />
+        <Map latitude={latitude} longitude={longitude} zoom={0.1} />
       </View>
     </View>
   );

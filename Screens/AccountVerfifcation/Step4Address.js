@@ -133,7 +133,7 @@ const Step4Address = ({ onNext }) => {
         ))}
       </View>
       <View style={styles.mapsection}>
-        <Map latitude={-33.8688} longitude={151.2195} zoom={0.1} />
+        <Map />
       </View>
       <GradientButton title="Uplaod document" onPress={pickResume} />
       <TouchableOpacity style={styles.nextBtn} onPress={submitContactInfo} >

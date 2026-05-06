@@ -6,8 +6,10 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, memo, useRef } from "react";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,165 +21,243 @@ import LineDivider from "../../components/LineDivider";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
+import { useNotifications } from "../../context/MessageNotificationContext";
+import { Ionicons } from "@expo/vector-icons";
+
+const NotificationItem = memo(({ item, isLast, onPress, showMore }) => (
+  <View>
+    <View style={styles.notificationContainer}>
+      <View style={styles.headerRow}>
+        <View style={styles.avatarStack}>
+          {item.isNew && <View style={styles.greenDot} />}
+          <Image
+            source={{
+              uri: item.profile_photo || "https://randomuser.me/api/portraits/men/62.jpg",
+            }}
+            style={styles.avatar}
+            resizeMode="cover"
+          />
+        </View>
+        <View style={styles.nameTimeRow}>
+          <Text style={styles.name}>{item?.name}</Text>
+          {item?.time ? (
+            <Text style={styles.time}>{item.time}</Text>
+          ) : null}
+        </View>
+      </View>
+      <View style={styles.messageRow}>
+        <Text style={styles.message}>
+          {item.text}
+        </Text>
+        {showMore && (
+          <Text style={styles.moreText} onPress={() => onPress(item)}>
+            {" ...More"}
+          </Text>
+        )}
+      </View>
+    </View>
+    {!isLast && <LineDivider />}
+  </View>
+));
 
 const NotificationScreen = () => {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState("new");
+  const { admin } = useNotifications();
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [admin, setAdmin] = useState(0);
+  const [newPage, setNewPage] = useState(1);
+  const [oldPage, setOldPage] = useState(1);
+  const [newLastPage, setNewLastPage] = useState(1);
+  const [oldLastPage, setOldLastPage] = useState(1);
+  const searchTimeout = useRef(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
 
-  const fetchNotifications = async () => {
+  const SHOW_MORE_TYPES = useMemo(() => [1, 2, 3, 4, 7, 8, 9, 10, 12], []);
+  const fetchNotifications = useCallback(async (newP = 1, oldP = 1, append = false) => {
     try {
-      setLoading(true);
+      append ? setLoadingMore(true) : setLoading(true);
       const token = await AsyncStorage.getItem("token");
-      const res = await fetch(`${API_URL}/notifications`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const res = await fetch(`${API_URL}/notifications?new_page=${newP}&old_page=${oldP}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
       const data = await res.json();
-      // console.log(token);
-      const newList =
-        data?.new_notifications?.data?.map((item) => ({
-          ...item,
-          isNew: true,
-        })) || [];
-      const oldList =
-        data?.old_notifications?.data?.map((item) => ({
-          ...item,
-          isNew: false,
-        })) || [];
-      setNotifications([...newList, ...oldList]);
+      const newList = data?.new_notifications?.data?.map((item) => ({ ...item, isNew: true })) || [];
+      const oldList = data?.old_notifications?.data?.map((item) => ({ ...item, isNew: false })) || [];
+      setNewLastPage(data?.new_notifications?.last_page || 1);
+      setOldLastPage(data?.old_notifications?.last_page || 1);
+
+      if (append) {
+        setNotifications((prev) => {
+          const existingIds = new Set(prev.map((n) => n.id));
+          const merged = [...newList, ...oldList].filter((n) => !existingIds.has(n.id));
+          return [...prev, ...merged];
+        });
+      } else {
+        setNotifications([...newList, ...oldList]);
+      }
     } catch (error) {
-      console.error("Error fetching User:", error);
+      console.error("Error fetching notifications:", error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
-  
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-    if (!userStr) return; 
-    const user = JSON.parse(userStr);
-    setAdmin((user?.admin));     
-  };
-  useEffect(() => {
-    fetchNotifications();
-    loadUser();
   }, []);
+
+  useEffect(() => {
+    fetchNotifications(1, 1, false);
+  }, []);
+
+  const handleLoadMore = useCallback(() => {
+    if (isSearching || loadingMore) return;
+    const canLoadNew = newPage < newLastPage;
+    const canLoadOld = oldPage < oldLastPage;
+    if (!canLoadNew && !canLoadOld) return;
+    const nextNewPage = canLoadNew ? newPage + 1 : newPage;
+    const nextOldPage = canLoadOld ? oldPage + 1 : oldPage;
+
+    setNewPage(nextNewPage);
+    setOldPage(nextOldPage);
+    fetchNotifications(nextNewPage, nextOldPage, true);
+  }, [loadingMore, newPage, oldPage, newLastPage, oldLastPage, isSearching, fetchNotifications]);
+
+  const handleSearch = useCallback((text) => {
+    setSearch(text);
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    if (!text.trim()) {
+      setIsSearching(false);
+      setSearchResults([]);
+      return;
+    }
+
+    searchTimeout.current = setTimeout(() => {
+      setIsSearching(true);
+      const lower = text.toLowerCase();
+      const filtered = notifications.filter(
+        (n) =>
+          n.text?.toLowerCase().includes(lower) ||
+          n.name?.toLowerCase().includes(lower)
+      );
+      setSearchResults(filtered);
+    }, 300);
+  }, [notifications]);
+
+  const displayData = isSearching ? searchResults : notifications;
+
+  const handleNotificationPress = useCallback((offer) => {
+    switch (offer.type) {
+      case 2:
+      case 4:
+      case 9:
+        if (offer?.job?.request_slug) {
+          if(offer.job.request_status === 2) {
+            navigation.navigate("ViewCompletedJobPost", { gid: offer?.job?.request_slug, });
+          } else {
+            navigation.navigate("ViewCurrentJobPost", { gid: offer?.job?.request_slug });
+          }
+        }
+        break;
+      case 1:
+      case 8:
+        if (offer?.job?.request_slug) {
+          admin === 0
+            ? navigation.navigate("JobProfile", { gid: offer.job.request_slug })
+            : navigation.navigate("PostJobDetails", { jobId: offer.job.request_slug });
+        }
+        break;
+      case 10:
+        navigation.navigate("ReferralWallet");
+        break;
+      case 11:
+        navigation.navigate("VerificationPage");
+        break;
+      case 12:
+        navigation.navigate("Followers", { activeTab: "follower" });
+        break;
+      default:
+        if (offer?.job?.request_slug) {
+          navigation.navigate("JobProfile", { gid: offer.job.request_slug });
+        }
+        break;
+    }
+  }, [admin, navigation]);
+
+  const renderItem = useCallback(({ item, index }) => (
+    <NotificationItem
+      item={item}
+      isLast={index === displayData.length - 1}
+      onPress={handleNotificationPress}
+      showMore={SHOW_MORE_TYPES.includes(item.type)}
+    />
+  ), [displayData.length, handleNotificationPress, SHOW_MORE_TYPES]);
+
+  const renderFooter = useCallback(() => {
+    if (!loadingMore) return null;
+    return (
+      <View style={{ paddingVertical: 16, alignItems: "center" }}>
+        <ActivityIndicator size={30} color="#46A282" />
+      </View>
+    );
+  }, [loadingMore]);
+
+  const renderEmpty = useCallback(() => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>
+        {isSearching ? "No results found" : "No Notifications"}
+      </Text>
+    </View>
+  ), [isSearching]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <PageNameHeaderBar navigation={navigation} title="Alerts" />
-        <>
-          <View style={styles.searchBarRow}>
-            <View style={styles.searchBar}>
-              <Feather
-                name="search"
-                size={18}
-                color="#ffffff"
-                style={styles.icon}
-              />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Find Notification"
-                placeholderTextColor="#ffffff"
-                value={search}
-                onChangeText={setSearch}
-              />
-            </View>
-            <TouchableOpacity style={styles.filterBtn}>
-              <FontAwesome6 name="filter" size={20} color="#ffffff" />
-            </TouchableOpacity>
+        <PageNameHeaderBar navigation={navigation} title="Notifications" />
+
+        <View style={styles.searchBarRow}>
+          <View style={styles.searchBar}>
+            <Feather name="search" size={18} color="#ffffff" style={styles.icon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Find Notification"
+              placeholderTextColor="#ffffff"
+              value={search}
+              onChangeText={handleSearch}
+            />
           </View>
-          {/* Tabs inside scroll */}
-          {/* <View style={styles.tabContainer}>
-            <TouchableOpacity
-              style={[styles.tab, activeTab === "new" && styles.activeTab]}
-              onPress={() => setActiveTab("new")}
-            >
-              <Text
-                style={
-                  activeTab === "new" ? styles.activeTabText : styles.tabText
-                }
-              >
-                 Notifications
-              </Text>
-            </TouchableOpacity>
+          <TouchableOpacity style={styles.filterBtn}>
+            <FontAwesome6 name="filter" size={20} color="#ffffff" />
+          </TouchableOpacity>
+        </View>
 
-            <TouchableOpacity
-              style={[styles.tab, activeTab === "old" && styles.activeTab]}
-              onPress={() => setActiveTab("old")}
-            >
-              <Text
-                style={
-                  activeTab === "old" ? styles.activeTabText : styles.tabText
-                }
-              >
-               Chat Notifications
-              </Text>
-            </TouchableOpacity>
-          </View> */}
-          {loading ? (
-            <Loading />
-          ) : (
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 100 }}
-            >
-              <View style={styles.mainContainer}>
-                {activeTab === "new" ? (
-                  notifications?.length > 0 ? (
-                    notifications?.map((offer, index) => (
-                      <View key={index}>
-                        <View style={styles.notificationContainer}>
-                          <View style={styles.headerRow}>
-                            <View style={styles.avatarStack}>
-                             {offer.isNew && <View style={styles.greenDot} />}
-                              <Image
-                                source={{
-                                  uri:
-                                    offer?.from_user?.photo ||
-                                    "https://randomuser.me/api/portraits/men/62.jpg",
-                                }}
-                                style={styles.avatar}
-                              />
-                            </View>
-
-                            <View style={styles.nameTimeRow}>
-                              <Text style={styles.name}>
-                                {offer.from_user?.full_name}
-                              </Text>
-                            </View>
-                          </View>
-                          <Text style={styles.message}>{offer.text}</Text>
-                        </View>
-                        <LineDivider />
-                      </View>
-                    ))
-                  ) : (
-                    <View style={styles.emptyContainer}>
-                      <Text style={styles.emptyText}>No New Notifications</Text>
-                    </View>
-                  )
-                ) : (
-                  <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>No Chat Notification Found</Text>
-                  </View>
-                )}
-              </View>
-            </ScrollView>
-          )}
-        </>
+        {loading ? (
+          <Loading />
+        ) : (
+          <FlatList
+            data={displayData}
+            keyExtractor={(item) => item.id?.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            showsVerticalScrollIndicator={false}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={renderFooter}
+            ListEmptyComponent={renderEmpty}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            initialNumToRender={10}
+          />
+        )}
       </View>
       {admin == 2 ? <EmployerFooter /> : <Footer />}
-
-     
-     
     </SafeAreaView>
   );
 };
@@ -279,12 +359,12 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "flex-start",
     justifyContent: "flex-start",
-    width: 50,
+    width: 45,
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 100,
+    width: 45,
+    height: 45,
+    borderRadius: 25,
     borderWidth: 1,
     borderColor: "#fff",
   },
@@ -292,7 +372,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 10,
-    backgroundColor: "#34a853",
+    backgroundColor: "#46A282",
     borderWidth: 1.5,
     borderColor: "#ffffff",
     marginLeft: 5,
@@ -306,6 +386,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   name: {
+    flex: 1,
     fontSize: 16,
     color: "#ffffff",
     fontFamily: "Montserrat_500Medium",
@@ -316,6 +397,8 @@ const styles = StyleSheet.create({
     color: "#c3c3c3",
     fontFamily: "Montserrat_500Medium",
     textAlign: "right",
+    flexShrink: 0,
+    marginLeft: 8,
   },
   messageRow: {
     flexDirection: "row",
@@ -329,15 +412,15 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
   },
   moreText: {
-    fontSize: 15,
-    color: "#C96B59",
-    fontFamily: "Montserrat_500Medium",
+    fontSize: 14,
+    color: "#46A282",
+    fontFamily: "Montserrat_600SemiBold",
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 80, // ensures spacing inside ScrollView
+    paddingTop: 80,
   },
   emptyText: {
     fontSize: 16,

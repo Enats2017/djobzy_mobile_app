@@ -1,8 +1,16 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 export default function GoogleMap({ address, region, marker = true }) {
+  if (!region || !region.latitude || !region.longitude) {
+    return (
+      <View style={[styles.section, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: '#666666', fontFamily: "Montserrat_600SemiBold", }}>Loading map...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.section}>
       <MapView
@@ -11,12 +19,14 @@ export default function GoogleMap({ address, region, marker = true }) {
         initialRegion={region}
         showsUserLocation={true}
         showsMyLocationButton={true}
-        // onRegionChangeComplete={(r) => { console.log("Map moved to:", r);}}
       >
-        {marker && (
+        {marker && region?.latitude && region?.longitude && (
           <Marker
-            coordinate={{ latitude: region.latitude, longitude: region.longitude }}
-            title={address || "Location"}
+            coordinate={{ 
+              latitude: region.latitude, 
+              longitude: region.longitude 
+            }}
+            title={address || "Current Location"}
           />
         )}
       </MapView>

@@ -70,86 +70,84 @@ const GeneralSetting = () => {
   }, []);
 
   return (
-    <>
-      <SafeAreaView style={{ flex: 1 }}>
-          <View style={styles.container}>
-            <PageNameHeaderBar
-              title="General Settings"
-              navigation={navigation}
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <PageNameHeaderBar
+          title="General Settings"
+          navigation={navigation}
+        />
+        {loading ? (
+          <Loading />
+        ) : (
+          <View style={styles.menuContainer}>
+            <MenuItem
+              type="material"
+              icon="account-circle"
+              title="Account"
+              onPress={() =>
+                navigation.navigate("AccountSetting", { user: users })
+              }
             />
-            {loading ? (
-              <Loading />
-            ) : (
-              <View style={styles.menuContainer}>
-                <MenuItem
-                  type="material"
-                  icon="account-circle"
-                  title="Account"
-                  onPress={() =>
-                    navigation.navigate("AccountSetting", { user: users })
-                  }
-                />
-                <MenuItem
-                  type="AntDesign"
-                  icon="profile"
-                  title="Profile Settings"
-                  onPress={() =>
-                    navigation.navigate("ProfileSetting", {
-                      useradmin: users?.admin,
-                    })
-                  }
-                />
-                <MenuItem
-                  type="Font"
-                  icon="contact-book"
-                  title="Contact Info"
-                  onPress={() =>
-                    navigation.navigate("UserContactInfo", {
-                      details: details,
-                      user: users,
-                      timezone: timezone,
-                    })
-                  }
-                />
-                <MenuItem
-                  type="ion"
-                  icon="wallet-outline"
-                  title="Billing Methods"
-                  onPress={() => navigation.navigate("BillingMethods")}
-                />
-                <MenuItem
-                  type="ion"
-                  icon="notifications-outline"
-                  title="Notifications"
-                  onPress={() => navigation.navigate("UserNotification", { user: users })
-                  }
-                />
-                <MenuItem
-                  type="material"
-                  icon="security"
-                  title="Security"
-                  onPress={() => navigation.navigate("UserSecurity")}
-                />
-                <MenuItem
-                  type="ion"
-                  icon="finger-print"
-                  title="Identity Verification"
-                  onPress={() =>
-                    navigation.navigate("IDVerificationUploadScreen")
-                  }
-                />
-                <MenuItem
-                  type="Octicons"
-                  icon="verified"
-                  title="Verification Steps"
-                  onPress={() => navigation.navigate("EmployeeVerification")}
-                />
-              </View>
-            )}
+            <MenuItem
+              type="AntDesign"
+              icon="profile"
+              title="Profile Settings"
+              onPress={() =>
+                navigation.navigate("ProfileSetting", {
+                  useradmin: users?.admin,
+                })
+              }
+            />
+            <MenuItem
+              type="Font"
+              icon="contact-book"
+              title="Contact Info"
+              onPress={() =>
+                navigation.navigate("UserContactInfo", {
+                  details: details,
+                  user: users,
+                  timezone: timezone,
+                })
+              }
+            />
+            <MenuItem
+              type="ion"
+              icon="wallet-outline"
+              title="Billing Methods"
+              onPress={() => navigation.navigate("BillingMethods")}
+            />
+            <MenuItem
+              type="ion"
+              icon="notifications-outline"
+              title="Notifications"
+              onPress={() => navigation.navigate("UserNotification", { user: users })
+              }
+            />
+            <MenuItem
+              type="material"
+              icon="security"
+              title="Security"
+              onPress={() => navigation.navigate("UserSecurity")}
+            />
+            <MenuItem
+              type="ion"
+              icon="finger-print"
+              title="Identity Verification"
+              onPress={() =>
+                navigation.navigate("IDVerificationUploadScreen")
+              }
+            />
+            <MenuItem
+              type="Octicons"
+              icon="verified"
+              title="Verification Steps"
+              onPress={() => navigation.navigate("EmployeeVerification")}
+            />
           </View>
-          {admin == 2 ? <EmployerFooter /> : <Footer />}
-      </SafeAreaView>
-    </>
+        )}
+      </View>
+      {admin == 2 ? <EmployerFooter /> : <Footer />}
+    </SafeAreaView>
   );
 };
 const MenuItem = ({ type, icon, title, onPress }) => (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, memo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GoogleMap from './GoogleMap';

@@ -16,7 +16,7 @@ export default function GoogleMap({ address, region, marker = true }) {
       <MapView
         provider={PROVIDER_GOOGLE}
         style={styles.map}
-        initialRegion={region}
+        region={region}
         showsUserLocation={true}
         showsMyLocationButton={true}
       >

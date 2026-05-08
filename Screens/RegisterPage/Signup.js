@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -11,7 +11,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Linking
+  Linking,
+  ActivityIndicator
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,6 +21,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { toastError, toastSuccess } from "../../utils/toast";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import QuestionMark from "../../components/QuestionMark";
+import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
@@ -31,12 +33,19 @@ const Signup = () => {
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigation = useNavigation();
   const emailRegex = /^[^\s@]+@[^\s@]+\.(com)$/i;
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: "557477739499-i9c6llmn6veeej7pka0iu3gv49v4r27u.apps.googleusercontent.com",
+    });
+  }, []);
 
   const handleRegister = async () => {
     let hasError = false;
@@ -104,6 +113,85 @@ const Signup = () => {
     }
   };
 
+  const handleGoogleSignup = async () => {
+    try {
+      console.log("1️⃣ Google signup started");
+      setGoogleLoading(true);
+      console.log("2️⃣ Checking play services");
+      await GoogleSignin.hasPlayServices();
+      console.log("3️⃣ Opening Google popup");
+      const response = await GoogleSignin.signIn();
+      console.log("4️⃣ Google response:", response);
+      const idToken = response?.data?.idToken;
+      console.log("5️⃣ ID TOKEN:", idToken);
+      if (!idToken) {
+        console.log("❌ Google token missing");
+        toastError("Google token missing");
+        return;
+      }
+      console.log("6️⃣ Sending token to backend");
+      const res = await fetch(`${API_URL}/auth/google/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            id_token: idToken,
+            referral: referralUsername || null,
+          }),
+        }
+      );
+      console.log("7️⃣ Backend response status:", res.status);
+      const data = await res.json();
+      console.log("8️⃣ Backend response data:", data);
+      if (!res.ok) {
+        console.log("❌ Backend returned error");
+        toastError(data.message || "Google signup failed");
+        return;
+      }
+      console.log("9️⃣ Saving token/user");
+      await AsyncStorage.setItem("token", data.token);
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      const { verification_count, admin } = data.user;
+      console.log( "🔟 verification_count:", verification_count);
+      if (verification_count < 2) {
+        console.log("➡️ Redirecting to VerificationPage");
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "VerificationPage" }],
+        });
+        return;
+      } else {
+        console.log("➡️ Redirecting to Dashboard");
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Dashboard" }],
+        });
+      }
+      console.log("✅ Google signup success");
+      toastSuccess("Register successful");
+    } catch (error) {
+      console.log("❌ GOOGLE SIGNUP ERROR FULL:",JSON.stringify(error, null, 2));
+      console.log("❌ GOOGLE SIGNUP ERROR RAW:",error);
+      console.log("❌ GOOGLE SIGNUP ERROR CODE:",error?.code);
+      console.log("❌ GOOGLE SIGNUP ERROR MESSAGE:",error?.message);
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        toastError("Google signup cancelled");
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        toastError("Google signup already running");
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        toastError("Google Play Services unavailable");
+      } else {
+        toastError("Google signup failed");
+      }
+    } finally {
+      console.log("🏁 Google signup finished");
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient colors={["#444444", "#222222"]} style={styles.containers}>
@@ -115,7 +203,7 @@ const Signup = () => {
           keyboardShouldPersistTaps="handled"
         >
           <ScrollView
-            contentContainerStyle={{ paddingBottom:50 }}
+            contentContainerStyle={{ paddingBottom: 50 }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -221,8 +309,8 @@ const Signup = () => {
             ) : null}
 
             <View style={styles.label}>
-              <QuestionMark title="Referral username (Optional)" 
-                iconColor="#fff" 
+              <QuestionMark title="Referral username (Optional)"
+                iconColor="#fff"
                 tooltipMessage="The Referral System allows you to earn a passive income of 3% from every completed
                 contract of a user you invited. If you invite someone who earned $1000,
                 you get $30. If you invite someone who paid $1000 for a service, you get $30.
@@ -278,12 +366,22 @@ const Signup = () => {
               <Text style={styles.orText}>Or</Text>
               <View style={styles.line} />
             </View>
-            <TouchableOpacity style={styles.googleBtn}>
-              <Image
-                source={require("../../assets/images/Google.png")}
-                style={styles.socialIcon}
-              />
-              <Text style={styles.socialText}>Sign up with Google</Text>
+            <TouchableOpacity
+              style={styles.googleBtn}
+              onPress={handleGoogleSignup}
+              disabled={googleLoading}
+            >
+              {googleLoading ? (
+                <ActivityIndicator size={26} color="#fff" />
+              ) : (
+                <>
+                  <Image
+                    source={require("../../assets/images/Google.png")}
+                    style={styles.socialIcon}
+                  />
+                  <Text style={styles.socialText}>Sign up with Google</Text>
+                </>
+              )}
             </TouchableOpacity>
             {/* <TouchableOpacity style={styles.facebookBtn}>
               <Image
@@ -311,7 +409,7 @@ const styles = StyleSheet.create({
   containers: {
     flex: 1,
     paddingHorizontal: 15,
- 
+
   },
   errorText: {
     color: "#d32f2f",
@@ -325,7 +423,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 50,
     height: 50
-  },  
+  },
 
   title: {
     fontSize: 30,
@@ -349,7 +447,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   input: {
-   flex:1,
+    flex: 1,
     fontFamily: "Montserrat_400Regular",
     fontSize: 14,
     color: "#0000",

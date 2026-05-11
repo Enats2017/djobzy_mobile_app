@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -22,6 +22,7 @@ import { API_URL, API_ICON } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { toastError, toastSuccess } from "../../utils/toast";
 import GradientButton from "../../components/GradientButton";
+import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 
 const { width, height } = Dimensions.get("window");
 const getResponsiveValues = () => {
@@ -77,6 +78,13 @@ const Login = ({ navigation }) => {
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: "557477739499-i9c6llmn6veeej7pka0iu3gv49v4r27u.apps.googleusercontent.com",
+    });
+  }, []);
 
   const handleLogin = async () => {
     if (!email) {
@@ -101,7 +109,7 @@ const Login = ({ navigation }) => {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email,
           password,
         }),
@@ -145,6 +153,110 @@ const Login = ({ navigation }) => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      console.log("STEP 1: Google login started");
+      setGoogleLoading(true);
+      await GoogleSignin.hasPlayServices();
+      console.log("STEP 2: Play services available");
+
+      const response = await GoogleSignin.signIn();
+      console.log("STEP 3: Google response received:", response);
+
+      const idToken = response?.data?.idToken;
+      console.log("STEP 4: Extracted idToken:", idToken);
+
+      if (!idToken) {
+        console.log("ERROR: idToken missing");
+        toastError("Google token missing");
+        return;
+      }
+
+      const payload = {
+        id_token: idToken,
+      };
+
+      console.log("STEP 5: Sending API request:", payload);
+
+      const res = await fetch(`${API_URL}/auth/google/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      console.log("STEP 6: API response status:", res.status);
+
+      const data = await res.json();
+      console.log("STEP 7: API response data:", data);
+
+      if (!res.ok) {
+        console.log("ERROR: API failed:", data);
+        toastError(data.message || "Google login failed");
+        return;
+      }
+
+      console.log("STEP 8: Saving AsyncStorage");
+
+      await AsyncStorage.setItem("token", data.token);
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
+      console.log("STEP 9: User stored:", data.user);
+
+      const verification_count = data?.user?.verification_count ?? 0;
+      const admin = data?.user?.admin ?? 0;
+
+      console.log("STEP 10: verification_count:", verification_count);
+      console.log("STEP 11: admin:", admin);
+
+      if (verification_count < 2) {
+        console.log("STEP 12: Navigating to VerificationPage");
+
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "VerificationPage" }],
+        });
+      } else {
+        console.log("STEP 12: Navigating to Dashboard");
+
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Dashboard" }],
+        });
+      }
+
+      toastSuccess("Login successful");
+      console.log("STEP 13: Login success complete");
+    } catch (error) {
+      console.log("GOOGLE LOGIN ERROR OBJECT:", error);
+      console.log("ERROR CODE:", error?.code);
+      console.log("ERROR MESSAGE:", error?.message);
+
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log("ERROR: SIGN_IN_CANCELLED");
+        toastError("Google login cancelled");
+
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log("ERROR: IN_PROGRESS");
+        toastError("Google login already running");
+
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        console.log("ERROR: PLAY_SERVICES_NOT_AVAILABLE");
+        toastError("Google Play Services unavailable");
+
+      } else {
+        console.log("ERROR: UNKNOWN");
+        toastError("Google login failed");
+      }
+
+    } finally {
+      console.log("FINAL: Loading stopped");
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <LinearGradient colors={["#444444", "#222222"]} style={styles.containers}>
@@ -177,7 +289,7 @@ const Login = ({ navigation }) => {
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
-                  setEmailError(""); // clear error while typing
+                  setEmailError("");
                 }}
               />
             </View>
@@ -195,7 +307,7 @@ const Login = ({ navigation }) => {
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
-                  setPasswordError(""); // clear error while typing
+                  setPasswordError("");
                 }}
               />
               <TouchableOpacity
@@ -254,12 +366,22 @@ const Login = ({ navigation }) => {
               <View style={styles.line} />
             </View>
 
-            <TouchableOpacity style={styles.socialBtn}>
-              <Image
-                source={require("../../assets/images/Google.png")}
-                style={styles.socialIcon}
-              />
-              <Text style={styles.socialText}>Sign In with Google</Text>
+            <TouchableOpacity
+              style={styles.googleBtn}
+              onPress={handleGoogleSignup}
+              disabled={googleLoading}
+            >
+              {googleLoading ? (
+                <ActivityIndicator size={26} color="#fff" />
+              ) : (
+                <>
+                  <Image
+                    source={require("../../assets/images/Google.png")}
+                    style={styles.socialIcon}
+                  />
+                  <Text style={styles.socialText}>Sign in with Google</Text>
+                </>
+              )}
             </TouchableOpacity>
 
             {/* <TouchableOpacity style={styles.socialBtn}>
@@ -317,11 +439,11 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginBottom: 5,
     fontFamily: "Montserrat_600SemiBold",
- 
+
     fontSize: labelSize,
   },
   input: {
-    flex:1,
+    flex: 1,
     fontFamily: "Montserrat_400Regular",
     fontSize: 14,
     color: "#0000",

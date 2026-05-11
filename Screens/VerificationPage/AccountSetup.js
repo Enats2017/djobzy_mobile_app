@@ -10,6 +10,7 @@ import {
   ScrollView,
   TextInput,
   View,
+  TouchableOpacity,
 } from "react-native";
 import PhoneNumberInput from "../../components/PhoneNumberInput";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
@@ -45,6 +46,8 @@ const AccountSetup = ({
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [optLoading, setOtpLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -52,6 +55,7 @@ const AccountSetup = ({
         setMobileCountryISO(userDetails.iso2 || "");
         setMobileCountryId(userDetails.phonecode || "");
         setMobileVerified(userDetails.mobile_verified || 0);
+        setPassword(password || '');
       }
     }, [userDetails]),
   );
@@ -85,6 +89,10 @@ const AccountSetup = ({
       toastError("Please enter your username.");
       return;
     }
+    if (userDetails?.provider_id && !password) {
+      toastError("Password is required to access your settings.");
+      return;
+    }
     if (!phoneNumber) {
       toastError("Please enter your phone number.");
       return;
@@ -108,6 +116,7 @@ const AccountSetup = ({
           phone_number: updatedFullNumber,
           mobile_country_id: mobileCountryId,
           country_iso2: mobileCountryISO,
+          google_password: password,
           step_flag: "step2",
         },
         {
@@ -296,6 +305,35 @@ const AccountSetup = ({
           />
         )}
       </View>
+
+      {userDetails?.provider_id && (
+        <>
+          <Text style={styles.label}>Password to access your settings</Text>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Enter Password"
+              placeholderTextColor="#888"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+              }}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeIcon}
+            >
+              <Ionicons
+                name={showPassword ? "eye-outline" : "eye-off-outline"}
+                size={15}
+                color="#a6a6a6"
+              />
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+
       <Text style={styles.label}>Phone Number</Text>
       <PhoneNumberInput
         value={phoneNumber}
@@ -465,6 +503,22 @@ const styles = StyleSheet.create({
     letterSpacing: 6,
     color: "#000",
   },
+  passwordContainer: {
+    width: "100%",
+    height: 55,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+  },
+  passwordInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Montserrat_400Regular",
+    color: "#111010ff",
+  },
+  eyeIcon: { paddingHorizontal: 5 },
 });
 
 export default AccountSetup;

@@ -142,8 +142,8 @@ const CreateJob = () => {
   };
 
   const submitJob = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const token = await AsyncStorage.getItem("token");
       const state = useCreateJobGlobalStore.getState();
       const duration = getDurationPayload(state);
@@ -184,13 +184,17 @@ const CreateJob = () => {
 
       if (state.address) formData.append("address", state.address);
 
-      if (state.fileData?.fileUri) {
-        formData.append("file[]", {
-          uri: state.fileData.fileUri,
-          name: state.fileData.fileName,
-          type: state.fileData.fileType,
+      const newFiles = state.filesData.filter((f) => f.fileUri.startsWith("file"));
+      if (newFiles.length > 0) {
+        newFiles.forEach((file) => {
+          formData.append("file[]", {
+            uri:  file.fileUri,
+            name: file.fileName,
+            type: file.fileType,
+          });
         });
       }
+
       if (gid) {
         formData.append("gigId", gid);
       }
@@ -220,11 +224,11 @@ const CreateJob = () => {
         }
       } else {
         console.log(data.message);
-        Alert.alert("Error", data.message || "Failed to submit job");
+        toastError(data.message || "Failed to submit job");
       }
     } catch (error) {
       console.log("Error submitting job:", error);
-      Alert.alert("Error", "Something went wrong while submitting job.");
+      toastError("Something went wrong while submitting job.");
     } finally {
       setLoading(false);
     }

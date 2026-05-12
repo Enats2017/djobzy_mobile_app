@@ -15,6 +15,7 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
+import StarRating from "../../components/StarRating";
 
 const ReceiveApplication = () => {
   const navigation = useNavigation();
@@ -69,17 +70,9 @@ const ReceiveApplication = () => {
 
                       <View style={styles.userInfo}>
                         <View style={styles.nameStarsRow}>
-                          <Text style={styles.username}>{item.name}</Text>
+                          <Text style={styles.username}>{item.full_name}</Text>
                           <View style={styles.starsRow}>
-                            {[...Array(5)].map((_, i) => (
-                              <FontAwesome
-                                key={i}
-                                name="star"
-                                size={10}
-                                color="#EBBE56"
-                                 style={{ marginLeft: 3 }}
-                              />
-                            ))}
+                            <StarRating rating={item.rating} starSize={10} />
                           </View>
                         </View>
 
@@ -200,10 +193,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexWrap: "wrap",
     gap: 1,
-    
-  },
-  starsRow: {
-    flexDirection: "row",
     
   },
 

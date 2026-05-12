@@ -60,8 +60,8 @@ const MyBoostedJob = () => {
                             {job.map((item, index) => {
                                 const isActive = item.is_active === 1;
                                 return (
-                                    <View style={styles.cardSection}>
-                                        <View style={styles.card} key={index}>
+                                    <View style={styles.cardSection} key={index}>
+                                        <View style={styles.card}>
                                             <View style={styles.cardLeft}>
                                                 <Text style={styles.jobTitle}>
                                                     {item.subject}

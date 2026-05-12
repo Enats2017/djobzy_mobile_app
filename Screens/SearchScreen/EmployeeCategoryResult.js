@@ -24,6 +24,7 @@ import LineDivider from "../../components/LineDivider";
 import GradientButton from "../../components/GradientButton";
 import { useGlobalSearch } from "./useGlobalSearch";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import StarRating from "../../components/StarRating";
 
 export default function EmployeeCategoryResult({
     gigs,
@@ -83,15 +84,8 @@ export default function EmployeeCategoryResult({
                         <View style={{ flex: 1 }}>
                             <View style={styles.nameRow1}>
                                 <Text style={styles.userName1}> {item.full_name} </Text>
-                                <View style={{ flexDirection: "row", marginLeft: 6, gap: 3 }}>
-                                    {[...Array(5)].map((_, i) => (
-                                        <FontAwesome
-                                            key={i}
-                                            name="star"
-                                            size={15}
-                                            color="#EBBE56"
-                                        />
-                                    ))}
+                                <View>
+                                    <StarRating rating={item.rating} starSize={15} />
                                 </View>
                             </View>
                             <View style={styles.paymentRow1}>

@@ -9,6 +9,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import { toastError, toastSuccess } from "../../utils/toast";
+import StarRating from "../../components/StarRating";
 
 const JobCard = React.memo(({ item, navigation }) => {
   const servicesCount = item.gigServices ? item.gigServices.length : 0;
@@ -92,9 +93,7 @@ const JobCard = React.memo(({ item, navigation }) => {
                 </Text>
 
                 <View style={styles.starRow}>
-                  {[...Array(5)].map((_, i) => (
-                    <FontAwesome key={i} name="star" style={styles.starIcon} />
-                  ))}
+                  <StarRating rating={item.rating} />
                 </View>
               </View>
 
@@ -241,12 +240,8 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontFamily: "Montserrat_500Medium",
   },
-  starRow: {
-    flexDirection: "row",
-    gap: 3,
-  },
   heartColumn: {
-    width: 40, // 💥 fixed column
+    width: 40,
     alignItems: "center",
     justifyContent: "flex-start",
   },

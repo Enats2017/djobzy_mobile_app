@@ -3,7 +3,7 @@ import EmployerFooter from "../../components/EmployerFooter";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useState, useEffect } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_ICON, API_URL } from "../../api/ApiUrl";
@@ -86,67 +86,72 @@ const JobBoostPaymentSection = ({ route }) => {
             </TouchableOpacity>
             <Text style={styles.title}>Boost Your Job Post</Text>
           </View>
-
-          <View style={styles.section}>
-            <Text style={styles.label}>Title</Text>
-            <Text style={styles.labletext}>{subject}</Text>
-          </View>
-          <View style={styles.card}>
-            <Text style={styles.description}>
-              Promotion increases the chances of finding a better employee.
-            </Text>
-            <Text style={styles.description}>
-              Your promoted job post will be shown above others on the search
-              page. The promotion will last for{" "}
-              <Text style={styles.highlight}>1 week.</Text>
-            </Text>
-          </View>
-          <View style={styles.pricecard}>
-            <Text style={styles.labletext}>
-              Select the promotion price per category:
-            </Text>
-            <View style={styles.tabWrapper}>
-              {prices.map((price) => (
-                <View key={price} style={styles.tabContainer}>
-                  <TouchableOpacity
-                    style={[
-                      styles.tab,
-                      selectedPrice === price && styles.activePriceBox,
-                    ]}
-                    onPress={() => setSelectedPrice(price)}
-                  >
-                    <Text
-                      style={[
-                        styles.priceText,
-                        selectedPrice === price && styles.activePriceText,
-                      ]}
-                    >
-                      {price} USD
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
+          <ScrollView
+              style={styles.scrollView}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 80 }}
+          >
+            <View style={styles.section}>
+              <Text style={styles.label}>Title</Text>
+              <Text style={styles.labletext}>{subject}</Text>
             </View>
-            <View style={styles.infoRow}>
-              <Ionicons name="help-circle-outline" size={16} color="#ffffff" />
-              <Text style={styles.infoText}>
-                The higher promotion amount will result in higher ranking.
+            <View style={styles.card}>
+              <Text style={styles.description}>
+                Promotion increases the chances of finding a better employee.
+              </Text>
+              <Text style={styles.description}>
+                Your promoted job post will be shown above others on the search
+                page. The promotion will last for{" "}
+                <Text style={styles.highlight}>1 week.</Text>
               </Text>
             </View>
-          </View>
-          <View style={styles.totalBar}>
-            <Text style={styles.totalText}>Total Cost</Text>
-            <Image
-              source={require("../../assets/images/Vector-arrow.png")}
-              style={styles.image}
-              resizeMode="contain"
-            />
-            <View style={{ flexDirection: "row", alignItems: "baseline" }}>
-              <Text style={styles.totalPrice}>{selectedPrice} </Text>
-              <Text style={styles.dollor}>USD</Text>
+            <View style={styles.pricecard}>
+              <Text style={styles.labletext}>
+                Select the promotion price per category:
+              </Text>
+              <View style={styles.tabWrapper}>
+                {prices.map((price) => (
+                  <View key={price} style={styles.tabContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.tab,
+                        selectedPrice === price && styles.activePriceBox,
+                      ]}
+                      onPress={() => setSelectedPrice(price)}
+                    >
+                      <Text
+                        style={[
+                          styles.priceText,
+                          selectedPrice === price && styles.activePriceText,
+                        ]}
+                      >
+                        {price} USD
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.infoRow}>
+                <Ionicons name="help-circle-outline" size={16} color="#ffffff" />
+                <Text style={styles.infoText}>
+                  The higher promotion amount will result in higher ranking.
+                </Text>
+              </View>
             </View>
-          </View>
-          <GradientButton title="Boost the Job post" onPress={openWebsite} disabled={loading} loading={loading} />
+            <View style={styles.totalBar}>
+              <Text style={styles.totalText}>Total Cost</Text>
+              <Image
+                source={require("../../assets/images/Vector-arrow.png")}
+                style={styles.image}
+                resizeMode="contain"
+              />
+              <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+                <Text style={styles.totalPrice}>{selectedPrice} </Text>
+                <Text style={styles.dollor}>USD</Text>
+              </View>
+            </View>
+            <GradientButton title="Boost the Job post" onPress={openWebsite} disabled={loading} loading={loading} />
+          </ScrollView>
         </View>
         {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>

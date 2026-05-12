@@ -2,7 +2,7 @@ import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { truncateWords } from "../../api/TruncateWords";
-
+import StarRating from "../../components/StarRating";
 
 const ExpiredBiddings = ({expireBids =[]}) => {
   return (
@@ -21,15 +21,7 @@ const ExpiredBiddings = ({expireBids =[]}) => {
           <View style={styles.nameStarsRow2}>
             <Text style={styles.username2}>{expireBids?.full_name}</Text>
             <View style={styles.starsRow2}>
-              {[...Array(5)].map((_, i) => (
-                <FontAwesome
-                  key={i}
-                  name="star"
-                  size={10}
-                  color="#EBBE56"
-                  style={{ marginRight: 2 }}
-                />
-              ))}
+              <StarRating rating={expireBids?.rating} starSize={13} />
             </View>
           </View>
 
@@ -114,10 +106,6 @@ const styles = StyleSheet.create({
     flexWrap:"wrap",
     gap: 5,
   },
-  starsRow2: {
-    flexDirection: "row",
-  },
-
   username2: {
     color: "#fff",
     fontSize: 14,

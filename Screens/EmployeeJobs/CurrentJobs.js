@@ -16,6 +16,7 @@ import { truncateWords } from "../../api/TruncateWords";
 import GradientButton from "../../components/GradientButton";
 import { useNavigation } from "@react-navigation/native";
 import NoJobs from "./NoJobs";
+import StarRating from "../../components/StarRating";
 
 const CurrentJobs = () => {
   const [currentJobs, setCurrnetJobs] = useState([]);
@@ -66,13 +67,7 @@ const CurrentJobs = () => {
                     <Text style={styles.userName}>{currentJob.full_name}</Text>
 
                     <View style={styles.starRow}>
-                      {[...Array(5)].map((_, i) => (
-                        <FontAwesome
-                          key={i}
-                          name="star"
-                          style={styles.starIcon}
-                        />
-                      ))}
+                      <StarRating rating={currentJob.rating} starSize={13} />
                     </View>
                   </View>
                   <View style={styles.paymentRow}>
@@ -192,14 +187,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
       width:"80%",
     fontFamily: "Montserrat_500Medium",
-  },
-  starRow: {
-    flexDirection: "row",
-    gap: 3,
-  },
-  starIcon: {
-    fontSize: 13,
-    color: "#EBBE56",
   },
   paymentRow: {
     flexDirection: "row",

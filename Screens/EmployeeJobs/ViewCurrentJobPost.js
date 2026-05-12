@@ -28,6 +28,7 @@ import LanguageDataList from "../Employer/LanguagesDataList";
 import JobAddressBlock from "../Employer/JobAddressBlock";
 import EmployerPaymentAcceptDeclineModal from "../EmployerJobs/EmployerPaymentAcceptDeclineModal";
 import AdditionalPaymentRequestBanner from "../EmployerJobs/AdditionalPaymentRequestBanner";
+import StarRating from "../../components/StarRating";
 
 const ViewCurrentJobPost = () => {
   const navigation = useNavigation();
@@ -163,15 +164,7 @@ const ViewCurrentJobPost = () => {
                           {job.user?.full_name}
                         </Text>
                         <View style={styles.starsInline}>
-                          {[...Array(5)].map((_, i) => (
-                            <FontAwesome
-                              key={i}
-                              name="star"
-                              size={13}
-                              color="#EBBE56"
-                              style={{ marginLeft: 2 }}
-                            />
-                          ))}
+                          <StarRating rating={job.user?.rating} starSize={13} />
                         </View>
                       </View>
 
@@ -423,10 +416,6 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     marginBottom: "auto",
-  },
-  starsInline: {
-    flexDirection: "row",
-    marginTop: 0,
   },
   verifLevelRow: {
     flexDirection: "row",

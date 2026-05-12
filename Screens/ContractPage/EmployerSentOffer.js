@@ -17,6 +17,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
 import ConfirmModal from "../../components/ConfirmModal";
+import { toastSuccess } from "../../utils/toast";
+import StarRating from "../../components/StarRating";
 
 const EmployerSentOffer = () => {
   const navigation = useNavigation();
@@ -38,8 +40,6 @@ const EmployerSentOffer = () => {
       if (!response.ok) throw new Error("Failed to fetch job");
       const data = await response.json();
       setSentOffer(data.gigs);
-      console.log(data.gigs);
-      
     } catch (err) {
       setError(err.message);
     } finally {
@@ -66,7 +66,7 @@ const EmployerSentOffer = () => {
       const data = await response.json();
       if (data.status == 200) {
         setSentOffer((prev) => prev.filter((offer) => offer.oid !== oid));
-        Alert.alert("Success", " Data hide Successfully");
+        toastSuccess("Data hide Successfully");
         setModalVisible(false);
       }
     } catch (error) {
@@ -98,16 +98,9 @@ const EmployerSentOffer = () => {
 
                       <View style={styles.userInfo}>
                         <View style={styles.nameStarsRow}>
-                          <Text style={styles.username}>{item.name}</Text>
+                          <Text style={styles.username}>{item.full_name}</Text>
                           <View style={styles.starsRow}>
-                            {[...Array(5)].map((_, i) => (
-                              <FontAwesome
-                                key={i}
-                                name="star"
-                                size={10}
-                                color="#EBBE56"
-                              />
-                            ))}
+                            <StarRating rating={item.rating} starSize={13} />
                           </View>
                         </View>
 

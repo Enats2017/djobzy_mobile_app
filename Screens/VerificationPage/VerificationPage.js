@@ -24,6 +24,7 @@ import DefaultProfile from "./DefaultProfile";
 import JobCreate from "./JobCreate";
 import ProfileSetup from "./ProfileSetup";
 import HeaderBar from "../../components/HeaderBar";
+import VerificationStepHeader from "./VerificationStepHeader";
 
 const VerificationPage = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -96,7 +97,7 @@ const VerificationPage = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-        <HeaderBar showSearch={false} showMenu={false} />
+        <VerificationStepHeader />
         <ScrollView
           contentContainerStyle={{ paddingBottom: 5 }}
           showsVerticalScrollIndicator={false}

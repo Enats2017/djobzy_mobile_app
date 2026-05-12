@@ -14,6 +14,7 @@ import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ConfirmModal from "../../components/ConfirmModal";
 import { toastSuccess } from "../../utils/toast";
+import StarRating from "../../components/StarRating";
 
 const PendingOffer = ({ pendingOffer = [], onHide }) => {
   const navigation = useNavigation();
@@ -64,15 +65,7 @@ const PendingOffer = ({ pendingOffer = [], onHide }) => {
             <View style={styles.nameStarsRow}>
               <Text style={styles.username}>{pendingOffer.full_name}</Text>
               <View style={styles.starsRow}>
-                {[...Array(5)].map((_, i) => (
-                  <FontAwesome
-                    key={i}
-                    name="star"
-                    size={10}
-                    color="#EBBE56"
-                    style={{ marginRight: 2 }}
-                  />
-                ))}
+                <StarRating rating={pendingOffer.rating} starSize={10} />
               </View>
             </View>
             <View style={styles.verificationRow}>
@@ -189,10 +182,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 5,
   },
-  starsRow: {
-    flexDirection: "row",
-  },
-
   username: {
     color: "#fff",
 

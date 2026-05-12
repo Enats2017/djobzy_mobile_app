@@ -21,6 +21,7 @@ import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import StarRating from "../../components/StarRating";
 
 export default function CompletedJobPaymentPage() {
   const navigation = useNavigation();
@@ -130,15 +131,7 @@ export default function CompletedJobPaymentPage() {
                       {user?.full_name}
                     </Text>
                     <View style={styles.starsInline}>
-                      {[...Array(5)].map((_, i) => (
-                        <FontAwesome
-                          key={i}
-                          name="star"
-                          size={13}
-                          color="#EBBE56"
-                          style={{ marginLeft: 2 }}
-                        />
-                      ))}
+                      <StarRating rating={user?.rating} starSize={13} />
                     </View>
                   </View>
 
@@ -425,7 +418,6 @@ const styles = StyleSheet.create({
     maxWidth: "100%",
   },
   starsInline: {
-    flexDirection: "row",
     marginTop: 0,
   },
   verifLevelRow: {

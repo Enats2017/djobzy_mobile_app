@@ -3,6 +3,7 @@ import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { truncateWords } from "../../api/TruncateWords";
 import { useNavigation } from "@react-navigation/native";
+import StarRating from "../../components/StarRating";
 
 const ActiveBiddings = ({ activeBids = [] }) => {
   const navigation = useNavigation();
@@ -24,15 +25,7 @@ const ActiveBiddings = ({ activeBids = [] }) => {
           <View style={styles.nameStarsRow}>
             <Text style={styles.username}>{activeBids.full_name}</Text>
             <View style={styles.starsRow}>
-              {[...Array(5)].map((_, i) => (
-                <FontAwesome
-                  key={i}
-                  name="star"
-                  size={10}
-                  color="#EBBE56"
-                  style={{ marginRight: 2 }}
-                />
-              ))}
+              <StarRating rating={activeBids.rating} starSize={13} />
             </View>
           </View>
 
@@ -129,9 +122,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexWrap:"wrap",
     gap: 5,
-  },
-  starsRow: {
-    flexDirection: "row",
   },
 
   username: {

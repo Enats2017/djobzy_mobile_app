@@ -22,6 +22,7 @@ import { truncateWords } from "../../api/TruncateWords";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import LineDivider from "../../components/LineDivider";
 import NoJobs from "../EmployeeJobs/NoJobs";
+import StarRating from "../../components/StarRating";
 
 export default function FavoriteJobs() {
   const [loading, setLoading] = useState(true);
@@ -119,13 +120,7 @@ export default function FavoriteJobs() {
                           <Text style={styles.userName}>{job.full_name}</Text>
 
                           <View style={styles.starRow}>
-                            {[...Array(5)].map((_, i) => (
-                              <FontAwesome
-                                key={i}
-                                name="star"
-                                style={styles.starIcon}
-                              />
-                            ))}
+                            <StarRating rating={job.rating} starSize={13} />
                           </View>
                         </View>
 
@@ -294,14 +289,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontFamily: "Montserrat_500Medium",
-  },
-  starRow: {
-    flexDirection: "row",
-    gap: 3,
-  },
-  starIcon: {
-    fontSize: 13,
-    color: "#EBBE56",
   },
   paymentRow: {
     flexDirection: "row",

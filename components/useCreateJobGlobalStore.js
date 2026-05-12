@@ -9,12 +9,7 @@ export const useCreateJobGlobalStore = create((set) => ({
   requirements: [{ id: 1, value: "" }],
   languages: [{ id: 1, lang: "", level: "" }],
   address: "",
-  fileData: {
-    fileName: null,
-    fileUri: null,
-    fileType: null,
-    fileSize: null,
-  },
+  filesData: [],
   selectedTerm: "short",
   selectedOption: "1",
   customDays: "",

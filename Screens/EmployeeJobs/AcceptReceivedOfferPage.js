@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import { API_URL } from "../../api/ApiUrl";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import StarRating from "../../components/StarRating";
 
 const AcceptReceivedOfferPage = () => {
   const navigation = useNavigation();
@@ -116,15 +117,7 @@ const AcceptReceivedOfferPage = () => {
               <View style={styles.usernameRow}>
                 <Text style={styles.username}>{seeOffer.full_name}</Text>
                 <View style={styles.starsInline}>
-                  {[...Array(5)].map((_, i) => (
-                    <FontAwesome
-                      key={i}
-                      name="star"
-                      size={13}
-                      color="#EBBE56"
-                      style={{ marginLeft: 3 }}
-                    />
-                  ))}
+                  <StarRating rating={seeOffer.rating} starSize={13} />
                 </View>
               </View>
 
@@ -258,11 +251,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Montserrat_500Medium",
     flexShrink: 1,
-  },
-  starsInline: {
-    flexDirection: "row",
-    // marginLeft: 1,
-    flexWrap: "wrap",
   },
   verifLevelRow: {
     flexDirection: "row",

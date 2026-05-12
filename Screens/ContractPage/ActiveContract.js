@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import EmployerFooter from "../../components/EmployerFooter";
 import NoContract from "../../components/NoContract";
+import StarRating from "../../components/StarRating";
 
 const ActiveContract = () => {
   const [currentJobs, setCurrnetJobs] = useState([]);
@@ -76,13 +77,7 @@ const ActiveContract = () => {
                                 </Text>
 
                                 <View style={styles.starRow}>
-                                  {[...Array(5)].map((_, i) => (
-                                    <FontAwesome
-                                      key={i}
-                                      name="star"
-                                      style={styles.starIcon}
-                                    />
-                                  ))}
+                                  <StarRating rating={currentJob.rating} starSize={13} />
                                 </View>
                               </View>
                               <View style={styles.paymentRow}>
@@ -228,14 +223,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flexShrink: 1,
     fontFamily: "Montserrat_500Medium",
-  },
-  starRow: {
-    flexDirection: "row",
-    gap: 3,
-  },
-  starIcon: {
-    fontSize: 13,
-    color: "#EBBE56",
   },
   paymentRow: {
     flexDirection: "row",

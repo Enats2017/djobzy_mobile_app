@@ -22,6 +22,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import ReviewPage from "../JobCreatePage/ReviewPage";
 import Footer from "../../components/Footer";
 import EmployerFooter from "../../components/EmployerFooter";
+import StarRating from "../../components/StarRating";
 
 const DeactivedDetailsPage = () => {
   const navigation = useNavigation();
@@ -249,14 +250,7 @@ const DeactivedDetailsPage = () => {
                           </Text>
 
                           <View style={styles.starsRow}>
-                            {[...Array(5)].map((_, i) => (
-                              <FontAwesome
-                                key={i}
-                                name="star"
-                                size={10}
-                                color="#EBBE56"
-                              />
-                            ))}
+                            <StarRating rating={currentJob.rating} starSize={10} />
                           </View>
                         </View>
                         <TouchableOpacity style={styles.moreCircle}>
@@ -342,18 +336,8 @@ const DeactivedDetailsPage = () => {
                     <Text style={styles.payHireModalName}>
                       {profileData?.full_name}
                     </Text>
-                    <View
-                      style={{ flexDirection: "row", marginTop: 2, gap: 1 }}
-                    >
-                      {[...Array(5)].map((_, i) => (
-                        <FontAwesome
-                          key={i}
-                          name="star"
-                          size={13}
-                          color="#EBBE56"
-                          style={{ marginRight: 1 }}
-                        />
-                      ))}
+                    <View>
+                      <StarRating rating={profileData?.rating} starSize={13} />
                     </View>
                   </View>
                   <TouchableOpacity style={styles.moreCircle1}>

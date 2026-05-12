@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStore";
+import JobAttachmentPreview from "./JobAttachmentPreview";
 
 const ReviewPage = ({ setActiveTab }) => {
   const {
@@ -26,7 +27,8 @@ const ReviewPage = ({ setActiveTab }) => {
     address,
     fileData,
     setEditingFromReview,
-    isRemoteJob
+    isRemoteJob,
+    filesData
   } = useCreateJobGlobalStore();
   const navigation = useNavigation();
 
@@ -351,7 +353,7 @@ const ReviewPage = ({ setActiveTab }) => {
             <Text style={styles.sectionTitle}>Attachment</Text>
             <TouchableOpacity
               onPress={() => {
-                setEditingFromReview(6); // review tab index
+                setEditingFromReview(6);
                 setActiveTab(3);
               }}
             >
@@ -362,9 +364,11 @@ const ReviewPage = ({ setActiveTab }) => {
               />
             </TouchableOpacity>
           </View>
-          <Text style={styles.sectionText}>
-            {fileData?.fileName || "No file uploaded"}
-          </Text>
+          {filesData?.length > 0 ? (
+            <JobAttachmentPreview files={filesData} showCount={false} />
+          ) : (
+            <Text style={styles.sectionText}>No file uploaded</Text>
+          )}
         </View>
       </ScrollView>
     </View>

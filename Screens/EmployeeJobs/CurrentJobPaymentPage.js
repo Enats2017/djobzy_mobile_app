@@ -25,6 +25,7 @@ import EmployerFooter from "../../components/EmployerFooter";
 import { useNotifications } from "../../context/MessageNotificationContext";
 import RequestAdditionalPaymentModal from "./RequestAdditionalPaymentModal";
 import { toastError, toastSuccess } from "../../utils/toast";
+import StarRating from "../../components/StarRating";
 
 export default function CurrentJobPaymentPage() {
   const navigation = useNavigation();
@@ -167,15 +168,7 @@ export default function CurrentJobPaymentPage() {
                     {user.full_name}
                   </Text>
                   <View style={styles.starsInline}>
-                    {[...Array(5)].map((_, i) => (
-                      <FontAwesome
-                        key={i}
-                        name="star"
-                        size={13}
-                        color="#EBBE56"
-                        style={{ marginLeft: 2 }}
-                      />
-                    ))}
+                    <StarRating rating={user.rating} starSize={13} />
                   </View>
                 </View>
 
@@ -547,7 +540,6 @@ const styles = StyleSheet.create({
     maxWidth: "100%",
   },
   starsInline: {
-    flexDirection: "row",
     marginTop: 0,
   },
   verifLevelRow: {

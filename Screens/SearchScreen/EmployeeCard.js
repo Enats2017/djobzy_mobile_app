@@ -8,6 +8,7 @@ import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { API_URL } from "../../api/ApiUrl";
 import { toastError, toastSuccess } from "../../utils/toast";
+import StarRating from "../../components/StarRating";
 
 
 const EmployeeCard = React.memo(({ item, navigation }) => {
@@ -29,15 +30,8 @@ const EmployeeCard = React.memo(({ item, navigation }) => {
                     <View style={{ flex: 1 }}>
                         <View style={styles.nameRow1}>
                             <Text style={styles.userName1}> {item.full_name} </Text>
-                            <View style={{ flexDirection: "row", marginLeft: 6, gap: 3 }}>
-                                {[...Array(5)].map((_, i) => (
-                                    <FontAwesome
-                                        key={i}
-                                        name="star"
-                                        size={15}
-                                        color="#EBBE56"
-                                    />
-                                ))}
+                            <View>
+                                <StarRating rating={item.rating} starSize={15} />
                             </View>
                         </View>
                         <View style={styles.paymentRow1}>

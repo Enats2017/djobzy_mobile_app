@@ -2,6 +2,7 @@ import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { truncateWords } from "../../api/TruncateWords";
 import { useNavigation } from "@react-navigation/native";
+import StarRating from "../../components/StarRating";
 
 const HiddenOffer = ({hiddenOffer=[]}) => {
   const navigation = useNavigation(); 
@@ -21,15 +22,7 @@ const HiddenOffer = ({hiddenOffer=[]}) => {
           <View style={styles.nameStarsRow2}>
             <Text style={styles.username2}>{hiddenOffer.full_name}</Text>
             <View style={styles.starsRow2}>
-              {[...Array(5)].map((_, i) => (
-                <FontAwesome
-                  key={i}
-                  name="star"
-                  size={10}
-                  color="#EBBE56"
-                  style={{ marginRight: 2 }}
-                />
-              ))}
+              <StarRating rating={hiddenOffer.rating} starSize={10} />
             </View>
           </View>
 
@@ -118,9 +111,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexWrap:"wrap",
     gap: 2,
-  },
-  starsRow2: {
-    flexDirection: "row",
   },
 
   username2: {

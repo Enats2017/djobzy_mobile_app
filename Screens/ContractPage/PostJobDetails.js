@@ -28,6 +28,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import JobAddressBlock from "../Employer/JobAddressBlock";
 import RequirementDataList from "../Employer/RequirementDataList";
 import LanguageDataList from "../Employer/LanguagesDataList";
+import JobAttachmentPreview from "../JobCreatePage/JobAttachmentPreview";
+import JobAttachmentBlock from "./JobAttachmentBlock";
+import StarRating from "../../components/StarRating";
 
 const PostJobDetails = () => {
   const navigation = useNavigation();
@@ -37,8 +40,7 @@ const PostJobDetails = () => {
   const [profileData, setProfileData] = useState([]);
   const route = useRoute();
   const { jobId } = route.params || [];
-  console.log(jobId);
-
+  // console.log(jobId);
 
   const [postJob, setPostJob] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
@@ -73,14 +75,27 @@ const PostJobDetails = () => {
     fetchEmployerJob();
   }, []);
 
+  const getMimeFromUrl = (url) => {
+    const ext = url.split("?")[0].split(".").pop()?.toLowerCase();
+    const map = {
+      png:  "image/png",
+      jpg:  "image/jpeg",
+      jpeg: "image/jpeg",
+      webp: "image/webp",
+      pdf:  "application/pdf",
+      doc:  "application/msword",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    };
+    return map[ext] || "application/octet-stream";
+  };
+
   const handleEdit = () => {
     const store = useCreateJobGlobalStore.getState();
     store.reset();
     store.setField("type", "edit");
     store.setField("title", postJob.details?.subject || "");
     store.setField("description", postJob.details?.description || "");
-    store.setField(
-      "selectedSubs",
+    store.setField("selectedSubs",
       postJob.category.map((c) => ({
         serviceId: c.service,
         subId: c.subid,
@@ -88,8 +103,7 @@ const PostJobDetails = () => {
       })),
     );
 
-    store.setField(
-      "languages",
+    store.setField("languages",
       postJob.language?.map((l, i) => {
         let levelText = "";
 
@@ -106,18 +120,27 @@ const PostJobDetails = () => {
       }) || [{ id: 1, lang: "", level: "", text: "" }],
     );
 
-    store.setField(
-      "requirements",
+    store.setField("requirements",
       postJob.requirement?.map((r, i) => ({
         id: i + 1,
         value: r.requirement,
       })) || [{ id: 1, value: "" }],
     );
+    if (postJob?.attachments?.length > 0) {
+      store.setField("filesData",
+        postJob.attachments.map((a) => ({
+          id:       String(a.id),
+          fileUri:  a.attachment,
+          fileType: getMimeFromUrl(a.attachment),
+          fileName: a.attachment.split("?")[0].split("/").pop(),
+          fileSize: 0,
+        }))
+      );
+    }
     store.setField("address", postJob.details.preferred_location);
     store.setField("totalPrice", postJob.details?.fixed_minimum || "");
     store.setField("hourlyRate", postJob.details?.hour_minimum || "");
     store.setField("expectedTime", postJob.details?.expected_hour || "");
-    // ----- SET TERM -----
     if (postJob.details?.contract_type == 1) {
       store.setField("selectedTerm", "short");
     } else {
@@ -315,6 +338,17 @@ const PostJobDetails = () => {
                   </View>
                 </View>
 
+                <View style={styles.cardContainer}>
+                  <View style={styles.descriptionContainer}>
+                    <Text style={styles.cardHeading}>Attachments</Text>
+                    {postJob?.attachments?.length > 0 && (
+                      <JobAttachmentBlock
+                        files={postJob?.attachments}
+                      />
+                    )}
+                  </View>
+                </View>
+
                 <RequirementDataList data={postJob?.requirement} />
                 <LanguageDataList data={postJob?.language} />
                 <JobAddressBlock details={postJob?.details} />
@@ -347,14 +381,7 @@ const PostJobDetails = () => {
                               </Text>
 
                               <View style={styles.starsRow}>
-                                {[...Array(5)].map((_, i) => (
-                                  <FontAwesome
-                                    key={i}
-                                    name="star"
-                                    size={10}
-                                    color="#EBBE56"
-                                  />
-                                ))}
+                                <StarRating rating={gig.rating} starSize={10} />
                               </View>
                             </View>
                             <TouchableOpacity style={styles.moreCircle}>
@@ -479,18 +506,8 @@ const PostJobDetails = () => {
                     <Text style={styles.payHireModalName}>
                       {profileData?.full_name}
                     </Text>
-                    <View
-                      style={{ flexDirection: "row", marginTop: 2, gap: 1 }}
-                    >
-                      {[...Array(5)].map((_, i) => (
-                        <FontAwesome
-                          key={i}
-                          name="star"
-                          size={13}
-                          color="#EBBE56"
-                          style={{ marginRight: 1 }}
-                        />
-                      ))}
+                    <View>
+                      <StarRating rating={profileData?.rating} starSize={13} />
                     </View>
                   </View>
                   <TouchableOpacity style={styles.moreCircle1}>

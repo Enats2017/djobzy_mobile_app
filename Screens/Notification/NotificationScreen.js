@@ -158,7 +158,7 @@ const NotificationScreen = () => {
       case 4:
       case 9:
         if (offer?.job?.request_slug) {
-          if(offer.job.request_status === 2) {
+          if(offer?.job?.request_status === 2) {
             navigation.navigate("ViewCompletedJobPost", { gid: offer?.job?.request_slug, });
           } else {
             navigation.navigate("ViewCurrentJobPost", { gid: offer?.job?.request_slug });
@@ -168,9 +168,15 @@ const NotificationScreen = () => {
       case 1:
       case 8:
         if (offer?.job?.request_slug) {
-          admin === 0
-            ? navigation.navigate("JobProfile", { gid: offer.job.request_slug })
-            : navigation.navigate("PostJobDetails", { jobId: offer.job.request_slug });
+          if (offer?.job?.request_status === 0 && offer?.job?.user_id === offer?.to_user_id) {
+            navigation.navigate("PostJobDetails", { jobId: offer?.job?.request_slug, });
+          } else if (offer?.job?.request_status === 1) {
+            navigation.navigate("ViewCurrentJobPost", { gid: offer?.job?.request_slug });
+          } else if (offer?.job?.request_status === 2) {
+            navigation.navigate("ViewCompletedJobPost", { gid: offer?.job?.request_slug, });
+          } else {
+            navigation.navigate("JobProfile", { gid: offer?.job?.request_slug })
+          }
         }
         break;
       case 10:
@@ -184,7 +190,7 @@ const NotificationScreen = () => {
         break;
       default:
         if (offer?.job?.request_slug) {
-          navigation.navigate("JobProfile", { gid: offer.job.request_slug });
+          navigation.navigate("JobProfile", { gid: offer?.job?.request_slug });
         }
         break;
     }

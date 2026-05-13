@@ -34,7 +34,7 @@ const ViewCurrentJobPost = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const [loading, setLoading] = useState(true);
-  const { gid } = route.params || [];
+  const { gid } = route.params || {};
   const [job, setJob] = useState([]);
   const [category, setCategory] = useState([]);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -66,7 +66,7 @@ const ViewCurrentJobPost = () => {
     fetchData();
   }, []);
 
-  const shouldShowModal = admin === 2 && job?.details?.request_status !== 2 && job?.newRequest?.change_status === 0;
+  const shouldShowModal = job?.authUser?.id === job?.details?.user_id && job?.details?.request_status !== 2 && job?.newRequest?.change_status === 0;
   useEffect(() => {
     let timer;
     if (!loading && shouldShowModal) {

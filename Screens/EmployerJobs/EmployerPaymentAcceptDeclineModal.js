@@ -125,7 +125,7 @@ const EmployerPaymentAcceptDeclineModal = ({ visible, onClose, onReopen, onRefre
                 onRequestClose={onClose}
             >
                 <View style={styles.modalOverlay}>
-                    <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
+                    <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16}]}>
 
                         {/* Close Icon */}
                         <TouchableOpacity style={styles.closeIcon} onPress={onClose}>

@@ -367,8 +367,8 @@ const Login = ({ navigation }) => {
             </View>
 
             <TouchableOpacity
-              style={styles.googleBtn}
-              onPress={handleGoogleSignup}
+              style={styles.socialBtn}
+              onPress={handleGoogleLogin}
               disabled={googleLoading}
             >
               {googleLoading ? (

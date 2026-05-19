@@ -107,6 +107,7 @@ const GeneralSetting = () => {
                   details: details,
                   user: users,
                   timezone: timezone,
+                  countries: setting?.countries
                 })
               }
             />

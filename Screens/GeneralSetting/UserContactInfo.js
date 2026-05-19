@@ -20,7 +20,7 @@ const UserContactInfo = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const route = useRoute();
-  const { user, timezone } = route.params || {};
+  const { user, timezone, countries} = route.params || {};
   const [phoneNumber, setPhoneNumber] = useState(user.mobile_number || "");
   const [mobileCountryId, setMobileCountryId] = useState(user.mobile_country_id || "",);
   const [mobileCountryISO, setMobileCountryISO] = useState("");
@@ -143,6 +143,7 @@ const UserContactInfo = () => {
           >
             <PhoneNumberInput
               value={phoneNumber}
+              countries={countries}
               countryISO={mobileCountryISO}
               countryCode={mobileCountryId}
               onChange={({ phone, countryCode, countryISO }) => {

@@ -24,6 +24,7 @@ import BorderButton from "../../components/BorderButton";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 const AccountSetup = ({
+  countries,
   fullName,
   username,
   setFullName,
@@ -337,8 +338,7 @@ const AccountSetup = ({
       <Text style={styles.label}>Phone Number</Text>
       <PhoneNumberInput
         value={phoneNumber}
-        countryISO={mobileCountryISO}
-        countryCode={mobileCountryId}
+        countries={countries}
         onChange={({ phone, countryCode, countryISO }) => {
           setPhoneNumber(phone);
           setMobileCountryId(countryCode);

@@ -96,7 +96,7 @@ const VerificationPage = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : ""} style={styles.container}>
         <VerificationStepHeader />
         <ScrollView
           contentContainerStyle={{ paddingBottom: 5 }}

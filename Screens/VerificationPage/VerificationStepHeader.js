@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     modalContainer: {
         position: "absolute",
         right: 15,
-        top: 60,
+        top: 90,
         width: 200,
     },
     logoutContainer: {

@@ -5,6 +5,7 @@ import { FontAwesome, MaterialIcons, Entypo } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import { toastSuccess } from "../../utils/toast";
+import StarRating from "../../components/StarRating";
 
 const EmployerCard = ({ item, isLastItem }) => {
   const navigation = useNavigation();
@@ -112,25 +113,9 @@ const EmployerCard = ({ item, isLastItem }) => {
               >
                 <Text style={styles.name}>{item?.full_name || "No Name"}</Text>
 
-                <View
-                  style={[styles.nameStarRow, { justifyContent: "flex-start" }]}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginLeft: 6,
-                    }}
-                  >
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <FontAwesome
-                        key={star}
-                        name={"star"}
-                        size={14}
-                        color="#EBBE56"
-                        style={{ marginRight: 2 }}
-                      />
-                    ))}
+                <View style={[styles.nameStarRow, { justifyContent: "flex-start" }]} >
+                  <View>
+                    <StarRating rating={item?.rating} starSize={13} />
                   </View>
                 </View>
               </View>

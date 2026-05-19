@@ -155,29 +155,16 @@ const Login = ({ navigation }) => {
 
   const handleGoogleLogin = async () => {
     try {
-      console.log("STEP 1: Google login started");
       setGoogleLoading(true);
       await GoogleSignin.hasPlayServices();
-      console.log("STEP 2: Play services available");
-
       const response = await GoogleSignin.signIn();
-      console.log("STEP 3: Google response received:", response);
-
       const idToken = response?.data?.idToken;
-      console.log("STEP 4: Extracted idToken:", idToken);
-
       if (!idToken) {
-        console.log("ERROR: idToken missing");
         toastError("Google token missing");
         return;
       }
 
-      const payload = {
-        id_token: idToken,
-      };
-
-      console.log("STEP 5: Sending API request:", payload);
-
+      const payload = { id_token: idToken };
       const res = await fetch(`${API_URL}/auth/google/login`, {
         method: "POST",
         headers: {
@@ -187,72 +174,48 @@ const Login = ({ navigation }) => {
         body: JSON.stringify(payload),
       });
 
-      console.log("STEP 6: API response status:", res.status);
-
       const data = await res.json();
-      console.log("STEP 7: API response data:", data);
 
       if (!res.ok) {
-        console.log("ERROR: API failed:", data);
         toastError(data.message || "Google login failed");
         return;
       }
-
-      console.log("STEP 8: Saving AsyncStorage");
-
       await AsyncStorage.setItem("token", data.token);
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
-
-      console.log("STEP 9: User stored:", data.user);
-
       const verification_count = data?.user?.verification_count ?? 0;
       const admin = data?.user?.admin ?? 0;
 
-      console.log("STEP 10: verification_count:", verification_count);
-      console.log("STEP 11: admin:", admin);
-
       if (verification_count < 2) {
-        console.log("STEP 12: Navigating to VerificationPage");
-
         navigation.reset({
           index: 0,
           routes: [{ name: "VerificationPage" }],
         });
       } else {
-        console.log("STEP 12: Navigating to Dashboard");
-
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Dashboard" }],
-        });
+        if(admin === 2) {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "EmployerDashboard" }],
+          });
+        } else {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Dashboard" }],
+          });
+        }
       }
 
       toastSuccess("Login successful");
-      console.log("STEP 13: Login success complete");
     } catch (error) {
-      console.log("GOOGLE LOGIN ERROR OBJECT:", error);
-      console.log("ERROR CODE:", error?.code);
-      console.log("ERROR MESSAGE:", error?.message);
-
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log("ERROR: SIGN_IN_CANCELLED");
         toastError("Google login cancelled");
-
       } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log("ERROR: IN_PROGRESS");
         toastError("Google login already running");
-
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        console.log("ERROR: PLAY_SERVICES_NOT_AVAILABLE");
         toastError("Google Play Services unavailable");
-
       } else {
-        console.log("ERROR: UNKNOWN");
         toastError("Google login failed");
       }
-
     } finally {
-      console.log("FINAL: Loading stopped");
       setGoogleLoading(false);
     }
   };

@@ -115,21 +115,14 @@ const Signup = () => {
 
   const handleGoogleSignup = async () => {
     try {
-      console.log("1️⃣ Google signup started");
       setGoogleLoading(true);
-      console.log("2️⃣ Checking play services");
       await GoogleSignin.hasPlayServices();
-      console.log("3️⃣ Opening Google popup");
       const response = await GoogleSignin.signIn();
-      console.log("4️⃣ Google response:", response);
       const idToken = response?.data?.idToken;
-      console.log("5️⃣ ID TOKEN:", idToken);
       if (!idToken) {
-        console.log("❌ Google token missing");
         toastError("Google token missing");
         return;
       }
-      console.log("6️⃣ Sending token to backend");
       const res = await fetch(`${API_URL}/auth/google/signup`,
         {
           method: "POST",
@@ -143,40 +136,29 @@ const Signup = () => {
           }),
         }
       );
-      console.log("7️⃣ Backend response status:", res.status);
       const data = await res.json();
-      console.log("8️⃣ Backend response data:", data);
       if (!res.ok) {
-        console.log("❌ Backend returned error");
         toastError(data.message || "Google signup failed");
         return;
       }
-      console.log("9️⃣ Saving token/user");
       await AsyncStorage.setItem("token", data.token);
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
-      const { verification_count, admin } = data.user;
-      console.log( "🔟 verification_count:", verification_count);
+      const verification_count = data?.user?.verification_count ?? 0;
+      const admin = data?.user?.admin ?? 0;
       if (verification_count < 2) {
-        console.log("➡️ Redirecting to VerificationPage");
         navigation.reset({
           index: 0,
           routes: [{ name: "VerificationPage" }],
         });
         return;
       } else {
-        console.log("➡️ Redirecting to Dashboard");
         navigation.reset({
           index: 0,
           routes: [{ name: "Dashboard" }],
         });
       }
-      console.log("✅ Google signup success");
-      toastSuccess("Register successful");
+      toastSuccess("Register Successful");
     } catch (error) {
-      console.log("❌ GOOGLE SIGNUP ERROR FULL:",JSON.stringify(error, null, 2));
-      console.log("❌ GOOGLE SIGNUP ERROR RAW:",error);
-      console.log("❌ GOOGLE SIGNUP ERROR CODE:",error?.code);
-      console.log("❌ GOOGLE SIGNUP ERROR MESSAGE:",error?.message);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         toastError("Google signup cancelled");
       } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -187,7 +169,6 @@ const Signup = () => {
         toastError("Google signup failed");
       }
     } finally {
-      console.log("🏁 Google signup finished");
       setGoogleLoading(false);
     }
   };

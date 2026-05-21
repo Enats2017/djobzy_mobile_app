@@ -447,7 +447,7 @@ const PostJobDetails = () => {
               <TouchableOpacity
                 style={[
                   styles.buttonBoost,
-                  postJob.details?.featured === 1 && styles.buttonBoosted
+                  postJob.details?.featured === 1 && styles.buttonBoosted, { opacity: 0.5 }
                 ]}
                 disabled={postJob.details?.featured === 1}
                 onPress={

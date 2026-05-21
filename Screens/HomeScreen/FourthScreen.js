@@ -36,7 +36,7 @@ const FourthScreen = () => {
               resizeMode="contain"
             />
             <Image
-              source={require("../../assets/images/Team work.png")}
+              source={require("../../assets/images/team-work.png")}
               style={styles.overlayImage}
               resizeMode="contain"
             />

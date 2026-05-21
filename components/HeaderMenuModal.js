@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     right: 10,
-    top: 70,
+    top: 90,
     width: 300,
     height: 500,
     backgroundColor: "#fff",

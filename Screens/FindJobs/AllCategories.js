@@ -76,55 +76,51 @@ const AllCategories = () => {
     })
     .filter(Boolean);
 
- const handleMainCategoryPress = (service) => {
-  clearCategories();
+  const handleMainCategoryPress = (service) => {
+    clearCategories();
 
-  addCategory({
-    serviceId: service.id,
-    subId: null,
-    name: service.name,
-    slug: service.slug,
-    subslug: null,
-  });
+    addCategory({
+      serviceId: service.id,
+      subId: null,
+      name: service.name,
+      slug: service.slug,
+      subslug: null,
+    });
 
-  navigation.navigate("CategoryResult");
-};
-
+    navigation.navigate("CategoryResult");
+  };
 
   const handleSubCategoryPress = (service, sub) => {
-  clearCategories();
+    clearCategories();
+    addCategory({
+      serviceId: service.id,
+      subId: sub.subid,
+      name: sub.subname,
+      slug: service.slug,
+      subslug: sub.subslug,
+    });
+    navigation.navigate("CategoryResult");
+  };
 
-  addCategory({
-    serviceId: service.id,
-    subId: sub.subid,
-    name: sub.subname,
-    slug: service.slug,
-    subslug: sub.subslug,
-  });
-
-  navigation.navigate("CategoryResult");
-};
-
-  /* ================= RENDER ================= */
   if (loading) return <Loading />;
 
   return (
     <View style={styles.categoryContainer}>
+      <View style={styles.searchBar}>
+        <TextInput
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search category"
+          placeholderTextColor="#777"
+          style={styles.searchInput}
+        />
+        <Feather name="search" size={18} color="#999" />
+      </View>
       <ScrollView
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 90 }}
       >
-        <View style={styles.searchBar}>
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search category"
-            placeholderTextColor="#777"
-            style={styles.searchInput}
-          />
-          <Feather name="search" size={18} color="#999" />
-        </View>
-
         {filteredServices.map((service) => (
           <View key={service.id} style={styles.serviceBlock}>
             <TouchableOpacity
@@ -149,8 +145,6 @@ const AllCategories = () => {
           </View>
         ))}
       </ScrollView>
-
-     
     </View>
   );
 };
@@ -160,15 +154,14 @@ const styles = StyleSheet.create({
   categoryContainer: {
     flex: 1,
   },
-
-  /* SEARCH */
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#ffffff",
     borderRadius: 10,
     paddingHorizontal: 12,
-    height: 44,
+    marginBottom: 10,
+    height: 42,
   },
   searchInput: {
     flex: 1,

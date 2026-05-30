@@ -8,6 +8,8 @@ import {
 } from "@expo/vector-icons";
 import {
   Image,
+  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -39,6 +41,7 @@ const ViewCurrentJobPost = () => {
   const [category, setCategory] = useState([]);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const { admin } = useNotifications();
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -247,19 +250,42 @@ const ViewCurrentJobPost = () => {
                   >
                     <Text style={styles.btnText}>Payment Details</Text>
                   </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.iconWrapper}
+                    onPress={() => setMenuVisible(true)}
+                  >
+                    <Entypo name="dots-three-vertical" size={24} color="#ccc" />
+                  </TouchableOpacity>
+
+                  <Modal visible={menuVisible} animationType="fade" transparent>
+                    <TouchableOpacity
+                      style={styles.overlay}
+                      activeOpacity={1}
+                      onPress={() => setMenuVisible(false)}
+                    />
+                    <View style={styles.modalContainer}>
+                      <TouchableOpacity
+                        style={styles.logoutContainer}
+                      >
+                        <Text style={styles.logoutLabel}>Logout</Text>
+                        <MaterialIcons name="logout" size={24} color="#ffffff" />
+                      </TouchableOpacity>
+                    </View>
+                  </Modal>
                 </View>
               </>
             )
           }
 
-        <EmployerPaymentAcceptDeclineModal
-          visible={shouldShowModal && showRequestModal}
-          onClose={() => setShowRequestModal(false)}
-          onReopen={() => setShowRequestModal(true)}
-          onRefresh={fetchData}
-          gigProp={job?.gigProp}
-          newRequest={job?.newRequest}
-        />
+          <EmployerPaymentAcceptDeclineModal
+            visible={shouldShowModal && showRequestModal}
+            onClose={() => setShowRequestModal(false)}
+            onReopen={() => setShowRequestModal(true)}
+            onRefresh={fetchData}
+            gigProp={job?.gigProp}
+            newRequest={job?.newRequest}
+          />
         </View>
 
         {admin == 2 ? <EmployerFooter /> : <Footer />}
@@ -496,6 +522,7 @@ const styles = StyleSheet.create({
   btnRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     gap: 10,
     paddingBottom: 90,
     paddingTop: 10,
@@ -518,6 +545,30 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontFamily: "Montserrat_700Bold",
     fontSize: 16,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "#8686861A",
+  },
+
+  modalContainer: {
+    position: "absolute",
+    right: 15,
+    bottom: 90,
+    width: 200,
+  },
+  logoutContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#E8251A",
+    borderRadius: 10,
+    padding: 15,
+  },
+  logoutLabel: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "Montserrat_600SemiBold",
   },
 });
 

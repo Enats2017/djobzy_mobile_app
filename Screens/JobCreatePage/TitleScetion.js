@@ -15,6 +15,7 @@ import { useCreateJobGlobalStore } from "../../components/useCreateJobGlobalStor
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import { toastSuccess } from "../../utils/toast";
+import NoJobAndServiceModal from "../../components/NoJobAndServiceModal";
 
 const TitleScetion = ({
   //jobData,
@@ -30,6 +31,7 @@ const TitleScetion = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+  const [freshJobModal, setFreshJobModal] = useState(false);
 
   const [jobs, setJobs] = useState([]);
 
@@ -166,7 +168,13 @@ const TitleScetion = ({
         <View style={styles.template}>
           <Text style={styles.label}>Title</Text>
 
-          <TouchableOpacity onPress={() => setTitleModal(true)}>
+          <TouchableOpacity onPress={() => {
+            if (jobs.length === 0) {
+              setFreshJobModal(true);
+            } else {
+              setTitleModal(true);
+            }
+          }}>
             <Text style={styles.templatetext}>Use Template</Text>
           </TouchableOpacity>
         </View>
@@ -194,22 +202,21 @@ const TitleScetion = ({
         {/* DESCRIPTION */}
         <Text style={styles.label}>Description</Text>
         {/* <View style={styles.passwordContainer}> */}
-          <TextInput
-            style={[
-              styles.input,
-              styles.textArea,
-              descriptionError && { borderColor: "#ff0000" },
-            ]}
-            value={description}
-            onChangeText={(text) => {
-              setField("description", text);
-              if (text.trim()) setDescriptionError(false);
-            }}
-            placeholder="Give details"
-            placeholderTextColor={placeholderColor}
-            multiline
-          />
-        {/* </View> */}
+        <TextInput
+          style={[
+            styles.input,
+            styles.textArea,
+            descriptionError && { borderColor: "#ff0000" },
+          ]}
+          value={description}
+          onChangeText={(text) => {
+            setField("description", text);
+            if (text.trim()) setDescriptionError(false);
+          }}
+          placeholder="Give details"
+          placeholderTextColor={placeholderColor}
+          multiline
+        />
 
         {descriptionError && (
           <Text style={styles.errorText}>*Please enter a job description</Text>
@@ -217,6 +224,13 @@ const TitleScetion = ({
 
         <Text style={styles.belowtext}>Please describe the job details.</Text>
       </View>
+
+      <NoJobAndServiceModal
+        visible={freshJobModal}
+        url={require("../../assets/images/fresh-no-job.png")}
+        text="“No job post created yet. Please create one first.”"
+        onClose={() => setFreshJobModal(false)}
+      />
 
       <Modal
         visible={titleModal}

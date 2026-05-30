@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   Modal,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,10 +24,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import QuestionMark from "../../components/QuestionMark";
 import { tooltipMessage } from "../../components/TooltipMessage";
+import NoJobAndServiceModal from "../../components/NoJobAndServiceModal";
 
 const PromoteService = () => {
   const navigation = useNavigation();
-
   const {
     title,
     description,
@@ -38,12 +39,12 @@ const PromoteService = () => {
     removeImage,
     unique_id
   } = useServiceGlobalStore();
-  console.log("EDIT MODE ID:", unique_id);
-
+  // console.log("EDIT MODE ID:", unique_id);
   const { expectedTime, setExpectedTime } = useServiceGlobalStore();
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [titleModal, setTitleModal] = useState(false);
+  const [freshServiceModal, setFreshServiceModal] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [errors, setErrors] = useState({
     title: "",
@@ -54,7 +55,6 @@ const PromoteService = () => {
 
   const titleLimit = 60;
   const descLimit = 500;
-
   const handleHourlyChange = (value) => {
     setField("hourlyRate", value);
     const total = parseInt(totalPrice);
@@ -91,9 +91,6 @@ const PromoteService = () => {
     setExpectedTime(Math.ceil(expected));
   };
 
-  // ---------------------------
-  // Pick Image from Gallery
-  // ---------------------------
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -138,9 +135,6 @@ const PromoteService = () => {
   const fetchTemplates = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      console.log(token);
-      
-
       const res = await fetch(`${API_URL}/get-template`, {
         method: "POST",
         headers: {
@@ -154,9 +148,13 @@ const PromoteService = () => {
         }),
       });
       const data = await res.json();
-
       if (data.status === 200) {
+        setTitleModal(true);
         setTemplates(data.result);
+      } else {
+        if(data.result.length === 0) {
+          setFreshServiceModal(true);
+        }
       }
     } catch (error) {
       console.log("Template API error:", error);
@@ -165,7 +163,6 @@ const PromoteService = () => {
 
   const handleTemplateSelect = async (item) => {
     console.log(item.id);
-    
     try {
       setSelectedTemplate(item.title);
       const token = await AsyncStorage.getItem("token");
@@ -181,20 +178,14 @@ const PromoteService = () => {
           type: 2,
         }),
       });
-      
-      
       const data = await res.json();
-      
       if (data.status !== 200) return;
-      
       const result = data.result;
       const store = useServiceGlobalStore.getState(); 
       store.setField("title", result.title || "");
       store.setField("description", result.description || "");
       store.setField("hourlyRate", result.hour_minimum?.toString() || "");
-      store.setExpectedTime(
-      (result.selected_time == "no-calendar" ? 1 : result.selected_time) || 0,
-    );
+      store.setExpectedTime((result.selected_time == "no-calendar" ? 1 : result.selected_time) || 0,);
       store.clearCategories();
       result.subservice_id?.forEach((id, index) => {
         store.addCategory({
@@ -203,7 +194,6 @@ const PromoteService = () => {
         });
       });
 
-      // images
       if (result.attachment?.length) {
         result.attachment.forEach((img) => {
           store.addImage({ uri: img.attach });
@@ -236,14 +226,10 @@ const PromoteService = () => {
           contentContainerStyle={styles.scrollView}
           showsVerticalScrollIndicator={false}
         >
-          {/* Title */}
-
           <View style={styles.template}>
             <Text style={styles.label}>Service Title</Text>
-
             <TouchableOpacity
               onPress={() => {
-                setTitleModal(true);
                 fetchTemplates();
               }}
             >
@@ -367,18 +353,26 @@ const PromoteService = () => {
           </View>
         </ScrollView>
 
-        {/* Next Button */}
         <View style={styles.categoryBtn}>
           <GradientButton title="Choose Category" onPress={handleNext} />
         </View>
       </View>
+
+      <NoJobAndServiceModal 
+        visible={freshServiceModal} 
+        url={require("../../assets/images/fresh-start.png")}
+        text="“No prompt service created yet. Please create one first.”"
+        onClose={() => setFreshServiceModal(false)}
+      />
+
       <Modal
         visible={titleModal}
         transparent
         animationType="slide"
         onRequestClose={() => setTitleModal(false)}
       >
-        <View style={styles.modalOverlay}>
+        <View style={styles.modalOverlay} onPress={() => setTitleModal(false)}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setTitleModal(false)} />
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
@@ -424,7 +418,7 @@ const PromoteService = () => {
 
             {showDropdown && (
               <View style={styles.dropdownList}>
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <ScrollView showsVerticalScrollIndicator={true}>
                   {templates.map((item) => (
                     <TouchableOpacity
                       key={item.id}
@@ -679,6 +673,7 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     overflow: "hidden",
     marginBottom: 8,
+    height: 250,
   },
 
   dropdownItem: {

@@ -22,6 +22,9 @@ import Loading from "../../components/Loading";
 import NoTransactions from "../Wallet/NoTransactions";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { toastError, toastSuccess } from "../../utils/toast";
+import { useNotifications } from "../../context/MessageNotificationContext";
+import EmployerFooter from "../../components/EmployerFooter";
+import ReferralSocialShareButtons from "./ReferralSocialShareButtons";
 
 const ReferralWallet = () => {
   const navigation = useNavigation();
@@ -32,7 +35,9 @@ const ReferralWallet = () => {
   const [tableFilled, setTableFilled] = useState(false);
   const [pendingReferrals, setPendingReferrals] = useState([]);
   const [completedReferrals, setCompletedReferrals] = useState([]);
+  const [shareLinks, setshareLinks] = useState({});
   const [referralUrl, setReferralUrl] = useState("");
+  const {admin} = useNotifications();
 
   const fetchNotifications = async () => {
     try {
@@ -49,6 +54,7 @@ const ReferralWallet = () => {
       setPendingReferrals(data.pendingReferrals);
       setCompletedReferrals(data.completedReferrals);
       setReferralUrl(data.referral_url);
+      setshareLinks(data.shareLinks);
 
       if (data.pendingReferrals.length > 0) {
         setTableFilled(true);
@@ -130,11 +136,11 @@ const ReferralWallet = () => {
 
   const copyReferralUrl = async () => {
     if (!referralUrl) {
-      Alert.alert("Error", "Referral link not available");
+      toastError("Referral link not available");
       return;
     }
     await Clipboard.setStringAsync(referralUrl);
-    Alert.alert("Copied", "Referral link copied successfully");
+    toastSuccess("Referral link copied successfully");
   };
 
   return (
@@ -444,12 +450,17 @@ const ReferralWallet = () => {
                       <Ionicons name="copy" size={22} color="#fff" />
                     </TouchableOpacity>
                   </View>
+
+                  <Text style={styles.title}>Or share with social media</Text>
+                  <View style={styles.socialMediaBtns}>
+                    <ReferralSocialShareButtons shareLinks={shareLinks} />
+                  </View>
                 </View>
               </ScrollView>
             </KeyboardAwareScrollView>
           )}
         </View>
-        <Footer />
+        {admin == 2 ? <EmployerFooter /> : <Footer />}
       </SafeAreaView>
     </>
   );

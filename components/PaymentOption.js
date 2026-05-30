@@ -3,37 +3,53 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 
-const PaymentOption = ({ title, icon, selected, onPress }) => {
+const PaymentOption = ({ title, icon, selected, onPress, disabled = false }) => {
   return (
     <TouchableOpacity
-      style={[styles.card, selected && styles.active]}
-      onPress={onPress}
-      activeOpacity={0.7}
+      style={[
+        styles.card,
+        selected && styles.active,
+        disabled && styles.disabledCard,
+      ]}
+      onPress={disabled ? null : onPress}
+      activeOpacity={disabled ? 1 : 0.7}
+      disabled={disabled}
     >
       <View style={styles.left}>
-         {React.cloneElement(icon, {
+        {React.cloneElement(icon, {
           color: selected ? "#000" : "#fff",
         })}
-        <Text style={[styles.title, selected && styles.activeText]}>{title}</Text>
+        <Text
+          style={[
+            styles.title,
+            selected && styles.activeText,
+            disabled && styles.disabledText,
+          ]}
+        >
+          {title}
+        </Text>
       </View>
 
-      <View style={[styles.radioOuter , selected && styles.rdiocircle]}>
-        {selected && <MaterialIcons name="done" size={16} color="#fff" />}
-      </View>
+      {!disabled && (
+        <View style={[styles.radioOuter, selected && styles.rdiocircle]}>
+          {selected && (
+            <MaterialIcons name="done" size={16} color="#fff" />
+          )}
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-     
-   card: {
+  card: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#1e1e1e",
     borderRadius: 12,
     paddingHorizontal: 18,
-     marginBottom: 12,
+    marginBottom: 12,
     paddingVertical: 15,
     borderWidth: 1,
     borderColor: "#FFFFFF4D",
@@ -49,11 +65,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     color: "#ffffff",
-    fontFamily:"Montserrat_500Medium"
+    fontFamily: "Montserrat_500Medium"
   },
-  activeText:{
-    color:"#303030"
-
+  activeText: {
+    color: "#303030"
   },
   radioOuter: {
     width: 20,
@@ -64,12 +79,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  rdiocircle:{
-      borderColor: "#303030",
-      backgroundColor:"#303030",
-      
+  rdiocircle: {
+    borderColor: "#303030",
+    backgroundColor: "#303030",
   },
- 
+  disabledCard: {
+    opacity: 0.7,
+  },
+  disabledText: {
+    color: "#999",
+  },
 });
 
 export default PaymentOption;

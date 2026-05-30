@@ -364,7 +364,6 @@ const CreateJob = () => {
   const isLastStep = activeTab === totalSteps - 1;
   useEffect(() => {
     const stepWidth = 100;
-
     stepsScrollRef.current?.scrollTo({
       x: activeTab * stepWidth,
       animated: true,
@@ -382,7 +381,6 @@ const CreateJob = () => {
     <>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#222222" }}>
         <View style={styles.container}>
-          {/* Back Button and Title */}
           <View style={styles.dashboardHeader}>
             <TouchableOpacity onPress={handleBack}>
               <Ionicons

@@ -195,10 +195,8 @@ const BillingMethods = () => {
                                 <PaymentOption
                                     title="Pay via Wallet"
                                     icon={<Ionicons name="cash-outline" size={24} color="#fff" />}
-                                    selected={selected === "wallet"}
-                                    onPress={() => {
-                                        toastError("This method cannot be used for card verification.");
-                                    }}
+                                    selected={false}
+                                    disabled={true}
                                 />
                             </View>
                             <View style={styles.row}>

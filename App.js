@@ -137,31 +137,28 @@ const App = () => {
   useEffect(() => {
     const handleDeepLink = (event) => {
       const data = Linking.parse(event.url);
-      console.log("DeepLink:", data);
-
       const status = data.queryParams?.status;
       const type = data.queryParams?.type;
 
-      if (!navigationRef.isReady()) return;
-
-      setTimeout(() => {
-        switch (status) {
-          case "success":
-            navigationRef.dispatch(
-              StackActions.replace("PaymentSuccess", { type })
-            );
-            break;
-
-          case "failed":
-            navigationRef.dispatch(
-              StackActions.replace("PaymentFailed", { type })
-            );
-            break;
-
-          default:
-            console.log("Unknown payment status");
+      const navigate = () => {
+        if (!navigationRef.isReady()) {
+          setTimeout(navigate, 300);
+          return;
         }
-      }, 500);
+
+        if (status === "success") {
+          navigationRef.dispatch(
+            StackActions.replace("PaymentSuccess", { type })
+          );
+        }
+
+        if (status === "failed") {
+          navigationRef.dispatch(
+            StackActions.replace("PaymentFailed", { type })
+          );
+        }
+      };
+      navigate();
     };
 
     const subscription = Linking.addEventListener("url", handleDeepLink);
@@ -175,12 +172,16 @@ const App = () => {
       if (!url) return;
 
       const data = Linking.parse(url);
+      if (data.hostname === "expo-development-client") return;
       const status = data.queryParams?.status;
       const type = data.queryParams?.type;
 
-      if (!navigationRef.isReady()) return;
+      const navigate = () => {
+        if (!navigationRef.isReady()) {
+          setTimeout(navigate, 300);
+          return;
+        }
 
-      setTimeout(() => {
         if (status === "success") {
           navigationRef.dispatch(
             StackActions.replace("PaymentSuccess", { type })
@@ -192,7 +193,8 @@ const App = () => {
             StackActions.replace("PaymentFailed", { type })
           );
         }
-      }, 500);
+      };
+      navigate();
     };
 
     checkInitialUrl();

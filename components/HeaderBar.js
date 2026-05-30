@@ -41,11 +41,11 @@ const HeaderBar = ({ showMenu = true, showSearch = true }) => {
           />
         </View>
         <View style={styles.right}>
-          {showSearch && (
+          {/* {showSearch && (
             <TouchableOpacity style={styles.iconWrapper} onPress={goToSearch}>
               <Feather name="search" size={18} color="#fff" />
             </TouchableOpacity>
-          )}
+          )} */}
           {/* <TouchableOpacity
           style={styles.iconWrapper}
           onPress={() => navigation.navigate("ChatList")}
@@ -60,7 +60,7 @@ const HeaderBar = ({ showMenu = true, showSearch = true }) => {
           )}
         </TouchableOpacity> */}
 
-          {showSearch && (
+          {/* {showSearch && (
             <TouchableOpacity
               style={styles.iconWrapper}
               onPress={() => navigation.navigate("NotificationScreen")}
@@ -80,24 +80,24 @@ const HeaderBar = ({ showMenu = true, showSearch = true }) => {
                 </View>
               )}
             </TouchableOpacity>
-          )}
+          )} */}
 
-          {showMenu && (
+          {/* {showMenu && (
             <TouchableOpacity
               style={styles.iconWrapper}
               onPress={() => setMenuVisible(true)}
             >
               <Feather name="menu" size={20} color="#fff" />
             </TouchableOpacity>
-          )}
+          )} */}
         </View>
       </View>
-      {showMenu && (
+      {/* {showMenu && (
         <HeaderMenuModal
           visible={menuVisible}
           onClose={() => setMenuVisible(false)}
         />
-      )}
+      )} */}
     </>
   );
 };

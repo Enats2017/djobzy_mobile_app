@@ -1,26 +1,44 @@
-import { Ionicons, Entypo, MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useServiceGlobalStore } from "../Screens/PromoteServicesPage/ServiceGlobalStore";
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+  FontAwesome6,
+} from "@expo/vector-icons";
 import Octicons from "@expo/vector-icons/Octicons";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
 import { API_URL } from "../api/ApiUrl";
 import { useNotifications } from "../context/MessageNotificationContext";
-import { Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useServiceGlobalStore } from "../Screens/PromoteServicesPage/ServiceGlobalStore";
+import { useState } from "react";
 
 const ACTIVE_COLOR = "#CB7767";
 const INACTIVE_COLOR = "#000";
 
 const Footer = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const route = useRoute();
   const { refreshUser } = useNotifications();
+  const [switchLoading, setSwitchLoading] = useState(false);
+
   const isActive = (routeName) => route.name === routeName;
+
   const handleSwitchAccount = async () => {
     try {
+      setSwitchLoading(true);
       const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(`${API_URL}/user-switch-account`, {
         method: "POST",
         headers: {
@@ -34,7 +52,6 @@ const Footer = () => {
 
       await AsyncStorage.removeItem("user");
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
-
       await refreshUser();
 
       if (data?.account_type == 0) {
@@ -51,152 +68,168 @@ const Footer = () => {
     } catch (error) {
       console.log(error);
       Alert.alert("Error", "Failed to switch account");
+    } finally {
+      setSwitchLoading(false);
     }
   };
 
-  return (
-    <>
-      <View style={styles.bottomContainer}>
-        <View style={styles.BottomBar}>
-          <TouchableOpacity style={styles.tab} onPress={handleSwitchAccount}>
-            <Octicons name="arrow-switch" size={25} color={INACTIVE_COLOR} />
-            {/* <Entypo
-          <TouchableOpacity
-            style={styles.tab}
-          >
-            <Entypo
-              name="home"
-              size={25}
-              color={isActive === "jobs" ? "#007bff" : "#000000"}
-            /> */}
-            <Text style={[styles.label, isActive == 0 && styles.activeText]}>
-              Switch
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tab}
-            onPress={() => navigation.navigate("Dashboard")}
-          >
-            <Ionicons
-              name="briefcase"
-              size={24}
-              color={isActive("Dashboard") ? ACTIVE_COLOR : INACTIVE_COLOR}
-            />
-            <Text
-              style={[styles.label, isActive("Dashboard") && styles.activeText]}
-            >
-              Jobs
-            </Text>
-          </TouchableOpacity>
+  const goToSearch = async () => {
+    const userStr = await AsyncStorage.getItem("user");
+    const user = JSON.parse(userStr);
+    const { admin } = user;
+    const search_type = admin == 2 ? 2 : 0;
+    navigation.navigate("SearchScreen", { search_type });
+  };
 
-          {/* <TouchableOpacity
-            style={styles.tab}
-            onPress={() => navigation.navigate("EmployeeAccount")}
+  return (
+    <View style={[
+      styles.bottomContainer,
+      {
+        paddingBottom: insets.bottom,
+      },
+    ]}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.BottomBar}
+      >
+        <TouchableOpacity style={styles.tab} onPress={handleSwitchAccount}>
+          {
+            switchLoading ? (
+              <ActivityIndicator size={24} color="#CB7767" />
+            ) : (
+              <Octicons name="arrow-switch" size={24} color={INACTIVE_COLOR} />
+            )
+          }
+          <Text style={styles.label}>Switch Role</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate("Dashboard")}
+        >
+          <Image
+            source={ require("../assets/images/logo-landing-bk.png")}
+            style={{ width: 25, height: 24, resizeMode: "contain" }}
+          />
+          <Text
+            style={[
+              styles.label,
+              isActive("Dashboard") && styles.activeText,
+            ]}
           >
-            <Ionicons
-              name="person"
-              size={24}
-              color={isActive("EmployeeAccount") ? ACTIVE_COLOR : INACTIVE_COLOR}
-            />
-            <Text
-              style={[styles.label, isActive("EmployeeAccount") && styles.activeText]}
-            >
-              Account
-            </Text>
-          </TouchableOpacity>
-          {/* <TouchableOpacity
-            style={styles.tab}
-            onPress={() => navigation.navigate("ChatList")}
+            Home
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={goToSearch}
+        >
+          <Ionicons
+            name="search-outline"
+            size={24}
+            color={isActive("SearchScreen") ? ACTIVE_COLOR : INACTIVE_COLOR}
+          />
+          <Text
+            style={[
+              styles.label,
+              isActive("SearchScreen") && styles.activeText,
+            ]}
           >
-            <Ionicons
-              name="chatbox"
-              size={24}
-              color={isActive("ChatList") ? ACTIVE_COLOR : INACTIVE_COLOR}
-            />
-            <Text
-              style={[styles.label, isActive("ChatList") && styles.activeText]}
-            >
-              Chat
-            </Text>
-          </TouchableOpacity> */}
-          <TouchableOpacity
-            style={styles.tab}
-            onPress={() => navigation.navigate("EmployeeAccount")}
+            Search
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate("ProfileMenu")}
+        >
+          <Ionicons
+            name="menu"
+            size={24}
+            color={isActive("ProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
+          />
+          <Text
+            style={[
+              styles.label,
+              isActive("ProfileMenu") && styles.activeText,
+            ]}
           >
-            <Ionicons
-              name="person"
-              size={24}
-              color={isActive("EmployeeAccount") ? ACTIVE_COLOR : INACTIVE_COLOR}
-            />
-            <Text
-              style={[
-                styles.label,
-                isActive("EmployeeAccount") && styles.activeText,
-              ]}
-            >
-              Account
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tab}
-            onPress={() => navigation.navigate("NotificationScreen")}
+            Menu
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => {
+            const store = useServiceGlobalStore.getState();
+            store.reset();
+            store.resetUniqueId();
+            navigation.navigate("PromoteService")
+          }}
+        >
+          <MaterialCommunityIcons
+            name="plus-circle"
+            size={24}
+            color={isActive("PromoteService") ? ACTIVE_COLOR : INACTIVE_COLOR}
+          />
+          <Text
+            style={[styles.label, isActive("PromoteService") && styles.activeText]}
           >
-            <MaterialCommunityIcons
-              name="bell-badge"
-              size={24}
-              color={
-                isActive("NotificationScreen") ? ACTIVE_COLOR : INACTIVE_COLOR
-              }
-            />
-            <Text
-              style={[
-                styles.label,
-                isActive("NotificationScreen") && styles.activeText,
-              ]}
-            >
-              Notification
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tab}
-            onPress={() => navigation.navigate("ProfileMenu")}
+            Create Service
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate("NotificationScreen")}
+        >
+          <MaterialCommunityIcons
+            name="bell-badge"
+            size={24}
+            color={
+              isActive("NotificationScreen")
+                ? ACTIVE_COLOR
+                : INACTIVE_COLOR
+            }
+          />
+          <Text
+            style={[
+              styles.label,
+              isActive("NotificationScreen") && styles.activeText,
+            ]}
           >
-            <FontAwesome6
-              name="user-large"
-              size={22}
-              color={isActive("ProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
-            />
-            <Text
-              style={[
-                styles.label,
-                isActive("ProfileMenu") && styles.activeText,
-              ]}
-            >
-              Profile
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </>
+            Notification
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 };
+
 const styles = StyleSheet.create({
-  BottomBar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    paddingVertical: 17,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
+  bottomContainer: {
     position: "absolute",
     bottom: 0,
     left: 0,
-    zIndex: 999,
     right: 0,
+    zIndex: 999,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+  },
+
+  BottomBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    gap: 15,
   },
   tab: {
     alignItems: "center",
+    justifyContent: "center",
+    minWidth: 65,
   },
   label: {
     fontSize: 14,
@@ -210,4 +243,5 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
   },
 });
+
 export default Footer;

@@ -214,7 +214,7 @@ const HeaderMenuModal = ({ visible, onClose }) => {
               title="Referral wallet"
               onPress={() => go("ReferralWallet")}
             />
-            {/* <MenuItem
+            <MenuItem
               icon="chatbubble-ellipses-outline"
               title="Chat"
               onPress={() => go("ChatList")}
@@ -230,7 +230,7 @@ const HeaderMenuModal = ({ visible, onClose }) => {
               icon="user-minus"
               title="My Following"
               onPress={() => go("Followers", { activeTab: "following" })}
-            /> */}
+            />
             <MenuItem
               icon="settings-outline"
               title="Settings"
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     right: 10,
     top: 90,
     width: 300,
-    height: 470,
+    height: 480,
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 15,

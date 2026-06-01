@@ -120,7 +120,7 @@ const Signup = () => {
       const response = await GoogleSignin.signIn();
       const idToken = response?.data?.idToken;
       if (!idToken) {
-        toastError("Google token missing");
+        // toastError("Google token missing");
         return;
       }
       const res = await fetch(`${API_URL}/auth/google/signup`,

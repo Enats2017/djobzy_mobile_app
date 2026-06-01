@@ -160,7 +160,7 @@ const Login = ({ navigation }) => {
       const response = await GoogleSignin.signIn();
       const idToken = response?.data?.idToken;
       if (!idToken) {
-        toastError("Google token missing");
+        // toastError("Google token missing");
         return;
       }
 
@@ -191,7 +191,7 @@ const Login = ({ navigation }) => {
           routes: [{ name: "VerificationPage" }],
         });
       } else {
-        if(admin === 2) {
+        if (admin === 2) {
           navigation.reset({
             index: 0,
             routes: [{ name: "EmployerDashboard" }],
@@ -203,7 +203,6 @@ const Login = ({ navigation }) => {
           });
         }
       }
-
       toastSuccess("Login successful");
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -213,6 +212,7 @@ const Login = ({ navigation }) => {
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         toastError("Google Play Services unavailable");
       } else {
+        console.log("Unhandled Error:", error);
         toastError("Google login failed");
       }
     } finally {

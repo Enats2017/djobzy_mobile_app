@@ -3,6 +3,7 @@ import Constants from "expo-constants";
 import axios from "axios";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "./api/ApiUrl";
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -42,7 +43,7 @@ export async function registerForPushNotifications() {
             return;
         }
 
-        const response = await axios.post("https://testapi.djobzy.com/api/register-token", {
+        const response = await axios.post(`${API_URL}/register-token`, {
             token: expoToken,
             platform: Platform.OS,
         });

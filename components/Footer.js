@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Ionicons,
   MaterialCommunityIcons,
@@ -21,7 +22,8 @@ import { API_URL } from "../api/ApiUrl";
 import { useNotifications } from "../context/MessageNotificationContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useServiceGlobalStore } from "../Screens/PromoteServicesPage/ServiceGlobalStore";
-import { useState } from "react";
+import SwitchOverlayAnimation from "./SwitchOverlayAnimation";
+import { toastError } from "../utils/toast";
 
 const ACTIVE_COLOR = "#CB7767";
 const INACTIVE_COLOR = "#000";
@@ -30,14 +32,15 @@ const Footer = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const route = useRoute();
-  const { refreshUser } = useNotifications();
-  const [switchLoading, setSwitchLoading] = useState(false);
+  const { refreshUser, admin } = useNotifications();
+  const [showSwitchOverlay, setShowSwitchOverlay] = useState(false);
+  const [footerHeight, setFooterHeight] = useState(0);
 
   const isActive = (routeName) => route.name === routeName;
 
   const handleSwitchAccount = async () => {
     try {
-      setSwitchLoading(true);
+      setShowSwitchOverlay(true);
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/user-switch-account`, {
         method: "POST",
@@ -52,6 +55,9 @@ const Footer = () => {
 
       await AsyncStorage.removeItem("user");
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      await new Promise(resolve =>
+        setTimeout(resolve, 1000)
+      );
       await refreshUser();
 
       if (data?.account_type == 0) {
@@ -67,9 +73,9 @@ const Footer = () => {
       }
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", "Failed to switch account");
+      toastError("Failed to switch account");
     } finally {
-      setSwitchLoading(false);
+      setShowSwitchOverlay(false);
     }
   };
 
@@ -83,24 +89,22 @@ const Footer = () => {
 
   return (
     <View style={[
-      styles.bottomContainer,
-      {
-        paddingBottom: insets.bottom,
-      },
-    ]}>
+        styles.bottomContainer,
+        {
+          paddingBottom: insets.bottom,
+        },
+      ]}
+      onLayout={(e) => {
+        setFooterHeight(e.nativeEvent.layout.height);
+      }}
+    >
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.BottomBar}
       >
         <TouchableOpacity style={styles.tab} onPress={handleSwitchAccount}>
-          {
-            switchLoading ? (
-              <ActivityIndicator size={24} color="#CB7767" />
-            ) : (
-              <Octicons name="arrow-switch" size={24} color={INACTIVE_COLOR} />
-            )
-          }
+          <MaterialCommunityIcons name="account-convert" size={24} color={INACTIVE_COLOR} />
           <Text style={styles.label}>Switch Role</Text>
         </TouchableOpacity>
 
@@ -109,7 +113,7 @@ const Footer = () => {
           onPress={() => navigation.navigate("Dashboard")}
         >
           <Image
-            source={ require("../assets/images/logo-landing-bk.png")}
+            source={require("../assets/images/d_logo.png")}
             style={{ width: 25, height: 24, resizeMode: "contain" }}
           />
           <Text
@@ -126,8 +130,8 @@ const Footer = () => {
           style={styles.tab}
           onPress={goToSearch}
         >
-          <Ionicons
-            name="search-outline"
+          <MaterialCommunityIcons
+            name="email-search"
             size={24}
             color={isActive("SearchScreen") ? ACTIVE_COLOR : INACTIVE_COLOR}
           />
@@ -145,7 +149,7 @@ const Footer = () => {
           onPress={() => navigation.navigate("ProfileMenu")}
         >
           <Ionicons
-            name="menu"
+            name="grid"
             size={24}
             color={isActive("ProfileMenu") ? ACTIVE_COLOR : INACTIVE_COLOR}
           />
@@ -176,7 +180,7 @@ const Footer = () => {
           <Text
             style={[styles.label, isActive("PromoteService") && styles.activeText]}
           >
-            Create Service
+            Post a Service
           </Text>
         </TouchableOpacity>
 
@@ -202,7 +206,60 @@ const Footer = () => {
             Notification
           </Text>
         </TouchableOpacity>
+        {/* <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate("Followers", { activeTab: "follower" })}
+        >
+          <MaterialCommunityIcons
+            name="account-check"
+            size={24}
+            color={
+              isActive("Followers")
+                ? ACTIVE_COLOR
+                : INACTIVE_COLOR
+            }
+          />
+          <Text
+            style={[
+              styles.label,
+              isActive("Followers") && styles.activeText,
+            ]}
+          >
+            My Followers
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate("Followers", { activeTab: "following" })}
+        >
+          <MaterialCommunityIcons
+            name="account-arrow-right"
+            size={24}
+            color={
+              isActive("Followers")
+                ? ACTIVE_COLOR
+                : INACTIVE_COLOR
+            }
+          />
+          <Text
+            style={[
+              styles.label,
+              isActive("Followers") && styles.activeText,
+            ]}
+          >
+            My Following
+          </Text>
+        </TouchableOpacity> */}
       </ScrollView>
+
+      {
+        showSwitchOverlay && (
+          <SwitchOverlayAnimation
+            accountType={admin}
+            footerHeight={footerHeight}
+          />
+        )
+      }
     </View>
   );
 };

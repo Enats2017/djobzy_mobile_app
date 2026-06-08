@@ -13,6 +13,18 @@ Notifications.setNotificationHandler({
         shouldShowList: true,
     }),
 });
+
+async function getDeviceId() {
+    let deviceId = await AsyncStorage.getItem("deviceId");
+
+    if (!deviceId) {
+        deviceId = "djobzy_" + Date.now() + "_" + Math.random().toString(36).substring(2, 15);
+        await AsyncStorage.setItem("deviceId", deviceId);
+    }
+
+    return deviceId;
+}
+
 export async function registerForPushNotifications() {
     if (Platform.OS === "web") return;
 
@@ -25,7 +37,7 @@ export async function registerForPushNotifications() {
     }
 
     if (finalStatus !== "granted") {
-        alert("Permission not granted!");
+        // alert("Permission not granted!");
         return;
     }
 
@@ -35,17 +47,13 @@ export async function registerForPushNotifications() {
         });
 
         const expoToken = token.data;
-        const existingToken = await AsyncStorage.getItem("expoToken");
-        console.log("TOKEN:", expoToken);
-
-        if (existingToken === expoToken) {
-            console.log("Token already saved");
-            return;
-        }
-
+        const deviceId = await getDeviceId();
+        console.log("DEVICE ID:", deviceId);
+        console.log("EXPO TOKEN:", expoToken);
         const response = await axios.post(`${API_URL}/register-token`, {
             token: expoToken,
             platform: Platform.OS,
+            device_id: deviceId,
         });
         if (response.status === 200) {
             await AsyncStorage.setItem("expoToken", expoToken);

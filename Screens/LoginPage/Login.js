@@ -86,6 +86,26 @@ const Login = ({ navigation }) => {
     });
   }, []);
 
+  const attachDeviceToUser = async (token) => {
+    try {
+      const deviceId = await AsyncStorage.getItem("deviceId");
+
+      await fetch(`${API_URL}/attach-device`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          device_id: deviceId,
+        }),
+      });
+    } catch (error) {
+      console.log("Attach Device Error:", error);
+    }
+  };
+
   const handleLogin = async () => {
     if (!email) {
       setEmailError("Emaii Field is require");
@@ -124,6 +144,7 @@ const Login = ({ navigation }) => {
       }
       await AsyncStorage.setItem("token", data.token);
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      await attachDeviceToUser(data.token);
       toastSuccess("Login successfull");
       const { verification_count, admin } = data.user;
       if (verification_count < 2) {

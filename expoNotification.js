@@ -17,9 +17,18 @@ Notifications.setNotificationHandler({
 async function getDeviceId() {
     let deviceId = await AsyncStorage.getItem("deviceId");
 
+    console.log("STORED DEVICE ID:", deviceId);
+
     if (!deviceId) {
-        deviceId = "djobzy_" + Date.now() + "_" + Math.random().toString(36).substring(2, 15);
+        deviceId =
+            "djobzy_" +
+            Date.now() +
+            "_" +
+            Math.random().toString(36).substring(2, 15);
+
         await AsyncStorage.setItem("deviceId", deviceId);
+
+        console.log("NEW DEVICE ID CREATED:", deviceId);
     }
 
     return deviceId;

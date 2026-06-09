@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -6,147 +6,303 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
-  Modal,
+  ActivityIndicator,
+  StatusBar,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import SearchBar from "../../components/SearchBar";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useNotifications } from "../../context/MessageNotificationContext";
-import moment from "moment";
-import Loading from "../../components/Loading";
-import NoTransactions from "../Wallet/NoTransactions";
+import { useChatAuth } from "../../context/useChatAuth";
 import EmployerFooter from "../../components/EmployerFooter";
 import Footer from "../../components/Footer";
-import { Alert } from "react-native";
+import { CHAT_API_URL } from "../../api/ApiUrl";
+import Loading from "../../components/Loading";
+import { FormatChatTime } from "./ChatComponent/ChatFormatTime";
+import NoConversation from "./ChatComponent/NoConversation";
 
-const ChatList = () => {
-  const navigation = useNavigation();
-  const { notifications, admin, user } = useNotifications();
-  const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState("");
-  const [chatModal, setChatModal] = useState(false);
-  const insets = useSafeAreaInsets();
+const PAGE_LIMIT = 10;
+const POLL_INTERVAL = 5000;
 
-  useEffect(() => {
-    console.log("admin from context:", admin);
-  }, [admin]);
+const ChatRow = React.memo(({ item, onPress }) => {
+  const name = item.user?.name ?? "Unknown User";
+  const photo = item.user?.photo_url ?? null;
+  const lastMessage =
+    item.message_type !== 0 && item.message_type !== undefined
+      ? "Sent a file"
+      : item.message;
+  const time = item.created_at;
+  const unreadCount = item.unread_count ?? 0;
 
-  const filteredNotifications = notifications.filter((item) =>
-    item.sender_name?.toLowerCase().includes(searchText.toLowerCase()),
-  );
-
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.row}
-      onPress={() =>
-        navigation.navigate("ChatRoom", {
-          userId: item.sender_id,
-        })
-      }
-    >
-      <Image source={{ uri: item.sender_photo }} style={styles.avatar} />
-
+  return (
+    <TouchableOpacity style={styles.row} onPress={onPress}>
+      <Image
+        source={{ uri: photo }}
+        style={styles.avatar}
+        key={item.user?.id}
+      />
       <View style={styles.rowText}>
         <View style={styles.rowTop}>
-          <Text style={styles.name}>{item.sender_name}</Text>
+          <Text style={styles.name} numberOfLines={1}>{name}</Text>
           <Text style={styles.time}>
-            {moment(item.submitted_at).format("hh:mm A")}
+            <FormatChatTime time={time} />
           </Text>
         </View>
-
         <View style={styles.rowBottom}>
-          <Text numberOfLines={1} style={styles.subtitle}>
-            {item.last_message}
-          </Text>
-
-          {item.unread_count > 0 && (
+          <Text numberOfLines={1} style={styles.subtitle}>{lastMessage}</Text>
+          {unreadCount > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{item.unread_count}</Text>
+              <Text style={styles.badgeText}>{unreadCount}</Text>
             </View>
           )}
         </View>
       </View>
     </TouchableOpacity>
   );
+});
+
+const ChatList = () => {
+  const navigation = useNavigation();
+  const { admin } = useNotifications();
+  const { chatToken, refreshChatToken } = useChatAuth();
+
+  const [conversations, setConversations] = useState([]);
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [searchText, setSearchText] = useState("");
+  const [activeFilter, setActiveFilter] = useState(null);
+
+  const searchTimeoutRef = useRef(null);
+  const momentumRef = useRef(true);
+  const hasFetched = useRef(false);
+  const loadingRef = useRef(false);
+  const isFetchingMoreRef = useRef(false);
+  const pollTimerRef = useRef(null);
+  const searchTextRef = useRef("");
+  const activeFilterRef = useRef(null);
+
+  const fetchConversations = useCallback(async (token, offsetNum = 0, isInitialOrRefresh = false, search = "", filter = null) => {
+      if (loadingRef.current || isFetchingMoreRef.current) return;
+      if (isInitialOrRefresh) {
+        if (!isRefreshing) {
+          setLoading(true);
+          loadingRef.current = true;
+        }
+      } else {
+        setIsFetchingMore(true);
+        isFetchingMoreRef.current = true;
+      }
+
+      try {
+        const params = new URLSearchParams({ offset: offsetNum });
+        if (search.trim()) params.append("search", search);
+        if (filter === "archived") {
+          params.append("isArchived", 1);
+        } else if (filter) {
+          params.append("filter", filter);
+        }
+
+        const res = await fetch(`${CHAT_API_URL}/conversations?${params}`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+        });
+
+        if (res.status === 401) {
+          const newToken = await refreshChatToken();
+          if (newToken) fetchConversations(newToken, offsetNum, isInitialOrRefresh, search, filter);
+          return;
+        }
+
+        const data = await res.json();
+        const newConversations = data?.data?.conversations ?? [];
+
+        setConversations((prev) => {
+          if (isInitialOrRefresh) return newConversations;
+          const ids = new Set(prev.map((p) => p.id));
+          return [...prev, ...newConversations.filter((item) => !ids.has(item.id))];
+        });
+        setHasMore(newConversations.length === PAGE_LIMIT);
+        setOffset(offsetNum);
+      } catch (e) {
+        console.error("fetchConversations error:", e);
+      } finally {
+        setLoading(false);
+        loadingRef.current = false;
+        setIsRefreshing(false);
+        setIsFetchingMore(false);
+        isFetchingMoreRef.current = false;
+      }
+    },
+    [isRefreshing, refreshChatToken]
+  );
+
+  useEffect(() => {
+    if (chatToken && !hasFetched.current) {
+      hasFetched.current = true;
+      fetchConversations(chatToken, 0, true, "", null);
+    }
+  }, [chatToken]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!chatToken) return;
+      const poll = async () => {
+        if (searchTextRef.current.trim() || activeFilterRef.current) return;
+        if (loadingRef.current || isFetchingMoreRef.current) return;
+
+        try {
+          const res = await fetch(`${CHAT_API_URL}/conversations?offset=0`, {
+            headers: { Authorization: `Bearer ${chatToken}`, Accept: "application/json" },
+          });
+          if (!res.ok) return;
+
+          const data = await res.json();
+          const fresh = data?.data?.conversations ?? [];
+          if (!fresh.length) return;
+
+          setConversations((prev) => {
+            const prevMap = new Map(prev.map((c) => [c.user?.id, c])); // key by user id, not conversation id
+
+            const merged = fresh.map((c) => {
+              const existing = prevMap.get(c.user?.id); // look up by user id
+              if (
+                existing &&
+                existing.message === c.message &&
+                existing.unread_count === c.unread_count
+              ) {
+                return existing;
+              }
+              return c;
+            });
+
+            // Exclude by user id — stable across new messages
+            const freshUserIds = new Set(fresh.map((c) => c.user?.id));
+            const rest = prev.filter((c) => !freshUserIds.has(c.user?.id));
+            return [...merged, ...rest];
+          });
+        } catch (e) {
+          console.error("poll error:", e);
+        }
+      };
+
+      pollTimerRef.current = setInterval(poll, POLL_INTERVAL);
+      return () => clearInterval(pollTimerRef.current);
+    }, [chatToken])
+  );
+
+  // Keep refs in sync
+  useEffect(() => { searchTextRef.current = searchText; }, [searchText]);
+  useEffect(() => { activeFilterRef.current = activeFilter; }, [activeFilter]);
+
+  const handleSearchTextChange = (text) => {
+    setSearchText(text);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      if (chatToken) {
+        momentumRef.current = true;
+        fetchConversations(chatToken, 0, true, text, activeFilter);
+      }
+    }, 500);
+  };
+
+  const handleFilterSelect = (filter) => {
+    const next = activeFilter === filter ? null : filter;
+    setActiveFilter(next);
+    if (chatToken) {
+      momentumRef.current = true;
+      fetchConversations(chatToken, 0, true, searchText, next);
+    }
+  };
+
+  const handleRefresh = () => {
+    if (!chatToken) return;
+    setIsRefreshing(true);
+    momentumRef.current = true;
+    fetchConversations(chatToken, 0, true, searchText, activeFilter);
+  };
+
+  const renderItem = useCallback(({ item }) => {
+    const id = item.user?.id;
+    if (!id) return null;
+    return (
+      <ChatRow
+        item={item}
+        onPress={() =>
+          navigation.navigate("ChatRoom", {
+            userId: id,
+            userName: item.user?.name,
+            userPhoto: item.user?.photo_url,
+            isGroup: false,
+          })
+        }
+      />
+    );
+  }, [navigation]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
         <PageNameHeaderBar title="Chat" navigation={navigation} />
-        <SearchBar
-          value={searchText}
-          onChangeText={setSearchText}
-          showDots={false}
-          onFilterPress={() => setChatModal(true)}
-        />
-        {filteredNotifications.length === 0 ? (
-          <NoTransactions title="No Conversation Found" />
+        <View style={{ paddingBottom: 10 }}>
+          <SearchBar
+            value={searchText}
+            onChangeText={handleSearchTextChange}
+            showDots={false}
+            activeFilter={activeFilter}
+            onFilterSelect={handleFilterSelect}
+          />
+        </View>
+
+        {loading && !isRefreshing ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Loading />
+          </View>
+        ) : conversations.length === 0 ? (
+          <NoConversation />
         ) : (
           <FlatList
-            data={filteredNotifications}
-            keyExtractor={(item) => item.sender_id.toString()}
+            data={conversations}
+            keyExtractor={(item, index) => item.id?.toString() ?? index.toString()}
             renderItem={renderItem}
-            refreshing={loading}
-            onRefresh={() => {}}
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            onEndReachedThreshold={0.1}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews
+            onScrollBeginDrag={() => { momentumRef.current = false; }}
+            onMomentumScrollBegin={() => { momentumRef.current = false; }}
+            onEndReached={() => {
+              if (
+                !momentumRef.current &&
+                hasMore &&
+                !isFetchingMoreRef.current &&
+                !loadingRef.current &&
+                chatToken
+              ) {
+                fetchConversations(chatToken, offset + PAGE_LIMIT, false, searchText, activeFilter);
+                momentumRef.current = true;
+              }
+            }}
+            ListFooterComponent={
+              isFetchingMore ? (
+                <View style={styles.footerLoader}>
+                  <ActivityIndicator size="small" color="#fff" />
+                </View>
+              ) : null
+            }
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
           />
         )}
       </View>
-      <Modal visible={chatModal} animationType="fade" transparent>
-        <TouchableOpacity
-          style={styles.overlay}
-          activeOpacity={1}
-          onPress={() => setChatModal(false)}
-        />
 
-        <View style={styles.dropdownWrapper}>
-          <View style={styles.modalContainer}>
-            <TouchableOpacity
-              style={styles.option}
-              onPress={() => {
-                Alert.alert("Selected", "Read Pressed");
-                setChatModal(false);
-              }}
-            >
-              <Text style={styles.label}>Read</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.option}
-              onPress={() => {
-                Alert.alert("Selected", "Unread Pressed");
-                setChatModal(false);
-              }}
-            >
-              <Text style={styles.label}>Unread</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.option}
-              onPress={() => {
-                Alert.alert("Selected", "Archived Pressed");
-                setChatModal(false);
-              }}
-            >
-              <Text style={styles.label}>Archived</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.option, { borderBottomWidth: 0 }]}
-              onPress={() => {
-                Alert.alert("Selected", "Blocked Pressed");
-                setChatModal(false);
-              }}
-            >
-              <Text style={styles.label}>Blocked</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-      {admin == 2 ? <EmployerFooter /> : <Footer />}
+      {admin === 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 };
@@ -157,35 +313,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#222222",
     paddingHorizontal: 15,
   },
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: 10,
-    gap: 10,
-  },
-  searchWrap: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    height: 42,
-  },
-  searchIcon: {
-    color: "rgba(255,255,255,0.8)",
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    color: "#fff",
-    fontSize: 14,
-  },
-  iconBtn: {
-    padding: 8,
-    marginLeft: 6,
-  },
-
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -240,35 +367,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
   },
-
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.05)",
-  },
-
-  dropdownWrapper: {
-    position: "absolute",
-    top: 125,
-    right: 34,
-  },
-
-  modalContainer: {
-    backgroundColor: "#fff",
-    width: 120,
-    borderRadius: 4,
-    overflow: "hidden",
-    elevation: 6,
-  },
-  option: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5E5",
-  },
-  label: {
-    fontFamily: "Montserrat_500Medium",
-    fontSize: 14,
-    color: "#000",
+  footerLoader: {
+    paddingVertical: 10,
   },
 });
 

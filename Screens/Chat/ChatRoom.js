@@ -1,309 +1,355 @@
-
-import React from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   View,
-  Text,
   StyleSheet,
-  Image,
   StatusBar,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Footer from "../../components/Footer";
-import { useNavigation } from '@react-navigation/native';
-import { useNotifications } from "../../context/MessageNotificationContext";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { FlashList } from "@shopify/flash-list";
+import { useChatAuth } from "../../context/useChatAuth";
+import { CHAT_API_URL } from "../../api/ApiUrl";
+import ChatGroupMessagesByDate from "./ChatComponent/ChatGroupMessagesByDate";
+import ChatRoomHeader from "./ChatComponent/ChatRoomHeader";
+import ChatMessageItem from "./ChatComponent/ChatMessageItem";
+import ChatInputBar from "./ChatComponent/ChatInputBar";
 
-export default function ChatList() {
+const POLL_INTERVAL = 5000;
+const PAGE_SIZE = 30;
+
+export default function ChatRoom() {
   const navigation = useNavigation();
-  const { messageCount, notifications, loading } = useNotifications();
+  const route = useRoute();
+  const { userId, userName } = route.params ?? {};
+  const { user, chatToken, refreshChatToken } = useChatAuth();
+
+  const [messages, setMessages] = useState([]);
+  const [userInfo, setUserInfo] = useState(null);
+  const [inputText, setInputText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const flashListRef = useRef(null);
+  const oldestIdRef = useRef(null);
+  const pollTimerRef = useRef(null);
+  const isFirstLoadRef = useRef(true);
+  const prevMessageCountRef = useRef(0);
+  const isPrependRef = useRef(false);
+  const getToken = useCallback(async () => {
+    return chatToken ?? (await refreshChatToken());
+  }, [chatToken, refreshChatToken]);
+
+  const authHeaders = useCallback((token) => ({
+    Authorization: `Bearer ${token}`,
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  }), []);
+
+  const scrollToBottom = useCallback((animated = true) => {
+    setTimeout(() => {
+      flashListRef.current?.scrollToEnd({ animated });
+    }, 100);
+  }, []);
+
+  const markAsRead = useCallback(
+    async (token, convs) => {
+      try {
+        const unreadIds = convs
+          .filter((m) => m.status === 0 && m.from_id !== user?.id)
+          .map((m) => m.id);
+        if (!unreadIds.length) return;
+        await fetch(`${CHAT_API_URL}/read-message`, {
+          method: "POST",
+          headers: authHeaders(token),
+          body: JSON.stringify({ ids: unreadIds, is_group: 0 }),
+        });
+      } catch (e) {
+        console.error("markAsRead error", e);
+      }
+    },
+    [user?.id, authHeaders]
+  );
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = await getToken();
+      const res = await fetch(`${CHAT_API_URL}/users/${userId}/conversation`, {
+        headers: authHeaders(token),
+      });
+
+      if (res.status === 401) {
+        const newToken = await refreshChatToken();
+        if (newToken) fetchMessages();
+        return;
+      }
+
+      const data = await res.json();
+      const convs = data?.data?.conversations ?? [];
+      setUserInfo(data?.data?.user ?? null);
+      if (convs.length > 0) {
+        oldestIdRef.current = convs[convs.length - 1].id;
+        setHasMore(convs.length >= PAGE_SIZE);
+      } else {
+        setHasMore(false);
+      }
+
+      const chronological = [...convs].reverse();
+      prevMessageCountRef.current = chronological.length;
+      setMessages(chronological);
+      markAsRead(token, convs);
+      isFirstLoadRef.current = true;
+    } catch (e) {
+      console.error("fetchMessages error", e);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, getToken, authHeaders, refreshChatToken, markAsRead]);
+
+  const pollNewMessages = useCallback(async () => {
+    try {
+      const token = await getToken();
+      const res = await fetch(`${CHAT_API_URL}/users/${userId}/conversation`, {
+        headers: authHeaders(token),
+      });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const convs = data?.data?.conversations ?? [];
+      if (!convs.length) return;
+
+      setMessages((prev) => {
+        const latestKnownId = prev.length > 0 ? prev[prev.length - 1].id : 0;
+        const fresh = convs.filter((m) => m.id > latestKnownId);
+        if (!fresh.length) return prev;
+        return [...prev, ...fresh.reverse()];
+      });
+
+      markAsRead(token, convs);
+    } catch (e) {
+      console.error("pollNewMessages error", e);
+    }
+  }, [userId, getToken, authHeaders, markAsRead]);
+
+  const loadOlderMessages = useCallback(async () => {
+    if (loadingMore || !hasMore || !oldestIdRef.current) return;
+    try {
+      setLoadingMore(true);
+      const token = await getToken();
+      const res = await fetch(`${CHAT_API_URL}/users/${userId}/conversation?before=${oldestIdRef.current}`,
+        { headers: authHeaders(token) }
+      );
+      const data = await res.json();
+      const older = data?.data?.conversations ?? [];
+      if (!older.length) {
+        setHasMore(false);
+        return;
+      }
+
+      oldestIdRef.current = older[older.length - 1].id;
+      setHasMore(older.length >= PAGE_SIZE);
+      const chronologicalOlder = [...older].reverse();
+
+      // Set the flag BEFORE setState so the useEffect sees it synchronously
+      isPrependRef.current = true;
+      setMessages((prev) => [...chronologicalOlder, ...prev]);
+    } catch (e) {
+      console.error("loadOlderMessages error", e);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, userId, getToken, authHeaders]);
+
+  const sendMessage = useCallback(async () => {
+    const text = inputText.trim();
+    if (!text || sending) return;
+
+    const tempId = `temp-${Date.now()}`;
+    const optimistic = {
+      id: tempId,
+      from_id: user?.id,
+      to_id: userId,
+      message: text,
+      message_type: 0,
+      status: 0,
+      created_at: new Date().toISOString(),
+      _sending: true,
+    };
+
+    setMessages((prev) => [...prev, optimistic]);
+    setInputText("");
+    scrollToBottom(true);
+
+    try {
+      setSending(true);
+      const token = await getToken();
+      const res = await fetch(`${CHAT_API_URL}/send-message`, {
+        method: "POST",
+        headers: authHeaders(token),
+        body: JSON.stringify({
+          to_id: String(userId),
+          message: text,
+          message_type: 0,
+        }),
+      });
+
+      const data = await res.json();
+      const sent = data?.data?.message ?? null;
+
+      setMessages((prev) => prev.map((m) => m.id === tempId ? { ...(sent ?? m), _sending: false } : m));
+    } catch (e) {
+      console.error("sendMessage error", e);
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+    } finally {
+      setSending(false);
+    }
+  }, [inputText, sending, user?.id, userId, getToken, authHeaders, scrollToBottom]);
+
+  useEffect(() => {
+    if (!chatToken) return;
+    fetchMessages();
+  }, [chatToken]);
+
+  useEffect(() => {
+    if (loading) return;
+    pollTimerRef.current = setInterval(pollNewMessages, POLL_INTERVAL);
+    return () => clearInterval(pollTimerRef.current);
+  }, [loading, pollNewMessages]);
+
+  useEffect(() => {
+    if (messages.length === 0) return;
+    if (messages.length > prevMessageCountRef.current) {
+      if (isPrependRef.current) {
+        isPrependRef.current = false;
+      } else {
+        scrollToBottom(true);
+      }
+    }
+
+    prevMessageCountRef.current = messages.length;
+  }, [messages.length, scrollToBottom]);
+
+  const groupedData = useMemo(
+    () => ChatGroupMessagesByDate(messages),
+    [messages]
+  );
+
+  const renderItem = useCallback(({ item }) =>
+    <ChatMessageItem item={item} myId={user?.id} />,
+    [user?.id]
+  );
+
+  const keyExtractor = useCallback((item) => item.id?.toString() ?? item.day, []);
+
+  const handleScroll = useCallback(({ nativeEvent }) => {
+    if (nativeEvent.contentOffset.y < 300 && hasMore && !loadingMore) {
+      loadOlderMessages();
+    }
+  }, [hasMore, loadingMore, loadOlderMessages]);
+
+  const ListHeaderComponent = useMemo(() => {
+    if (!loadingMore) return null;
+    return (
+      <View style={styles.loadMoreWrap}>
+        <ActivityIndicator color="#e87b7b" size="small" />
+      </View>
+    );
+  }, [loadingMore]);
+
+  const isOnline = userInfo?.is_online ?? false;
+  const displayName = userInfo?.name ?? userName ?? "User";
+  const displayPhoto = userInfo?.photo_url ?? null;
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.container}>
-        <StatusBar barStyle="light-content" />
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <View style={styles.arrow}>
-                <Ionicons name="chevron-back" size={30} color="#ffffff" />
-              </View>
-            </TouchableOpacity>
-            <Image
-              source={{ uri: "https://randomuser.me/api/portraits/women/44.jpg" }}
-              style={styles.headerAvatar}
-            />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={styles.headerName}>Gabrilla</Text>
-              <Text style={styles.headerStatus}>Online</Text>
-            </View>
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <ChatRoomHeader
+        navigation={navigation}
+        displayName={displayName}
+        displayPhoto={displayPhoto}
+        isOnline={isOnline}
+        lastSeen={userInfo?.last_seen}
+        userId={userId}
+        chatToken={chatToken}
+        isBlockedByAuthUser={userInfo?.is_blocked_by_auth_user}
+        refreshChat={fetchMessages}
+      />
+
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={0}
+      >
+        {loading ? (
+          <View style={styles.centered}>
+            <ActivityIndicator color="#e87b7b" size="large" />
           </View>
+        ) : (
+          <FlashList
+            ref={flashListRef}
+            data={groupedData}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            estimatedItemSize={60}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+            onScroll={handleScroll}
+            scrollEventThrottle={200}
+            ListHeaderComponent={ListHeaderComponent}
+            maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
+            onLayout={() => {
+              if (isFirstLoadRef.current) {
+                scrollToBottom(false);
+                isFirstLoadRef.current = false;
+              }
+            }}
+          />
+        )}
 
-          <TouchableOpacity activeOpacity={0.7} style={styles.headerIcon}>
-            <MaterialIcons name="more-vert" size={22} color="#fff" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.divider} />
-        <ScrollView
-          style={styles.messagesWrap}
-          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Date label */}
-          <View style={styles.dateLabelWrap}>
-            <Text style={styles.dateLabelText}>Today, 11:03 AM</Text>
-          </View>
-
-          <View style={styles.rowLeft}>
-            <View style={styles.bubbleLeftWrapper}>
-              <View style={styles.bubbleLeft}>
-                <Text style={styles.bubbleLeftText}>
-                  Auctor urna, varius duis suspendisse mi in dictum. Interdum
-                  egestas ut porttitor tortor aliquet massa.
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.msgTimeLeft}>08:23 AM</Text>
-          </View>
-
-          {/* === RIGHT: outgoing bubble === */}
-          <View style={styles.rowRight}>
-            <View style={styles.bubbleRightWrapper}>
-              <View style={styles.bubbleRight}>
-                <Text style={styles.bubbleRightText}>
-                  Auctor urna, varius duis suspendisse mi in dictum
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.msgTimeRight}>09:00 AM</Text>
-          </View>
-
-          {/* === LEFT small bubble (incoming) === */}
-          <View style={styles.rowLeft}>
-            <View style={styles.bubbleLeftWrapper}>
-              <View style={styles.bubbleLeftSmall}>
-                <Text style={styles.bubbleLeftText}>
-                  Auctor urna, varius duis suspendisse mi in
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.msgTimeLeft}>10:00 AM</Text>
-
-          </View>
-          <View style={styles.rowRight}>
-            <View style={styles.bubbleRightWrapper}>
-              <View style={styles.bubbleRight}>
-                <Text style={styles.bubbleRightText}>
-                  Auctor urna, varius duis suspendisse mi in dictum
-                </Text>
-              </View>
-              <Text style={styles.msgTimeRight}>09:00 AM</Text>
-            </View>
-          </View>
-        </ScrollView>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={90}
-        >
-          <View style={styles.inputWrap}>
-            <TouchableOpacity style={styles.attachBtn} activeOpacity={0.7}>
-              <Ionicons name="add" size={22} color="#fff" />
-            </TouchableOpacity>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Send your message..."
-              placeholderTextColor="rgba(255,255,255,0.6)"
-              editable={true}
-            // hard-coded placeholder; you may connect state if desired
-            />
-            <TouchableOpacity style={styles.sendBtn} activeOpacity={0.7}>
-              <Ionicons name="send" size={18} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </View>
+        <ChatInputBar
+          value={inputText}
+          onChangeText={setInputText}
+          onSend={sendMessage}
+          sending={sending}
+          isBlockedByAuthUser={userInfo?.is_blocked_by_auth_user}
+        />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-/* Styles tuned to match upload-screen-short look and to place reaction chips centered on bubble border */
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
+    flex: 1,
+  },
+  flex: {
     flex: 1,
     backgroundColor: "#222222",
   },
-  arrow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 25,
-    borderRadius: 100,
-  },
-  header: {
-    height: 78,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  headerLeft: { flex: 1, flexDirection: "row", alignItems: "center" },
-  headerAvatar: { marginLeft: 10, width: 44, height: 44, borderRadius: 22 },
-  headerName: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  headerStatus: { color: "#2dd36f", fontSize: 12, marginTop: 2 },
-  headerIcon: { padding: 8 },
-  divider: { height: 1, backgroundColor: "#ffffff1e" },
-
-  messagesWrap: { flex: 1 },
-
-  dateLabelWrap: { alignItems: "center", marginBottom: 12 },
-  dateLabelText: {
-    color: "rgba(255,255,255,0.5)",
-    fontSize: 12,
-    backgroundColor: "rgba(255,255,255,0.03)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  rowLeft: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    marginBottom: 18,
-  },
-  bubbleLeftWrapper: {
-    position: "relative",
-    maxWidth: "78%",
-  },
-  bubbleLeft: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 16,
-    borderBottomLeftRadius: 4,
-  },
-  bubbleLeftSmall: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 14,
-    borderBottomLeftRadius: 4,
-  },
-  bubbleLeftText: { color: "#111", fontSize: 14, lineHeight: 20 },
-  centerReactionLeft: {
-    position: "absolute",
-    bottom: -12,
-    left: "50%",
-    transform: [{ translateX: -50 }],
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  rowRight: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "flex-end",
-    marginBottom: 18,
-  },
-  bubbleRightWrapper: {
-    position: "relative",
-    maxWidth: "78%",
-    alignItems: "flex-end",
-  },
-  bubbleRight: {
-    backgroundColor: "#ea8b8b",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 16,
-    borderBottomRightRadius: 4,
-  },
-  bubbleRightText: { color: "#fff", fontSize: 10, lineHeight: 20 },
-  centerReactionRight: {
-    position: "absolute",
-    bottom: -12,
-    left: "50%",
-    transform: [{ translateX: -50 }],
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  reactionChip: {
-    backgroundColor: "#f2f2f2",
-    borderRadius: 16,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    minWidth: 36,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  reactionChipRight: {
-    backgroundColor: "rgba(255,255,255,0.16)",
-    borderRadius: 16,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    minWidth: 36,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  reactionEmoji: { fontSize: 14 },
-
-  msgTimeLeft: {
-    color: "rgba(255,255,255,0.45)",
-    fontSize: 11,
-    marginLeft: 10,
-    marginTop: 6,
-  },
-  msgTimeRight: {
-    color: "rgba(255,255,255,0.45)",
-    fontSize: 11,
-    marginLeft: 8,
-    marginTop: 6,
-  },
-
-  inputWrap: {
-    position: "absolute",
-    left: 12,
-    right: 12,
-    bottom: 12,
-    height: 56,
-    borderRadius: 30,
-    backgroundColor: "rgba(255,255,255,0.03)",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.04)",
-  },
-  attachBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
-  },
-  input: {
+  centered: {
     flex: 1,
-    height: "100%",
-    color: "#fff",
-    fontSize: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  listContent: {
+    paddingHorizontal: 15,
     paddingVertical: 10,
   },
-  sendBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "rgba(255,255,255,0.06)",
+  loadMoreWrap: {
+    paddingVertical: 12,
     alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 8,
   },
 });

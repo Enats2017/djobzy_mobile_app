@@ -4,6 +4,7 @@ import axios from "axios";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "./api/ApiUrl";
+import { navigate } from "./NavigationService";
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -16,19 +17,9 @@ Notifications.setNotificationHandler({
 
 async function getDeviceId() {
     let deviceId = await AsyncStorage.getItem("deviceId");
-
-    console.log("STORED DEVICE ID:", deviceId);
-
     if (!deviceId) {
-        deviceId =
-            "djobzy_" +
-            Date.now() +
-            "_" +
-            Math.random().toString(36).substring(2, 15);
-
+        deviceId = "djobzy_" + Date.now() + "_" + Math.random().toString(36).substring(2, 15);
         await AsyncStorage.setItem("deviceId", deviceId);
-
-        console.log("NEW DEVICE ID CREATED:", deviceId);
     }
 
     return deviceId;
@@ -73,10 +64,18 @@ export async function registerForPushNotifications() {
     }
 }
 
-// 🎯 Listener
+// Listener
 export function notificationListener() {
     return Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification clicked:", response);
+        const data = response?.notification?.request?.content?.data || {};
+        console.log("Notification Data:", data);
+        if (data.type === "chat") {
+            navigate("ChatRoom", {
+                userId: data.chat_user_id,
+                isGroup: false,
+            });
+        }
     });
 }
 

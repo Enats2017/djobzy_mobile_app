@@ -287,12 +287,12 @@ const EmployeeProfileMenu = () => {
                   title="Referral wallet"
                   onPress={() => navigation.navigate("ReferralWallet")}
                 />
-                {/* <MenuItem
+                <MenuItem
                   type="Fontisto"
                   icon="hipchat"
                   title="Chat"
                   onPress={() => navigation.navigate("ChatList")}
-                /> */}
+                />
                 <MenuItem
                   type="ion"
                   icon="settings"

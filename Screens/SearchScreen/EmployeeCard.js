@@ -70,16 +70,39 @@ const EmployeeCard = React.memo(({ item, navigation }) => {
                         <View style={styles.promotedBox1} />
                         <View style={styles.promotedBox1} />
                     </View>
-                    <Text style={styles.sectionTitle1}>Categories</Text>
-                    <View style={styles.skillRow1}>
-                        {["Website design", "Website design", "Website design"].map(
-                            (skill, i) => (
-                                <View key={i} style={styles.skillTag1}>
-                                    <Text style={styles.skillText1}>{skill}</Text>
-                                </View>
-                            ),
-                        )}
-                    </View>
+                    {item?.seller_services_for_search?.length > 0 && (
+                        <>
+                            <Text style={styles.sectionTitle1}>Categories</Text>
+                            <View style={styles.skillRow1}>
+                                {item?.seller_services_for_search
+                                    ?.slice(0, maxVisibleServices)
+                                    ?.map((service, index) => {
+                                        const subName = service?.sub_services?.subname;
+
+                                        if (!subName) return null;
+
+                                        return (
+                                            <View
+                                                key={`${service.id}-${index}`}
+                                                style={styles.skillTag1}
+                                            >
+                                                <Text style={styles.skillText1}>
+                                                    {subName}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })}
+
+                                {servicesCount > maxVisibleServices && (
+                                    <View style={styles.skillTag1}>
+                                        <Text style={styles.skillText1}>
+                                            +{servicesCount - maxVisibleServices} more
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
+                        </>
+                    )}
                 </View>
                 <View>
                     <GradientButton

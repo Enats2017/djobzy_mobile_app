@@ -34,15 +34,7 @@ export default function EmployeeCategoryResult({
 }) {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
-
-    const {
-        keyword,
-        latitude,
-        longitude,
-        getSubcategoryParam,
-        getCategoryParam,
-    } = useGlobalSearch();
-
+    const { keyword, latitude, longitude, getSubcategoryParam, getCategoryParam, } = useGlobalSearch();
     const subcategory = getSubcategoryParam();
     const category = getCategoryParam();
     const queryString = useMemo(() => {
@@ -67,10 +59,11 @@ export default function EmployeeCategoryResult({
         );
     };
 
-    // if (loading && page === 1) return <Loading />;
-
     const renderEmployeeCard = ({ item, index }) => {
         const isLastItem = index === gigs.length - 1;
+        const servicesCount = item.seller_services_for_search ? item.seller_services_for_search.length : 0;
+        const maxVisibleServices = 2;
+
         return (
             <>
                 <View style={styles.jobCard1}>
@@ -120,16 +113,39 @@ export default function EmployeeCategoryResult({
                             <View style={styles.promotedBox1} />
                             <View style={styles.promotedBox1} />
                         </View>
-                        <Text style={styles.sectionTitle1}>Categories</Text>
-                        <View style={styles.skillRow1}>
-                            {["Website design", "Website design", "Website design"].map(
-                                (skill, i) => (
-                                    <View key={i} style={styles.skillTag1}>
-                                        <Text style={styles.skillText1}>{skill}</Text>
-                                    </View>
-                                ),
-                            )}
-                        </View>
+                        {item?.seller_services_for_search.length > 0 && (
+                            <>
+                                <Text style={styles.sectionTitle1}>Categories</Text>
+                                <View style={styles.skillRow1}>
+                                    {item?.seller_services_for_search
+                                        ?.slice(0, maxVisibleServices)
+                                        ?.map((service, index) => {
+                                            const subName = service?.sub_services?.subname;
+
+                                            if (!subName) return null;
+
+                                            return (
+                                                <View
+                                                    key={`${service.id}-${index}`}
+                                                    style={styles.skillTag1}
+                                                >
+                                                    <Text style={styles.skillText1}>
+                                                        {subName}
+                                                    </Text>
+                                                </View>
+                                            );
+                                        })}
+
+                                    {servicesCount > maxVisibleServices && (
+                                        <View style={styles.skillTag1}>
+                                            <Text style={styles.skillText1}>
+                                                +{servicesCount - maxVisibleServices} more
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            </>
+                        )}
                     </View>
                     <View>
                         <GradientButton

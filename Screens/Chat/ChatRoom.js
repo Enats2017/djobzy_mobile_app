@@ -267,6 +267,121 @@ export default function ChatRoom() {
     );
   }, [loadingMore]);
 
+  const sendFiles = useCallback(async (files, onDone) => {
+    if (!files.length) return;
+
+    const optimisticMessages = files.map((file) => ({
+      id: file.tempId,
+      from_id: user?.id,
+      to_id: userId,
+      message: null,
+      message_type: -1,
+      file_name: file.name,
+      attachment: file.uri,       // local URI for immediate preview
+      created_at: new Date().toISOString(),
+      _sending: true,
+      _localUri: file.uri,        // keep local URI for image preview
+    }));
+
+    console.log('✏️ [UI] Optimistic Messages Added:', optimisticMessages);
+
+    setMessages((prev) => [...prev, ...optimisticMessages]);
+    scrollToBottom(true);
+    onDone();
+
+    const token = await getToken();
+
+    const uploadFile = async (file) => {
+      console.log(`📡 [STEP 1: UPLOAD START] Preparing payload for: ${file.name}`, {
+        uri: file.uri,
+        mimeType: file.mimeType,
+        fileSize: file.fileSize ? `${(file.fileSize / (1024 * 1024)).toFixed(2)} MB` : "Unknown"
+      });
+
+      const formData = new FormData();
+      formData.append("file[]", {
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType ?? "application/octet-stream",
+      });
+
+      const res = await fetch(`${CHAT_API_URL}/file-upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        console.error(`❌ [STEP 1: UPLOAD FAILED] HTTP Status: ${res.status} for ${file.name}`);
+        throw new Error(`Upload failed: ${res.status}`);
+      }
+
+      const data = await res.json();
+      return data?.data?.[0] ?? null;
+    };
+
+    const sendOneFile = async (file, uploadedData) => {
+      if (!uploadedData) {
+        return null;
+      }
+      const sendRes = await fetch(`${CHAT_API_URL}/send-message`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to_id: String(userId),
+          message: uploadedData.attachment,
+          message_type: uploadedData.message_type,
+          file_name: uploadedData.file_name,
+          unique_code: uploadedData.unique_code,
+        }),
+      });
+
+      const sentData = await sendRes.json();
+      return sentData?.data?.message ?? null;
+    };
+
+    // Run all uploads + sends concurrently — non-blocking
+    await Promise.allSettled(
+      files.map(async (file) => {
+        try {
+          const uploaded = await uploadFile(file);
+          const sent = await sendOneFile(file, uploaded);
+
+          // Replace optimistic message with real one from server
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === file.tempId
+                ? {
+                  ...(sent ?? m),
+                  _sending: false,
+                  _localUri: file.uri,
+                }
+                : m
+            )
+          );
+        } catch (e) {
+          console.error("[FATAL ERROR] sendFiles sequence broke down for:", file.name, e);
+          // Mark as failed
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === file.tempId
+                ? { ...m, _sending: false, _failed: true }
+                : m
+            )
+          );
+        }
+      })
+    );
+  }, [user?.id, userId, getToken, scrollToBottom]);
+
   const isOnline = userInfo?.is_online ?? false;
   const displayName = userInfo?.name ?? userName ?? "User";
   const displayPhoto = userInfo?.photo_url ?? null;
@@ -323,6 +438,7 @@ export default function ChatRoom() {
           value={inputText}
           onChangeText={setInputText}
           onSend={sendMessage}
+          onSendFiles={sendFiles}
           sending={sending}
           isBlockedByAuthUser={userInfo?.is_blocked_by_auth_user}
         />

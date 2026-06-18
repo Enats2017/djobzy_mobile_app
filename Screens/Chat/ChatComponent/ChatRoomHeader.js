@@ -13,6 +13,7 @@ import { ChatFormatLastSeen } from "./ChatFormatTime";
 import ChatDefaultConfirmationModal from "./ChatDefaultConfirmationModal";
 import { blockUserApi, deleteConversationApi } from "../Services/chatService";
 import { toastError, toastSuccess } from "../../../utils/toast";
+import { chatEvents } from "../Services/chatEvents";
 
 export default function ChatRoomHeader({ navigation, displayName, displayPhoto, isOnline, lastSeen, userId, chatToken, isBlockedByAuthUser, refreshChat }) {
     const menuBtnRef = useRef(null);
@@ -71,6 +72,7 @@ export default function ChatRoomHeader({ navigation, displayName, displayPhoto, 
             const response = await deleteConversationApi(userId, chatToken);
             console.log("DELETE SUCCESS", response);
             toastSuccess(response?.message || "Deleted successfully.");
+            chatEvents.emit("conversation:deleted", userId);
             navigation.goBack();
         } catch (error) {
             console.log("DELETE ERROR", error);

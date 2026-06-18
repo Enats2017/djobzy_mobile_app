@@ -27,6 +27,8 @@ import { toastError, toastSuccess } from "../../utils/toast";
 import { useGlobalSearch } from "./useGlobalSearch";
 import EmployerFooter from "../../components/EmployerFooter";
 import LineDivider from "../../components/LineDivider";
+import RecentAndSuggestions, { saveRecentSearch } from "./RecentAndSuggestions";
+import { useNotifications } from "../../context/MessageNotificationContext";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -45,8 +47,9 @@ const SearchScreen = () => {
   const [categoryName, setCategoryName] = useState("");
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [admin, setAdmin] = useState(0);
+  const { admin } = useNotifications();
   const insets = useSafeAreaInsets();
+  const inputRef = useRef(null);
 
   const handleSearch = (text) => {
     setKeyword(text);
@@ -135,15 +138,14 @@ const SearchScreen = () => {
     setUserSearchMode(newMode);
   };
 
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-
-    setAdmin(user?.admin);
+  const handleSuggestionSelect = (term) => {
+    setKeyword(term);
+    latestKeywordRef.current = term;
+    inputRef.current?.focus();
+    handleSearch(term);
   };
+
   useEffect(() => {
-    loadUser();
     reset();
     setUserSearchMode(search_type);
   }, []);
@@ -211,6 +213,7 @@ const SearchScreen = () => {
               <View style={styles.divider} />
 
               <TextInput
+                ref={inputRef}
                 placeholder={
                   searchMode == 0 ? "Search for a jobs" : "Search for a people"
                 }
@@ -218,10 +221,17 @@ const SearchScreen = () => {
                 value={keyword}
                 onChangeText={handleSearch}
                 style={styles.input}
+                onSubmitEditing={async () => {
+                  if (keyword.trim().length > 2) await saveRecentSearch(keyword.trim());
+                  navigation.navigate("SearchResult");
+                }}
               />
 
               <Ionicons name="search" size={18} color="#FFFFFF"
-                onPress={() => navigation.navigate("SearchResult")}
+                onPress={async () => {
+                  if (keyword.trim().length > 2) await saveRecentSearch(keyword.trim());
+                  navigation.navigate("SearchResult");
+                }}
               />
             </View>
 
@@ -244,7 +254,9 @@ const SearchScreen = () => {
             contentContainerStyle={{ paddingBottom: 100 }}
             keyboardShouldPersistTaps="handled"
           >
-            {keyword.length > 0 && (
+            {keyword.length === 0 ? (
+              <RecentAndSuggestions admin={admin} onSelectTerm={handleSuggestionSelect} />
+            ) : (
               <View style={styles.requestCategory}>
                 <Text style={styles.categoryText}>
                   Search for a {keyword}

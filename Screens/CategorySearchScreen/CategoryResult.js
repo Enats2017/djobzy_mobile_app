@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import Footer from "../../components/Footer";
@@ -21,90 +21,91 @@ import { useGlobalSearch } from "../SearchScreen/useGlobalSearch";
 import EmployerFooter from "../../components/EmployerFooter";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import JobCategoryResult from "./JobCategoryResult";
+import { useNotifications } from "../../context/MessageNotificationContext";
 
 const CategoryResult = () => {
   const navigation = useNavigation();
-  const { categories, userSearchMode, setUserSearchMode, keyword } =
-    useGlobalSearch();
+  const { categories, userSearchMode, setUserSearchMode, keyword } = useGlobalSearch();
   const selected = categories?.[0];
-  console.log("Selected category:", selected);
-
-  const [activeTab, setActiveTab] = useState(true);
+  const { admin } = useNotifications();
+  const requestIdRef = useRef(0);
   const [showFilter, setShowFilter] = useState(false);
-  const [admin, setAdmin] = useState(0);
+  const [activeTab, setActiveTab] = useState(admin !== 2);
   const [jobs, setJobs] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadUser = async () => {
-    const userStr = await AsyncStorage.getItem("user");
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-
-    setAdmin(user?.admin);
-  };
-  useEffect(() => {
-    loadUser();
-  }, []);
-  
-  useEffect(() => {
-  if (admin === 2) {
-    setActiveTab(false);
-  } else {
-    setActiveTab(true); 
-  }
-}, [admin]);
-
   const fetchCategoryData = async (pageNum = 1) => {
     if (!selected) return;
-
+    const currentRequestId = ++requestIdRef.current;
     try {
-      if (pageNum === 1) setLoading(true);
-      else setIsFetchingMore(true);
-      const token = await AsyncStorage.getItem("token");
-      let url = `${API_URL}/category/${selected.slug}?page=${pageNum}`;
-
-      if (selected.subslug) {
-        url = `${API_URL}/category/${selected.slug}/${selected.subslug}?page=${pageNum}`;
+      if (pageNum === 1) {
+        setLoading(true);
+      } else {
+        setIsFetchingMore(true);
       }
-      console.log("URL:", url);
 
-      const res = await fetch(url, {
+      const token = await AsyncStorage.getItem("token");
+      const jobType = activeTab ? 1 : 2;
+      let url = `${API_URL}/category/${selected.slug}?page=${pageNum}&job_type=${jobType}`;
+      if (selected.subslug) {
+        url = `${API_URL}/category/${selected.slug}/${selected.subslug}?page=${pageNum}&job_type=${jobType}`;
+      }
+      const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
-
-      const data = await res.json();
-      console.log(data);
-
-      if (!data?.gigs || data.gigs.length === 0) {
-        setHasMore(false);
+      const data = await response.json();
+      if (currentRequestId !== requestIdRef.current) {
         return;
       }
+
+      let gigsList = [];
+      if (jobType === 1) {
+        gigsList = Array.isArray(data.gigs)
+          ? data.gigs
+          : [];
+      } else {
+        gigsList = Array.isArray(data.gigs?.data)
+          ? data.gigs.data
+          : [];
+      }
+
       if (pageNum === 1) {
-        setJobs(data.gigs);
+        setJobs(gigsList);
       } else {
         setJobs((prev) => {
-          const newGigs = data.gigs.filter(
-            (gig) => !prev.some((j) => j.gid === gig.gid),
-          );
-          return [...prev, ...newGigs];
+          const merged = [...prev];
+          gigsList.forEach((item) => {
+            const exists = merged.some((p) =>
+              jobType === 1
+                ? p.gid === item.gid
+                : p.id === item.id
+            );
+
+            if (!exists) {
+              merged.push(item);
+            }
+          });
+
+          return merged;
         });
       }
 
       setPage(pageNum);
-      setHasMore(data.gigs.length === 10); // same as backend limit
+      setHasMore(gigsList.length === 10);
     } catch (error) {
-      console.log("API error:", error);
+      console.log("FETCH ERROR:", error);
     } finally {
       setLoading(false);
       setIsFetchingMore(false);
     }
   };
+
   useEffect(() => {
     if (!selected) return;
 
@@ -113,7 +114,28 @@ const CategoryResult = () => {
     setHasMore(true);
 
     fetchCategoryData(1);
-  }, [selected]);
+  }, [selected, activeTab]);
+
+  const fetchMore = () => {
+    if ( loading || isFetchingMore || !hasMore || jobs.length === 0 ) {
+      return;
+    }
+    fetchCategoryData(page + 1);
+  };
+
+  const switchToJobs = () => {
+    setJobs([]);
+    setPage(1);
+    setHasMore(true);
+    setActiveTab(true);
+  };
+
+  const switchToEmployees = () => {
+    setJobs([]);
+    setPage(1);
+    setHasMore(true);
+    setActiveTab(false);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -133,7 +155,7 @@ const CategoryResult = () => {
               <View style={styles.toggleWrapper}>
                 <TouchableOpacity
                   style={styles.toggleBtn}
-                  onPress={() => setActiveTab(true)}
+                  onPress={switchToJobs}
                 >
                   <Text
                     style={[
@@ -148,7 +170,7 @@ const CategoryResult = () => {
 
                 <TouchableOpacity
                   style={styles.toggleBtn}
-                  onPress={() => setActiveTab(false)}
+                  onPress={switchToEmployees}
                 >
                   <Text
                     style={[
@@ -189,22 +211,14 @@ const CategoryResult = () => {
             {activeTab ? (
               <JobCategoryResult
                 gigs={jobs}
-                fetchMore={() => {
-                  if (hasMore && !isFetchingMore) {
-                    fetchCategoryData(page + 1);
-                  }
-                }}
+                fetchMore={fetchMore}
                 isFetchingMore={isFetchingMore}
                 hasMore={hasMore}
               />
             ) : (
               <EmployeeCategoryResult
                 gigs={jobs}
-                fetchMore={() => {
-                  if (hasMore && !isFetchingMore) {
-                    fetchCategoryData(page + 1);
-                  }
-                }}
+                fetchMore={fetchMore}
                 isFetchingMore={isFetchingMore}
                 hasMore={hasMore}
               />

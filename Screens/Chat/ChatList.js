@@ -21,6 +21,7 @@ import { CHAT_API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import { FormatChatTime } from "./ChatComponent/ChatFormatTime";
 import NoConversation from "./ChatComponent/NoConversation";
+import { chatEvents } from "./Services/chatEvents";
 
 const PAGE_LIMIT = 10;
 const POLL_INTERVAL = 5000;
@@ -86,56 +87,56 @@ const ChatList = () => {
   const activeFilterRef = useRef(null);
 
   const fetchConversations = useCallback(async (token, offsetNum = 0, isInitialOrRefresh = false, search = "", filter = null) => {
-      if (loadingRef.current || isFetchingMoreRef.current) return;
-      if (isInitialOrRefresh) {
-        if (!isRefreshing) {
-          setLoading(true);
-          loadingRef.current = true;
-        }
-      } else {
-        setIsFetchingMore(true);
-        isFetchingMoreRef.current = true;
+    if (loadingRef.current || isFetchingMoreRef.current) return;
+    if (isInitialOrRefresh) {
+      if (!isRefreshing) {
+        setLoading(true);
+        loadingRef.current = true;
+      }
+    } else {
+      setIsFetchingMore(true);
+      isFetchingMoreRef.current = true;
+    }
+
+    try {
+      const params = new URLSearchParams({ offset: offsetNum });
+      if (search.trim()) params.append("search", search);
+      if (filter === "archived") {
+        params.append("isArchived", 1);
+      } else if (filter) {
+        params.append("filter", filter);
       }
 
-      try {
-        const params = new URLSearchParams({ offset: offsetNum });
-        if (search.trim()) params.append("search", search);
-        if (filter === "archived") {
-          params.append("isArchived", 1);
-        } else if (filter) {
-          params.append("filter", filter);
-        }
+      const res = await fetch(`${CHAT_API_URL}/conversations?${params}`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      });
 
-        const res = await fetch(`${CHAT_API_URL}/conversations?${params}`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-        });
-
-        if (res.status === 401) {
-          const newToken = await refreshChatToken();
-          if (newToken) fetchConversations(newToken, offsetNum, isInitialOrRefresh, search, filter);
-          return;
-        }
-
-        const data = await res.json();
-        const newConversations = data?.data?.conversations ?? [];
-
-        setConversations((prev) => {
-          if (isInitialOrRefresh) return newConversations;
-          const ids = new Set(prev.map((p) => p.id));
-          return [...prev, ...newConversations.filter((item) => !ids.has(item.id))];
-        });
-        setHasMore(newConversations.length === PAGE_LIMIT);
-        setOffset(offsetNum);
-      } catch (e) {
-        console.error("fetchConversations error:", e);
-      } finally {
-        setLoading(false);
-        loadingRef.current = false;
-        setIsRefreshing(false);
-        setIsFetchingMore(false);
-        isFetchingMoreRef.current = false;
+      if (res.status === 401) {
+        const newToken = await refreshChatToken();
+        if (newToken) fetchConversations(newToken, offsetNum, isInitialOrRefresh, search, filter);
+        return;
       }
-    },
+
+      const data = await res.json();
+      const newConversations = data?.data?.conversations ?? [];
+
+      setConversations((prev) => {
+        if (isInitialOrRefresh) return newConversations;
+        const ids = new Set(prev.map((p) => p.id));
+        return [...prev, ...newConversations.filter((item) => !ids.has(item.id))];
+      });
+      setHasMore(newConversations.length === PAGE_LIMIT);
+      setOffset(offsetNum);
+    } catch (e) {
+      console.error("fetchConversations error:", e);
+    } finally {
+      setLoading(false);
+      loadingRef.current = false;
+      setIsRefreshing(false);
+      setIsFetchingMore(false);
+      isFetchingMoreRef.current = false;
+    }
+  },
     [isRefreshing, refreshChatToken]
   );
 
@@ -145,6 +146,14 @@ const ChatList = () => {
       fetchConversations(chatToken, 0, true, "", null);
     }
   }, [chatToken]);
+  useEffect(() => {
+    const unsub = chatEvents.on("conversation:deleted", (deletedUserId) => {
+      setConversations((prev) =>
+        prev.filter((c) => c.user?.id != deletedUserId)
+      );
+    });
+    return () => unsub(); // cleanup on unmount
+  }, []);
 
   useFocusEffect(
     useCallback(() => {

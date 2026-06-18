@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, View, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import JobCard from "../EmployeeJobs/JobCard";
 import { useNavigation } from "@react-navigation/native";
+import LineDivider from "../../components/LineDivider";
 
 const JobCategoryResult = ({
   gigs,
@@ -23,9 +24,7 @@ const JobCategoryResult = ({
     );
   };
 
-  console.log("JOBS STATE:", gigs.length);
   const renderJobCard = ({ item, index }) => {
-
     const isLastItem = index === gigs.length - 1;
     return <JobCard item={item} lastItem={isLastItem} navigation={navigation} />;
   };
@@ -35,7 +34,9 @@ const JobCategoryResult = ({
       <FlatList
         data={gigs}
         renderItem={renderJobCard}
-        keyExtractor={(item) => item.gid.toString()}
+        keyExtractor={(item, index) =>
+          String(item?.gid ?? item?.id ?? index)
+        }
         ListFooterComponent={renderFooter}
         onEndReachedThreshold={0.5}
         onMomentumScrollBegin={() => {
@@ -53,6 +54,7 @@ const JobCategoryResult = ({
         }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
+        ItemSeparatorComponent={() => <LineDivider />}
       />
     </View>
   );

@@ -22,6 +22,7 @@ import ChatGroupMessagesByDate from "./ChatComponent/ChatGroupMessagesByDate";
 import ChatRoomHeader from "./ChatComponent/ChatRoomHeader";
 import ChatMessageItem from "./ChatComponent/ChatMessageItem";
 import ChatInputBar from "./ChatComponent/ChatInputBar";
+import { toastError, toastSuccess } from "../../utils/toast";
 
 const POLL_INTERVAL = 5000;
 const PAGE_SIZE = 30;
@@ -39,6 +40,7 @@ export default function ChatRoom() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [sending, setSending] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [replyMessage, setReplyMessage] = useState(null);
 
   const flashListRef = useRef(null);
   const oldestIdRef = useRef(null);
@@ -174,6 +176,7 @@ export default function ChatRoom() {
   const sendMessage = useCallback(async () => {
     const text = inputText.trim();
     if (!text || sending) return;
+    const currentReply = replyMessage;
 
     const tempId = `temp-${Date.now()}`;
     const optimistic = {
@@ -185,10 +188,13 @@ export default function ChatRoom() {
       status: 0,
       created_at: new Date().toISOString(),
       _sending: true,
+      reply_to: currentReply?.id ?? null,
+      reply_message: currentReply ?? null,
     };
 
     setMessages((prev) => [...prev, optimistic]);
     setInputText("");
+    setReplyMessage(null);
     scrollToBottom(true);
 
     try {
@@ -201,20 +207,86 @@ export default function ChatRoom() {
           to_id: String(userId),
           message: text,
           message_type: 0,
+          reply_to: currentReply?.id || null,
         }),
       });
 
       const data = await res.json();
       const sent = data?.data?.message ?? null;
 
-      setMessages((prev) => prev.map((m) => m.id === tempId ? { ...(sent ?? m), _sending: false } : m));
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempId
+            ? { ...(sent ?? m), _sending: false, reply_message: sent?.reply_message ?? currentReply }
+            : m
+        )
+      );
     } catch (e) {
       console.error("sendMessage error", e);
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
     } finally {
       setSending(false);
     }
-  }, [inputText, sending, user?.id, userId, getToken, authHeaders, scrollToBottom]);
+  }, [inputText, sending, user?.id, userId, getToken, authHeaders, scrollToBottom, replyMessage]);
+
+  const deleteMessage = useCallback(async (messageItem) => {
+    if (!messageItem?.id) return;
+    try {
+      const token = await getToken();
+      // previousMessageId = the message that comes right before it
+      const msgIndex = messages.findIndex((m) => m.id === messageItem.id);
+      const previousMessage = msgIndex > 0 ? messages[msgIndex - 1] : null;
+      const previousMessageId = previousMessage?.id ?? null;
+      const res = await fetch(`${CHAT_API_URL}/conversations/message/${messageItem.id}/delete`,
+        {
+          method: "POST",
+          headers: authHeaders(token),
+          body: JSON.stringify({ previousMessageId }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) {
+        toastError(data?.message || "Failed to delete message.");
+        return;  // ← don't remove from state if it failed
+      }
+
+      setMessages((prev) => prev.filter((m) => m.id !== messageItem.id));
+      toastSuccess(data?.message || "Message deleted successfully.");
+    } catch (e) {
+      console.error("deleteMessage error", e);
+      toastError("Something went wrong. Please try again.");
+    }
+  }, [messages, getToken, authHeaders]);
+
+  const deleteMessageFromEveryone = useCallback(async (messageItem) => {
+    if (!messageItem?.id) return;
+    try {
+      const token = await getToken();
+      const msgIndex = messages.findIndex((m) => m.id === messageItem.id);
+      const previousMessage = msgIndex > 0 ? messages[msgIndex - 1] : null;
+      const previousMessageId = previousMessage?.id ?? null;
+      const res = await fetch(`${CHAT_API_URL}/conversations/${messageItem.id}/delete`,
+        {
+          method: "POST",
+          headers: authHeaders(token),
+          body: JSON.stringify({ previousMessageId }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) {
+        toastError(data?.message || "Failed to delete message.");
+        return;  // ← don't remove from state if it failed
+      }
+
+      setMessages((prev) => prev.filter((m) => m.id !== messageItem.id));
+      toastSuccess(data?.message || "Message deleted successfully.");
+    } catch (e) {
+      console.error("deleteMessage error", e);
+      toastError("Something went wrong. Please try again.");
+    }
+  }, [messages, getToken, authHeaders]);
 
   useEffect(() => {
     if (!chatToken) return;
@@ -240,14 +312,22 @@ export default function ChatRoom() {
     prevMessageCountRef.current = messages.length;
   }, [messages.length, scrollToBottom]);
 
+  const isOnline = userInfo?.is_online ?? false;
+  const displayName = userInfo?.name ?? userName ?? "User";
+  const displayPhoto = userInfo?.photo_url ?? null;
+
   const groupedData = useMemo(
     () => ChatGroupMessagesByDate(messages),
     [messages]
   );
 
+  const handleReply = useCallback((message) => {
+    setReplyMessage(message);
+  }, []);
+
   const renderItem = useCallback(({ item }) =>
-    <ChatMessageItem item={item} myId={user?.id} />,
-    [user?.id]
+    <ChatMessageItem item={item} myId={user?.id} onDelete={deleteMessage} onReply={handleReply} otherUserName={displayName} onDeleteFromEveryone={deleteMessageFromEveryone} />,
+    [user?.id, deleteMessage, deleteMessageFromEveryone, handleReply, displayName]
   );
 
   const keyExtractor = useCallback((item) => item.id?.toString() ?? item.day, []);
@@ -382,10 +462,6 @@ export default function ChatRoom() {
     );
   }, [user?.id, userId, getToken, scrollToBottom]);
 
-  const isOnline = userInfo?.is_online ?? false;
-  const displayName = userInfo?.name ?? userName ?? "User";
-  const displayPhoto = userInfo?.photo_url ?? null;
-
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
@@ -441,6 +517,8 @@ export default function ChatRoom() {
           onSendFiles={sendFiles}
           sending={sending}
           isBlockedByAuthUser={userInfo?.is_blocked_by_auth_user}
+          replyMessage={replyMessage}
+          onCancelReply={() => setReplyMessage(null)}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

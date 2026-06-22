@@ -116,7 +116,18 @@ const AttachSheet = ({ visible, onClose, onPick }) => {
     );
 };
 
-const ChatInputBar = memo(({ value, onChangeText, onSend, onSendFiles, sending, isBlockedByAuthUser, }) => {
+const getReplyPreviewLabel = (msg) => {
+    if (!msg) return "";
+    const isFile = msg.message_type !== 0 && msg.message_type !== undefined;
+    if (!isFile) return msg.message ?? "";
+
+    const ext = (msg.file_name ?? "").split(".").pop()?.toLowerCase() ?? "";
+    if (["jpg", "jpeg", "png", "gif"].includes(ext)) return "📷 Photo";
+    if (["mp4", "mkv", "avi", "mov"].includes(ext)) return "🎥 Video";
+    return `📄 ${msg.file_name ?? "Document"}`;
+};
+
+const ChatInputBar = memo(({ value, onChangeText, onSend, onSendFiles, sending, isBlockedByAuthUser, replyMessage, onCancelReply, }) => {
     const insets = useSafeAreaInsets();
     const [sheetOpen, setSheetOpen] = useState(false);
     const [pendingFiles, setPendingFiles] = useState([]);
@@ -287,6 +298,22 @@ const ChatInputBar = memo(({ value, onChangeText, onSend, onSendFiles, sending, 
                         />
                     )}
 
+                    {replyMessage && (
+                        <View style={styles.replyContainer}>
+                            <View style={styles.replyBar} />
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.replyTitle}>
+                                    Replying to {replyMessage.from_id === undefined ? "yourself" : ""}
+                                </Text>
+                                <Text numberOfLines={1} style={styles.replyText}>
+                                    {getReplyPreviewLabel(replyMessage)}
+                                </Text>
+                            </View>
+                            <TouchableOpacity onPress={onCancelReply} style={{ flexShrink: 0, padding: 4 }}>
+                                <Ionicons name="close" size={20} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+                    )}
                     <View style={styles.inputPill}>
                         <TouchableOpacity
                             style={styles.roundBtn}
@@ -498,6 +525,33 @@ const styles = StyleSheet.create({
     sheetOptionLabel: {
         color: "#ccc",
         fontSize: 12,
+        fontFamily: "Montserrat_500Medium",
+    },
+    replyContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "rgba(255,255,255,0.06)",
+        borderRadius: 10,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        marginBottom: 8,
+        gap: 8,
+    },
+    replyBar: {
+        width: 3,
+        height: "100%",
+        borderRadius: 2,
+        backgroundColor: "#e87b7b",
+    },
+    replyTitle: {
+        color: "#e87b7b",
+        fontSize: 11,
+        fontFamily: "Montserrat_500Medium",
+        marginBottom: 2,
+    },
+    replyText: {
+        color: "rgba(255,255,255,0.7)",
+        fontSize: 12.5,
         fontFamily: "Montserrat_500Medium",
     },
 });

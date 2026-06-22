@@ -13,15 +13,17 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import ImageViewing from "react-native-image-viewing";
 import { ChatFormatDay } from "./ChatFormatTime";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import MessageInfoModal from "./MessageInfoModal";
+import ReplyQuote from "./ReplyQuote";
 
 const getExt = (name = "") => name.split(".").pop()?.toLowerCase() ?? "";
 
 const FILE_ICONS = {
-    pdf: { icon: "picture-as-pdf", color: "#E5484D", label: "PDF" },
-    doc: { icon: "description", color: "#5B8DEF", label: "Word" },
-    docx: { icon: "description", color: "#5B8DEF", label: "Word" },
-    xls: { icon: "table-chart", color: "#3DB87A", label: "Excel" },
-    xlsx: { icon: "table-chart", color: "#3DB87A", label: "Excel" },
+    pdf: { icon: "picture-as-pdf", color: "#E5484D", label: "PDF Document" },
+    doc: { icon: "description", color: "#5B8DEF", label: "Word Document" },
+    docx: { icon: "description", color: "#5B8DEF", label: "Word Document" },
+    xls: { icon: "table-chart", color: "#3DB87A", label: "Excel Spreadsheet" },
+    xlsx: { icon: "table-chart", color: "#3DB87A", label: "Excel Spreadsheet" },
     ppt: { icon: "slideshow", color: "#E8914B", label: "PowerPoint" },
     pptx: { icon: "slideshow", color: "#E8914B", label: "PowerPoint" },
     zip: { icon: "folder-zip", color: "#9B6BD9", label: "Archive" },
@@ -49,25 +51,31 @@ const formatBytes = (bytes) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 };
 
-const MSG_MENU_OPTIONS = [
+const SENDER_MENU_OPTIONS = [
     { key: "delete", label: "Delete", icon: "trash-outline", color: "#E5484D" },
+    { key: "delete-everyone", label: "Delete From Everyone", icon: "trash-outline", color: "#E5484D" },
     { key: "reply", label: "Reply", icon: "arrow-undo-outline", color: "#fff" },
     { key: "info", label: "Info", icon: "information-circle-outline", color: "#fff" },
 ];
 
-const MessageMenu = ({ visible, onClose, onSelect }) => {
+const RECEIVER_MENU_OPTIONS = [
+    { key: "reply", label: "Reply", icon: "arrow-undo-outline", color: "#fff" },
+];
+
+const MessageMenu = ({ visible, onClose, onSelect, isOutgoing }) => {
     if (!visible) return null;
     const insets = useSafeAreaInsets();
+    const options = isOutgoing ? SENDER_MENU_OPTIONS : RECEIVER_MENU_OPTIONS;
     return (
         <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
             <Pressable style={styles.menuBackdrop} onPress={onClose}>
                 <View style={[styles.menuCard, { paddingBottom: insets.bottom + 16 }]}>
-                    {MSG_MENU_OPTIONS.map((opt, idx) => (
+                    {options.map((opt, idx) => (
                         <TouchableOpacity
                             key={opt.key}
                             style={[
                                 styles.menuItem,
-                                idx < MSG_MENU_OPTIONS.length - 1 && styles.menuItemBorder,
+                                idx < options.length - 1 && styles.menuItemBorder,
                             ]}
                             onPress={() => { onClose(); onSelect(opt.key); }}
                         >
@@ -162,7 +170,7 @@ const VideoBubble = ({ item, onPlay, isOutgoing, onMenu }) => {
                 </View>
             )}
 
-            {isOutgoing && !item._sending && !item._failed && (
+            {!item._sending && !item._failed && (
                 <ThreeDotButton onPress={onMenu} />
             )}
         </TouchableOpacity>
@@ -212,7 +220,7 @@ const DocBubble = ({ item, isOutgoing, onMenu }) => {
 
     return (
         <View style={styles.docBubble}>
-            <View style={[styles.docIcon, { backgroundColor: "#1e1e1e", borderWidth: 1, borderColor: iconInfo.color, }]}>
+            <View style={[styles.docIcon, { backgroundColor: iconInfo.color + "1A" }]}>
                 {item._sending ? (
                     <ActivityIndicator size="small" color={iconInfo.color} />
                 ) : (
@@ -230,18 +238,19 @@ const DocBubble = ({ item, isOutgoing, onMenu }) => {
             </View>
 
             {!item._sending && !item._failed && (
-                isOutgoing ? (
+                <View style={styles.docActionsRow}>
+                    {!isOutgoing && (
+                        <TouchableOpacity onPress={handleDownload} disabled={downloading} style={styles.docMenuBtn}>
+                            {downloading
+                                ? <ActivityIndicator size="small" color="#fff" />
+                                : <Feather name="download" size={17} color="#fff" />
+                            }
+                        </TouchableOpacity>
+                    )}
                     <TouchableOpacity onPress={onMenu} style={styles.docMenuBtn}>
                         <Ionicons name="ellipsis-vertical" size={16} color="#fff" />
                     </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity onPress={handleDownload} disabled={downloading} style={styles.docMenuBtn}>
-                        {downloading
-                            ? <ActivityIndicator size="small" color="#fff" />
-                            : <Feather name="download" size={17} color="#fff" />
-                        }
-                    </TouchableOpacity>
-                )
+                </View>
             )}
         </View>
     );
@@ -267,7 +276,7 @@ const ImageBubble = ({ item, isOutgoing, onPress, onMenu }) => {
                 </View>
             )}
 
-            {isOutgoing && !item._sending && !item._failed && (
+            {!item._sending && !item._failed && (
                 <ThreeDotButton onPress={onMenu} />
             )}
         </TouchableOpacity>
@@ -288,11 +297,11 @@ const FileBubble = ({ item, isOutgoing, onImagePress, onVideoPlay, onMenu }) => 
     return <DocBubble item={item} isOutgoing={isOutgoing} onMenu={onMenu} />;
 };
 
-// ── main item
-const ChatMessageItem = memo(({ item, myId, onDelete, onForward, onInfo }) => {
+const ChatMessageItem = memo(({ item, myId, onDelete, onReply, onInfo, otherUserName, onDeleteFromEveryone }) => {
     const [previewUri, setPreviewUri] = useState(null);
     const [videoUri, setVideoUri] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [infoVisible, setInfoVisible] = useState(false);
 
     if (item.type === "date") {
         return (
@@ -314,8 +323,9 @@ const ChatMessageItem = memo(({ item, myId, onDelete, onForward, onInfo }) => {
 
     const handleMenuSelect = (key) => {
         if (key === "delete") onDelete?.(item);
-        if (key === "forward") onForward?.(item);
-        if (key === "info") onInfo?.(item);
+        if (key === "delete-everyone") onDeleteFromEveryone?.(item);
+        if (key === "reply") onReply?.(item);
+        if (key === "info") setInfoVisible(true);
     };
 
     return (
@@ -332,30 +342,67 @@ const ChatMessageItem = memo(({ item, myId, onDelete, onForward, onInfo }) => {
                     && styles.bubbleDoc,
                 ]}>
                     {isFile ? (
-                        <FileBubble
-                            item={item}
-                            isOutgoing={isOutgoing}
-                            onImagePress={(uri) => setPreviewUri(uri)}
-                            onVideoPlay={(uri) => setVideoUri(uri)}
-                            onMenu={() => setMenuOpen(true)}
-                        />
+                        <View>
+                            <ReplyQuote
+                                replyMessage={item.reply_message}
+                                isOutgoing={isOutgoing}
+                                myId={myId}
+                                otherUserName={otherUserName}
+                            />
+                            <FileBubble
+                                item={item}
+                                isOutgoing={isOutgoing}
+                                onImagePress={(uri) => setPreviewUri(uri)}
+                                onVideoPlay={(uri) => setVideoUri(uri)}
+                                onMenu={() => setMenuOpen(true)}
+                            />
+                        </View>
                     ) : (
-                        <Text style={[styles.bubbleText, isOutgoing && styles.bubbleTextOut]}>
-                            {item.message}
-                        </Text>
+                        <TouchableOpacity
+                            activeOpacity={0.85}
+                            onLongPress={() => setMenuOpen(true)}
+                            delayLongPress={250}
+                        >
+                            <ReplyQuote
+                                replyMessage={item.reply_message}
+                                isOutgoing={isOutgoing}
+                                myId={myId}
+                                otherUserName={otherUserName}
+                            />
+                            <Text style={[styles.bubbleText, isOutgoing && styles.bubbleTextOut]}>
+                                {item.message}
+                            </Text>
+                        </TouchableOpacity>
                     )}
                 </View>
 
-                <Text style={[styles.msgTime, isOutgoing ? styles.msgTimeRight : styles.msgTimeLeft]}>
-                    {moment(item.created_at).format("hh:mm A")}
+                <View
+                    style={[
+                        styles.timeContainer,
+                        isOutgoing ? styles.msgTimeRight : styles.msgTimeLeft,
+                    ]}
+                >
+                    <Text style={styles.msgTime}>
+                        {moment(item.created_at).format("hh:mm A")}
+                    </Text>
+
                     {isOutgoing && (
-                        <Text style={styles.tick}>
-                            {item._failed ? "  ✕" :
-                                item._sending ? "  ·" :
-                                    item.status == 1 ? "  ✓✓" : "  ✓"}
-                        </Text>
+                        <>
+                            {item._failed ? (
+                                <Text style={styles.tick}>✕</Text>
+                            ) : item._sending ? (
+                                <Text style={styles.tick}>·</Text>
+                            ) : (
+                                <MaterialIcons
+                                    name={item.status === 1 ? "done-all" : "check"}
+                                    size={14}
+                                    color={item.status === 1 ? "#5B8DEF" : "#B0B0B0"}
+                                    style={{ marginLeft: 4 }}
+                                />
+                            )}
+                        </>
                     )}
-                </Text>
+                </View>
             </View>
 
             <ImageViewing
@@ -373,6 +420,13 @@ const ChatMessageItem = memo(({ item, myId, onDelete, onForward, onInfo }) => {
                 visible={menuOpen}
                 onClose={() => setMenuOpen(false)}
                 onSelect={handleMenuSelect}
+                isOutgoing={isOutgoing}
+            />
+
+            <MessageInfoModal
+                visible={infoVisible}
+                item={item}
+                onClose={() => setInfoVisible(false)}
             />
         </>
     );
@@ -389,53 +443,53 @@ const ChatMessageItem = memo(({ item, myId, onDelete, onForward, onInfo }) => {
 export default ChatMessageItem;
 
 const styles = StyleSheet.create({
-    dateLabelWrap: { 
-        alignItems: "center", 
-        marginVertical: 10 
+    dateLabelWrap: {
+        alignItems: "center",
+        marginVertical: 10,
     },
     dateLabelText: {
-        color: "#aaa", 
-        fontSize: 12, 
+        color: "#aaa",
+        fontSize: 12,
         fontFamily: "Montserrat_500Medium",
         backgroundColor: "rgba(255,255,255,0.08)",
-        paddingHorizontal: 10, 
-        paddingVertical: 3, 
-        borderRadius: 10, 
+        paddingHorizontal: 10,
+        paddingVertical: 3,
+        borderRadius: 10,
         overflow: "hidden",
     },
-    msgRow: { 
-        marginVertical: 2, 
-        maxWidth: "80%" 
+    msgRow: {
+        marginVertical: 2,
+        maxWidth: "80%",
     },
-    rowRight: { 
-        alignSelf: "flex-end", 
-        alignItems: "flex-end" 
+    rowRight: {
+        alignSelf: "flex-end",
+        alignItems: "flex-end",
     },
-    rowLeft: { 
-        alignSelf: "flex-start", 
-        alignItems: "flex-start" 
+    rowLeft: {
+        alignSelf: "flex-start",
+        alignItems: "flex-start",
     },
     bubble: {
-        borderRadius: 16, 
-        paddingHorizontal: 8, 
-        paddingVertical: 8, 
+        borderRadius: 12,
+        paddingHorizontal: 8,
+        paddingVertical: 8,
         maxWidth: "100%",
     },
-    bubbleOut: { 
-        backgroundColor: "#e87b7b", 
-        borderBottomRightRadius: 4 
+    bubbleOut: {
+        backgroundColor: "#e87b7b",
+        borderBottomRightRadius: 4,
     },
-    bubbleIn: { 
-        backgroundColor: "#333", 
-        borderBottomLeftRadius: 4 
+    bubbleIn: {
+        backgroundColor: "#333",
+        borderBottomLeftRadius: 4,
     },
-    bubbleSending: { 
-        opacity: 0.6 
+    bubbleSending: {
+        opacity: 0.6,
     },
-    bubbleFailed: { 
-        opacity: 0.7, 
-        borderWidth: 1, 
-        borderColor: "#ff5252" 
+    bubbleFailed: {
+        opacity: 0.7,
+        borderWidth: 1,
+        borderColor: "#ff5252",
     },
     bubbleMedia: {
         padding: 6,
@@ -451,137 +505,135 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 12,
     },
-    bubbleText: { 
-        color: "#eee", 
-        fontSize: 14, 
-        fontFamily: "Montserrat_500Medium", 
-        lineHeight: 19 
+    bubbleText: {
+        color: "#eee",
+        fontSize: 14,
+        fontFamily: "Montserrat_500Medium",
+        lineHeight: 19,
     },
-    bubbleTextOut: { 
-        color: "#fff" 
+    bubbleTextOut: {
+        color: "#fff",
     },
 
-    // media (image/video)
-    mediaBubble: { 
-        width: 220, 
-        height: 220, 
-        borderRadius: 12, 
-        borderBottomRightRadius: 4,  
-        overflow: "hidden" 
+    mediaBubble: {
+        width: 220,
+        height: 220,
+        borderRadius: 10,
+        overflow: "hidden",
     },
-    mediaImage: { 
-        width: "100%", 
-        height: "100%" 
+    mediaImage: {
+        width: "100%",
+        height: "100%",
     },
     mediaFallback: {
-        width: "100%", 
-        height: "100%", 
+        width: "100%",
+        height: "100%",
         backgroundColor: "#1a1a1a",
-        alignItems: "center", 
+        alignItems: "center",
         justifyContent: "center",
     },
     mediaOverlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.45)",
-        alignItems: "center", 
+        alignItems: "center",
         justifyContent: "center",
     },
     playOverlay: {
         ...StyleSheet.absoluteFillObject,
-        alignItems: "center", 
+        alignItems: "center",
         justifyContent: "center",
         backgroundColor: "rgba(0,0,0,0.2)",
     },
     playBtn: {
-        width: 52, 
-        height: 52, 
+        width: 52,
+        height: 52,
         borderRadius: 26,
         backgroundColor: "rgba(0,0,0,0.55)",
-        alignItems: "center", 
+        alignItems: "center",
         justifyContent: "center",
-        borderWidth: 2, 
+        borderWidth: 2,
         borderColor: "rgba(255,255,255,0.8)",
     },
 
-    // 3-dot menu button on media
     threeDotBtn: {
-        position: "absolute", 
-        top: 6, 
+        position: "absolute",
+        top: 6,
         right: 6,
-        width: 26, 
-        height: 26, 
+        width: 26,
+        height: 26,
         borderRadius: 6,
         backgroundColor: "rgba(255,255,255,0.15)",
         borderWidth: 1,
         borderColor: "rgba(255,255,255,0.2)",
-        alignItems: "center", 
+        alignItems: "center",
         justifyContent: "center",
     },
 
-    // video player modal
-    videoModalBg: { 
-        flex: 1, 
-        backgroundColor: "#000", 
-        alignItems: "center", 
-        justifyContent: "center" 
+    videoModalBg: {
+        flex: 1,
+        backgroundColor: "#000",
+        alignItems: "center",
+        justifyContent: "center",
     },
     videoModalClose: {
-        position: "absolute", 
-        top: 50, 
-        right: 20, 
+        position: "absolute",
+        top: 50,
+        right: 20,
         zIndex: 10,
-        padding: 8, 
-        backgroundColor: "rgba(255,255,255,0.15)", 
+        padding: 8,
+        backgroundColor: "rgba(255,255,255,0.15)",
         borderRadius: 20,
     },
-    videoPlayer: { 
-        width: "100%", 
-        height: 300 
+    videoPlayer: {
+        width: "100%",
+        height: 300,
     },
 
-    // document card
-    docBubble: { 
-        flexDirection: "row", 
-        alignItems: "center", 
-        gap: 12, 
-        minWidth: 230 
+    docBubble: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+        minWidth: 230,
     },
     docIcon: {
-        width: 40, 
-        height: 44, 
-        borderRadius: 6,
-        alignItems: "center", 
+        width: 44,
+        height: 44,
+        borderRadius: 10,
+        alignItems: "center",
         justifyContent: "center",
     },
-    docInfo: { 
-        flex: 1 
+    docInfo: {
+        flex: 1,
     },
-    docName: { 
-        color: "#fff", 
-        fontSize: 13.5, 
-        fontFamily: "Montserrat_500Medium", 
-        lineHeight: 18 
+    docName: {
+        color: "#fff",
+        fontSize: 13.5,
+        fontFamily: "Montserrat_500Medium",
+        lineHeight: 18,
     },
-    docSubtitle: { 
-        color: "rgba(255,255,255,0.55)", 
-        fontSize: 11.5, 
-        marginTop: 3, 
-        fontFamily: "Montserrat_500Medium" 
+    docSubtitle: {
+        color: "rgba(255,255,255,0.55)",
+        fontSize: 11.5,
+        marginTop: 3,
+        fontFamily: "Montserrat_500Medium",
     },
     docMenuBtn: {
-        width: 30, 
-        height: 30, 
+        width: 30,
+        height: 30,
         borderRadius: 8,
         backgroundColor: "rgba(255,255,255,0.08)",
-        alignItems: "center", 
+        alignItems: "center",
         justifyContent: "center",
     },
+    docActionsRow: {
+        flexDirection: "row",
+        gap: 6,
+    },
 
-    // 3-dot dropdown menu
-    menuBackdrop: { 
-        flex: 1, 
-        backgroundColor: "rgba(0,0,0,0.3)", 
-        justifyContent: "flex-end"
+    menuBackdrop: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.3)",
+        justifyContent: "flex-end",
     },
     menuCard: {
         backgroundColor: "#2e2e2e",
@@ -592,33 +644,38 @@ const styles = StyleSheet.create({
         borderColor: "rgba(255,255,255,0.08)",
     },
     menuItem: {
-        flexDirection: "row", 
-        alignItems: "center", 
+        flexDirection: "row",
+        alignItems: "center",
         gap: 10,
-        paddingHorizontal: 20, 
+        paddingHorizontal: 20,
         paddingVertical: 13,
     },
-    menuItemBorder: { 
-        borderBottomWidth: 1, 
-        borderBottomColor: "rgba(255,255,255,0.08)" 
+    menuItemBorder: {
+        borderBottomWidth: 1,
+        borderBottomColor: "rgba(255,255,255,0.08)",
     },
-    menuItemText: { 
-        fontSize: 14, 
-        fontFamily: "Montserrat_500Medium" 
+    menuItemText: {
+        fontSize: 16,
+        fontFamily: "Montserrat_500Medium",
     },
-    msgTime: { 
-        fontSize: 10, 
-        color: "#888", 
-        marginTop: 2, 
-        fontFamily: "Montserrat_500Medium" 
+    timeContainer: {
+        flexDirection: "row",
+        alignItems: "center",
     },
-    msgTimeRight: { 
-        alignSelf: "flex-end" 
+    msgTime: {
+        fontSize: 11,
+        color: "#888",
+        marginTop: 2,
+        fontFamily: "Montserrat_500Medium",
     },
-    msgTimeLeft: { 
-        alignSelf: "flex-start" 
+    msgTimeRight: {
+        alignSelf: "flex-end",
     },
-    tick: { 
-        color: "#bbb" 
+    msgTimeLeft: {
+        alignSelf: "flex-start",
+    },
+    tick: {
+        marginLeft: 4,
+        color: "#bbb",
     },
 });

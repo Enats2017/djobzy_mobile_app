@@ -68,6 +68,7 @@ export async function registerForPushNotifications() {
 export function notificationListener() {
     return Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification clicked:", response);
+        console.log("NOTIFICATION CLICKED");
         const data = response?.notification?.request?.content?.data || {};
         console.log("Notification Data:", data);
         if (data.type === "chat") {
@@ -76,6 +77,7 @@ export function notificationListener() {
                 isGroup: false,
             });
         }
+        console.log("NAVIGATE EXECUTED");
     });
 }
 

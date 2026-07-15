@@ -35,6 +35,7 @@ const ChatRow = React.memo(({ item, onPress }) => {
       : item.message;
   const time = item.created_at;
   const unreadCount = item.unread_count ?? 0;
+  const feedSharedMessage = item.message ? item.message.split(/<br\s*\/?>/i)[0].trim() : "";
 
   return (
     <TouchableOpacity style={styles.row} onPress={onPress}>
@@ -51,7 +52,11 @@ const ChatRow = React.memo(({ item, onPress }) => {
           </Text>
         </View>
         <View style={styles.rowBottom}>
-          <Text numberOfLines={1} style={styles.subtitle}>{lastMessage}</Text>
+          {item.feed_id ? (
+            <Text numberOfLines={1} style={styles.subtitle}>{lastMessage ? lastMessage.split(/<br\s*\/?>/i)[0].trim() : ""}</Text>
+          ) : (
+            <Text numberOfLines={1} style={styles.subtitle}>{lastMessage}</Text>
+          )}
           {unreadCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{unreadCount}</Text>

@@ -14,8 +14,6 @@ const EmployerCard = ({ item, isLastItem }) => {
   const [loading, setLoading] = useState(false);
 
   const handleProfileNavigation = (item) => {
-    console.log("Employer name 👉", item?.name);
-
     if (item?.name?.trim() && item.is_closed == 1 && item.is_spam_user == 1) {
       Alert.alert(
         "User unavailable",

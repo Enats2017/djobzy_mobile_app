@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
   View,
@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Share,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -22,14 +24,20 @@ import {
 import Footer from "../../components/Footer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
-import FeedPost from "../SocialMediaPage/FeedPost";
+import FeedPost from "../SocialMediaPage/FeedComponent/FeedPost";
 import GradientButton from "../../components/GradientButton";
 import LineDivider from "../../components/LineDivider";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
+import FeedInternalSharingModal from "../SocialMediaPage/FeedModals/FeedInternalSharingModal";
+import FeedAddCommentModal from "../SocialMediaPage/FeedModals/FeedAddCommentModal";
+import FeedPostDropdownModal from "../SocialMediaPage/FeedModals/FeedPostDropdownModal";
+import FeedReportModal from "../SocialMediaPage/FeedModals/FeedReportModal";
+import { useNotifications } from "../../context/MessageNotificationContext";
 
 export default function PublicEmployerProfilePage({ route }) {
   const navigation = useNavigation();
+  const { admin } = useNotifications();
   const { name } = route?.params ?? {};
   const [user, setUser] = useState([]);
   const [feeds, setFeeds] = useState([]);
@@ -43,7 +51,12 @@ export default function PublicEmployerProfilePage({ route }) {
   const [followAction, setFollowAction] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [submit, setSubmit] = useState(false);
-  const [admin, setAdmin] = useState(false);
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [internalShareModalVisible, setInternalShareModalVisible] = useState(false);
+  const [selectedFeedId, setSelectedFeedId] = useState(null);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [reportVisible, setReportVisible] = useState(false);
+  const [hiddenFeedIds, setHiddenFeedIds] = useState(new Set());
 
   const fetchEmployeeProfile = async () => {
     try {
@@ -61,8 +74,6 @@ export default function PublicEmployerProfilePage({ route }) {
       const data = await res.json();
       setProfile(data);
       setUser(data.editprofile);
-      // console.log("employerEditProfile",data.editprofile.admin );
-
       setJob(data.myJobPosts);
       setSubcategory(data.subcategory);
       setFeeds(data.feeds.data ?? []);
@@ -78,8 +89,6 @@ export default function PublicEmployerProfilePage({ route }) {
   }, [name]);
 
   const isLiked = profile?.like?.is_like === 1;
-
-  console.log("employeradmin vale", admin);
 
   const handleFollow = async () => {
     try {
@@ -142,6 +151,66 @@ export default function PublicEmployerProfilePage({ route }) {
     }
   };
 
+
+  const handleOpenComments = useCallback((feedId) => {
+    setSelectedFeedId(feedId);
+    setCommentModalVisible(true);
+  }, []);
+
+  const handleCloseComments = useCallback(() => {
+    setCommentModalVisible(false);
+    setSelectedFeedId(null);
+  }, []);
+
+  const handleOpenInternalShare = useCallback((feedId) => {
+    setSelectedFeedId(feedId);
+    setInternalShareModalVisible(true);
+  }, []);
+
+  const handleCloseInternalShare = useCallback(() => {
+    setInternalShareModalVisible(false);
+    setSelectedFeedId(null);
+  }, []);
+
+  const handleOpenDropdown = useCallback((feedId) => {
+    setSelectedFeedId(feedId);
+    setMenuVisible(true);
+  }, []);
+
+  const handleCloseDropdown = useCallback(() => {
+    setMenuVisible(false);
+    setSelectedFeedId(null);
+  }, []);
+
+  const handleOpenReportModal = useCallback((feedId) => {
+    setSelectedFeedId(feedId);
+    setReportVisible(true);
+  }, []);
+
+  const handleCloseReportModal = useCallback(() => {
+    setReportVisible(false);
+    setSelectedFeedId(null);
+  }, []);
+
+  const handleShare = useCallback(async (item) => {
+    try {
+      const caption = item?.message ? `${item.message}\n\n` : "";
+      const author = item?.full_name || "Someone";
+
+      await Share.share({
+        message: `${author} shared a post on Djobzy \n\n${caption}${item.share_url}`,
+        url: item.share_url,  // iOS
+        title: "Check this post on Djobzy",
+      });
+    } catch (error) {
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Unable to share.", ToastAndroid.SHORT);
+      } else {
+        toastError("Unable to share.");
+      }
+    }
+  }, []);
+
   const safeSubcategory = Array.isArray(subcategory) ? subcategory : [];
 
   const displayedCategories = showAllCategories
@@ -164,11 +233,7 @@ export default function PublicEmployerProfilePage({ route }) {
               <View style={styles.profileRow}>
                 <Image
                   style={styles.avatar}
-                  source={{
-                    uri:
-                      user?.photo ||
-                      "https://dummyimage.com/150x150/ccc/fff.png&text=No+Photo",
-                  }}
+                  source={{ uri: user?.photo }}
                 />
 
                 <View style={styles.profileTextContent}>
@@ -311,15 +376,12 @@ export default function PublicEmployerProfilePage({ route }) {
                 }
                 renderItem={({ item }) => (
                   <FeedPost
-                    author={item.full_name}
-                    subtitle={item.profile_title_employer ?? "No title"}
-                    time={item.created}
-                    text={item?.message}
-                    avatar={{ uri: item.photo }}
-                    image={{ uri: item.file_name }}
-                    likes={item.likes_count}
-                    comments={item.comment_count}
-                    share="0"
+                    item={item}
+                    onOpenComments={handleOpenComments}
+                    openInternalSharing={handleOpenInternalShare}
+                    openExternalSharing={handleShare}
+                    onOpenMenu={handleOpenDropdown}
+                    openReportRequest={handleOpenReportModal}
                   />
                 )}
               />
@@ -412,8 +474,32 @@ export default function PublicEmployerProfilePage({ route }) {
             </View>
           </ScrollView>
         )}
+
+        <FeedAddCommentModal
+          visible={commentModalVisible}
+          onClose={handleCloseComments}
+          feedId={selectedFeedId}
+        />
+
+        <FeedInternalSharingModal
+          visible={internalShareModalVisible}
+          onClose={handleCloseInternalShare}
+          feedId={selectedFeedId}
+        />
+        <FeedPostDropdownModal
+          visible={menuVisible}
+          onClose={handleCloseDropdown}
+          onReport={handleOpenReportModal}
+          feedId={selectedFeedId}
+        />
+
+        <FeedReportModal
+          visible={reportVisible}
+          onClose={handleCloseReportModal}
+          feedId={selectedFeedId}
+        />
       </View>
-      <EmployerFooter />
+      {admin === 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 }

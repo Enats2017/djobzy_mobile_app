@@ -74,7 +74,7 @@ import PublicEmployerProfilePage from "./Screens/PublicPage/PublicEmployerProfil
 import ViewHirePage from "./Screens/EmployerHirePage/ViewHirePage";
 import ChatList from "./Screens/Chat/ChatList";
 import ChatRoom from "./Screens/Chat/ChatRoom";
-import CreateFeedPost from "./Screens/SocialMediaPage/CreateFeedPost";
+import CreateFeedPost from "./Screens/SocialMediaPage/FeedComponent/CreateFeedPost";
 import NotificationScreen from "./Screens/Notification/NotificationScreen";
 import Followers from "./Screens/SocialMediaPage/Followers";
 import SendJobOffer from "./Screens/EmployerHirePage/SendJobOffer";
@@ -102,6 +102,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import DeleteAccountScreen from "./Screens/GeneralSetting/DeleteAccountScreen";
 import Map from "./components/Map";
 import MyBoostedJob from "./Screens/EmployerJobs/MyBoostedJob";
+import FeedDetailPage from "./Screens/SocialMediaPage/FeedDetailPage";
+import OwnFeedScreen from "./Screens/SocialMediaPage/OwnFeed/OwnFeedScreen";
 import { registerForPushNotifications, notificationListener, foregroundListener, } from "./expoNotification";
 
 const Stack = createStackNavigator();
@@ -312,6 +314,8 @@ const App = () => {
               <Stack.Screen name="DeleteAccountScreen" component={DeleteAccountScreen} />
               <Stack.Screen name="Map" component={Map} />
               <Stack.Screen name="MyBoostedJob" component={MyBoostedJob} />
+              <Stack.Screen name="FeedDetailPage" component={FeedDetailPage} />
+              <Stack.Screen name="MyFeedPost" component={OwnFeedScreen} />
             </Stack.Navigator>
           </NavigationContainer>
           <Toast config={toastConfig} />

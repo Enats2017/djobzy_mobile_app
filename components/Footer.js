@@ -103,11 +103,6 @@ const Footer = () => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.BottomBar}
       >
-        <TouchableOpacity style={styles.tab} onPress={handleSwitchAccount}>
-          <MaterialCommunityIcons name="account-convert" size={24} color={INACTIVE_COLOR} />
-          <Text style={styles.label}>Switch Role</Text>
-        </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.tab}
           onPress={() => navigation.navigate("Dashboard")}
@@ -142,6 +137,24 @@ const Footer = () => {
             ]}
           >
             Search
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate("ChatList")}
+        >
+          <Ionicons
+            name="chatbox"
+            size={24}
+            color={isActive("ChatList") ? ACTIVE_COLOR : INACTIVE_COLOR}
+          />
+          <Text
+            style={[
+              styles.label,
+              isActive("ChatList") && styles.activeText,
+            ]}
+          >
+            Chat
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -203,8 +216,30 @@ const Footer = () => {
               isActive("NotificationScreen") && styles.activeText,
             ]}
           >
-            Notification
+            Notifications
           </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate("MyFeedPost")}
+        >
+          <Ionicons
+            name="card"
+            size={24}
+            color={isActive("MyFeedPost") ? ACTIVE_COLOR : INACTIVE_COLOR}
+          />
+          <Text
+            style={[
+              styles.label,
+              isActive("MyFeedPost") && styles.activeText,
+            ]}
+          >
+            My Posts
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tab} onPress={handleSwitchAccount}>
+          <MaterialCommunityIcons name="account-convert" size={24} color={INACTIVE_COLOR} />
+          <Text style={styles.label}>Switch Role</Text>
         </TouchableOpacity>
         {/* <TouchableOpacity
           style={styles.tab}

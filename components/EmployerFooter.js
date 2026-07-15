@@ -122,11 +122,11 @@ const EmployerFooter = () => {
 
   return (
     <View style={[
-        styles.bottomContainer,
-        {
-          paddingBottom: insets.bottom,
-        },
-      ]}
+      styles.bottomContainer,
+      {
+        paddingBottom: insets.bottom,
+      },
+    ]}
       onLayout={(e) => {
         setFooterHeight(e.nativeEvent.layout.height);
       }}
@@ -136,11 +136,6 @@ const EmployerFooter = () => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.BottomBar}
       >
-        <TouchableOpacity style={styles.tab} onPress={handleSwitchAccount}>
-          <MaterialCommunityIcons name="account-convert" size={24} color={INACTIVE_COLOR} />
-          <Text style={styles.label}>Switch Role</Text>
-        </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.tab}
           onPress={() => navigation.navigate("EmployerDashboard")}
@@ -170,6 +165,24 @@ const EmployerFooter = () => {
             ]}
           >
             Search
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate("ChatList")}
+        >
+          <Ionicons
+            name="chatbox"
+            size={24}
+            color={isActive("ChatList") ? ACTIVE_COLOR : INACTIVE_COLOR}
+          />
+          <Text
+            style={[
+              styles.label,
+              isActive("ChatList") && styles.activeText,
+            ]}
+          >
+            Chat
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -240,8 +253,30 @@ const EmployerFooter = () => {
               isActive("NotificationScreen") && styles.activeText,
             ]}
           >
-            Notification
+            Notifications
           </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate("MyFeedPost")}
+        >
+          <Ionicons
+            name="card"
+            size={24}
+            color={isActive("MyFeedPost") ? ACTIVE_COLOR : INACTIVE_COLOR}
+          />
+          <Text
+            style={[
+              styles.label,
+              isActive("MyFeedPost") && styles.activeText,
+            ]}
+          >
+            My Posts
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tab} onPress={handleSwitchAccount}>
+          <MaterialCommunityIcons name="account-convert" size={24} color={INACTIVE_COLOR} />
+          <Text style={styles.label}>Switch Role</Text>
         </TouchableOpacity>
         {/* <TouchableOpacity
           style={styles.tab}

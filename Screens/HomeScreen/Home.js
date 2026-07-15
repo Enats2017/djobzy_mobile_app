@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   StyleSheet,
@@ -12,11 +12,18 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { scale } from "../../utils/scale";
+import AppNewVersionUpdateModal from "../../components/AppNewVersionUpdateModal";
+import useAppVersionCheck from "../../context/useAppVersionCheck";
 
 const { width } = Dimensions.get("window");
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
+  const { showUpdate, updateInfo, checkAppVersion, } = useAppVersionCheck();
+
+  useEffect(() => {
+    checkAppVersion();
+  }, []);
 
   const checkAuth = async () => {
     try {
@@ -25,13 +32,9 @@ export default function HomeScreen() {
         navigation.navigate("SliderScreen");
         return;
       }
-
       const userStr = await AsyncStorage.getItem("user");
-
       const user = JSON.parse(userStr);
       const { verification_count, admin } = user;
-      console.log("1111",verification_count);
-
       if (verification_count >= 2 && admin == 2) {
         navigation.navigate("EmployerDashboard");
       } else if (verification_count >= 2 && admin == 0) {
@@ -77,6 +80,11 @@ export default function HomeScreen() {
           </View>
         </View>
       </LinearGradient>
+
+      <AppNewVersionUpdateModal
+        visible={showUpdate}
+        data={updateInfo}
+      />
     </SafeAreaView>
   );
 }

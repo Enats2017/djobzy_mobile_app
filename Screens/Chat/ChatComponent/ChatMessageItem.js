@@ -1,8 +1,9 @@
-import React, { memo, useState, useCallback } from "react";
+import React, { memo, useState, useCallback, useMemo } from "react";
 import {
     View, Text, Image, StyleSheet, ActivityIndicator,
     TouchableOpacity, Alert, Modal, Pressable
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Feather, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import moment from "moment";
 import * as MediaLibrary from "expo-media-library";
@@ -302,6 +303,7 @@ const ChatMessageItem = memo(({ item, myId, onDelete, onReply, onInfo, otherUser
     const [videoUri, setVideoUri] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const [infoVisible, setInfoVisible] = useState(false);
+    const navigation = useNavigation();
 
     if (item.type === "date") {
         return (
@@ -318,6 +320,57 @@ const ChatMessageItem = memo(({ item, myId, onDelete, onReply, onInfo, otherUser
         item.from_id === myId ||
         item.from_id === numericMyId ||
         item._sending === true;
+
+    const sharedMessage = item.message ? item.message.split(/<br\s*\/?>/i)[0].trim() : "";
+    if (item.feed_id) {
+        return (
+            <View style={[styles.msgRow, isOutgoing ? styles.rowRight : styles.rowLeft]}>
+                <View
+                    style={[
+                        styles.bubble,
+                        isOutgoing ? styles.bubbleOut : styles.bubbleIn,
+                    ]}
+                >
+                    {sharedMessage ? (
+                        <Text style={[styles.bubbleText, isOutgoing && styles.bubbleTextOut]}>
+                            {sharedMessage}
+                        </Text>
+                    ) : null}
+                    <TouchableOpacity
+                        style={[
+                            styles.feedCard,
+                            isOutgoing ? styles.feedCardSent : styles.feedCardReceived,
+                        ]}
+                        activeOpacity={0.8}
+                        onPress={() => navigation.navigate("FeedDetailPage", { feedId: item.feed_id })}
+                    >
+                        <View style={styles.feedCardIcon}>
+                            <Ionicons name="newspaper-outline" size={20} color="#C96B59" />
+                        </View>
+                        <View style={styles.feedCardBody}>
+                            <Text style={styles.feedCardAction}>
+                                Tap to view
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                <View style={[styles.timeContainer, isOutgoing ? styles.msgTimeRight : styles.msgTimeLeft]}>
+                    <Text style={styles.msgTime}>
+                        {moment(item.created_at).format("hh:mm A")}
+                    </Text>
+                    {isOutgoing && (
+                        <MaterialIcons
+                            name={item.status === 1 ? "done-all" : "check"}
+                            size={14}
+                            color={item.status === 1 ? "#5B8DEF" : "#B0B0B0"}
+                            style={{ marginLeft: 4 }}
+                        />
+                    )}
+                </View>
+
+            </View>
+        );
+    }
 
     const isFile = item.message_type !== 0 && item.message_type !== undefined;
 
@@ -677,5 +730,46 @@ const styles = StyleSheet.create({
     tick: {
         marginLeft: 4,
         color: "#bbb",
+    },
+    feedCard: {
+        marginTop: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        borderWidth: 1,
+        borderColor: "#C96B5940",
+        borderRadius: 10,
+        padding: 6,
+        backgroundColor: "#FFF6F4",
+    },
+    feedCardSent: {
+        alignSelf: "flex-end",
+    },
+    feedCardReceived: {
+        alignSelf: "flex-start",
+    },
+    feedCardIcon: {
+        width: 35,
+        height: 35,
+        borderRadius: 30,
+        backgroundColor: "#fde8e4",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    feedCardBody: {
+        flex: 1,
+    },
+    feedCardLabel: {
+        fontSize: 14,
+        fontFamily: "Montserrat_600SemiBold",
+        color: "#303030",
+    },
+    feedCardAction: {
+        flexDirection: "row",
+        alignItems: "center",
+        fontSize: 14,
+        fontFamily: "Montserrat_500Medium",
+        color: "#C96B59",
+        marginTop: 2,
     },
 });

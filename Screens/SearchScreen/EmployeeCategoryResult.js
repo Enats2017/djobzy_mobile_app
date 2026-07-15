@@ -108,13 +108,43 @@ export default function EmployeeCategoryResult({
                         <Text style={styles.locationText1}> {item.address} </Text>
                     </View>
                     <View style={styles.parentContainer1}>
-                        <Text style={styles.sectionTitle1}>Promoted Services</Text>
-                        <View style={styles.promotedRow1}>
-                            <View style={styles.promotedBox1} />
-                            <View style={styles.promotedBox1} />
-                        </View>
-                        {item?.seller_services_for_search.length > 0 && (
-                            <>
+                        {item?.seeking_jobs?.length > 0 && (
+                            <View style={styles.serviceRow}>
+                                <Text style={styles.sectionTitle1}>Promoted Services</Text>
+                                <View style={styles.promotedRow}>
+                                    {item.seeking_jobs.slice(0, 2).map((service, index) => (
+                                        <TouchableOpacity
+                                            key={`${service.id}-${index}`}
+                                            style={styles.serviceCard}
+                                            activeOpacity={0.8}
+                                        >
+                                            <Text style={styles.servicePrice}>
+                                                CAD {Number(service.hour_minimum).toFixed(2)}
+                                            </Text>
+                                            <Text style={styles.serviceHour}>/hour</Text>
+                                            <Text style={styles.serviceTitle} numberOfLines={2}>{service.subject}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+
+                                    {item.seeking_jobs.length > 2 && (
+                                        <TouchableOpacity
+                                            style={styles.moreCard}
+                                            activeOpacity={0.8}
+                                        >
+                                            <Text style={styles.moreCount}>
+                                                +{item.seeking_jobs.length - 2}
+                                            </Text>
+
+                                            <Text style={styles.moreText}>
+                                                Services
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            </View>
+                        )}
+                        {item?.seller_services_for_search?.length > 0 && (
+                            <View style={styles.categoryRow}>
                                 <Text style={styles.sectionTitle1}>Categories</Text>
                                 <View style={styles.skillRow1}>
                                     {item?.seller_services_for_search
@@ -144,7 +174,7 @@ export default function EmployeeCategoryResult({
                                         </View>
                                     )}
                                 </View>
-                            </>
+                            </View>
                         )}
                     </View>
                     <View>
@@ -238,25 +268,73 @@ const styles = StyleSheet.create({
     parentContainer1: {
         backgroundColor: "#EDC8B81A",
         borderRadius: 18,
-        padding: 14,
         marginTop: 8,
+    },
+    serviceRow: {
+        padding: 14,
+        paddingBottom: 7,
+    },
+    categoryRow: {
+        padding: 14,
+        paddingTop: 7,
     },
     sectionTitle1: {
         color: "#fff",
         fontFamily: "Montserrat_600SemiBold",
         fontSize: 16,
-        marginBottom: 10,
+        marginBottom: 5,
     },
-    promotedRow1: {
+    promotedRow: {
         flexDirection: "row",
-        gap: 5,
-        marginBottom: 22,
+        gap: 10,
     },
-    promotedBox1: {
-        width: 80,
-        height: 80,
+    serviceCard: {
+        width: 120,
+        backgroundColor: "#2D2D2D",
         borderRadius: 12,
-        backgroundColor: "#cfcfcf",
+        borderWidth: 1,
+        borderColor: "#474747",
+        padding: 10,
+        minHeight: 110,
+        justifyContent: "space-between",
+    },
+    servicePrice: {
+        color: "#89e442",
+        fontSize: 16,
+        lineHeight: 22,
+        fontFamily: "Montserrat_700Bold",
+    },
+    serviceHour: {
+        color: "#fff",
+        fontSize: 13,
+        fontFamily: "Montserrat_400Regular",
+    },
+    serviceTitle: {
+        color: "#FFF",
+        fontSize: 14,
+        fontFamily: "Montserrat_600SemiBold",
+        marginTop: 10,
+    },
+    moreCard: {
+        width: 88,
+        backgroundColor: "#2D2D2D",
+        borderRadius: 12,
+        justifyContent: "center",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#474747",
+    },
+    moreCount: {
+        fontSize: 28,
+        color: "#FFF",
+        fontFamily: "Montserrat_700Bold",
+    },
+    moreText: {
+        color: "#FFF",
+        textAlign: "center",
+        fontSize: 14,
+        fontFamily: "Montserrat_500Medium",
+        marginTop: 4,
     },
     skillRow1: {
         flexDirection: "row",

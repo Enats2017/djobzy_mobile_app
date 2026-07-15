@@ -26,6 +26,7 @@ import { Ionicons } from "@expo/vector-icons";
 import FeedPostDropdownModal from "./FeedModals/FeedPostDropdownModal";
 import FeedReportModal from "./FeedModals/FeedReportModal";
 import { feedEvents } from "./FeedEvent/feedEvents";
+import useMarkFeedSeen from "./FeedEvent/useMarkFeedSeen";
 
 function renderFeedHeader(navigation, user, estimateCount) {
     return (
@@ -112,6 +113,7 @@ function SocialMediaScreenInner() {
     const navigation = useNavigation();
     const { user } = useNotifications();
     const { setActiveId } = useActiveMedia();
+    const { markSeen } = useMarkFeedSeen();
 
     const [feedLoading, setFeedLoading] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -317,10 +319,10 @@ function SocialMediaScreenInner() {
             setActiveId(null);
             return;
         }
-        setActiveId(viewableItems[0].item.id);
-    },
-        [setActiveId]
-    );
+        const topItem = viewableItems[0].item;
+        setActiveId(topItem.id);
+        markSeen(topItem.id);
+    }, [setActiveId, markSeen]);
 
     const viewabilityConfigCallbackPairs = useRef([{ viewabilityConfig: VIEWABILITY_CONFIG, onViewableItemsChanged },]);
 

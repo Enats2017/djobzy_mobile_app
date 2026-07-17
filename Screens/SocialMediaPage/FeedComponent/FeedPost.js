@@ -83,7 +83,7 @@ export default function FeedPost({ item, onOpenComments, openInternalSharing, op
             </View>
           </TouchableOpacity>
 
-          {(isOwner || user.id !== item.user_id) && (
+          {(isOwner || user?.id !== item.user_id) && (
             <TouchableOpacity
               style={styles.moreBtn}
               onPress={() => onOpenMenu(item.id)}

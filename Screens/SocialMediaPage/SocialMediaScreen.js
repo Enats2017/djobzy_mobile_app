@@ -336,8 +336,8 @@ function SocialMediaScreenInner() {
             <View style={{ flex: 1 }}>
                 <FlashList
                     ref={flashListRef}
-                    data={feeds.filter((f) => !hiddenFeedIds.has(f.id))}
-                    keyExtractor={(item) => item.id?.toString()}
+                    data={feeds.filter((f) => !hiddenFeedIds.has(f?.id))}
+                    keyExtractor={(item) => item?.id?.toString()}
                     renderItem={renderFeedItem}
                     estimatedItemSize={420}
                     viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
+  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { scale } from "../../utils/scale";
@@ -54,6 +55,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <LinearGradient
         colors={["#1c1c1c", "#2d2d2d", "#3a3a3a"]}
         style={styles.gradientContainer}

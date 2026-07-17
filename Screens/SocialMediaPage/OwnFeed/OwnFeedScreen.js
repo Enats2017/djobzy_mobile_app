@@ -32,6 +32,7 @@ import EmployerFooter from "../../../components/EmployerFooter";
 import PageNameHeaderBar from "../../../components/PageNameHeaderBar";
 import useSocialEvents from "../FeedEvent/useSocialEvents";
 import FeedDeleteConfirmModal from "../FeedModals/FeedDeleteConfirmModal";
+import { feedEvents } from "../FeedEvent/feedEvents";
 
 const VIEWABILITY_CONFIG = {
     itemVisiblePercentThreshold: 60,
@@ -110,6 +111,13 @@ function OwnFeedScreenInner() {
             setFeedLoading(false);
         }
     };
+
+    useEffect(() => {
+        const unsubscribe = feedEvents.on("feedCreated", (newFeed) => {
+            setFeeds((prev) => [newFeed, ...prev]);
+        });
+        return unsubscribe;
+    }, []);
 
     useEffect(() => {
         fetchOwnFeeds();

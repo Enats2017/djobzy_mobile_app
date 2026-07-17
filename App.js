@@ -314,7 +314,7 @@ const App = () => {
               <Stack.Screen name="DeleteAccountScreen" component={DeleteAccountScreen} />
               <Stack.Screen name="Map" component={Map} />
               <Stack.Screen name="MyBoostedJob" component={MyBoostedJob} />
-              <Stack.Screen name="FeedDetailPage" component={FeedDetailPage} />
+              <Stack.Screen name="FeedDetail" component={FeedDetailPage} />
               <Stack.Screen name="MyFeedPost" component={OwnFeedScreen} />
             </Stack.Navigator>
           </NavigationContainer>

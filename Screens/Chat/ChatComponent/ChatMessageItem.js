@@ -342,7 +342,7 @@ const ChatMessageItem = memo(({ item, myId, onDelete, onReply, onInfo, otherUser
                             isOutgoing ? styles.feedCardSent : styles.feedCardReceived,
                         ]}
                         activeOpacity={0.8}
-                        onPress={() => navigation.navigate("FeedDetailPage", { feedId: item.feed_id })}
+                        onPress={() => navigation.navigate("FeedDetail", { feedId: item.feed_id })}
                     >
                         <View style={styles.feedCardIcon}>
                             <Ionicons name="newspaper-outline" size={20} color="#C96B59" />

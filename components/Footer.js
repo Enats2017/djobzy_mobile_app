@@ -193,7 +193,7 @@ const Footer = () => {
           <Text
             style={[styles.label, isActive("PromoteService") && styles.activeText]}
           >
-            Post a Service
+            List a Service
           </Text>
         </TouchableOpacity>
 

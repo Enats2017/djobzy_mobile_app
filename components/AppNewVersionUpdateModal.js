@@ -1,9 +1,3 @@
-// 1. Update AppUpdateModal to have no "Maybe later" and custom message
-// 2. Wire correctly in HomeScreen
-
-// ─── AppUpdateModal.js — update these two things ──────────────────
-// Remove onLater prop entirely, hardcode the message, add storeUrl prop
-
 import React from "react";
 import {
   Modal,

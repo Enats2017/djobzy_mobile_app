@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GradientButton from "../../../components/GradientButton";
 import BottomSheetIndicator from "../../../components/BottomSheetIndicator";
 
-export default function FeedDeleteConfirmModal({ visible, onClose, onConfirm, loading }) {
+export default function FeedDeleteConfirmModal({ title, description, visible, onClose, onConfirm, loading }) {
     const insets = useSafeAreaInsets();
 
     return (
@@ -32,10 +32,8 @@ export default function FeedDeleteConfirmModal({ visible, onClose, onConfirm, lo
                         <Ionicons name="trash-outline" size={32} color="#e05c3a" />
                     </View>
 
-                    <Text style={styles.title}>Delete Post?</Text>
-                    <Text style={styles.subtitle}>
-                        This action cannot be undone. Your post will be permanently removed.
-                    </Text>
+                    <Text style={styles.title}>{title}</Text>
+                    <Text style={styles.subtitle}>{description}</Text>
 
                     <View style={styles.btn}>
                         <GradientButton

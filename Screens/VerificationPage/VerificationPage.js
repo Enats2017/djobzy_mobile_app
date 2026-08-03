@@ -25,6 +25,7 @@ import JobCreate from "./JobCreate";
 import ProfileSetup from "./ProfileSetup";
 import HeaderBar from "../../components/HeaderBar";
 import VerificationStepHeader from "./VerificationStepHeader";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const VerificationPage = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -96,12 +97,15 @@ const VerificationPage = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : ""} style={styles.container}>
+      <View style={styles.container}>
         <VerificationStepHeader />
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: 5 }}
-          showsVerticalScrollIndicator={false}
+        <KeyboardAwareScrollView
+          enableOnAndroid
+          enableAutomaticScroll={true}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          extraScrollHeight={80}
+          contentContainerStyle={{ paddingBottom: 20 }}
         >
           <View style={styles.StepContainer}>
             {["Account Setup", "Default Profile", "Profile Setup"].map(
@@ -164,8 +168,8 @@ const VerificationPage = () => {
               },
             )}
           </View>
-          <View style={{ display: activeTab === 0 ? "flex" : "none" }}>
-            {loading ? (
+          {activeTab === 0 && (
+            loading ? (
               <View style={styles.loaderWrap}>
                 <ActivityIndicator size="large" color="#fff" />
                 <Text style={styles.loadingText}>
@@ -185,17 +189,16 @@ const VerificationPage = () => {
                 userDetails={userDetails}
                 onNext={() => setActiveTab(1)}
               />
-            )}
-          </View>
-
-          <View style={{ display: activeTab === 1 ? "flex" : "none" }}>
+            )
+          )}
+          {activeTab === 1 && (
             <DefaultProfile
               services={services}
               filtered={filtered}
               onNext={() => setActiveTab(2)}
             />
-          </View>
-          <View style={{ display: activeTab === 2 ? "flex" : "none" }}>
+          )}
+          {activeTab === 2 && (
             <ProfileSetup
               userId={userId}
               onNext={(adminValue) => {
@@ -203,10 +206,10 @@ const VerificationPage = () => {
                 setActiveTab(3);
               }}
             />
-          </View>
-          <View style={{ display: activeTab === 3 ? "flex" : "none" }}>
+          )}
+          {activeTab === 3 && (
             <JobCreate admin={admin} userId={userId} />
-          </View>
+          )}
           {activeTab > 0 && activeTab < 3 && (
             <TouchableOpacity
               style={styles.backBtn}
@@ -215,8 +218,8 @@ const VerificationPage = () => {
               <Text style={styles.backBtnText}>Back</Text>
             </TouchableOpacity>
           )}
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -246,7 +249,6 @@ const styles = StyleSheet.create({
     position: "relative",
   },
 
-  /* 👆 BIG TOUCH AREA */
   circleTouch: {
     width: 40,
     height: 40,
@@ -309,7 +311,7 @@ const styles = StyleSheet.create({
 
   line: {
     position: "absolute",
-    top: 20, // center of 40px touch area
+    top: 20,
     left: "55%",
     right: "-45%",
     height: 1,

@@ -9,6 +9,7 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,6 +25,7 @@ import { toastError, toastSuccess } from "../../../utils/toast";
 import { feedEvents } from "../FeedEvent/feedEvents";
 import useMentionHashtag from "../FeedEvent/useMentionHashtag";
 import FilterSuggestionList from "./FilterSuggestionList";
+import CustomSwitch from "../../../components/CustomSwitch";
 
 const IMAGE_MAX_BYTES = 3 * 1024 * 1024;
 const VIDEO_MAX_BYTES = 20 * 1024 * 1024;
@@ -49,6 +51,7 @@ const CreateFeedPost = () => {
   const [video, setVideo] = useState(null);
   const [videoThumb, setVideoThumb] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showOnProfile, setShowOnProfile] = useState(true);
   const { suggestions, suggestionType, loading: suggestionsLoading, onChangeText: onMentionChange, onSelectionChange, insertSuggestion, } = useMentionHashtag();
 
   const hasMedia = !!image || !!video;
@@ -157,6 +160,7 @@ const CreateFeedPost = () => {
           name: image.name,
           type: image.type,
         });
+        body.append("show_on_profile", showOnProfile ? 1 : 0);
 
         res = await fetch(`${API_URL}/save-feed-image`, {
           method: "POST",
@@ -196,6 +200,7 @@ const CreateFeedPost = () => {
             file_url: presignData.public_url,
             s3_key: presignData.s3_key,
             estimate_reach_count: estimate_reach_count ?? 0,
+            show_on_profile: showOnProfile ? 1 : 0,
           }),
         });
       } else {
@@ -206,6 +211,7 @@ const CreateFeedPost = () => {
             message,
             name,
             estimate_reach_count: estimate_reach_count ?? 0,
+            show_on_profile: showOnProfile ? 1 : 0,
           }),
         });
       }
@@ -335,6 +341,29 @@ const CreateFeedPost = () => {
             </TouchableOpacity>
           </View>
 
+          <View style={styles.profileRow}>
+            <View style={styles.profileToggleLeft}>
+              <CustomSwitch
+                value={showOnProfile}
+                onChange={setShowOnProfile}
+                size={22}
+              />
+
+              <Text style={styles.profileToggleText}>
+                Show on my public profile
+              </Text>
+            </View>
+
+            {!!estimate_reach_count && (
+              <Text style={styles.estimateText}>
+                Expected Reach{" "}
+                <Text style={styles.estimateCount}>
+                  {estimate_reach_count}
+                </Text>
+              </Text>
+            )}
+          </View>
+
           <GradientButton
             title={loading ? "Publishing..." : "Add to your post"}
             marginTop={20}
@@ -443,13 +472,40 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 8,
-    paddingHorizontal: 12,
     borderRadius: 5,
   },
   buttonText: {
     fontFamily: "Montserrat_500Medium",
     fontSize: 14,
     color: "#c3c3c3c3",
+  },
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 5,
+  },
+  profileToggleLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    gap: 5,
+  },
+  profileToggleText: {
+    fontSize: 13,
+    fontFamily: "Montserrat_400Regular",
+    color: "#c3c3c3",
+    flexShrink: 1,
+    lineHeight: 19,
+  },
+  estimateText: {
+    fontSize: 13,
+    fontFamily: "Montserrat_400Regular",
+    color: "#c3c3c3",
+  },
+  estimateCount: {
+    color: "#cc6952",
+    fontFamily: "Montserrat_600SemiBold",
   },
 });
 

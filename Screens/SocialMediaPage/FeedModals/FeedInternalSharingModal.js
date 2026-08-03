@@ -10,6 +10,8 @@ import {
     Image,
     ActivityIndicator,
     FlatList,
+    KeyboardAvoidingView,
+    Platform,
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -17,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import useSocialEvents from "../FeedEvent/useSocialEvents";
 import GradientButton from "../../../components/GradientButton";
 import { toastSuccess } from "../../../utils/toast";
+import BottomSheetIndicator from "../../../components/BottomSheetIndicator";
 
 const NUM_COLUMNS = 2;
 const SEARCH_DEBOUNCE = 350;
@@ -203,10 +206,7 @@ export default function FeedInternalSharingModal({ visible, onClose, feedId }) {
             <View style={styles.overlay}>
                 <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
                 <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
-                    <View style={styles.grabberWrap}>
-                        <View style={styles.grabber} />
-                    </View>
-
+                    <BottomSheetIndicator />
                     <View style={styles.searchHeader}>
                         <View style={styles.searchBox}>
                             <Ionicons name="search" size={18} color="#8A8A8A" />
@@ -278,23 +278,24 @@ export default function FeedInternalSharingModal({ visible, onClose, feedId }) {
                         )}
                     </View>
 
-                    <View style={styles.inputRow}>
-                        <TextInput
-                            value={message}
-                            onChangeText={setMessage}
-                            placeholder="Type something"
-                            placeholderTextColor="#8A8A8A"
-                            style={styles.messageInput}
+                    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} >
+                        <View style={styles.inputRow}>
+                            <TextInput
+                                value={message}
+                                onChangeText={setMessage}
+                                placeholder="Type something"
+                                placeholderTextColor="#8A8A8A"
+                                style={styles.messageInput}
+                            />
+                        </View>
+                        <GradientButton
+                            title={`Share${selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}`}
+                            onPress={handleShare}
+                            disabled={selectedIds.size === 0 || sharing}
+                            activeOpacity={0.8}
+                            loading={sharing}
                         />
-                    </View>
-
-                    <GradientButton
-                        title={`Share${selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}`}
-                        onPress={handleShare}
-                        disabled={selectedIds.size === 0 || sharing}
-                        activeOpacity={0.8}
-                        loading={sharing}
-                    />
+                    </KeyboardAvoidingView>
                 </View>
             </View>
         </Modal>
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
     },
     listWrap: {
         flex: 1,
-        minHeight: 260,
+        // minHeight: 260,
     },
     columnWrapper: {
         justifyContent: "space-between",

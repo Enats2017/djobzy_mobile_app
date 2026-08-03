@@ -21,7 +21,7 @@ import FeedPost from "../FeedComponent/FeedPost";
 import FeedAddCommentModal from "../FeedModals/FeedAddCommentModal";
 import FeedInternalSharingModal from "../FeedModals/FeedInternalSharingModal";
 import { toastError, toastSuccess } from "../../../utils/toast";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome6 } from "@expo/vector-icons";
 import FeedPostDropdownModal from "../FeedModals/FeedPostDropdownModal";
 import FeedReportModal from "../FeedModals/FeedReportModal";
 import { API_URL } from "../../../api/ApiUrl";
@@ -49,7 +49,7 @@ function renderOwnFeedHeader(navigation, user, estimateCount) {
                 estimate_reach_count: estimateCount,
             })}
         >
-            <Ionicons name="add-circle-outline" size={30} color="#C96B59" />
+            <FontAwesome6 name="circle-plus" size={30} color="#F4C366" />
             <Text style={styles.createPostText}>Create a new post</Text>
         </TouchableOpacity>
     );
@@ -86,8 +86,7 @@ function OwnFeedScreenInner() {
                 setFeedLoading(true);
             }
             const token = await AsyncStorage.getItem("token");
-            const res = await fetch(
-                `${API_URL}/my-feed-post?offset=${offset}&limit=15`,
+            const res = await fetch(`${API_URL}/my-feed-post?offset=${offset}&limit=15`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -115,6 +114,19 @@ function OwnFeedScreenInner() {
     useEffect(() => {
         const unsubscribe = feedEvents.on("feedCreated", (newFeed) => {
             setFeeds((prev) => [newFeed, ...prev]);
+        });
+        return unsubscribe;
+    }, []);
+
+    useEffect(() => {
+        const unsubscribe = feedEvents.on("commentAdded", ({ feedId }) => {
+            setFeeds((prev) =>
+                prev.map((feed) =>
+                    feed.id === feedId
+                        ? { ...feed, comment_count: (feed.comment_count || 0) + 1 }
+                        : feed
+                )
+            );
         });
         return unsubscribe;
     }, []);
@@ -328,6 +340,8 @@ function OwnFeedScreenInner() {
             />
 
             <FeedDeleteConfirmModal
+                title="Delete Post?"
+                description="This action cannot be undone. Your post will be permanently removed."
                 visible={deleteVisible}
                 onClose={() => setDeleteVisible(false)}
                 onConfirm={handleDeleteFeed}
@@ -380,13 +394,13 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         marginBottom: 14,
         borderWidth: 1,
-        borderColor: "#c3c3c3",
+        borderColor: "#ffffff1a",
     },
     createPostText: {
         fontSize: 16,
         lineHeight: 22,
-        fontFamily: "Montserrat_500Medium",
-        color: "#c3c3c3",
+        fontFamily: "Montserrat_700Bold",
+        color: "#F4C366",
     },
 });
 

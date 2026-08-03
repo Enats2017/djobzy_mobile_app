@@ -11,6 +11,8 @@ import { useNotifications } from "../../../context/MessageNotificationContext";
 import MentionAndHashtagText from "./MentionAndHashtagText";
 import { useNavigation } from "@react-navigation/native";
 import { useGlobalSearch } from "../../SearchScreen/useGlobalSearch";
+import FeedHotelCard from "./FeedHotelCard";
+import FeedJobCard from "./FeedJobCard";
 
 const { width } = Dimensions.get("window");
 const CARD_PADDING = 15;
@@ -37,6 +39,8 @@ export default function FeedPost({ item, onOpenComments, openInternalSharing, op
   const text = item?.message || "";
   const isImage = item?.message_type === 1 && !!item?.file_name;
   const isVideo = item?.message_type === 2 && !!item?.signed_url;
+  const isStructuredCard = item?.message_type === 3;
+  const cardType = item?.feed_data?.type;
 
   const handleLike = async () => {
     try {
@@ -63,7 +67,7 @@ export default function FeedPost({ item, onOpenComments, openInternalSharing, op
       navigation.navigate("JobProfile", { gid: data.request_slug });
     } else {
       setKeyword(data.text);
-      setUserSearchMode(Number(user.admin));
+      setUserSearchMode(Number(user.admin ?? 0));
       navigation.navigate("SearchResult");
     }
   }, [navigation]);
@@ -93,7 +97,7 @@ export default function FeedPost({ item, onOpenComments, openInternalSharing, op
           )}
         </View>
 
-        {!!text && (
+        {!isStructuredCard && !!text && (
           <Text style={styles.postText}>
             <MentionAndHashtagText
               message={text}
@@ -122,6 +126,9 @@ export default function FeedPost({ item, onOpenComments, openInternalSharing, op
             height={item.video_height}
           />
         )}
+
+        {isStructuredCard && cardType === 'hotel' && <FeedHotelCard data={item.feed_data} />}
+        {isStructuredCard && cardType === 'job' && <FeedJobCard data={item.feed_data} />}
 
         <FeedActions
           liked={liked}

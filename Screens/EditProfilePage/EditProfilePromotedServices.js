@@ -29,11 +29,9 @@ const EditProfilePromotedServices = ({ navigation, isEdit = true }) => {
     const [loadingId, setLoadingId] = useState(null);
 
     const handleSave = (data) => {
-        console.log("promote service saved:", data);
         setModalVisible(false);
     };
     const handleOpenDelete = (item) => {
-        console.log('promote deleting for modal sub: ', item);
         setDeletePromoteService(item);
         setDeleteModalVisible(true);
     };
@@ -61,7 +59,6 @@ const EditProfilePromotedServices = ({ navigation, isEdit = true }) => {
             const data = await response.json();
             if (data.status === 200) {
                 const serviceData = data.result;
-                console.log(serviceData);
                 const store = useServiceGlobalStore.getState();
                 store.reset();
                 store.setUniqueId(serviceData?.unique_id);

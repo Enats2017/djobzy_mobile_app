@@ -29,81 +29,56 @@ import { feedEvents } from "./FeedEvent/feedEvents";
 import useMarkFeedSeen from "./FeedEvent/useMarkFeedSeen";
 
 function renderFeedHeader(navigation, user, estimateCount) {
+    const navigateToCreate = () =>
+        navigation.navigate("CreateFeedPost", {
+            name: user?.full_name,
+            estimate_reach_count: estimateCount,
+        });
+
     return (
         <View style={styles.postcontainer}>
-            <View style={styles.postBox}>
-                <TouchableOpacity
-                    style={styles.feed}
-                    onPress={() =>
-                        navigation.navigate("CreateFeedPost", {
-                            name: user?.full_name,
-                            estimate_reach_count: estimateCount,
-                        })
-                    }
-                >
+            <TouchableOpacity
+                style={styles.postBox}
+                onPress={navigateToCreate}
+                activeOpacity={0.8}
+            >
+                <View style={styles.feed}>
                     <Text style={styles.textfeed}>Create Feed/Post</Text>
 
-                    <View style={styles.anylog}>
-                        <Text
-                            style={{
-                                fontSize: 14,
-                                fontFamily: "Montserrat_500Medium",
-                                color: "#fff",
-                            }}
-                        >
+                    {/* <View style={styles.anylog}>
+                        <Text style={{
+                            fontSize: 14,
+                            fontFamily: "Montserrat_500Medium",
+                            color: "#fff",
+                        }}>
                             Anyone
                         </Text>
+                        <Entypo name="chevron-small-down" size={20} color="#fff" />
+                    </View> */}
+                </View>
 
-                        <Entypo
-                            name="chevron-small-down"
-                            size={20}
-                            color="#fff"
-                            onPress={() => { }}
-                        />
-                    </View>
-                </TouchableOpacity>
-
-                <TextInput
-                    style={styles.input}
-                    placeholder="Post Something"
-                    placeholderTextColor="#888"
-                />
+                <View style={styles.input}>
+                    <Text style={styles.inputPlaceholder}>Type about your post</Text>
+                </View>
 
                 <View style={styles.buttonRow}>
-                    <TouchableOpacity style={styles.button}>
-                        <Image
-                            source={require("../../assets/images/img.png")}
-                            style={styles.logo}
-                            contentFit="contain"
-                        />
+                    <View style={styles.button}>
+                        <Image source={require("../../assets/images/img.png")} style={styles.logo} contentFit="contain" />
                         <Text style={styles.buttonText}>Image</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.button}>
-                        <Image
-                            source={require("../../assets/images/vedio.png")}
-                            style={styles.logo}
-                            contentFit="contain"
-                        />
+                    </View>
+                    <View style={styles.button}>
+                        <Image source={require("../../assets/images/vedio.png")} style={styles.logo} contentFit="contain" />
                         <Text style={styles.buttonText}>Video</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.button}>
-                        <Image
-                            source={require("../../assets/images/ai.png")}
-                            style={styles.logo}
-                            contentFit="contain"
-                        />
-                        <Text style={styles.buttonText}>
-                            Generate AI {"\n"} Video
-                        </Text>
-                    </TouchableOpacity>
+                    </View>
+                    <View style={styles.button}>
+                        <Image source={require("../../assets/images/ai.png")} style={styles.logo} contentFit="contain" />
+                        <Text style={styles.buttonText}>Generate AI {"\n"} Video</Text>
+                    </View>
                 </View>
-            </View>
+            </TouchableOpacity>
         </View>
     );
 }
-
 const VIEWABILITY_CONFIG = {
     itemVisiblePercentThreshold: 60,
     minimumViewTime: 150,
@@ -172,17 +147,14 @@ function SocialMediaScreenInner() {
 
     const fetchMoreFeeds = async () => {
         if (loadingMore) {
-            console.log('⛔ Aborted: loadingMore = true');
             return;
         }
 
         if (!hasMoreRef.current) {
-            console.log('⛔ Aborted: hasMoreRef.current =', hasMoreRef.current);
             return;
         }
 
         if (!sessionRef.current) {
-            console.log('⛔ Aborted: sessionRef.current =', sessionRef.current);
             return;
         }
 
@@ -223,6 +195,19 @@ function SocialMediaScreenInner() {
     useEffect(() => {
         const unsubscribe = feedEvents.on("feedCreated", (newFeed) => {
             setFeeds((prev) => [newFeed, ...prev]);
+        });
+        return unsubscribe;
+    }, []);
+
+    useEffect(() => {
+        const unsubscribe = feedEvents.on("commentAdded", ({ feedId }) => {
+            setFeeds((prev) =>
+                prev.map((feed) =>
+                    feed.id === feedId
+                        ? { ...feed, comment_count: (feed.comment_count || 0) + 1 }
+                        : feed
+                )
+            );
         });
         return unsubscribe;
     }, []);
@@ -510,6 +495,11 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 13,
         fontFamily: "Montserrat_600SemiBold",
+    },
+    inputPlaceholder: {
+        color: "#fff",
+        fontFamily: "Montserrat_400Regular",
+        fontSize: 16,
     },
 });
 

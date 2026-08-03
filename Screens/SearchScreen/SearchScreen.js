@@ -268,7 +268,7 @@ const SearchScreen = () => {
                 </TouchableOpacity>
               </View>
             )}
-           
+
 
             {loading ? (
               <View style={styles.resultLoader}>
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     color: "#fff",
-      fontFamily:"Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
     fontSize: 14,
   },
 
@@ -458,25 +458,26 @@ const styles = StyleSheet.create({
   requestCategory: {
     marginTop: 20,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    borderBottomWidth:1.5,
-    borderColor:"#ffffff1a"
+    borderBottomWidth: 1.5,
+    borderColor: "#ffffff1a",
+    paddingBottom: 8,
   },
 
   categoryText: {
+    flex: 1,
     color: "#fff",
-    fontFamily:"Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
     fontSize: 14,
-    marginBottom:8
+    marginRight: 10,
   },
 
   requestText: {
+    flexShrink: 0,
     color: "#f5b400",
     fontSize: 14,
-      fontFamily:"Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
     textDecorationLine: "underline",
-    textDecorationColor: "#f5b400",
   },
 
   deleteOverlay: {

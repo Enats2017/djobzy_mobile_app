@@ -268,6 +268,8 @@ export const tooltipMessage = {
     'provided_service': 'Promoted Services',
     'create_new_provided_service': 'Promote your services',
     'create_new_provided_service_header': 'Promote Services',
+    'hotel_room_tooltip': 'Manage your hotel’s rooms, pricing, and availability.',
+    'hotel_refund_policy': 'Your refund will be processed within 3-5 business days after cancellation. The amount will be credited to your original payment source.',
     'more': 'More',
     'more_categories': 'More categories',
     'promote': 'Boost',

@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   section: {
     height: 300,
     borderColor: "#222222",
-    borderWidth: 1,
+    borderWidth: 0,
     borderRadius: 10,
     overflow: "hidden",
     width: "100%",

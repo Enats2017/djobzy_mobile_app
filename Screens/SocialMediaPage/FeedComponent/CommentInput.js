@@ -26,7 +26,6 @@ export default function CommentInput({ value, onChangeText, onSend, sending }) {
       <TouchableOpacity
         style={[styles.sendBtn, !canSend && styles.sendBtnDisabled]}
         onPress={() => {
-          console.log("SEND BUTTON PRESSED");
           onSend();
         }}
         disabled={!canSend || sending}

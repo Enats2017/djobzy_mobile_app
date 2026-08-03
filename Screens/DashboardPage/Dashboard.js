@@ -16,6 +16,7 @@ import {
   View,
   Image,
   Modal,
+  StatusBar,
 } from "react-native";
 import Footer from "../../components/Footer";
 import HeaderBar from "../../components/HeaderBar";
@@ -39,9 +40,6 @@ const Dashboard = () => {
   const hasFetched = useRef(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const insets = useSafeAreaInsets();
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const searchTimer = useRef(null);
   const [employeeDashModal, setEmployeeDashModal] = useState(false);
   const closeModal = () => setEmployeeDashModal(false);
 
@@ -94,42 +92,8 @@ const Dashboard = () => {
     }
   }, [fetchJobs]);
 
-  const fetchSuggestions = async (text) => {
-    if (text.length < 2) {
-      setSearchSuggestions([]);
-      return;
-    }
-
-    try {
-      const token = await AsyncStorage.getItem("token");
-      console.log(token);
-      const res = await fetch(`${API_URL}/filter-by-keyword`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          keyword: text,
-          action: "search_result",
-          head: 1,
-        }),
-      });
-
-      const data = await res.json();
-      console.log(data);
-
-
-    } catch (err) {
-      console.log("Suggestion error:", err);
-    }
-  };
-
   /* ===================== SUGGESTION CLICK ===================== */
   const handleSuggestionSelect = (item) => {
-    setSuggestions([]);
-
     if (item.type === "service") {
       navigation.navigate("MyFindJobs", {
         keyword: item.title,
@@ -207,6 +171,7 @@ const Dashboard = () => {
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
+          <StatusBar barStyle="dark-content" backgroundColor="#fff" />
           <HeaderBar />
           <View style={styles.tabContainer}>
             <TouchableOpacity
@@ -360,8 +325,10 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: "#c3c3c3c3",
-    fontSize: 16,
+    fontSize: 15,
+    lineHeight: 19,
     fontFamily: "Montserrat_500Medium",
+    textAlign: "center"
   },
 
   activeTab: {
@@ -374,7 +341,9 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "#ffff",
     fontFamily: "Montserrat_600SemiBold",
-    fontSize: 16,
+    fontSize: 15,
+    lineHeight: 19,
+    textAlign: "center"
   },
 
   overlay: {

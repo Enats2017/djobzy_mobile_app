@@ -16,7 +16,7 @@ function parseMessage(plainMessage, mentions = [], hashtags = []) {
     });
 
     // Split by @word or #word tokens
-    const tokenRegex = /(@[A-Za-z0-9._-]+|#[A-Za-z0-9._-]+)/g;
+    const tokenRegex = /(@[^\s#@]+|#[^\s#@]+)/g;
     const parts = [];
     let lastIndex = 0;
     let match;

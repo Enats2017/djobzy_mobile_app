@@ -6,8 +6,6 @@ import {
     TouchableOpacity,
     StyleSheet,
     Pressable,
-    KeyboardAvoidingView,
-    Platform,
     Dimensions,
     ActivityIndicator,
 } from "react-native";
@@ -19,6 +17,9 @@ import CommentInput from "../FeedComponent/CommentInput";
 import useSocialEvents from "../FeedEvent/useSocialEvents";
 import CommentSkeleton from "../FeedComponent/CommentSkeleton";
 import { toastError } from "../../../utils/toast";
+import ModalKeyboardContainer from "../../../components/ModalKeyboardContainer";
+import { feedEvents } from "../FeedEvent/feedEvents";
+
 
 export default function FeedCommentsModal({ visible, onClose, feedId }) {
     const insets = useSafeAreaInsets();
@@ -83,7 +84,6 @@ export default function FeedCommentsModal({ visible, onClose, feedId }) {
 
         try {
             const data = await addComment(feedId, text);
-            console.log('add comment data', data);
             if (data.status === 200 || data.status === 201) {
                 setComments((prev) => [data.comment, ...prev]);
                 setTimeout(() => {
@@ -92,6 +92,7 @@ export default function FeedCommentsModal({ visible, onClose, feedId }) {
                         animated: true,
                     });
                 }, 200);
+                feedEvents.emit("commentAdded", { feedId });
             } else if (data.status === 429) {
                 setDraft(text);
                 handleClose();
@@ -155,57 +156,59 @@ export default function FeedCommentsModal({ visible, onClose, feedId }) {
             onRequestClose={handleClose}
             statusBarTranslucent
         >
-            <View style={styles.overlay}>
-                <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
-                <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
-                    <View style={styles.header}>
-                        <TouchableOpacity onPress={onClose} style={styles.backBtn}>
-                            <Ionicons name="chevron-back" size={26} color="#303030" />
-                        </TouchableOpacity>
-                        <Text style={styles.title}>Comments</Text>
-                    </View>
+            <ModalKeyboardContainer>
+                <View style={styles.overlay}>
+                    <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+                    <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
+                        <View style={styles.header}>
+                            <TouchableOpacity onPress={onClose} style={styles.backBtn}>
+                                <Ionicons name="chevron-back" size={26} color="#303030" />
+                            </TouchableOpacity>
+                            <Text style={styles.title}>Comments</Text>
+                        </View>
 
-                    <View style={[styles.listWrap]}>
-                        {loading ? (
-                            <CommentSkeleton count={4} />
-                        ) : (
-                            <FlashList
-                                ref={flashListRef}
-                                data={comments}
-                                renderItem={renderItem}
-                                keyExtractor={(item) => String(item.id)}
-                                onEndReached={fetchMoreComments}
-                                showsVerticalScrollIndicator={false}
-                                onEndReachedThreshold={0.4}
-                                keyboardShouldPersistTaps="handled"
-                                ListFooterComponent={
-                                    loadingMore ? (
-                                        <ActivityIndicator
-                                            size="small"
-                                            color="#cc6952"
-                                            style={{ marginVertical: 12 }}
-                                        />
-                                    ) : null
-                                }
-                                ListEmptyComponent={
-                                    <Text style={styles.emptyText}>
-                                        No comments yet — be the first to say something.
-                                    </Text>
-                                }
+                        <View style={[styles.listWrap]}>
+                            {loading ? (
+                                <CommentSkeleton count={4} />
+                            ) : (
+                                <FlashList
+                                    ref={flashListRef}
+                                    data={comments}
+                                    renderItem={renderItem}
+                                    keyExtractor={(item) => String(item.id)}
+                                    onEndReached={fetchMoreComments}
+                                    showsVerticalScrollIndicator={false}
+                                    onEndReachedThreshold={0.4}
+                                    keyboardShouldPersistTaps="handled"
+                                    ListFooterComponent={
+                                        loadingMore ? (
+                                            <ActivityIndicator
+                                                size="small"
+                                                color="#cc6952"
+                                                style={{ marginVertical: 12 }}
+                                            />
+                                        ) : null
+                                    }
+                                    ListEmptyComponent={
+                                        <Text style={styles.emptyText}>
+                                            No comments yet — be the first to say something.
+                                        </Text>
+                                    }
+                                />
+                            )}
+                        </View>
+
+                        <View style={styles.inputRow}>
+                            <CommentInput
+                                value={draft}
+                                onChangeText={setDraft}
+                                onSend={handleSend}
+                                sending={sending}
                             />
-                        )}
-                    </View>
-
-                    <View style={styles.inputRow}>
-                        <CommentInput
-                            value={draft}
-                            onChangeText={setDraft}
-                            onSend={handleSend}
-                            sending={sending}
-                        />
+                        </View>
                     </View>
                 </View>
-            </View>
+            </ModalKeyboardContainer>
         </Modal>
     );
 }

@@ -15,7 +15,8 @@ import {
   TouchableOpacity,
   View,
   Image,
-  Modal
+  Modal,
+  StatusBar
 } from "react-native";
 import HeaderBar from "../../components/HeaderBar";
 import { API_URL } from "../../api/ApiUrl";
@@ -50,9 +51,6 @@ const EmployerDashboard = () => {
         if (pageNum === 1) setLoading(true);
         else setIsFetchingMore(true);
         const token = await AsyncStorage.getItem("token");
-        console.log(token);
-
-        // console.log("📡 Fetching jobs for page:", pageNum);
         const res = await fetch(
           `${API_URL}/employer-dashboard?page=${pageNum}`,
           {
@@ -140,7 +138,7 @@ const EmployerDashboard = () => {
             ]}
             onPress={handleCreateJobNavigation}
           >
-            <Text style={styles.tabText}>Categories</Text>
+            <Text style={styles.tabTitle}>Categories</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -149,7 +147,7 @@ const EmployerDashboard = () => {
             ]}
             onPress={() => navigation.navigate("FavoriteEmployee")}
           >
-            <Text style={styles.tabText}>Favourite Employees</Text>
+            <Text style={styles.tabTitle}>Favourite Employees</Text>
           </TouchableOpacity>
         </View>
       </>
@@ -160,6 +158,7 @@ const EmployerDashboard = () => {
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.container}>
+          <StatusBar barStyle="dark-content" backgroundColor="#fff" />
           <HeaderBar />
           <View style={styles.tabContainer}>
             <TouchableOpacity
@@ -280,7 +279,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 10,
   },
-  tabText: {
+  tabTitle: {
     color: "#ffffff",
     fontFamily: "Montserrat_500Medium",
     fontSize: 14,
@@ -331,8 +330,10 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: "#c3c3c3c3",
-    fontSize: 16,
+    fontSize: 15,
+    lineHeight: 19,
     fontFamily: "Montserrat_500Medium",
+    textAlign: "center"
   },
 
   activeTab: {
@@ -345,7 +346,9 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "#ffff",
     fontFamily: "Montserrat_600SemiBold",
-    fontSize: 16,
+    fontSize: 15,
+    lineHeight: 19,
+    textAlign: "center"
   },
   postcontainer: {
     backgroundColor: "#FFFFFF1a",

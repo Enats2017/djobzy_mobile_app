@@ -1,7 +1,12 @@
 import React, { useRef, useEffect } from "react";
 import { Animated, TouchableOpacity, View, StyleSheet } from "react-native";
 
-const CustomSwitch = ({ value, onChange }) => {
+const CustomSwitch = ({ value, onChange, size = 30, disabled = false }) => {
+    const trackHeight = size;
+    const trackWidth = size * 2;
+    const knobSize = size - 6;
+    const padding = 3;
+
     const animation = useRef(new Animated.Value(value ? 1 : 0)).current;
 
     useEffect(() => {
@@ -14,7 +19,7 @@ const CustomSwitch = ({ value, onChange }) => {
 
     const translateX = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: [2, 28],
+        outputRange: [padding, trackWidth - knobSize - padding],
     });
 
     const backgroundColor = animation.interpolate({
@@ -23,9 +28,33 @@ const CustomSwitch = ({ value, onChange }) => {
     });
 
     return (
-        <TouchableOpacity onPress={() => { onChange(!value, true); }} activeOpacity={0.9}>
-            <Animated.View style={[stylesSwitch.background, { backgroundColor }]}>
-                <Animated.View style={[stylesSwitch.knob, { transform: [{ translateX }] }]} />
+        <TouchableOpacity
+            disabled={disabled}
+            onPress={() => onChange(!value, true)}
+            activeOpacity={0.9}
+        >
+            <Animated.View
+                style={[
+                    stylesSwitch.background,
+                    {
+                        width: trackWidth,
+                        height: trackHeight,
+                        borderRadius: trackHeight / 2,
+                        backgroundColor,
+                    },
+                ]}
+            >
+                <Animated.View
+                    style={[
+                        stylesSwitch.knob,
+                        {
+                            width: knobSize,
+                            height: knobSize,
+                            borderRadius: knobSize / 2,
+                            transform: [{ translateX }],
+                        },
+                    ]}
+                />
             </Animated.View>
         </TouchableOpacity>
     );
@@ -33,21 +62,12 @@ const CustomSwitch = ({ value, onChange }) => {
 
 const stylesSwitch = StyleSheet.create({
     background: {
-        width: 60,
-        height: 30,
-        borderRadius: 20,
-        paddingHorizontal: 3,
         justifyContent: "center",
     },
     knob: {
-        width: 24,
-        height: 24,
         backgroundColor: "#fff",
-        borderRadius: 13,
         elevation: 2,
     },
 });
-
-
 
 export default CustomSwitch;

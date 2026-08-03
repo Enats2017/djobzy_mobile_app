@@ -47,8 +47,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 20,
-        
-        fontStyle: 'DegularDisplay_600SemiBold', // ensure this font is available in your project
+        fontFamily: 'DegularDisplay_600SemiBold',
         color: '#ffffff',
     },
 });

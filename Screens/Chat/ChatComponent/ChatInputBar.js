@@ -127,8 +127,13 @@ const getReplyPreviewLabel = (msg) => {
     return `📄 ${msg.file_name ?? "Document"}`;
 };
 
-const ChatInputBar = memo(({ value, onChangeText, onSend, onSendFiles, sending, isBlockedByAuthUser, replyMessage, onCancelReply, }) => {
+const ChatInputBar = memo(({ value, onChangeText, onSend, onSendFiles, sending, isBlockedByAuthUser, replyMessage, onCancelReply, keyboardVisible = false, }) => {
     const insets = useSafeAreaInsets();
+
+    // While the keyboard is up it covers the gesture bar / nav bar, so the
+    // safe-area inset must collapse to 0 — otherwise that reserved space stays
+    // behind as a dead gap above the keyboard, and again after it closes.
+    const bottomInset = keyboardVisible ? 0 : insets.bottom;
     const [sheetOpen, setSheetOpen] = useState(false);
     const [pendingFiles, setPendingFiles] = useState([]);
 
@@ -273,7 +278,7 @@ const ChatInputBar = memo(({ value, onChangeText, onSend, onSendFiles, sending, 
     const hasContent = value.trim() || pendingFiles.length > 0;
 
     return (
-        <View style={[styles.inputWrap, { paddingBottom: insets.bottom + 8 }]}>
+        <View style={[styles.inputWrap, { paddingBottom: bottomInset + 8 }]}>
             {isBlockedByAuthUser ? (
                 <View style={styles.blockedContainer}>
                     <Text style={styles.blockedText}>You have blocked this user</Text>

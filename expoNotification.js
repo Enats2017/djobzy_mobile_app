@@ -5,25 +5,43 @@ import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "./api/ApiUrl";
 import { navigate } from "./NavigationService";
+import { getDeviceId } from "./utils/deviceId";
+import { getActivePeerId } from "./Screens/Chat/Services/chatPresence";
+
+/**
+ * The backend already skips pushes for a conversation this device has open
+ * (see ActiveChatPresence). This is the client-side backstop for the window
+ * where the two can disagree — a push already in flight when the user opened
+ * the room, or a presence heartbeat that failed to reach the server.
+ */
+const isForActiveChatRoom = (notification) => {
+    const data = notification?.request?.content?.data ?? {};
+    if (data.type !== "chat") return false;
+
+    const activePeerId = getActivePeerId();
+    return activePeerId != null && String(activePeerId) === String(data.chat_user_id);
+};
 
 Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-        shouldShowBanner: true,
-        shouldShowList: true,
-    }),
+    handleNotification: async (notification) => {
+        if (isForActiveChatRoom(notification)) {
+            // The message is already visible in the open chat — show nothing.
+            return {
+                shouldPlaySound: false,
+                shouldSetBadge: false,
+                shouldShowBanner: false,
+                shouldShowList: false,
+            };
+        }
+
+        return {
+            shouldPlaySound: true,
+            shouldSetBadge: false,
+            shouldShowBanner: true,
+            shouldShowList: true,
+        };
+    },
 });
-
-async function getDeviceId() {
-    let deviceId = await AsyncStorage.getItem("deviceId");
-    if (!deviceId) {
-        deviceId = "djobzy_" + Date.now() + "_" + Math.random().toString(36).substring(2, 15);
-        await AsyncStorage.setItem("deviceId", deviceId);
-    }
-
-    return deviceId;
-}
 
 export async function registerForPushNotifications() {
     if (Platform.OS === "web") return;
@@ -37,7 +55,6 @@ export async function registerForPushNotifications() {
     }
 
     if (finalStatus !== "granted") {
-        // alert("Permission not granted!");
         return;
     }
 
@@ -47,9 +64,10 @@ export async function registerForPushNotifications() {
         });
 
         const expoToken = token.data;
+        // Shared with chat presence, so the backend can match "this device has
+        // the room open" to "skip this device's push token".
         const deviceId = await getDeviceId();
-        console.log("DEVICE ID:", deviceId);
-        console.log("EXPO TOKEN:", expoToken);
+
         const response = await axios.post(`${API_URL}/register-token`, {
             token: expoToken,
             platform: Platform.OS,
@@ -57,7 +75,6 @@ export async function registerForPushNotifications() {
         });
         if (response.status === 200) {
             await AsyncStorage.setItem("expoToken", expoToken);
-            console.log(response.data);
         }
     } catch (error) {
         console.log("Notification error:", error?.response || error.message);
@@ -67,22 +84,20 @@ export async function registerForPushNotifications() {
 // Listener
 export function notificationListener() {
     return Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notification clicked:", response);
-        console.log("NOTIFICATION CLICKED");
         const data = response?.notification?.request?.content?.data || {};
-        console.log("Notification Data:", data);
         if (data.type === "chat") {
             navigate("ChatRoom", {
                 userId: data.chat_user_id,
                 isGroup: false,
             });
         }
-        console.log("NAVIGATE EXECUTED");
     });
 }
 
 export function foregroundListener() {
     return Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Notification received in foreground:", notification);
+        if (isForActiveChatRoom(notification)) return;
+        // Reserved for in-app badge handling; the realtime layer already drives
+        // unread counts, so nothing more is needed here today.
     });
 }

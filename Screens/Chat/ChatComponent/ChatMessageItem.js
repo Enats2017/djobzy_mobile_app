@@ -3,6 +3,13 @@ import {
     View, Text, Image, StyleSheet, ActivityIndicator,
     TouchableOpacity, Alert, Modal, Pressable
 } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withSpring,
+    runOnJS,
+} from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import { Feather, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import moment from "moment";
@@ -64,8 +71,12 @@ const RECEIVER_MENU_OPTIONS = [
 ];
 
 const MessageMenu = ({ visible, onClose, onSelect, isOutgoing }) => {
-    if (!visible) return null;
+    // Must stay above the `visible` early return: hooks cannot be skipped on
+    // some renders, or the hook count changes when the menu opens.
     const insets = useSafeAreaInsets();
+
+    if (!visible) return null;
+
     const options = isOutgoing ? SENDER_MENU_OPTIONS : RECEIVER_MENU_OPTIONS;
     return (
         <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -298,12 +309,116 @@ const FileBubble = ({ item, isOutgoing, onImagePress, onVideoPlay, onMenu }) => 
     return <DocBubble item={item} isOutgoing={isOutgoing} onMenu={onMenu} />;
 };
 
+/** How far the bubble can be dragged, and how far to drag before reply fires. */
+const MAX_DRAG = 72;
+const TRIGGER_DISTANCE = 52;
+/** Horizontal travel before the pan takes over, so vertical scrolling still wins. */
+const ACTIVATE_OFFSET = 12;
+const FAIL_OFFSET_Y = 12;
+
+/**
+ * WhatsApp-style swipe-to-reply around a message bubble.
+ *
+ * Direction is asymmetric by design: your own messages sit on the right and
+ * drag left, the other person's sit on the left and drag right — each bubble
+ * pulls away from its own edge, opening the gap the reply icon appears in.
+ *
+ * This is purely an additional trigger for `onReply` — the long-press menu is
+ * untouched and still calls the same handler.
+ */
+const SwipeToReply = ({ isOutgoing, enabled, onTrigger, children }) => {
+    const translateX = useSharedValue(0);
+    // Latches per gesture so a single drag can only fire reply once, even
+    // though onUpdate runs on every frame past the threshold.
+    const hasTriggered = useSharedValue(false);
+
+    const pan = useMemo(
+        () =>
+            Gesture.Pan()
+                .enabled(enabled)
+                // Only claim the gesture in the message's own reply direction, and
+                // only after ACTIVATE_OFFSET, so taps and long-presses still work.
+                .activeOffsetX(isOutgoing ? -ACTIVATE_OFFSET : ACTIVATE_OFFSET)
+                // Yield to the list: a mostly-vertical drag fails this gesture
+                // instead of fighting FlashList for the touch.
+                .failOffsetY([-FAIL_OFFSET_Y, FAIL_OFFSET_Y])
+                .onBegin(() => {
+                    hasTriggered.value = false;
+                })
+                .onUpdate((e) => {
+                    // Clamp to one direction and cap the travel, so the bubble
+                    // resists past MAX_DRAG rather than sliding off screen.
+                    const dx = e.translationX;
+                    translateX.value = isOutgoing
+                        ? Math.max(-MAX_DRAG, Math.min(0, dx))
+                        : Math.min(MAX_DRAG, Math.max(0, dx));
+                })
+                .onEnd(() => {
+                    if (!hasTriggered.value && Math.abs(translateX.value) >= TRIGGER_DISTANCE) {
+                        hasTriggered.value = true;
+                        runOnJS(onTrigger)();
+                    }
+                })
+                .onFinalize(() => {
+                    // Always springs home — on trigger, on release, and on cancel
+                    // (gesture interrupted by a scroll or navigation).
+                    translateX.value = withSpring(0, {
+                        damping: 20,
+                        stiffness: 220,
+                        mass: 0.4,
+                    });
+                }),
+        [isOutgoing, enabled, onTrigger, translateX, hasTriggered]
+    );
+
+    const bubbleStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: translateX.value }],
+    }));
+
+    const cueStyle = useAnimatedStyle(() => {
+        const progress = Math.min(Math.abs(translateX.value) / TRIGGER_DISTANCE, 1);
+        return {
+            opacity: progress,
+            transform: [{ scale: 0.5 + progress * 0.5 }],
+        };
+    });
+
+    if (!enabled) return children;
+
+    return (
+        <View style={styles.swipeWrap}>
+            {/* Sits at the bubble's own edge and is revealed as the bubble slides away. */}
+            <Animated.View
+                pointerEvents="none"
+                style={[
+                    styles.replyCue,
+                    isOutgoing ? styles.replyCueRight : styles.replyCueLeft,
+                    cueStyle,
+                ]}
+            >
+                <Ionicons name="arrow-undo" size={15} color="#fff" />
+            </Animated.View>
+
+            <GestureDetector gesture={pan}>
+                <Animated.View style={bubbleStyle}>{children}</Animated.View>
+            </GestureDetector>
+        </View>
+    );
+};
+
 const ChatMessageItem = memo(({ item, myId, onDelete, onReply, onInfo, otherUserName, onDeleteFromEveryone }) => {
     const [previewUri, setPreviewUri] = useState(null);
     const [videoUri, setVideoUri] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const [infoVisible, setInfoVisible] = useState(false);
     const navigation = useNavigation();
+
+    // Declared before the early returns below. FlashList recycles cells, so the
+    // same component instance flips between a date separator, a feed card and a
+    // normal message — any hook placed after those returns would change the hook
+    // count between renders and crash with "Rendered fewer hooks than expected".
+    // The call itself is identical to the menu's "Reply".
+    const handleSwipeReply = useCallback(() => onReply?.(item), [onReply, item]);
 
     if (item.type === "date") {
         return (
@@ -381,9 +496,19 @@ const ChatMessageItem = memo(({ item, myId, onDelete, onReply, onInfo, otherUser
         if (key === "info") setInfoVisible(true);
     };
 
+    // A message that has not reached the server yet only has a client-side id,
+    // so replying to it would send an unusable reply_to. Files hide their menu
+    // while sending for the same reason.
+    const canSwipeToReply = !item._sending && !item._failed;
+
     return (
         <>
             <View style={[styles.msgRow, isOutgoing ? styles.rowRight : styles.rowLeft]}>
+                <SwipeToReply
+                    isOutgoing={isOutgoing}
+                    enabled={canSwipeToReply}
+                    onTrigger={handleSwipeReply}
+                >
                 <View style={[
                     styles.bubble,
                     isOutgoing ? styles.bubbleOut : styles.bubbleIn,
@@ -428,6 +553,7 @@ const ChatMessageItem = memo(({ item, myId, onDelete, onReply, onInfo, otherUser
                         </TouchableOpacity>
                     )}
                 </View>
+                </SwipeToReply>
 
                 <View
                     style={[
@@ -527,6 +653,28 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         paddingVertical: 8,
         maxWidth: "100%",
+    },
+
+    swipeWrap: {
+        position: "relative",
+        justifyContent: "center",
+    },
+    replyCue: {
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        width: 30,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    // Anchored to the bubble's own edge so the icon is uncovered by the drag
+    // rather than needing to be positioned outside the row (which would clip
+    // against the screen edge on a full-width bubble).
+    replyCueRight: {
+        right: 0,
+    },
+    replyCueLeft: {
+        left: 0,
     },
     bubbleOut: {
         backgroundColor: "#e87b7b",

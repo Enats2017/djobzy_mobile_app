@@ -14,6 +14,7 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import * as Linking from "expo-linking";
 import { MessageNotificationProvider } from "./context/MessageNotificationContext";
+import { ChatProvider } from "./context/ChatProvider";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Home from "./Screens/HomeScreen/Home";
@@ -226,7 +227,8 @@ const App = () => {
     <SafeAreaProvider>
       <View style={{ flex: 1 }}>
         <MessageNotificationProvider>
-          <NavigationContainer ref={navigationRef}>
+          <ChatProvider>
+            <NavigationContainer ref={navigationRef}>
             <Stack.Navigator
               initialRouteName="Home"
               screenOptions={{ headerShown: false }}
@@ -316,9 +318,10 @@ const App = () => {
               <Stack.Screen name="MyBoostedJob" component={MyBoostedJob} />
               <Stack.Screen name="FeedDetail" component={FeedDetailPage} />
               <Stack.Screen name="MyFeedPost" component={OwnFeedScreen} />
-            </Stack.Navigator>
-          </NavigationContainer>
-          <Toast config={toastConfig} />
+              </Stack.Navigator>
+            </NavigationContainer>
+            <Toast config={toastConfig} />
+          </ChatProvider>
         </MessageNotificationProvider>
       </View>
     </SafeAreaProvider>

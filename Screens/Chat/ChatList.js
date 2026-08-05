@@ -12,19 +12,16 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import PageNameHeaderBar from "../../components/PageNameHeaderBar";
 import SearchBar from "../../components/SearchBar";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { useNotifications } from "../../context/MessageNotificationContext";
 import { useChatAuth } from "../../context/useChatAuth";
+import { useChatStore } from "../../store/chatStore";
 import EmployerFooter from "../../components/EmployerFooter";
 import Footer from "../../components/Footer";
-import { CHAT_API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
 import { FormatChatTime } from "./ChatComponent/ChatFormatTime";
 import NoConversation from "./ChatComponent/NoConversation";
 import { chatEvents } from "./Services/chatEvents";
-
-const PAGE_LIMIT = 10;
-const POLL_INTERVAL = 5000;
 
 const ChatRow = React.memo(({ item, onPress }) => {
   const name = item.user?.name ?? "Unknown User";
@@ -33,27 +30,27 @@ const ChatRow = React.memo(({ item, onPress }) => {
     item.message_type !== 0 && item.message_type !== undefined
       ? "Sent a file"
       : item.message;
-  const time = item.created_at;
-  const unreadCount = item.unread_count ?? 0;
-  const feedSharedMessage = item.message ? item.message.split(/<br\s*\/?>/i)[0].trim() : "";
+  // Coerced because the API sends this as a string from a SQL sum().
+  const unreadCount = Number(item.unread_count ?? 0) || 0;
+
+  // onPress is bound to this row's peer id by the parent, so React.memo holds.
+  const handlePress = useCallback(() => onPress(item), [onPress, item]);
 
   return (
-    <TouchableOpacity style={styles.row} onPress={onPress}>
-      <Image
-        source={{ uri: photo }}
-        style={styles.avatar}
-        key={item.user?.id}
-      />
+    <TouchableOpacity style={styles.row} onPress={handlePress}>
+      <Image source={{ uri: photo }} style={styles.avatar} />
       <View style={styles.rowText}>
         <View style={styles.rowTop}>
           <Text style={styles.name} numberOfLines={1}>{name}</Text>
           <Text style={styles.time}>
-            <FormatChatTime time={time} />
+            <FormatChatTime time={item.created_at} />
           </Text>
         </View>
         <View style={styles.rowBottom}>
           {item.feed_id ? (
-            <Text numberOfLines={1} style={styles.subtitle}>{lastMessage ? lastMessage.split(/<br\s*\/?>/i)[0].trim() : ""}</Text>
+            <Text numberOfLines={1} style={styles.subtitle}>
+              {lastMessage ? lastMessage.split(/<br\s*\/?>/i)[0].trim() : ""}
+            </Text>
           ) : (
             <Text numberOfLines={1} style={styles.subtitle}>{lastMessage}</Text>
           )}
@@ -71,190 +68,108 @@ const ChatRow = React.memo(({ item, onPress }) => {
 const ChatList = () => {
   const navigation = useNavigation();
   const { admin } = useNotifications();
-  const { chatToken, refreshChatToken } = useChatAuth();
+  const { chatToken } = useChatAuth();
 
-  const [conversations, setConversations] = useState([]);
-  const [offset, setOffset] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [isFetchingMore, setIsFetchingMore] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [activeFilter, setActiveFilter] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const searchTimeoutRef = useRef(null);
   const momentumRef = useRef(true);
-  const hasFetched = useRef(false);
-  const loadingRef = useRef(false);
-  const isFetchingMoreRef = useRef(false);
-  const pollTimerRef = useRef(null);
-  const searchTextRef = useRef("");
-  const activeFilterRef = useRef(null);
 
-  const fetchConversations = useCallback(async (token, offsetNum = 0, isInitialOrRefresh = false, search = "", filter = null) => {
-    if (loadingRef.current || isFetchingMoreRef.current) return;
-    if (isInitialOrRefresh) {
-      if (!isRefreshing) {
-        setLoading(true);
-        loadingRef.current = true;
-      }
-    } else {
-      setIsFetchingMore(true);
-      isFetchingMoreRef.current = true;
-    }
-
-    try {
-      const params = new URLSearchParams({ offset: offsetNum });
-      if (search.trim()) params.append("search", search);
-      if (filter === "archived") {
-        params.append("isArchived", 1);
-      } else if (filter) {
-        params.append("filter", filter);
-      }
-
-      const res = await fetch(`${CHAT_API_URL}/conversations?${params}`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-      });
-
-      if (res.status === 401) {
-        const newToken = await refreshChatToken();
-        if (newToken) fetchConversations(newToken, offsetNum, isInitialOrRefresh, search, filter);
-        return;
-      }
-
-      const data = await res.json();
-      const newConversations = data?.data?.conversations ?? [];
-
-      setConversations((prev) => {
-        if (isInitialOrRefresh) return newConversations;
-        const ids = new Set(prev.map((p) => p.id));
-        return [...prev, ...newConversations.filter((item) => !ids.has(item.id))];
-      });
-      setHasMore(newConversations.length === PAGE_LIMIT);
-      setOffset(offsetNum);
-    } catch (e) {
-      console.error("fetchConversations error:", e);
-    } finally {
-      setLoading(false);
-      loadingRef.current = false;
-      setIsRefreshing(false);
-      setIsFetchingMore(false);
-      isFetchingMoreRef.current = false;
-    }
-  },
-    [isRefreshing, refreshChatToken]
-  );
+  // Conversations live in the store and are kept current by the socket — this
+  // screen never fetches on a timer.
+  const conversations = useChatStore((s) => s.conversations);
+  const loading = useChatStore((s) => s.conversationsLoading);
+  const loaded = useChatStore((s) => s.conversationsLoaded);
+  const isFetchingMore = useChatStore((s) => s.conversationsFetchingMore);
+  const hasMore = useChatStore((s) => s.conversationsHasMore);
+  const fetchConversations = useChatStore((s) => s.fetchConversations);
+  const removeConversation = useChatStore((s) => s.removeConversation);
 
   useEffect(() => {
-    if (chatToken && !hasFetched.current) {
-      hasFetched.current = true;
-      fetchConversations(chatToken, 0, true, "", null);
-    }
-  }, [chatToken]);
+    if (!chatToken || loaded) return;
+    fetchConversations({ reset: true });
+  }, [chatToken, loaded, fetchConversations]);
+
   useEffect(() => {
     const unsub = chatEvents.on("conversation:deleted", (deletedUserId) => {
-      setConversations((prev) =>
-        prev.filter((c) => c.user?.id != deletedUserId)
-      );
+      removeConversation(deletedUserId);
     });
-    return () => unsub(); // cleanup on unmount
-  }, []);
+    return unsub;
+  }, [removeConversation]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!chatToken) return;
-      const poll = async () => {
-        if (searchTextRef.current.trim() || activeFilterRef.current) return;
-        if (loadingRef.current || isFetchingMoreRef.current) return;
-
-        try {
-          const res = await fetch(`${CHAT_API_URL}/conversations?offset=0`, {
-            headers: { Authorization: `Bearer ${chatToken}`, Accept: "application/json" },
-          });
-          if (!res.ok) return;
-
-          const data = await res.json();
-          const fresh = data?.data?.conversations ?? [];
-          if (!fresh.length) return;
-
-          setConversations((prev) => {
-            const prevMap = new Map(prev.map((c) => [c.user?.id, c])); // key by user id, not conversation id
-
-            const merged = fresh.map((c) => {
-              const existing = prevMap.get(c.user?.id); // look up by user id
-              if (
-                existing &&
-                existing.message === c.message &&
-                existing.unread_count === c.unread_count
-              ) {
-                return existing;
-              }
-              return c;
-            });
-
-            // Exclude by user id — stable across new messages
-            const freshUserIds = new Set(fresh.map((c) => c.user?.id));
-            const rest = prev.filter((c) => !freshUserIds.has(c.user?.id));
-            return [...merged, ...rest];
-          });
-        } catch (e) {
-          console.error("poll error:", e);
-        }
-      };
-
-      pollTimerRef.current = setInterval(poll, POLL_INTERVAL);
-      return () => clearInterval(pollTimerRef.current);
-    }, [chatToken])
+  const handleSearchTextChange = useCallback(
+    (text) => {
+      setSearchText(text);
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = setTimeout(() => {
+        momentumRef.current = true;
+        fetchConversations({ reset: true, search: text, filter: activeFilter });
+      }, 500);
+    },
+    [activeFilter, fetchConversations]
   );
 
-  // Keep refs in sync
-  useEffect(() => { searchTextRef.current = searchText; }, [searchText]);
-  useEffect(() => { activeFilterRef.current = activeFilter; }, [activeFilter]);
+  useEffect(
+    () => () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    },
+    []
+  );
 
-  const handleSearchTextChange = (text) => {
-    setSearchText(text);
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    searchTimeoutRef.current = setTimeout(() => {
-      if (chatToken) {
-        momentumRef.current = true;
-        fetchConversations(chatToken, 0, true, text, activeFilter);
-      }
-    }, 500);
-  };
-
-  const handleFilterSelect = (filter) => {
-    const next = activeFilter === filter ? null : filter;
-    setActiveFilter(next);
-    if (chatToken) {
+  const handleFilterSelect = useCallback(
+    (filter) => {
+      const next = activeFilter === filter ? null : filter;
+      setActiveFilter(next);
       momentumRef.current = true;
-      fetchConversations(chatToken, 0, true, searchText, next);
-    }
-  };
+      fetchConversations({ reset: true, search: searchText, filter: next });
+    },
+    [activeFilter, searchText, fetchConversations]
+  );
 
-  const handleRefresh = () => {
-    if (!chatToken) return;
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     momentumRef.current = true;
-    fetchConversations(chatToken, 0, true, searchText, activeFilter);
-  };
+    try {
+      await fetchConversations({ reset: true, search: searchText, filter: activeFilter });
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [searchText, activeFilter, fetchConversations]);
 
-  const renderItem = useCallback(({ item }) => {
-    const id = item.user?.id;
-    if (!id) return null;
-    return (
-      <ChatRow
-        item={item}
-        onPress={() =>
-          navigation.navigate("ChatRoom", {
-            userId: id,
-            userName: item.user?.name,
-            userPhoto: item.user?.photo_url,
-            isGroup: false,
-          })
-        }
-      />
-    );
-  }, [navigation]);
+  const handleEndReached = useCallback(() => {
+    if (momentumRef.current || !hasMore || isFetchingMore || loading) return;
+    momentumRef.current = true;
+    fetchConversations({ reset: false, search: searchText, filter: activeFilter });
+  }, [hasMore, isFetchingMore, loading, searchText, activeFilter, fetchConversations]);
+
+  // One stable callback for every row, so ChatRow's memo is never invalidated.
+  const openRoom = useCallback(
+    (item) => {
+      navigation.navigate("ChatRoom", {
+        userId: item.user?.id,
+        userName: item.user?.name,
+        userPhoto: item.user?.photo_url,
+        isGroup: false,
+      });
+    },
+    [navigation]
+  );
+
+  const renderItem = useCallback(
+    ({ item }) => (item.user?.id ? <ChatRow item={item} onPress={openRoom} /> : null),
+    [openRoom]
+  );
+
+  const keyExtractor = useCallback(
+    (item, index) => (item.user?.id != null ? `u-${item.user.id}` : `i-${index}`),
+    []
+  );
+
+  const handleScrollBeginDrag = useCallback(() => {
+    momentumRef.current = false;
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -271,8 +186,8 @@ const ChatList = () => {
           />
         </View>
 
-        {loading && !isRefreshing ? (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        {loading && !loaded ? (
+          <View style={styles.centered}>
             <Loading />
           </View>
         ) : conversations.length === 0 ? (
@@ -280,7 +195,7 @@ const ChatList = () => {
         ) : (
           <FlatList
             data={conversations}
-            keyExtractor={(item, index) => item.id?.toString() ?? index.toString()}
+            keyExtractor={keyExtractor}
             renderItem={renderItem}
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
@@ -289,20 +204,9 @@ const ChatList = () => {
             maxToRenderPerBatch={10}
             windowSize={5}
             removeClippedSubviews
-            onScrollBeginDrag={() => { momentumRef.current = false; }}
-            onMomentumScrollBegin={() => { momentumRef.current = false; }}
-            onEndReached={() => {
-              if (
-                !momentumRef.current &&
-                hasMore &&
-                !isFetchingMoreRef.current &&
-                !loadingRef.current &&
-                chatToken
-              ) {
-                fetchConversations(chatToken, offset + PAGE_LIMIT, false, searchText, activeFilter);
-                momentumRef.current = true;
-              }
-            }}
+            onScrollBeginDrag={handleScrollBeginDrag}
+            onMomentumScrollBegin={handleScrollBeginDrag}
+            onEndReached={handleEndReached}
             ListFooterComponent={
               isFetchingMore ? (
                 <View style={styles.footerLoader}>
@@ -326,6 +230,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#222222",
     paddingHorizontal: 15,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   row: {
     flexDirection: "row",

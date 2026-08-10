@@ -34,6 +34,7 @@ import FeedAddCommentModal from "../SocialMediaPage/FeedModals/FeedAddCommentMod
 import FeedPostDropdownModal from "../SocialMediaPage/FeedModals/FeedPostDropdownModal";
 import FeedReportModal from "../SocialMediaPage/FeedModals/FeedReportModal";
 import { useNotifications } from "../../context/MessageNotificationContext";
+import { openChat } from "../../utils/openChat";
 
 export default function PublicEmployerProfilePage({ route }) {
   const navigation = useNavigation();
@@ -329,7 +330,7 @@ export default function PublicEmployerProfilePage({ route }) {
                 )} */}
                 <TouchableOpacity
                   style={styles.btnChat}
-                  onPress={() => navigation.navigate("ChatList")}
+                  onPress={() => openChat(navigation, user?.id)}
                 >
                   <Text style={styles.btnChatText}>Chat</Text>
                 </TouchableOpacity>

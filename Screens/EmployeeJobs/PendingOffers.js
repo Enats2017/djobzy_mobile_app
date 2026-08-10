@@ -15,6 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ConfirmModal from "../../components/ConfirmModal";
 import { toastSuccess } from "../../utils/toast";
 import StarRating from "../../components/StarRating";
+import { openChat } from "../../utils/openChat";
 
 const PendingOffer = ({ pendingOffer = [], onHide }) => {
   const navigation = useNavigation();
@@ -127,7 +128,7 @@ const PendingOffer = ({ pendingOffer = [], onHide }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.chatBtn}
-            onPress={() => navigation.navigate("ChatList")}
+            onPress={() => openChat(navigation, pendingOffer?.user_id)}
           >
             <Text style={styles.chatBtnText}>Chat</Text>
           </TouchableOpacity>

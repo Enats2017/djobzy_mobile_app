@@ -18,14 +18,37 @@ const { width } = Dimensions.get("window");
 const CARD_PADDING = 15;
 const CARD_WIDTH = width - CARD_PADDING * 2;
 
-export default function FeedPost({ item, onOpenComments, openInternalSharing, openExternalSharing, onOpenMenu, openReportRequest, isOwner = false }) {
-  if (!item) return;
-  const [liked, setLiked] = useState(item?.is_liked_by_current_user);
-  const [likesCount, setLikesCount] = useState(item?.likes_count || 0);
+function FeedPost({ item, onOpenComments, openInternalSharing, openExternalSharing, onOpenMenu, openReportRequest, onToggleLike, navigateUserProfile, isOwner = false }) {
+  // Hooks run unconditionally — the `!item` guard lives below them, otherwise a
+  // row that arrives null and fills in later changes the hook count mid-life.
   const { likeFeed, unlikeFeed } = useSocialEvents();
   const { user } = useNotifications();
   const navigation = useNavigation();
   const { setKeyword, setUserSearchMode } = useGlobalSearch();
+
+  const handleMentionPress = useCallback((data) => {
+    navigation.navigate("PublicEmployeeProfilePage", { name: data?.profile_slug });
+  }, [navigation]);
+
+  const handleJobNabigationFromCard = useCallback((slug) => {
+    console.log(slug);
+    navigation.navigate("JobProfile", { gid: slug });
+  }, [navigation]);
+
+  const handleHashtagPress = useCallback((data) => {
+    if (data.type === "job") {
+      navigation.navigate("JobProfile", { gid: data.request_slug });
+    } else {
+      setKeyword(data.text);
+      setUserSearchMode(Number(user.admin ?? 0));
+      navigation.navigate("SearchResult");
+    }
+  }, [navigation]);
+
+  if (!item) return null;
+
+  const liked = !!item?.is_liked_by_current_user;
+  const likesCount = item?.likes_count || 0;
 
   const avatar = { uri: item?.photo };
   const author = item?.full_name || "Unknown User";
@@ -43,40 +66,25 @@ export default function FeedPost({ item, onOpenComments, openInternalSharing, op
   const cardType = item?.feed_data?.type;
 
   const handleLike = async () => {
+    const wasLiked = liked;
     try {
-      if (liked) {
-        setLiked(false);
-        setLikesCount((prev) => Math.max(0, prev - 1));
+      onToggleLike(item.id, wasLiked);
+      if (wasLiked) {
         await unlikeFeed(item.id);
       } else {
-        setLiked(true);
-        setLikesCount((prev) => prev + 1);
         await likeFeed(item.id);
       }
     } catch (error) {
       console.log("Like Error:", error);
+      onToggleLike(item.id, !wasLiked); // rollback on failure
     }
   };
-
-  const handleMentionPress = useCallback((data) => {
-    navigation.navigate("PublicEmployeeProfilePage", { name: data?.profile_slug });
-  }, [navigation]);
-
-  const handleHashtagPress = useCallback((data) => {
-    if (data.type === "job") {
-      navigation.navigate("JobProfile", { gid: data.request_slug });
-    } else {
-      setKeyword(data.text);
-      setUserSearchMode(Number(user.admin ?? 0));
-      navigation.navigate("SearchResult");
-    }
-  }, [navigation]);
 
   return (
     <>
       <View style={styles.card}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.profileRow}>
+          <TouchableOpacity style={styles.profileRow} onPress={() => navigateUserProfile(item?.name, item?.admin, item?.is_closed, item?.is_spam_user)}>
             <Image source={avatar} style={styles.avatar} />
             <View style={styles.nameBlock}>
               <Text style={styles.name}>{author}</Text>
@@ -128,7 +136,7 @@ export default function FeedPost({ item, onOpenComments, openInternalSharing, op
         )}
 
         {isStructuredCard && cardType === 'hotel' && <FeedHotelCard data={item.feed_data} />}
-        {isStructuredCard && cardType === 'job' && <FeedJobCard data={item.feed_data} />}
+        {isStructuredCard && cardType === 'job' && <FeedJobCard data={item.feed_data} openJob={handleJobNabigationFromCard} />}
 
         <FeedActions
           liked={liked}
@@ -147,6 +155,21 @@ export default function FeedPost({ item, onOpenComments, openInternalSharing, op
     </>
   );
 }
+
+// Default (shallow) comparison is exactly the right check here, and a hand-written
+// comparator would be strictly worse:
+//
+// - `item` is reference-stable per row. Every mutation in the feed screens goes
+//   through `setFeeds(prev => prev.map(f => f.id === id ? {...f} : f))`, so only
+//   the row that actually changed gets a new object — untouched rows keep their
+//   identity and bail out here.
+// - Every handler prop is a `useCallback([])` in the parent, and `isOwner` is a
+//   literal, so none of them churn between renders.
+//
+// A custom comparator would have to enumerate the ~20 `item` fields this card
+// reads (likes, comment_count, message_type, signed_url, feed_data, mentions_data,
+// …) and would silently start dropping updates the moment a new field is used.
+export default React.memo(FeedPost);
 
 const styles = StyleSheet.create({
   card: {

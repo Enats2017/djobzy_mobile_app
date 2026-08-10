@@ -31,6 +31,7 @@ import LanguageDataList from "../Employer/LanguagesDataList";
 import JobAttachmentPreview from "../JobCreatePage/JobAttachmentPreview";
 import JobAttachmentBlock from "./JobAttachmentBlock";
 import StarRating from "../../components/StarRating";
+import { openChat } from "../../utils/openChat";
 
 const PostJobDetails = () => {
   const navigation = useNavigation();
@@ -571,7 +572,10 @@ const PostJobDetails = () => {
                   >
                     <Text style={styles.payBtnEditText}>Pay & Hire</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.buttonBoost}>
+                  <TouchableOpacity
+                    style={styles.buttonBoost}
+                    onPress={() => openChat(navigation, profileData?.user_id)}
+                  >
                     <Text style={styles.buttonBoostText}>Chat</Text>
                   </TouchableOpacity>
                 </View>

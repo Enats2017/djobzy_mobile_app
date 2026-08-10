@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-const NoSocialFeed = ({ name, navigation, estimateCount }) => {
+const NoSocialFeed = ({ navigation, estimateCount }) => {
   return (
     <View style={styles.container}>
       <View style={styles.iconStack}>
@@ -27,7 +27,6 @@ const NoSocialFeed = ({ name, navigation, estimateCount }) => {
         style={styles.cta}
         onPress={() =>
           navigation.navigate("CreateFeedPost", {
-            name: name,
             estimate_reach_count: estimateCount,
           })
         }

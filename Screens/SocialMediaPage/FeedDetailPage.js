@@ -122,6 +122,35 @@ const FeedDetailPage = () => {
         }
     }, []);
 
+    // NEW — single post screen, feed is one object, not a list
+    const handleToggleLike = useCallback((feedId, wasLiked) => {
+        setFeed((prev) =>
+            prev && prev.id === feedId
+                ? {
+                    ...prev,
+                    is_liked_by_current_user: !wasLiked,
+                    likes_count: Math.max(0, (prev.likes_count || 0) + (wasLiked ? -1 : 1)),
+                }
+                : prev
+        );
+    }, []);
+
+    const handleProfileNavigation = useCallback(async (name, admin, closed, spam) => {
+        if (name?.trim() && closed == 1 && spam == 1) {
+            toastError("User data is unavailable at the moment.");
+            return;
+        }
+        if (admin == 2) {
+            navigation.navigate("PublicEmployerProfilePage", {
+                name: name,
+            });
+        } else {
+            navigation.navigate("PublicEmployeeProfilePage", {
+                name: name || "",
+            });
+        }
+    }, []);
+
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={[styles.container]}>
@@ -144,6 +173,9 @@ const FeedDetailPage = () => {
                             openInternalSharing={handleOpenInternalShare}
                             openExternalSharing={handleShare}
                             onOpenMenu={handleOpenDropdown}
+                            openReportRequest={handleOpenReportModal}
+                            onToggleLike={handleToggleLike}
+                            navigateUserProfile={handleProfileNavigation}
                         />
                     </ScrollView>
                 )}

@@ -16,6 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/Loading";
 import EmployerFooter from "../../components/EmployerFooter";
 import StarRating from "../../components/StarRating";
+import { openChat } from "../../utils/openChat";
 
 const ReceiveApplication = () => {
   const navigation = useNavigation();
@@ -25,7 +26,6 @@ const ReceiveApplication = () => {
   const fetchEmployerJob = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-
       const response = await fetch(`${API_URL}/receive-proposal`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -131,7 +131,7 @@ const ReceiveApplication = () => {
 
                       <TouchableOpacity
                         style={styles.chatBtn}
-                        onPress={() => navigation.navigate("ChatList")}
+                        onPress={() => openChat(navigation, item?.req_user_id)}
                       >
                         <Text style={styles.chatBtnText}>Chat</Text>
                       </TouchableOpacity>

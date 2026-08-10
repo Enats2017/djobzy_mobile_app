@@ -34,6 +34,7 @@ import FeedAddCommentModal from "../SocialMediaPage/FeedModals/FeedAddCommentMod
 import FeedPostDropdownModal from "../SocialMediaPage/FeedModals/FeedPostDropdownModal";
 import FeedReportModal from "../SocialMediaPage/FeedModals/FeedReportModal";
 import { useNotifications } from "../../context/MessageNotificationContext";
+import { openChat } from "../../utils/openChat";
 
 export default function PublicEmployeeProfilePage({ route }) {
   const navigation = useNavigation();
@@ -77,14 +78,13 @@ export default function PublicEmployeeProfilePage({ route }) {
       setUser(data.editprofile);
       setPromote(data.promote);
       setSubcategory(data.subcategory);
-      setFeeds(data.feeds.data ?? []);
+      setFeeds(data.feeds?.data ?? []);
     } catch (e) {
       console.log("ERROR:", e);
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (name) fetchEmployeeProfile();
   }, []);
@@ -161,7 +161,6 @@ export default function PublicEmployeeProfilePage({ route }) {
         }),
       });
       const data = await response.json();
-      console.log("Follow response:", data);
       if (data.status === 200) {
         setProfile((prev) => ({
           ...prev,
@@ -379,7 +378,7 @@ export default function PublicEmployeeProfilePage({ route }) {
                 )}
                 <TouchableOpacity
                   style={styles.btnChat}
-                  onPress={() => navigation.navigate("ChatList")}
+                  onPress={() => openChat(navigation, user?.id)}
                 >
                   <Text style={styles.btnChatText}>Chat</Text>
                 </TouchableOpacity>
@@ -478,20 +477,9 @@ export default function PublicEmployeeProfilePage({ route }) {
                     contentContainerStyle={styles.promatewrapper}
                   >
                     {promote.map((item, index) => {
-                      const icon =
-                        item?.seeking_services?.[0]?.get_seek_services_api
-                          ?.icon;
-
-                      console.log("111111", icon);
-
-                      console.log(
-                        "Path",
-                        `${API_ICON}/images/servicephoto/png-image/${icon}`,
-                      );
-
+                      const icon = item?.seeking_services?.[0]?.get_seek_services_api?.icon;
                       return (
                         <View key={index} style={styles.wrapper}>
-                          {/* ICON */}
                           <View style={styles.iconContainer}>
                             {icon ? (
                               <Image
@@ -502,11 +490,7 @@ export default function PublicEmployeeProfilePage({ route }) {
                                 resizeMode="contain"
                               />
                             ) : (
-                              <Ionicons
-                                name="image-outline"
-                                size={28}
-                                color="#999"
-                              />
+                              <Ionicons name="image-outline" size={28} color="#999" />
                             )}
                           </View>
 
@@ -591,7 +575,7 @@ export default function PublicEmployeeProfilePage({ route }) {
         />
       </View>
 
-      {admin === 2 ? <EmployerFooter /> : <Footer /> }
+      {admin === 2 ? <EmployerFooter /> : <Footer />}
     </SafeAreaView>
   );
 }
@@ -699,7 +683,7 @@ const styles = StyleSheet.create({
 
   btnUnfollowText: {
     color: "#ffffff",
-    fontSize: 15,
+    fontSize: 17,
     textAlign: "center",
     fontFamily: "Montserrat_700Bold",
   },

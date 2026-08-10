@@ -17,6 +17,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
 import Loading from "../../components/Loading";
+import { openChat } from "../../utils/openChat";
 
 const ViewCompletedJobPost = () => {
   const navigation = useNavigation();
@@ -129,7 +130,10 @@ const ViewCompletedJobPost = () => {
             </View>
           </ScrollView>
           <View style={styles.btnRow}>
-            <TouchableOpacity style={styles.chatBtn}>
+            <TouchableOpacity
+              style={styles.chatBtn}
+              onPress={() => openChat(navigation, job?.user_id)}
+            >
               <Text style={styles.btnText}>Chat</Text>
             </TouchableOpacity>
             <TouchableOpacity

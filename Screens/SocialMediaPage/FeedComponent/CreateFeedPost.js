@@ -26,6 +26,7 @@ import { feedEvents } from "../FeedEvent/feedEvents";
 import useMentionHashtag from "../FeedEvent/useMentionHashtag";
 import FilterSuggestionList from "./FilterSuggestionList";
 import CustomSwitch from "../../../components/CustomSwitch";
+import { useNotifications } from "../../../context/MessageNotificationContext";
 
 const IMAGE_MAX_BYTES = 3 * 1024 * 1024;
 const VIDEO_MAX_BYTES = 20 * 1024 * 1024;
@@ -45,7 +46,8 @@ function isSvg(uri = "", mimeType = "") {
 const CreateFeedPost = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { name, estimate_reach_count } = route.params || {};
+  const { estimate_reach_count } = route.params || {};
+  const { user } = useNotifications();
   const [message, setMessage] = useState("");
   const [image, setImage] = useState(null);
   const [video, setVideo] = useState(null);
@@ -160,7 +162,7 @@ const CreateFeedPost = () => {
           name: image.name,
           type: image.type,
         });
-        body.append("show_on_profile", showOnProfile ? 1 : 0);
+        form.append("show_on_profile", showOnProfile ? 1 : 0);
 
         res = await fetch(`${API_URL}/save-feed-image`, {
           method: "POST",
@@ -209,7 +211,6 @@ const CreateFeedPost = () => {
           headers: { ...baseHeaders, "Content-Type": "application/json" },
           body: JSON.stringify({
             message,
-            name,
             estimate_reach_count: estimate_reach_count ?? 0,
             show_on_profile: showOnProfile ? 1 : 0,
           }),
@@ -230,7 +231,7 @@ const CreateFeedPost = () => {
     } finally {
       setLoading(false);
     }
-  }, [message, image, video, name, estimate_reach_count, hasMedia]);
+  }, [message, image, video, estimate_reach_count, hasMedia]);
 
   const canSubmit = !loading && (!!message.trim() || hasMedia);
 
@@ -245,7 +246,7 @@ const CreateFeedPost = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.headerRow}>
-            <Text style={styles.name}>{name}</Text>
+            <Text style={styles.name}>{user?.full_name}</Text>
           </View>
 
           <View style={styles.textinput}>
@@ -331,14 +332,14 @@ const CreateFeedPost = () => {
               <Text style={styles.buttonText}>Video</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.button}>
+            {/* <TouchableOpacity style={styles.button}>
               <Image
                 source={require("../../../assets/images/ai.png")}
                 style={styles.logo}
                 resizeMode="contain"
               />
               <Text style={styles.buttonText}>Generate AI {"\n"} Video</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           <View style={styles.profileRow}>
@@ -466,7 +467,8 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap: 30,
+    // justifyContent: "space-between",
   },
   button: {
     flexDirection: "row",

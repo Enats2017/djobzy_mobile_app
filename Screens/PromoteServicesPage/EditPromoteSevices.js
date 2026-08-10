@@ -199,7 +199,7 @@ const EditPromoteSevices = () => {
           onRequestClose={() => setDeleteModal(false)}
         >
           <View style={styles.deleteOverlay}>
-            <View style={[styles.deleteBox, { paddingBottom: insets.bottom }]}>
+            <View style={[styles.deleteBox, { paddingBottom: insets.bottom + 16 }]}>
               <TouchableOpacity
                 style={styles.modalCloseIcon}
                 onPress={() => setDeleteModal(false)}
@@ -207,14 +207,14 @@ const EditPromoteSevices = () => {
               >
                 <Ionicons name="close" size={22} color="#000" />
               </TouchableOpacity>
-             <Image
+              <Image
                 source={require("../../assets/images/delete_warning.png")}
                 style={{ width: 70, height: 70, marginBottom: 10 }}
                 resizeMode="contain"
               />
-              <Text style={styles.deleteTitle}>Delete your job post?</Text>
+              <Text style={styles.deleteTitle}>Delete Promote Service</Text>
               <Text style={styles.deleteMsg}>
-                Are you sure you want to delete this job post?
+                Are you sure you want to delete the service?
               </Text>
               <View style={styles.deleteBtns}>
                 <TouchableOpacity

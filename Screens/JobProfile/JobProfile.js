@@ -19,6 +19,7 @@ import { API_URL } from "../../api/ApiUrl";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Loading from "../../components/Loading";
 import GradientButton from "../../components/GradientButton";
+import NoJobFound from "./NoJobFound";
 
 const JobProfile = () => {
   const route = useRoute();
@@ -33,6 +34,7 @@ const JobProfile = () => {
   const fetchJob = async () => {
     try {
       setLoading(true);
+      setError(null);
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${API_URL}/employee-job-details/${jobId}`, {
         headers: {
@@ -40,9 +42,12 @@ const JobProfile = () => {
           Accept: "application/json",
         },
       });
-      if (!response.ok) throw new Error("Failed to fetch job");
-      const data = await response.json();
-      setJob(data);
+      const data = await response.json().catch(() => null);
+      if (data?.status && data?.details) {
+        setJob(data);
+      } else {
+        setJob(null);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -55,9 +60,34 @@ const JobProfile = () => {
     }
   }, [isFocused]);
 
+  const renderStateScreen = (content) => (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <PageNameHeaderBar navigation={navigation} title="Job Details" />
+        <View style={{ flex: 1, paddingBottom: 90 }}>{content}</View>
+      </View>
+      <Footer />
+    </SafeAreaView>
+  );
+
   if (loading) return <Loading />;
-  if (error) return <Text style={{ color: "#fff" }}>Error: {error}</Text>;
-  if (!job) return <Text style={{ color: "#fff" }}>No job found</Text>;
+
+  if (error)
+    return renderStateScreen(
+      <NoJobFound
+        icon="cloud-offline-outline"
+        title="Couldn't load this job"
+        message="Something went wrong while loading the job details. Please check your connection and try again."
+        actionLabel="Try again"
+        actionIcon="refresh"
+        onAction={fetchJob}
+      />
+    );
+
+  if (!job || !job.details)
+    return renderStateScreen(
+      <NoJobFound onAction={() => navigation.goBack()} />
+    );
 
   return (
     <>
@@ -100,11 +130,11 @@ const JobProfile = () => {
                 </View>
               </View>
             </View>
-             {job.details.request_status < 2 && job?.award != null && (
-            <View style={styles.msgBox}>
-              <Text style={styles.msgtext}>The journey starts now. Applied for the Job role.</Text>
-            </View>
-             )}
+            {job.details.request_status < 2 && job?.award != null && (
+              <View style={styles.msgBox}>
+                <Text style={styles.msgtext}>The journey starts now. Applied for the Job role.</Text>
+              </View>
+            )}
 
             {/* Job Title */}
             <View style={styles.section}>
@@ -185,23 +215,23 @@ const JobProfile = () => {
               </Text>
             </View>
           </ScrollView>
-          <View style={{paddingBottom:90}}>
+          <View style={{ paddingBottom: 90 }}>
             {job.details.request_status < 2 && job?.award != null ? (
-              <GradientButton marginTop={5} title="See My Offer"  onPress={() =>
-                  navigation.navigate("MyCurrentBiddingProfile", {
-                    myOffer: job.my_offer || [],
-                    current_user: job.current_user || [],
-                    gig: job.details,
-                    award: job.award || [],                    
-                  })
-                }/>
+              <GradientButton marginTop={5} title="See My Offer" onPress={() =>
+                navigation.navigate("MyCurrentBiddingProfile", {
+                  myOffer: job.my_offer || [],
+                  current_user: job.current_user || [],
+                  gig: job.details,
+                  award: job.award || [],
+                })
+              } />
             ) : (
-               <GradientButton marginTop={5} title="Apply First"  onPress={() =>
-                  navigation.navigate("JobApply", {
-                    gig: job.details,
-                    award: job.award || [],
-                  })
-                }/>
+              <GradientButton marginTop={5} title="Apply First" onPress={() =>
+                navigation.navigate("JobApply", {
+                  gig: job.details,
+                  award: job.award || [],
+                })
+              } />
             )}
           </View>
         </View>
@@ -282,23 +312,23 @@ const styles = StyleSheet.create({
     maxWidth: "90%",
     flexWrap: "wrap"
   },
-   msgBox:{
-    borderColor:"#46A282",
-    borderWidth:2,
-    backgroundColor:"#46A2821A",
-    borderRadius:10,
-     paddingVertical:10,
-    justifyContent:"center",
-    alignItems:"center",
-    marginBottom:5,
-   },
-   msgtext:{
-    color:"#46A282",
-    fontFamily:"Montserrat_700Bold",
-    fontSize:14,
-    textAlign:"center",
+  msgBox: {
+    borderColor: "#46A282",
+    borderWidth: 2,
+    backgroundColor: "#46A2821A",
+    borderRadius: 10,
+    paddingVertical: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  msgtext: {
+    color: "#46A282",
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 14,
+    textAlign: "center",
 
-   },
+  },
   section: {
     paddingVertical: 11,
     marginBottom: 8,

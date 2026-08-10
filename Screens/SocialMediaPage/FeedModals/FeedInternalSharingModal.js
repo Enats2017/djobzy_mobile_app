@@ -10,8 +10,6 @@ import {
     Image,
     ActivityIndicator,
     FlatList,
-    KeyboardAvoidingView,
-    Platform,
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -20,6 +18,7 @@ import useSocialEvents from "../FeedEvent/useSocialEvents";
 import GradientButton from "../../../components/GradientButton";
 import { toastSuccess } from "../../../utils/toast";
 import BottomSheetIndicator from "../../../components/BottomSheetIndicator";
+import ModalKeyboardContainer from "../../../components/ModalKeyboardContainer";
 
 const NUM_COLUMNS = 2;
 const SEARCH_DEBOUNCE = 350;
@@ -203,82 +202,85 @@ export default function FeedInternalSharingModal({ visible, onClose, feedId }) {
             onRequestClose={onClose}
             statusBarTranslucent
         >
-            <View style={styles.overlay}>
-                <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-                <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
-                    <BottomSheetIndicator />
-                    <View style={styles.searchHeader}>
-                        <View style={styles.searchBox}>
-                            <Ionicons name="search" size={18} color="#8A8A8A" />
-                            <TextInput
-                                value={search}
-                                onChangeText={handleSearchChange}
-                                placeholder="Search all users..."
-                                placeholderTextColor="#8A8A8A"
-                                style={styles.searchInput}
-                            />
-                            {!!search && (
-                                <TouchableOpacity onPress={() => handleSearchChange("")}>
-                                    <Ionicons name="close-circle" size={16} color="#aaa" />
-                                </TouchableOpacity>
+            <ModalKeyboardContainer>
+                <View style={styles.overlay}>
+                    <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+                    <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
+                        <BottomSheetIndicator />
+                        <View style={styles.searchHeader}>
+                            <View style={styles.searchBox}>
+                                <Ionicons name="search" size={18} color="#8A8A8A" />
+                                <TextInput
+                                    value={search}
+                                    onChangeText={handleSearchChange}
+                                    placeholder="Search all users..."
+                                    placeholderTextColor="#8A8A8A"
+                                    style={styles.searchInput}
+                                />
+                                {!!search && (
+                                    <TouchableOpacity onPress={() => handleSearchChange("")}>
+                                        <Ionicons name="close-circle" size={16} color="#aaa" />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+
+                            <TouchableOpacity style={styles.groupBtn} onPress={toggleSelectAll} activeOpacity={0.7}>
+                                <MaterialCommunityIcons name="account-group" size={18} color="#303030" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Mode label */}
+                        <Text style={styles.modeLabel}>
+                            {isSearchMode
+                                ? `Search results${searchResults.length > 0 ? ` (${searchResults.length})` : ""}`
+                                : "Recent contacts"}
+                        </Text>
+
+                        <View style={styles.listWrap}>
+                            {isSearchMode ? (
+                                searchLoading ? (
+                                    <View style={styles.centerState}>
+                                        <ActivityIndicator size="small" color="#C96B59" />
+                                    </View>
+                                ) : searchResults.length === 0 ? (
+                                    <View style={styles.centerState}>
+                                        <Text style={styles.emptyText}>No users found</Text>
+                                    </View>
+                                ) : (
+                                    <FlatList
+                                        data={searchResults}
+                                        renderItem={renderSearchItem}
+                                        keyExtractor={(item) => String(item.user_id ?? item.id)}
+                                        keyboardShouldPersistTaps="handled"
+                                    />
+                                )
+                            ) : (
+                                loading ? (
+                                    <View style={styles.centerState}>
+                                        <ActivityIndicator size="small" color="#C96B59" />
+                                    </View>
+                                ) : users.length === 0 ? (
+                                    <View style={styles.centerState}>
+                                        <Text style={styles.emptyText}>No contacts found</Text>
+                                    </View>
+                                ) : (
+                                    <FlashList
+                                        data={users}
+                                        renderItem={renderChattedItem}
+                                        keyExtractor={(item) => String(item.id)}
+                                        numColumns={NUM_COLUMNS}
+                                        estimatedItemSize={72}
+                                        keyboardShouldPersistTaps="handled"
+                                        showsVerticalScrollIndicator={false}
+                                        columnWrapperStyle={styles.columnWrapper}
+                                    />
+                                )
                             )}
                         </View>
 
-                        <TouchableOpacity style={styles.groupBtn} onPress={toggleSelectAll} activeOpacity={0.7}>
-                            <MaterialCommunityIcons name="account-group" size={18} color="#303030" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Mode label */}
-                    <Text style={styles.modeLabel}>
-                        {isSearchMode
-                            ? `Search results${searchResults.length > 0 ? ` (${searchResults.length})` : ""}`
-                            : "Recent contacts"}
-                    </Text>
-
-                    <View style={styles.listWrap}>
-                        {isSearchMode ? (
-                            searchLoading ? (
-                                <View style={styles.centerState}>
-                                    <ActivityIndicator size="small" color="#C96B59" />
-                                </View>
-                            ) : searchResults.length === 0 ? (
-                                <View style={styles.centerState}>
-                                    <Text style={styles.emptyText}>No users found</Text>
-                                </View>
-                            ) : (
-                                <FlatList
-                                    data={searchResults}
-                                    renderItem={renderSearchItem}
-                                    keyExtractor={(item) => String(item.user_id ?? item.id)}
-                                    keyboardShouldPersistTaps="handled"
-                                />
-                            )
-                        ) : (
-                            loading ? (
-                                <View style={styles.centerState}>
-                                    <ActivityIndicator size="small" color="#C96B59" />
-                                </View>
-                            ) : users.length === 0 ? (
-                                <View style={styles.centerState}>
-                                    <Text style={styles.emptyText}>No contacts found</Text>
-                                </View>
-                            ) : (
-                                <FlashList
-                                    data={users}
-                                    renderItem={renderChattedItem}
-                                    keyExtractor={(item) => String(item.id)}
-                                    numColumns={NUM_COLUMNS}
-                                    estimatedItemSize={72}
-                                    keyboardShouldPersistTaps="handled"
-                                    showsVerticalScrollIndicator={false}
-                                    columnWrapperStyle={styles.columnWrapper}
-                                />
-                            )
-                        )}
-                    </View>
-
-                    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} >
+                        {/* The lift is handled by ModalKeyboardContainer at the modal
+                            root. The old inline KeyboardAvoidingView here was inert on
+                            Android and had no full-screen frame to measure on iOS. */}
                         <View style={styles.inputRow}>
                             <TextInput
                                 value={message}
@@ -295,9 +297,9 @@ export default function FeedInternalSharingModal({ visible, onClose, feedId }) {
                             activeOpacity={0.8}
                             loading={sharing}
                         />
-                    </KeyboardAvoidingView>
+                    </View>
                 </View>
-            </View>
+            </ModalKeyboardContainer>
         </Modal>
     );
 }

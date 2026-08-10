@@ -33,7 +33,7 @@ const ChatRealtimeMount = ({ children }) => {
 
       Toast.show({
         type: "info",
-        text1: senderName ? `${senderName} have sent you message ${preview}` : "You have a new message",
+        text1: senderName ? `${senderName} have sent you message` : "You have a new message",
         text2: preview,
         position: "top",
         onPress: () => {

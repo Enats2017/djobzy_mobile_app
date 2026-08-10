@@ -31,6 +31,7 @@ import JobAddressBlock from "../Employer/JobAddressBlock";
 import EmployerPaymentAcceptDeclineModal from "../EmployerJobs/EmployerPaymentAcceptDeclineModal";
 import AdditionalPaymentRequestBanner from "../EmployerJobs/AdditionalPaymentRequestBanner";
 import StarRating from "../../components/StarRating";
+import { openChat } from "../../utils/openChat";
 
 const ViewCurrentJobPost = () => {
   const navigation = useNavigation();
@@ -237,7 +238,10 @@ const ViewCurrentJobPost = () => {
 
                 </ScrollView>
                 <View style={styles.btnRow}>
-                  <TouchableOpacity style={styles.chatBtn}>
+                  <TouchableOpacity
+                    style={styles.chatBtn}
+                    onPress={() => openChat(navigation, job?.details?.user_id)}
+                  >
                     <Text style={styles.btnText}>Chat</Text>
                   </TouchableOpacity>
                   <TouchableOpacity

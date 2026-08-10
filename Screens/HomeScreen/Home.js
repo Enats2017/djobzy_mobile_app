@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   StyleSheet,
   TouchableOpacity,
@@ -15,41 +15,41 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { scale } from "../../utils/scale";
 import AppNewVersionUpdateModal from "../../components/AppNewVersionUpdateModal";
 import useAppVersionCheck from "../../context/useAppVersionCheck";
+import { runStorageMigration } from "../../utils/storageMigration";
+import { AUTH_ROUTES, resolveLaunchRoute } from "../../utils/session";
 
 const { width } = Dimensions.get("window");
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const [loading, setLoading] = useState(true);
+  const [checking, setChecking] = useState(false);
   const { showUpdate, updateInfo, checkAppVersion, } = useAppVersionCheck();
+
+  // Started on mount rather than on tap so a session left behind by an update
+  // or a restored backup is gone before anything can read it.
+  const migration = useRef(null);
 
   useEffect(() => {
     checkAppVersion();
+    migration.current = runStorageMigration();
   }, []);
 
   const checkAuth = async () => {
+    if (checking) return;
+    setChecking(true);
+
     try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        navigation.navigate("SliderScreen");
-        return;
-      }
-      const userStr = await AsyncStorage.getItem("user");
-      const user = JSON.parse(userStr);
-      const { verification_count, admin } = user;
-      if (verification_count >= 2 && admin == 2) {
-        navigation.navigate("EmployerDashboard");
-      } else if (verification_count >= 2 && admin == 0) {
-        navigation.navigate("Dashboard");
-      } else {
-        navigation.navigate("VerificationPage");
-      }
+      await migration.current;
+
+      const { route } = await resolveLaunchRoute();
+      navigation.reset({ index: 0, routes: [{ name: route }] });
     } catch (error) {
+      console.log("Auth check failed:", error);
       navigation.reset({
         index: 0,
-        routes: [{ name: "SliderScreen" }],
+        routes: [{ name: AUTH_ROUTES.ONBOARDING }],
       });
     } finally {
-      setLoading(false);
+      setChecking(false);
     }
   };
 
@@ -76,8 +76,16 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.arrowBtn} onPress={checkAuth}>
-              <Ionicons name="arrow-forward" size={22} color="#fff" />
+            <TouchableOpacity
+              style={styles.arrowBtn}
+              onPress={checkAuth}
+              disabled={checking}
+            >
+              {checking ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="arrow-forward" size={22} color="#fff" />
+              )}
             </TouchableOpacity>
           </View>
         </View>

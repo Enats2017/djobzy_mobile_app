@@ -28,10 +28,9 @@ import FeedReportModal from "./FeedModals/FeedReportModal";
 import { feedEvents } from "./FeedEvent/feedEvents";
 import useMarkFeedSeen from "./FeedEvent/useMarkFeedSeen";
 
-function renderFeedHeader(navigation, user, estimateCount) {
+function renderFeedHeader(navigation, estimateCount) {
     const navigateToCreate = () =>
         navigation.navigate("CreateFeedPost", {
-            name: user?.full_name,
             estimate_reach_count: estimateCount,
         });
 
@@ -44,17 +43,6 @@ function renderFeedHeader(navigation, user, estimateCount) {
             >
                 <View style={styles.feed}>
                     <Text style={styles.textfeed}>Create Feed/Post</Text>
-
-                    {/* <View style={styles.anylog}>
-                        <Text style={{
-                            fontSize: 14,
-                            fontFamily: "Montserrat_500Medium",
-                            color: "#fff",
-                        }}>
-                            Anyone
-                        </Text>
-                        <Entypo name="chevron-small-down" size={20} color="#fff" />
-                    </View> */}
                 </View>
 
                 <View style={styles.input}>
@@ -70,10 +58,10 @@ function renderFeedHeader(navigation, user, estimateCount) {
                         <Image source={require("../../assets/images/vedio.png")} style={styles.logo} contentFit="contain" />
                         <Text style={styles.buttonText}>Video</Text>
                     </View>
-                    <View style={styles.button}>
+                    {/* <View style={styles.button}>
                         <Image source={require("../../assets/images/ai.png")} style={styles.logo} contentFit="contain" />
                         <Text style={styles.buttonText}>Generate AI {"\n"} Video</Text>
-                    </View>
+                    </View> */}
                 </View>
             </TouchableOpacity>
         </View>
@@ -229,16 +217,20 @@ function SocialMediaScreenInner() {
         setHiddenFeedIds((prev) => new Set([...prev, feedId]));
     }, []);
 
-    const renderFeedItem = useCallback(({ item }) => (
-        <FeedPost
-            item={item}
-            onOpenComments={handleOpenComments}
-            openInternalSharing={handleOpenInternalShare}
-            openExternalSharing={handleShare}
-            onOpenMenu={handleOpenDropdown}
-            openReportRequest={handleOpenReportModal}
-        />
-    ), [handleOpenComments, handleOpenInternalShare, handleShare, handleOpenDropdown, handleOpenReportModal]);
+    // NEW — updates the single source of truth (feeds) so FlashList recycling can't go stale
+    const handleToggleLike = useCallback((feedId, wasLiked) => {
+        setFeeds((prev) =>
+            prev.map((feed) =>
+                feed.id === feedId
+                    ? {
+                        ...feed,
+                        is_liked_by_current_user: !wasLiked,
+                        likes_count: Math.max(0, (feed.likes_count || 0) + (wasLiked ? -1 : 1)),
+                    }
+                    : feed
+            )
+        );
+    }, []);
 
     const handleOpenComments = useCallback((feedId) => {
         setSelectedFeedId(feedId);
@@ -280,6 +272,22 @@ function SocialMediaScreenInner() {
         setSelectedFeedId(null);
     }, []);
 
+    const handleProfileNavigation = useCallback(async (name, admin, closed, spam) => {
+        if (name?.trim() && closed == 1 && spam == 1) {
+            toastError("User data is unavailable at the moment.");
+            return;
+        }
+        if (admin == 2) {
+            navigation.navigate("PublicEmployerProfilePage", {
+                name: name,
+            });
+        } else {
+            navigation.navigate("PublicEmployeeProfilePage", {
+                name: name || "",
+            });
+        }
+    }, []);
+
     const handleShare = useCallback(async (item) => {
         try {
             const caption = item?.message ? `${item.message}\n\n` : "";
@@ -298,6 +306,24 @@ function SocialMediaScreenInner() {
             }
         }
     }, []);
+
+    // Declared AFTER every handler it depends on. It used to sit above them, which
+    // meant the dependency array read those `const`s before initialisation — the
+    // deps silently resolved to `undefined`, and it was one Babel target change
+    // away from throwing. Now the deps are the real (stable) callbacks, so this
+    // stays referentially identical and React.memo on FeedPost actually bites.
+    const renderFeedItem = useCallback(({ item }) => (
+        <FeedPost
+            item={item}
+            onOpenComments={handleOpenComments}
+            openInternalSharing={handleOpenInternalShare}
+            openExternalSharing={handleShare}
+            onOpenMenu={handleOpenDropdown}
+            openReportRequest={handleOpenReportModal}
+            onToggleLike={handleToggleLike}
+            navigateUserProfile={handleProfileNavigation}
+        />
+    ), [handleOpenComments, handleOpenInternalShare, handleShare, handleOpenDropdown, handleOpenReportModal, handleToggleLike, handleProfileNavigation]);
 
     const onViewableItemsChanged = useCallback(({ viewableItems }) => {
         if (!viewableItems.length) {
@@ -343,11 +369,11 @@ function SocialMediaScreenInner() {
                         ) : null
                     }
                     ListHeaderComponent={
-                        hasFeeds ? () => renderFeedHeader(navigation, user, estimateCount) : null
+                        hasFeeds ? () => renderFeedHeader(navigation, estimateCount) : null
                     }
                     ListEmptyComponent={
                         <View style={styles.noSocialFeed}>
-                            <NoSocialFeed name={user?.full_name} navigation={navigation} estimateCount={estimateCount} />
+                            <NoSocialFeed navigation={navigation} estimateCount={estimateCount} />
                         </View>
                     }
                     showsVerticalScrollIndicator={false}
@@ -436,7 +462,8 @@ const styles = StyleSheet.create({
     },
     buttonRow: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        // justifyContent: "space-between",
+        gap: 30,
     },
     button: {
         flexDirection: "row",

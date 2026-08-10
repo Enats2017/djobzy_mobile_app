@@ -20,6 +20,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import Loading from "../../components/Loading";
 import { toastError, toastSuccess } from "../../utils/toast";
 import * as Linking from "expo-linking";
+import { openChat } from "../../utils/openChat";
 
 const EmployeeHire = () => {
   const navigation = useNavigation();
@@ -171,7 +172,10 @@ const EmployeeHire = () => {
                 loading={submit}  
                  onPress={hireEmployer}
                  /> */}
-                  <TouchableOpacity style={styles.buttonBoost}>
+                  <TouchableOpacity
+                    style={styles.buttonBoost}
+                    onPress={() => openChat(navigation, profileData?.id)}
+                  >
                     <Text style={styles.buttonBoostText}>Chat</Text>
                   </TouchableOpacity>
                 </View>

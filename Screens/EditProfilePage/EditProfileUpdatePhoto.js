@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: -12,
         left: "50%",
-        transform: [{ translateX: -28 }],
+        transform: [{ translateX: -30 }],
         flexDirection: "row",
         alignItems: "center",
         gap: 4,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#d0d0d0",
         borderRadius: 999,
-        paddingVertical: 3,
+        paddingVertical: 2,
         paddingHorizontal: 10,
     },
     editBadgeText: {

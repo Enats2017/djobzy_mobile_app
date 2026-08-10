@@ -19,6 +19,7 @@ import EmployerFooter from "../../components/EmployerFooter";
 import ConfirmModal from "../../components/ConfirmModal";
 import { toastSuccess } from "../../utils/toast";
 import StarRating from "../../components/StarRating";
+import { openChat } from "../../utils/openChat";
 
 const EmployerSentOffer = () => {
   const navigation = useNavigation();
@@ -166,7 +167,7 @@ const EmployerSentOffer = () => {
                         <Text style={styles.viewBtnText}>View</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity style={styles.chatBtn}onPress={() => navigation.navigate("ChatList")}>
+                      <TouchableOpacity style={styles.chatBtn} onPress={() => openChat(navigation, item?.user_id)}>
                         <Text style={styles.chatBtnText}>Chat</Text>
                       </TouchableOpacity>
                     </View>

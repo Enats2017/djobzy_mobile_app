@@ -23,6 +23,7 @@ import ReviewPage from "../JobCreatePage/ReviewPage";
 import Footer from "../../components/Footer";
 import EmployerFooter from "../../components/EmployerFooter";
 import StarRating from "../../components/StarRating";
+import { openChat } from "../../utils/openChat";
 
 const DeactivedDetailsPage = () => {
   const navigation = useNavigation();
@@ -398,7 +399,10 @@ const DeactivedDetailsPage = () => {
                   <TouchableOpacity style={styles.payBtn}>
                     <Text style={styles.payBtnEditText}>Pay & Hire</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.buttonBoost}>
+                  <TouchableOpacity
+                    style={styles.buttonBoost}
+                    onPress={() => openChat(navigation, profileData?.user_id)}
+                  >
                     <Text style={styles.buttonBoostText}>Chat</Text>
                   </TouchableOpacity>
                 </View>

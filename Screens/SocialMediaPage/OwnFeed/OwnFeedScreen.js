@@ -45,7 +45,6 @@ function renderOwnFeedHeader(navigation, user, estimateCount) {
             style={styles.createPostBtn}
             activeOpacity={0.8}
             onPress={() => navigation.navigate("CreateFeedPost", {
-                name: user?.full_name,
                 estimate_reach_count: estimateCount,
             })}
         >
@@ -158,18 +157,6 @@ function OwnFeedScreenInner() {
         setHiddenFeedIds((prev) => new Set([...prev, feedId]));
     }, []);
 
-    const renderFeedItem = useCallback(({ item }) => (
-        <FeedPost
-            item={item}
-            onOpenComments={handleOpenComments}
-            openInternalSharing={handleOpenInternalShare}
-            openExternalSharing={handleShare}
-            onOpenMenu={handleOpenDropdown}
-            openReportRequest={handleOpenReportModal}
-            isOwner={true}
-        />
-    ), [handleOpenComments, handleOpenInternalShare, handleShare, handleOpenDropdown, handleOpenReportModal]);
-
     const handleOpenComments = useCallback((feedId) => {
         setSelectedFeedId(feedId);
         setCommentModalVisible(true);
@@ -235,6 +222,23 @@ function OwnFeedScreenInner() {
         }
     }, [selectedFeedId]);
 
+    const handleProfileNavigation = useCallback(async (name, admin, closed, spam) => {
+        if (name?.trim() && closed == 1 && spam == 1) {
+            toastError("User data is unavailable at the moment.");
+            return;
+        }
+
+        if (admin == 2) {
+            navigation.navigate("PublicEmployerProfilePage", {
+                name: name,
+            });
+        } else {
+            navigation.navigate("PublicEmployeeProfilePage", {
+                name:name || "",
+            });
+        }
+    }, []);
+
     const handleShare = useCallback(async (item) => {
         try {
             const caption = item?.message ? `${item.message}\n\n` : "";
@@ -253,6 +257,22 @@ function OwnFeedScreenInner() {
             }
         }
     }, []);
+
+    // Declared AFTER every handler it depends on — see the note on the matching
+    // callback in SocialMediaScreen. Keeping this reference stable is what lets
+    // React.memo on FeedPost skip untouched rows.
+    const renderFeedItem = useCallback(({ item }) => (
+        <FeedPost
+            item={item}
+            onOpenComments={handleOpenComments}
+            openInternalSharing={handleOpenInternalShare}
+            openExternalSharing={handleShare}
+            onOpenMenu={handleOpenDropdown}
+            openReportRequest={handleOpenReportModal}
+            navigateUserProfile={handleProfileNavigation}
+            isOwner={true}
+        />
+    ), [handleOpenComments, handleOpenInternalShare, handleShare, handleOpenDropdown, handleOpenReportModal, handleProfileNavigation]);
 
     const onViewableItemsChanged = useCallback(({ viewableItems }) => {
         if (!viewableItems.length) {
@@ -285,7 +305,7 @@ function OwnFeedScreenInner() {
                     onEndReachedThreshold={0.5}
                     scrollEventThrottle={16}
                     ListHeaderComponent={
-                        hasFeeds ? () => renderOwnFeedHeader(navigation, user, estimateCount) : null
+                        hasFeeds ? () => renderOwnFeedHeader(navigation, estimateCount) : null
                     }
                     ListFooterComponent={
                         loadingMore ? (
@@ -298,7 +318,7 @@ function OwnFeedScreenInner() {
                     }
                     ListEmptyComponent={
                         <View style={styles.noSocialFeed}>
-                            <NoSocialFeed name={user?.full_name} navigation={navigation} estimateCount={estimateCount} />
+                            <NoSocialFeed navigation={navigation} estimateCount={estimateCount} />
                         </View>
                     }
                     showsVerticalScrollIndicator={false}

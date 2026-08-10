@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
 import GradientButton from '../../../components/GradientButton';
 
-export default function FeedJobCard({ data }) {
+export default function FeedJobCard({ data,  openJob }) {
   if (!data) {
     return (
       <View style={styles.fallback}>
@@ -10,12 +10,6 @@ export default function FeedJobCard({ data }) {
       </View>
     );
   }
-
-  const handleViewJob = () => {
-    if (data.view_job_url) {
-      Linking.openURL(data.view_job_url).catch(() => { });
-    }
-  };
 
   return (
     <View style={styles.card}>
@@ -53,8 +47,8 @@ export default function FeedJobCard({ data }) {
         </View>
       )}
 
-      {!!data.view_job_url && (
-        <GradientButton title="View" onPress={handleViewJob} />
+      {!!data.view_job_slug && (
+        <GradientButton title="View" onPress={() => openJob(data.view_job_slug)} />
       )}
     </View>
   );

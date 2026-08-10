@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
     Modal,
     View,
@@ -17,6 +17,7 @@ import { toastError, toastSuccess } from "../../../utils/toast";
 import useSocialEvents from "../FeedEvent/useSocialEvents";
 import GradientButton from "../../../components/GradientButton";
 import BottomSheetIndicator from "../../../components/BottomSheetIndicator";
+import ModalKeyboardContainer from "../../../components/ModalKeyboardContainer";
 
 const REASONS = [
     "Spam",
@@ -33,9 +34,20 @@ export default function FeedReportModal({ visible, onClose, feedId, onHide }) {
     const [selectedReason, setSelectedReason] = useState("");
     const [otherText, setOtherText] = useState("");
     const [submitting, setSubmitting] = useState(false);
+    const scrollRef = useRef(null);
 
     const isOther = selectedReason === "Other";
     const canSubmit = !!selectedReason && (!isOther || otherText.trim().length > 0);
+
+    // "Other" reveals an autoFocus box at the very bottom of the scroll content.
+    // The sheet shrinks above the keyboard, but the ScrollView keeps its offset,
+    // so without this the new field renders below the fold. Delayed past the
+    // keyboard animation so we scroll against the final, shorter viewport.
+    useEffect(() => {
+        if (!isOther) return;
+        const t = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 350);
+        return () => clearTimeout(t);
+    }, [isOther]);
 
     const handleClose = useCallback(() => {
         setSelectedReason("");
@@ -75,76 +87,79 @@ export default function FeedReportModal({ visible, onClose, feedId, onHide }) {
             onRequestClose={handleClose}
             statusBarTranslucent
         >
-            <View style={styles.overlay}>
-                <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
-                <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-                    <BottomSheetIndicator />
+            <ModalKeyboardContainer>
+                <View style={styles.overlay}>
+                    <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+                    <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
+                        <BottomSheetIndicator />
 
-                    <View style={styles.topSection}>
-                        <View style={styles.iconWrap}>
-                            <Ionicons name="flag" size={28} color="#C96B59" />
-                        </View>
-                        <Text style={styles.title}>Report Post</Text>
-                        <Text style={styles.subtitle}>
-                            What is the reason for the report?
-                        </Text>
-                    </View>
-
-                    <ScrollView
-                        showsVerticalScrollIndicator={false}
-                        keyboardShouldPersistTaps="handled"
-                    >
-                        <View style={styles.reasonList}>
-                            {REASONS.map((reason) => {
-                                const active = selectedReason === reason;
-                                return (
-                                    <TouchableOpacity
-                                        key={reason}
-                                        style={[styles.reasonRow, active && styles.reasonRowActive]}
-                                        activeOpacity={0.7}
-                                        onPress={() => setSelectedReason(reason)}
-                                    >
-                                        <Text style={[styles.reasonText, active && styles.reasonTextActive]}>
-                                            {reason}
-                                        </Text>
-                                        <View style={[styles.radio, active && styles.radioActive]}>
-                                            {active && <View style={styles.radioDot} />}
-                                        </View>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-
-                        {isOther && (
-                            <View style={styles.otherWrap}>
-                                <Text style={styles.otherLabel}>Please describe the issue</Text>
-                                <TextInput
-                                    style={styles.otherInput}
-                                    placeholder="Describe your issue here..."
-                                    placeholderTextColor="#aaa"
-                                    value={otherText}
-                                    onChangeText={setOtherText}
-                                    multiline
-                                    maxLength={500}
-                                    textAlignVertical="top"
-                                    autoFocus
-                                />
-                                <Text style={styles.charCount}>
-                                    {otherText.length}/500
-                                </Text>
+                        <View style={styles.topSection}>
+                            <View style={styles.iconWrap}>
+                                <Ionicons name="flag" size={28} color="#C96B59" />
                             </View>
-                        )}
+                            <Text style={styles.title}>Report Post</Text>
+                            <Text style={styles.subtitle}>
+                                What is the reason for the report?
+                            </Text>
+                        </View>
 
-                        <GradientButton
-                            title="Send Report"
-                            onPress={handleSubmit}
-                            disabled={!canSubmit || submitting}
-                            activeOpacity={0.8}
-                            loading={submitting}
-                        />
-                    </ScrollView>
+                        <ScrollView
+                            ref={scrollRef}
+                            showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps="handled"
+                        >
+                            <View style={styles.reasonList}>
+                                {REASONS.map((reason) => {
+                                    const active = selectedReason === reason;
+                                    return (
+                                        <TouchableOpacity
+                                            key={reason}
+                                            style={[styles.reasonRow, active && styles.reasonRowActive]}
+                                            activeOpacity={0.7}
+                                            onPress={() => setSelectedReason(reason)}
+                                        >
+                                            <Text style={[styles.reasonText, active && styles.reasonTextActive]}>
+                                                {reason}
+                                            </Text>
+                                            <View style={[styles.radio, active && styles.radioActive]}>
+                                                {active && <View style={styles.radioDot} />}
+                                            </View>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+
+                            {isOther && (
+                                <View style={styles.otherWrap}>
+                                    <Text style={styles.otherLabel}>Please describe the issue</Text>
+                                    <TextInput
+                                        style={styles.otherInput}
+                                        placeholder="Describe your issue here..."
+                                        placeholderTextColor="#aaa"
+                                        value={otherText}
+                                        onChangeText={setOtherText}
+                                        multiline
+                                        maxLength={500}
+                                        textAlignVertical="top"
+                                        autoFocus
+                                    />
+                                    <Text style={styles.charCount}>
+                                        {otherText.length}/500
+                                    </Text>
+                                </View>
+                            )}
+
+                            <GradientButton
+                                title="Send Report"
+                                onPress={handleSubmit}
+                                disabled={!canSubmit || submitting}
+                                activeOpacity={0.8}
+                                loading={submitting}
+                            />
+                        </ScrollView>
+                    </View>
                 </View>
-            </View>
+            </ModalKeyboardContainer>
         </Modal>
     );
 }

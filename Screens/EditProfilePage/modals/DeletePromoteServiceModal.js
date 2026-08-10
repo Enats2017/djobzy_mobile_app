@@ -45,7 +45,7 @@ const DeletePromoteServiceModal = ({ visible, onClose, deletePromoteService }) =
             onRequestClose={onClose}
         >
             <View style={styles.deleteOverlay}>
-                <View style={[styles.deleteBox, { paddingBottom: insets.bottom }]}>
+                <View style={[styles.deleteBox, { paddingBottom: insets.bottom + 16 }]}>
                     <TouchableOpacity
                         style={styles.modalCloseIcon}
                         onPress={() => {

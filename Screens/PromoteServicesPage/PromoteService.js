@@ -25,6 +25,7 @@ import { API_URL } from "../../api/ApiUrl";
 import QuestionMark from "../../components/QuestionMark";
 import { tooltipMessage } from "../../components/TooltipMessage";
 import NoJobAndServiceModal from "../../components/NoJobAndServiceModal";
+import { toastError } from "../../utils/toast";
 
 const PromoteService = () => {
   const navigation = useNavigation();
@@ -64,12 +65,9 @@ const PromoteService = () => {
       setExpectedTime(0);
       return;
     }
-    if(hourly && total){
+    if (hourly && total) {
       if (hourly > total) {
-        Alert.alert(
-          "Invalid Input",
-          "Hourly rate cannot be more than total price.",
-        );
+        toastError("Hourly rate cannot be more than total price.");
         setExpectedTime(0);
         return;
       }
@@ -82,7 +80,7 @@ const PromoteService = () => {
   const handleTotalPriceChange = (value) => {
     setField("totalPrice", value);
     const finalPrice = parseInt(value);
-    const hourly = parseInt(hourlyRate);    
+    const hourly = parseInt(hourlyRate);
     if (!hourly || !finalPrice) {
       setExpectedTime(0);
       return;
@@ -94,7 +92,7 @@ const PromoteService = () => {
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes:  ["images"],
+        mediaTypes: ["images"],
         quality: 0.7,
       });
 
@@ -152,7 +150,7 @@ const PromoteService = () => {
         setTitleModal(true);
         setTemplates(data.result);
       } else {
-        if(data.result.length === 0) {
+        if (data.result.length === 0) {
           setFreshServiceModal(true);
         }
       }
@@ -181,7 +179,7 @@ const PromoteService = () => {
       const data = await res.json();
       if (data.status !== 200) return;
       const result = data.result;
-      const store = useServiceGlobalStore.getState(); 
+      const store = useServiceGlobalStore.getState();
       store.setField("title", result.title || "");
       store.setField("description", result.description || "");
       store.setField("hourlyRate", result.hour_minimum?.toString() || "");
@@ -317,7 +315,7 @@ const PromoteService = () => {
               placeholderTextColor="#999"
             />
           </View>
-          {!errors.totalPrice ? (
+          {errors.totalPrice ? (
             <Text style={styles.errorText}>{errors.totalPrice}</Text>
           ) : null}
           <Text
@@ -358,8 +356,8 @@ const PromoteService = () => {
         </View>
       </View>
 
-      <NoJobAndServiceModal 
-        visible={freshServiceModal} 
+      <NoJobAndServiceModal
+        visible={freshServiceModal}
         url={require("../../assets/images/fresh-start.png")}
         text="“No prompt service created yet. Please create one first.”"
         onClose={() => setFreshServiceModal(false)}
@@ -490,8 +488,9 @@ const styles = StyleSheet.create({
   previewImage: {
     width: 100,
     height: 100,
-
-    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#c5c5c5",
+    borderRadius: 5,
   },
   imageWrapper: {
     position: "relative",
@@ -540,24 +539,23 @@ const styles = StyleSheet.create({
   inlineInputContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: "#2A2A2D",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-   
   },
   currency: {
     color: "#aaa",
-    flex:1,
-    fontFamily:"Montserrat_400Regular",
+    fontFamily: "Montserrat_400Regular",
     fontSize: 14,
   },
   inlineInput: {
     color: "#fff",
     fontSize: 14,
-    fontFamily:"Montserrat_400Regular",
-    
-   
+    fontFamily: "Montserrat_400Regular",
+    flex: 1,
+    textAlign: "right",
   },
   attachBtn: {
     borderRadius: 8,

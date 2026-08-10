@@ -75,7 +75,6 @@ const EmployeeAccount = () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
-      console.log(token);
       const response = await fetch(`${API_URL}/employee-profile`, {
         headers: {
           Authorization: `Bearer ${token}`,

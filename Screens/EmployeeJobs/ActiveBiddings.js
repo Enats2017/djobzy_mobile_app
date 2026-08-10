@@ -4,6 +4,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { truncateWords } from "../../api/TruncateWords";
 import { useNavigation } from "@react-navigation/native";
 import StarRating from "../../components/StarRating";
+import { openChat } from "../../utils/openChat";
 
 const ActiveBiddings = ({ activeBids = [] }) => {
   const navigation = useNavigation();
@@ -76,7 +77,7 @@ const ActiveBiddings = ({ activeBids = [] }) => {
         >
           <Text style={styles.viewBtnText}>View</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.chatBtn} onPress={()=>navigation.navigate("ChatList")}>
+        <TouchableOpacity style={styles.chatBtn} onPress={() => openChat(navigation, activeBids?.user_id)}>
           <Text style={styles.chatBtnText}>Chat</Text>
         </TouchableOpacity>
       </View>

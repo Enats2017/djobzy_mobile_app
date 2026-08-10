@@ -25,13 +25,11 @@ import { toastError, toastSuccess } from "../../utils/toast";
 const PromoteCategoryPage = () => {
   const navigation = useNavigation();
   const { categories, addCategory, removeCategory, editingId  } = useServiceGlobalStore();
-
   console.log("EDIT MODE ID:", editingId);
-
-
   const [search, setSearch] = useState("");
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [publishLoading, setPublishLoading] = useState(false);
   const [expandedServices, setExpandedServices] = useState({});
 
   useEffect(() => {
@@ -90,11 +88,9 @@ const PromoteCategoryPage = () => {
       unique_id
       
     } = useServiceGlobalStore.getState();
-    console.log(unique_id);
-    
 
     if (!title || !description || categories.length === 0) {
-      Alert.alert("Missing Info", "Please fill all required fields.");
+      toastError("Please fill all required fields.");
       return;
     }
 
@@ -124,7 +120,7 @@ const PromoteCategoryPage = () => {
     });
 
     try {
-      setLoading(true);
+      setPublishLoading(true);
       const response = await fetch(`${API_URL}/save-promote-service`, {
         method: "POST",
         headers: {
@@ -140,18 +136,15 @@ const PromoteCategoryPage = () => {
         console.log("AFTER RESET:", useServiceGlobalStore.getState());
         navigation.replace("EmployeeAccount");
       } else {
-        Alert.alert("Error", result.message);
+        toastError(result.message);
       }
     } catch (error) {
       console.log("ERROR:", error);
-      Alert.alert("Error", "API Network Error");
+      toastError("API Network Error");
     } finally {
-      setLoading(false);
+      setPublishLoading(false);
     }
   };
-  useEffect(() => {
-    console.log("ZUSTAND CATEGORIES:", categories);
-  }, [categories]);
 
   return (
     <SafeAreaView style={{ backgroundColor: "#222222", flex: 1 }}>
@@ -268,6 +261,8 @@ const PromoteCategoryPage = () => {
               <GradientButton
                 title="Save and Publish"
                 onPress={handlePublish}
+                disabled={publishLoading}
+                loading={publishLoading}
               />
             </View>
           </View>

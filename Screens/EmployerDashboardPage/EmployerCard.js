@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { FontAwesome, MaterialIcons, Entypo } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../api/ApiUrl";
-import { toastSuccess } from "../../utils/toast";
+import { toastError, toastSuccess } from "../../utils/toast";
 import StarRating from "../../components/StarRating";
 
 const EmployerCard = ({ item, isLastItem }) => {
@@ -15,10 +15,7 @@ const EmployerCard = ({ item, isLastItem }) => {
 
   const handleProfileNavigation = (item) => {
     if (item?.name?.trim() && item.is_closed == 1 && item.is_spam_user == 1) {
-      Alert.alert(
-        "User unavailable",
-        "User data is unavailable at the moment.",
-      );
+      toastError("User data is unavailable at the moment.");
       return;
     }
 

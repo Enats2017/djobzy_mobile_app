@@ -112,10 +112,18 @@ export default function ChatRoom() {
     }
   }, [inputText, sending, replyMessage, peerId, sendText]);
 
+  /**
+   * Returns the send outcome to the composer, which uses it to decide whether a
+   * typed message alongside the attachment should follow it out.
+   */
   const handleSendFiles = useCallback(
     async (files, onDone) => {
+      // The optimistic bubbles are already in the list, so the preview strip has
+      // done its job and is cleared straight away rather than duplicating them.
       onDone();
-      await sendFilesAction(peerId, files);
+      const result = await sendFilesAction(peerId, files);
+      if (result?.message) toastError(result.message);
+      return result;
     },
     [peerId, sendFilesAction]
   );

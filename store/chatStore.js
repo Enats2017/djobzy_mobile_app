@@ -152,9 +152,9 @@ export const useChatStore = create((set, get) => ({
         conversations: reset
           ? fresh
           : (() => {
-              const seen = new Set(s.conversations.map((c) => c.user?.id));
-              return [...s.conversations, ...fresh.filter((c) => !seen.has(c.user?.id))];
-            })(),
+            const seen = new Set(s.conversations.map((c) => c.user?.id));
+            return [...s.conversations, ...fresh.filter((c) => !seen.has(c.user?.id))];
+          })(),
         conversationsHasMore: fresh.length === PAGE_LIMIT,
         conversationsOffset: offset,
         conversationsLoaded: true,
@@ -359,11 +359,11 @@ export const useChatStore = create((set, get) => ({
           [peerId]: (s.messages[peerId] ?? []).map((m) =>
             m._clientId === clientId
               ? {
-                  ...sent,
-                  _clientId: clientId,
-                  _sending: false,
-                  reply_message: sent.reply_message ?? replyMessage,
-                }
+                ...sent,
+                _clientId: clientId,
+                _sending: false,
+                reply_message: sent.reply_message ?? replyMessage,
+              }
               : m
           ),
         },
@@ -381,8 +381,12 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  /**
+   * Resolves to { ok, sent, failed, message } so the composer can decide what to
+   * do next — a follow-up text message must not go out if nothing landed.
+   */
   sendFiles: async (peerId, files) => {
-    if (!files?.length) return;
+    if (!files?.length) return { ok: false, sent: 0, failed: 0, message: "No attachment to send." };
 
     const { userId } = get();
 
@@ -404,7 +408,7 @@ export const useChatStore = create((set, get) => ({
       messages: { ...s.messages, [peerId]: [...(s.messages[peerId] ?? []), ...optimistic] },
     }));
 
-    await Promise.allSettled(
+    const outcomes = await Promise.allSettled(
       files.map(async (file) => {
         try {
           const form = new FormData();
@@ -446,6 +450,7 @@ export const useChatStore = create((set, get) => ({
           }));
 
           get().bumpConversation(peerId, sent, { incrementUnread: false });
+          return true;
         } catch (e) {
           console.error("[chatStore] sendFiles", file.name, e);
           set((s) => ({
@@ -456,9 +461,29 @@ export const useChatStore = create((set, get) => ({
               ),
             },
           }));
+          return false;
         }
       })
     );
+
+    const sentCount = outcomes.filter((o) => o.status === "fulfilled" && o.value).length;
+    const failedCount = outcomes.length - sentCount;
+
+    return {
+      // Partial success still counts as ok: an attachment did land in the thread,
+      // so a caption-style follow-up text belongs after it. The failures are
+      // reported through `message` and stay marked as failed in the list.
+      ok: sentCount > 0,
+      sent: sentCount,
+      failed: failedCount,
+      message: failedCount
+        ? sentCount
+          ? `${failedCount} of ${outcomes.length} attachments could not be sent.`
+          : outcomes.length > 1
+            ? "Attachments could not be sent."
+            : "Attachment could not be sent."
+        : null,
+    };
   },
 
   deleteMessage: async (peerId, message, forEveryone = false) => {
@@ -573,10 +598,10 @@ export const useChatStore = create((set, get) => ({
       incrementUnread: !isViewing && String(payload.from_id) !== String(userId),
       user: payload.sender
         ? {
-            id: payload.sender.id,
-            name: payload.sender.name,
-            photo_url: payload.sender.photo_url,
-          }
+          id: payload.sender.id,
+          name: payload.sender.name,
+          photo_url: payload.sender.photo_url,
+        }
         : null,
     });
 

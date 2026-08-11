@@ -136,6 +136,10 @@ const ChatInputBar = memo(({ value, onChangeText, onSend, onSendFiles, sending, 
     const bottomInset = keyboardVisible ? 0 : insets.bottom;
     const [sheetOpen, setSheetOpen] = useState(false);
     const [pendingFiles, setPendingFiles] = useState([]);
+    // True only for the attachment leg of a send. The field is locked for that
+    // window so the text handed to onSend() is exactly what was on screen when
+    // Send was tapped — anything typed meanwhile would be wiped by the clear.
+    const [uploading, setUploading] = useState(false);
 
     const removeFile = useCallback((tempId) => {
         setPendingFiles((prev) => prev.filter((f) => f.tempId !== tempId));
@@ -266,14 +270,35 @@ const ChatInputBar = memo(({ value, onChangeText, onSend, onSendFiles, sending, 
         }
     }, []);
 
-    const handleSend = useCallback(() => {
-        if (pendingFiles.length > 0) {
-            setPendingFiles((prev) => prev.map((f) => ({ ...f, uploading: true })));
-            onSendFiles(pendingFiles, () => setPendingFiles([]));
+    /**
+     * We have no caption field, so an attachment + typed text is sent as two
+     * messages from a single tap: the file first, then the text right after it.
+     * The text is deliberately NOT fired in parallel — it only goes out once the
+     * attachment has actually landed, otherwise a failed upload would leave an
+     * orphan text message reading like a caption for something that never sent.
+     */
+    const handleSend = useCallback(async () => {
+        if (sending || uploading) return;
+
+        const hasText = value.trim().length > 0;
+        const files = pendingFiles;
+
+        if (files.length === 0) {
+            if (hasText) onSend();
             return;
         }
-        onSend();
-    }, [pendingFiles, onSend, onSendFiles]);
+
+        setPendingFiles((prev) => prev.map((f) => ({ ...f, uploading: true })));
+        setUploading(true);
+        try {
+            const result = await onSendFiles(files, () => setPendingFiles([]));
+            // On failure the composer keeps the typed text (and the caller has
+            // toasted the error), so nothing the user wrote is silently dropped.
+            if (hasText && result?.ok) onSend();
+        } finally {
+            setUploading(false);
+        }
+    }, [sending, uploading, value, pendingFiles, onSend, onSendFiles]);
 
     const hasContent = value.trim() || pendingFiles.length > 0;
 
@@ -334,6 +359,7 @@ const ChatInputBar = memo(({ value, onChangeText, onSend, onSendFiles, sending, 
                             placeholderTextColor="rgba(255,255,255,0.35)"
                             value={value}
                             onChangeText={onChangeText}
+                            editable={!uploading}
                             multiline
                             maxLength={2000}
                             returnKeyType="default"
@@ -343,13 +369,17 @@ const ChatInputBar = memo(({ value, onChangeText, onSend, onSendFiles, sending, 
                             style={styles.roundBtn}
                             activeOpacity={0.7}
                             onPress={handleSend}
-                            disabled={!hasContent || sending}
+                            disabled={!hasContent || sending || uploading}
                         >
-                            <Feather
-                                name="send"
-                                size={20}
-                                color={hasContent ? "#fff" : "rgba(255,255,255,0.3)"}
-                            />
+                            {uploading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Feather
+                                    name="send"
+                                    size={20}
+                                    color={hasContent ? "#fff" : "rgba(255,255,255,0.3)"}
+                                />
+                            )}
                         </TouchableOpacity>
                     </View>
                 </>

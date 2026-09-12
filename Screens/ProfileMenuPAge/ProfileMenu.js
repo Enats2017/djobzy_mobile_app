@@ -288,6 +288,12 @@ const EmployeeProfileMenu = () => {
                   onPress={() => navigation.navigate("ReferralWallet")}
                 />
                 <MenuItem
+                  type="Font"
+                  icon="suitcase-rolling"
+                  title="My Bookings"
+                  onPress={() => navigation.navigate("ViewMyBooking")}
+                />
+                <MenuItem
                   type="Fontisto"
                   icon="hipchat"
                   title="Chat"

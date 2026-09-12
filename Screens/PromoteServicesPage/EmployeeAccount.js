@@ -52,6 +52,9 @@ import CurrentJobPostList from "../Employer/CurrentJobPostList";
 import ExperienceSection from "../ProfileComponents/ExperienceSection";
 import EditProfileCategory from "../EditProfilePage/EditProfileCategories";
 import EditProfilePromotedServices from "../EditProfilePage/EditProfilePromotedServices";
+import ProfileHotelRoomsSection from "../ProfileComponents/ProfileHotelRoomsSection";
+import HotelViewAllBooking from "../ProfileComponents/HotelViewAllBooking";
+import { globalEvent, EVENTS } from '../../utils/ustomGlobalEmitEvent';
 
 const EmployeeAccount = () => {
   const setAllData = useEditProfileStore((state) => state.setAllData);
@@ -69,6 +72,7 @@ const EmployeeAccount = () => {
   const [employerLink, setEmployerLink] = useState("");
   const [completeReview, setCompleteReview] = useState([]);
   const [current, setCurrent] = useState([]);
+  const [hotelBookings, setHotelBookings] = useState([]);
   const navigation = useNavigation();
 
   const fetchEmployee = async () => {
@@ -90,6 +94,7 @@ const EmployeeAccount = () => {
       setSocialLinks(data.socialLinks);
       setCompleteReview(data.oreview);
       setCurrent(data.creview);
+      setHotelBookings(data.hotelBookings);
       const user = data.editprofile || {};
       setAllData({
         userAdmin: user.admin || 0,
@@ -121,6 +126,16 @@ const EmployeeAccount = () => {
   useEffect(() => {
     fetchEmployee();
   }, []);
+
+  useEffect(() => {
+    const unsubscribeDelete = globalEvent.on(EVENTS.ROOM_DELETED, (deletedRoomId) => {
+      setHotelBookings((prev) => prev.filter((room) => String(room.id) !== String(deletedRoomId)));
+    });
+    return () => {
+      unsubscribeDelete();
+    };
+  }, []);
+
   const handleOpenDelete = (id, name) => {
     setSelectedId(id);
     setSelectedName(name);
@@ -187,7 +202,7 @@ const EmployeeAccount = () => {
                 employerLink={employerLink}
                 onCopy={handleCopy}
                 onShare={handleShare}
-                initialActive = "employee"
+                initialActive="employee"
                 job={job}
               />
 
@@ -221,6 +236,17 @@ const EmployeeAccount = () => {
                 isEdit={false}
               />
             </View>
+
+            <View style={styles.hotelRoomSection}>
+              <ProfileHotelRoomsSection
+                hotelBookings={hotelBookings}
+                onViewRoom={(id) => {
+                  navigation.navigate('HotelRoomDetailPage', { hotelId: id });
+                }}
+              />
+            </View>
+
+            <HotelViewAllBooking />
 
             <View style={styles.infoBox}>
               <QuestionMark title="Employee Category" iconColor="#fff" tooltipMessage={tooltipMessage.tooltip_involved_category} />

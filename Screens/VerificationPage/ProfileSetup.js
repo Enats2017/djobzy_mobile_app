@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { API_URL } from "../../api/ApiUrl";
 import GradientButton from "../../components/GradientButton";
@@ -27,6 +28,7 @@ const ProfileSetup = ({ onNext }) => {
   const [resumeFile, setResumeFile] = useState(null);
   const [onlineResumeLink, setOnlineResumeLink] = useState("");
   const [loading, setLoading] = useState(false);
+  const [generateLoading, setGenerateLoading] = useState(false);
   const titleCharsLeft = 60 - title.length;
   const MIN_WORDS = 20;
   const wordCount = description.trim().split(/\s+/).filter(word => word.length > 0).length;
@@ -210,6 +212,41 @@ const ProfileSetup = ({ onNext }) => {
     return name.substring(0, maxLength - 3) + "...";
   };
 
+  const generateWithAI = async () => {
+    const plainText = description.trim();
+    toastError('Please enter some text in the description.');
+    if (!plainText) {
+      toastError('Please enter some text in the description.');
+      return;
+    }
+
+    setGenerateLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await fetch(`${API_URL}/expand-text`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: plainText }),
+      });
+
+      const res = await response.json();
+      if (!response.ok || !res?.success) {
+        toastError(res?.message || 'API request failed.');
+        return;
+      }
+
+      setDescription(res.expanded_text);
+    } catch (err) {
+      toastError(err.message || 'API request failed.');
+    } finally {
+      setGenerateLoading(false);
+    }
+  };
+
   return (
     <>
       <Text style={styles.heading}>Profile Setup</Text>
@@ -284,22 +321,26 @@ const ProfileSetup = ({ onNext }) => {
           </Text>
         </View>
         <TouchableOpacity
-          style={[
-            styles.generateButton,
-            !isGenerateEnabled && styles.disabledBtn,
-          ]}
-          disabled={!isGenerateEnabled}
-          onPress={() => {
-            // generateWithAI()
-            console.log("AI generate triggered");
-          }}
+          style={[styles.generateButton, (!isGenerateEnabled || generateLoading) && styles.disabledBtn,]}
+          disabled={!isGenerateEnabled || generateLoading}
+          onPress={generateWithAI}
+          activeOpacity={0.85}
         >
-          <Image
-            source={require("../../assets/images/aiimg.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.generateText}>Generate with AI</Text>
+          {generateLoading ? (
+            <>
+              <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Text style={styles.generateText}>Generating...</Text>
+            </>
+          ) : (
+            <>
+              <Image
+                source={require("../../assets/images/aiimg.png")}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+              <Text style={styles.generateText}>Generate with AI</Text>
+            </>
+          )}
         </TouchableOpacity>
 
         <Text style={styles.label}>Resume <Text style={{ fontFamily: "Montserrat_400Regular" }}>(Optional)
@@ -457,8 +498,8 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   aidescription: {
-    height: 90,
-    padding: 10,
+    height: 150,
+    paddingHorizontal: 10,
     backgroundColor: "#FFFFFF0D",
     borderRadius: 8,
   },

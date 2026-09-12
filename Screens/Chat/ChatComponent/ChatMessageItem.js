@@ -319,14 +319,14 @@ const FAIL_OFFSET_Y = 12;
 /**
  * WhatsApp-style swipe-to-reply around a message bubble.
  *
- * Direction is asymmetric by design: your own messages sit on the right and
- * drag left, the other person's sit on the left and drag right — each bubble
- * pulls away from its own edge, opening the gap the reply icon appears in.
+ * Direction is the same for every message: incoming and outgoing bubbles both
+ * drag to the right, opening the gap on their left that the reply icon appears
+ * in. A left drag never triggers a reply.
  *
  * This is purely an additional trigger for `onReply` — the long-press menu is
  * untouched and still calls the same handler.
  */
-const SwipeToReply = ({ isOutgoing, enabled, onTrigger, children }) => {
+const SwipeToReply = ({ enabled, onTrigger, children }) => {
     const translateX = useSharedValue(0);
     // Latches per gesture so a single drag can only fire reply once, even
     // though onUpdate runs on every frame past the threshold.
@@ -336,9 +336,9 @@ const SwipeToReply = ({ isOutgoing, enabled, onTrigger, children }) => {
         () =>
             Gesture.Pan()
                 .enabled(enabled)
-                // Only claim the gesture in the message's own reply direction, and
-                // only after ACTIVATE_OFFSET, so taps and long-presses still work.
-                .activeOffsetX(isOutgoing ? -ACTIVATE_OFFSET : ACTIVATE_OFFSET)
+                // Only claim the gesture on a rightward drag, and only after
+                // ACTIVATE_OFFSET, so taps and long-presses still work.
+                .activeOffsetX(ACTIVATE_OFFSET)
                 // Yield to the list: a mostly-vertical drag fails this gesture
                 // instead of fighting FlashList for the touch.
                 .failOffsetY([-FAIL_OFFSET_Y, FAIL_OFFSET_Y])
@@ -346,15 +346,13 @@ const SwipeToReply = ({ isOutgoing, enabled, onTrigger, children }) => {
                     hasTriggered.value = false;
                 })
                 .onUpdate((e) => {
-                    // Clamp to one direction and cap the travel, so the bubble
-                    // resists past MAX_DRAG rather than sliding off screen.
+                    // Clamp to the rightward direction and cap the travel, so the
+                    // bubble resists past MAX_DRAG rather than sliding off screen.
                     const dx = e.translationX;
-                    translateX.value = isOutgoing
-                        ? Math.max(-MAX_DRAG, Math.min(0, dx))
-                        : Math.min(MAX_DRAG, Math.max(0, dx));
+                    translateX.value = Math.min(MAX_DRAG, Math.max(0, dx));
                 })
                 .onEnd(() => {
-                    if (!hasTriggered.value && Math.abs(translateX.value) >= TRIGGER_DISTANCE) {
+                    if (!hasTriggered.value && translateX.value >= TRIGGER_DISTANCE) {
                         hasTriggered.value = true;
                         runOnJS(onTrigger)();
                     }
@@ -368,7 +366,7 @@ const SwipeToReply = ({ isOutgoing, enabled, onTrigger, children }) => {
                         mass: 0.4,
                     });
                 }),
-        [isOutgoing, enabled, onTrigger, translateX, hasTriggered]
+        [enabled, onTrigger, translateX, hasTriggered]
     );
 
     const bubbleStyle = useAnimatedStyle(() => ({
@@ -376,7 +374,7 @@ const SwipeToReply = ({ isOutgoing, enabled, onTrigger, children }) => {
     }));
 
     const cueStyle = useAnimatedStyle(() => {
-        const progress = Math.min(Math.abs(translateX.value) / TRIGGER_DISTANCE, 1);
+        const progress = Math.min(translateX.value / TRIGGER_DISTANCE, 1);
         return {
             opacity: progress,
             transform: [{ scale: 0.5 + progress * 0.5 }],
@@ -387,14 +385,10 @@ const SwipeToReply = ({ isOutgoing, enabled, onTrigger, children }) => {
 
     return (
         <View style={styles.swipeWrap}>
-            {/* Sits at the bubble's own edge and is revealed as the bubble slides away. */}
+            {/* Sits at the bubble's left edge and is revealed as it slides right. */}
             <Animated.View
                 pointerEvents="none"
-                style={[
-                    styles.replyCue,
-                    isOutgoing ? styles.replyCueRight : styles.replyCueLeft,
-                    cueStyle,
-                ]}
+                style={[styles.replyCue, styles.replyCueLeft, cueStyle]}
             >
                 <Ionicons name="arrow-undo" size={15} color="#fff" />
             </Animated.View>
@@ -505,7 +499,6 @@ const ChatMessageItem = memo(({ item, myId, onDelete, onReply, onInfo, otherUser
         <>
             <View style={[styles.msgRow, isOutgoing ? styles.rowRight : styles.rowLeft]}>
                 <SwipeToReply
-                    isOutgoing={isOutgoing}
                     enabled={canSwipeToReply}
                     onTrigger={handleSwipeReply}
                 >
@@ -667,12 +660,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
-    // Anchored to the bubble's own edge so the icon is uncovered by the drag
+    // Anchored to the bubble's left edge so the icon is uncovered by the drag
     // rather than needing to be positioned outside the row (which would clip
     // against the screen edge on a full-width bubble).
-    replyCueRight: {
-        right: 0,
-    },
     replyCueLeft: {
         left: 0,
     },

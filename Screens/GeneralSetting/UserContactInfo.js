@@ -135,7 +135,7 @@ const UserContactInfo = () => {
           <PageNameHeaderBar title="Contact Info" navigation={navigation} />
           <ScrollView
             contentContainerStyle={{
-              paddingBottom: insets.bottom + 40,
+              paddingBottom: 100,
               flexGrow: 1,
             }}
             showsVerticalScrollIndicator={false}

@@ -21,9 +21,9 @@ import {
 import { API_URL } from "../api/ApiUrl";
 import { useNotifications } from "../context/MessageNotificationContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useServiceGlobalStore } from "../Screens/PromoteServicesPage/ServiceGlobalStore";
 import SwitchOverlayAnimation from "./SwitchOverlayAnimation";
 import { toastError } from "../utils/toast";
+import PromoteServiceOrHotelModal from "./PromoteServiceOrHotelModal";
 
 const ACTIVE_COLOR = "#CB7767";
 const INACTIVE_COLOR = "#000";
@@ -34,6 +34,7 @@ const Footer = () => {
   const route = useRoute();
   const { refreshUser, admin } = useNotifications();
   const [showSwitchOverlay, setShowSwitchOverlay] = useState(false);
+  const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [footerHeight, setFooterHeight] = useState(0);
 
   const isActive = (routeName) => route.name === routeName;
@@ -89,11 +90,11 @@ const Footer = () => {
 
   return (
     <View style={[
-        styles.bottomContainer,
-        {
-          paddingBottom: insets.bottom,
-        },
-      ]}
+      styles.bottomContainer,
+      {
+        paddingBottom: insets.bottom,
+      },
+    ]}
       onLayout={(e) => {
         setFooterHeight(e.nativeEvent.layout.height);
       }}
@@ -178,12 +179,7 @@ const Footer = () => {
 
         <TouchableOpacity
           style={styles.tab}
-          onPress={() => {
-            const store = useServiceGlobalStore.getState();
-            store.reset();
-            store.resetUniqueId();
-            navigation.navigate("PromoteService")
-          }}
+          onPress={() => setShowPromoteModal(true)}
         >
           <MaterialCommunityIcons
             name="plus-circle"
@@ -295,6 +291,12 @@ const Footer = () => {
           />
         )
       }
+
+      <PromoteServiceOrHotelModal
+        visible={showPromoteModal}
+        onClose={() => setShowPromoteModal(false)}
+        navigation={navigation}
+      />
     </View>
   );
 };

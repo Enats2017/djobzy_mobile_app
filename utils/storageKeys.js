@@ -26,6 +26,7 @@ export const SESSION_KEYS = [
 export const CACHE_KEYS = [
   "edit-profile-storage", // zustand persist store, see useEditProfileStore
   "userCurrentLocation",
+  "user_timezone", // user_address.timezone, cached by Screens/Hotel/ConfigureRoomsPage
 ];
 
 /**

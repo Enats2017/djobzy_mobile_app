@@ -56,10 +56,6 @@ export default function ViewHirePage() {
   useEffect(() => {
     fetchEmployerJob();
   }, []);
-  console.log("11111", employee);
-
-
-
 
   const handleSelectJob = async (item) => {
     setSelectedJob(item);
@@ -79,8 +75,6 @@ export default function ViewHirePage() {
         }),
       });
       const data = await res.json();
-      console.log(data);
-
       setDropdownOpen(false);
       navigation.navigate("SendJobOffer", { jobDetails: data });
     } catch (err) {
@@ -102,9 +96,7 @@ export default function ViewHirePage() {
                   <View style={styles.profileRow}>
                     <Image
                       style={styles.avatar}
-                      source={{
-                        uri: "https://randomuser.me/api/portraits/men/47.jpg",
-                      }}
+                      source={{ uri: profile?.photo }}
                     />
                     <View style={styles.profileTextContent}>
                       <Text style={styles.profileName}>{profile?.full_name}</Text>

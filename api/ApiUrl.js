@@ -1,9 +1,11 @@
-// export const API_URL = "http://192.168.0.102:8000/api";
-// export const API_ICON = "http://192.168.0.102:8000";
-// export const CHAT_API_URL = "http://192.168.0.102:8001/api";
+// export const API_URL = "http://192.168.0.245:8000/api";
+// export const API_ICON = "http://192.168.0.245:8000";
+// export const CHAT_API_URL = "http://192.168.0.245:8001/api";
+// export const HOTEL_PAYMENT_URL = "http://192.168.0.245:8000s";
 export const API_URL = "https://api.djobzy.com/api";
 export const API_ICON = "https://api.djobzy.com";
 export const CHAT_API_URL = "https://chats.djobzy.com/api";
+export const HOTEL_PAYMENT_URL = "https://www.djobzy.com";
 
 // Pusher credentials — must match PUSHER_APP_KEY / PUSHER_APP_CLUSTER in the
 // chat backend's .env. The app key is a public identifier (the secret stays

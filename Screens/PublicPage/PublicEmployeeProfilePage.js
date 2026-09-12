@@ -34,6 +34,7 @@ import FeedAddCommentModal from "../SocialMediaPage/FeedModals/FeedAddCommentMod
 import FeedPostDropdownModal from "../SocialMediaPage/FeedModals/FeedPostDropdownModal";
 import FeedReportModal from "../SocialMediaPage/FeedModals/FeedReportModal";
 import { useNotifications } from "../../context/MessageNotificationContext";
+import RoomsSectionForCustomer from "./PublicProfileComponent/RoomSectionForCustomer";
 import { openChat } from "../../utils/openChat";
 
 export default function PublicEmployeeProfilePage({ route }) {
@@ -57,6 +58,7 @@ export default function PublicEmployeeProfilePage({ route }) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [reportVisible, setReportVisible] = useState(false);
   const [hiddenFeedIds, setHiddenFeedIds] = useState(new Set());
+  const [hotelRooms, setHotelRooms] = useState([]);
 
   const fetchEmployeeProfile = async () => {
     setLoading(true);
@@ -79,6 +81,7 @@ export default function PublicEmployeeProfilePage({ route }) {
       setPromote(data.promote);
       setSubcategory(data.subcategory);
       setFeeds(data.feeds?.data ?? []);
+      setHotelRooms(data.hotelBookings ?? []);
     } catch (e) {
       console.log("ERROR:", e);
     } finally {
@@ -468,6 +471,17 @@ export default function PublicEmployeeProfilePage({ route }) {
             )}
             {/* <LineDivider /> */}
 
+            <RoomsSectionForCustomer
+              rooms={hotelRooms}
+              onViewRoom={(room, { checkInDate, checkOutDate }) => {
+                navigation.navigate('HotelCustomerView', {
+                  roomId: room.id,
+                  checkInDate: checkInDate?.toISOString(),
+                  checkOutDate: checkOutDate?.toISOString(),
+                });
+              }}
+            />
+
             <View style={styles.pillsWrapper}>
               {promote.length > 0 && (
                 <>
@@ -477,9 +491,20 @@ export default function PublicEmployeeProfilePage({ route }) {
                     contentContainerStyle={styles.promatewrapper}
                   >
                     {promote.map((item, index) => {
-                      const icon = item?.seeking_services?.[0]?.get_seek_services_api?.icon;
+                      const icon =
+                        item?.seeking_services?.[0]?.get_seek_services_api
+                          ?.icon;
+
+                      console.log("111111", icon);
+
+                      console.log(
+                        "Path",
+                        `${API_ICON}/images/servicephoto/png-image/${icon}`,
+                      );
+
                       return (
                         <View key={index} style={styles.wrapper}>
+                          {/* ICON */}
                           <View style={styles.iconContainer}>
                             {icon ? (
                               <Image
@@ -490,7 +515,11 @@ export default function PublicEmployeeProfilePage({ route }) {
                                 resizeMode="contain"
                               />
                             ) : (
-                              <Ionicons name="image-outline" size={28} color="#999" />
+                              <Ionicons
+                                name="image-outline"
+                                size={28}
+                                color="#999"
+                              />
                             )}
                           </View>
 

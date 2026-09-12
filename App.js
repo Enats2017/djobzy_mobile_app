@@ -105,7 +105,14 @@ import Map from "./components/Map";
 import MyBoostedJob from "./Screens/EmployerJobs/MyBoostedJob";
 import FeedDetailPage from "./Screens/SocialMediaPage/FeedDetailPage";
 import OwnFeedScreen from "./Screens/SocialMediaPage/OwnFeed/OwnFeedScreen";
+import ListYourPropertyScreen from "./Screens/Hotel/ListYourPropertyScreen";
+import HotelRoomDetailPage from "./Screens/Hotel/HotelRoomDetailPage";
+import ViewAllBookingPage from "./Screens/Hotel/ViewAllBookingPage";
+import MyBookingHotelPage from "./Screens/Hotel/MyBookingHotelPage";
+import ConfigureRoomsPage from "./Screens/Hotel/ConfigureRoomsPage";
+import HotelCutsomerViewPage from "./Screens/Hotel/CustomerPage/HotelCustomerViewPage";
 import { registerForPushNotifications, notificationListener, foregroundListener, } from "./expoNotification";
+import BookingCheckoutFormScreen from "./Screens/Hotel/CustomerPage/BookingCheckoutFormScreen";
 
 const Stack = createStackNavigator();
 export const navigationRef = createNavigationContainerRef();
@@ -318,6 +325,13 @@ const App = () => {
               <Stack.Screen name="MyBoostedJob" component={MyBoostedJob} />
               <Stack.Screen name="FeedDetail" component={FeedDetailPage} />
               <Stack.Screen name="MyFeedPost" component={OwnFeedScreen} />
+              <Stack.Screen name="CreateHotelRoom" component={ListYourPropertyScreen} />
+              <Stack.Screen name="HotelRoomDetailPage" component={HotelRoomDetailPage} />
+              <Stack.Screen name="ViewAllBookingPage" component={ViewAllBookingPage} />
+              <Stack.Screen name="ViewMyBooking" component={MyBookingHotelPage} />
+              <Stack.Screen name="ConfigureRoomsPage" component={ConfigureRoomsPage} />
+              <Stack.Screen name="HotelCustomerView" component={HotelCutsomerViewPage} />
+              <Stack.Screen name="CustomerCheckoutForm" component={BookingCheckoutFormScreen} />
               </Stack.Navigator>
             </NavigationContainer>
             <Toast config={toastConfig} />

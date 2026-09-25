@@ -85,6 +85,10 @@ const EmployeeAccount = () => {
           Accept: "application/json",
         },
       });
+      // A server error still returns a JSON body; treat it as a failure, not an empty profile.
+      if (!response.ok) {
+        throw new Error(`employee-profile HTTP ${response.status}`);
+      }
       const data = await response.json();
       setEmployeeLink(data.employee_link);
       setEmployerLink(data.employer_link);
@@ -118,7 +122,8 @@ const EmployeeAccount = () => {
       });
       useEditProfileStore.setState({ profile: data });
     } catch (err) {
-      setError(err.message);
+      console.log("employee-profile error:", err);
+      toastError("Unable to load your profile");
     } finally {
       setLoading(false);
     }
@@ -147,7 +152,6 @@ const EmployeeAccount = () => {
     setDeleteModalVisible(false);
   };
   const handleDeleted = (deletedId) => {
-    setSubcategory((prev) => prev.filter((item) => item.subid !== deletedId));
     fetchEmployee();
     handleCloseDelete();
   };

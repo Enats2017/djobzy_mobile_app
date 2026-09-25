@@ -5,15 +5,17 @@ import LineDivider from "../../components/LineDivider";
 import EmptyState from "../../components/EmptyState";
 
 const CurrentJobPostList = ({ currentJobData, navigation, label, admin }) => {
+    // A failed profile fetch leaves no list; render the empty state instead of throwing.
+    const rows = Array.isArray(currentJobData) ? currentJobData : [];
     return (
         <View style={styles.section}>
             <Text style={styles.infoTitle}>Current Contracts</Text>
 
-            {currentJobData.length > 0 ? (
-                currentJobData.map((item, index) => (
+            {rows.length > 0 ? (
+                rows.map((item, index) => (
                     <View key={index} style={styles.card}>
                         <Text style={styles.heading}>{item.subject}</Text>
-                        <Text style={styles.desc}>{item.description}</Text>
+                        <Text style={styles.desc} numberOfLines={2}>{item.description}</Text>
 
                         <Text style={styles.row}>
                             <Text style={styles.label}>Total Price:</Text> CAD{" "}

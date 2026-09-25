@@ -55,40 +55,50 @@ const EditProfileUpdatePhoto = ({ photoUri, setPhotoUri }) => {
 
 
     const openCamera = async () => {
-        const hasPermission = await requestPermissions();
-        if (!hasPermission) return;
+        try {
+            const hasPermission = await requestPermissions();
+            if (!hasPermission) return;
 
-        const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ["images"],
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
+            const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ["images"],
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.7,
+            });
 
-        if (!result.canceled) {
-            const asset = result.assets[0];
-            const isValid = await validateImageSize(asset);
-            if (!isValid) return;
-            await handleSubmit(asset.uri);
+            if (!result.canceled) {
+                const asset = result.assets[0];
+                const isValid = await validateImageSize(asset);
+                if (!isValid) return;
+                await handleSubmit(asset.uri);
+            }
+        } catch (error) {
+            console.log("Camera error:", error);
+            toastError("Unable to open the camera, please try again");
         }
     };
 
     const openGallery = async () => {
-        const hasPermission = await requestPermissions();
-        if (!hasPermission) return;
+        try {
+            const hasPermission = await requestPermissions();
+            if (!hasPermission) return;
 
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ["images"],
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ["images"],
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.7,
+            });
 
-        if (!result.canceled) {
-            const asset = result.assets[0];
-            const isValid = await validateImageSize(asset);
-            if (!isValid) return;
-            await handleSubmit(asset.uri);
+            if (!result.canceled) {
+                const asset = result.assets[0];
+                const isValid = await validateImageSize(asset);
+                if (!isValid) return;
+                await handleSubmit(asset.uri);
+            }
+        } catch (error) {
+            console.log("Gallery error:", error);
+            toastError("Unable to open the gallery, please try again");
         }
     };
 

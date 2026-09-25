@@ -80,7 +80,7 @@ const EditProfilePromotedServices = ({ navigation, isEdit = true }) => {
                 });
                 navigation.navigate("PromoteService");
             } else {
-                toastError(result.message || "Unable to fetch details");
+                toastError(data.message || "Unable to fetch details");
             }
         } catch (err) {
             console.log("fetchDetails error: ", err);
